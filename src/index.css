@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Futuristic dark design system for JSON management app */
+
+@layer base {
+  :root {
+    /* Dark tech base colors */
+    --background: 220 13% 8%;
+    --foreground: 210 20% 92%;
+
+    --card: 220 13% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 220 13% 9%;
+    --popover-foreground: 210 20% 92%;
+
+    /* Neon tech primary colors */
+    --primary: 197 89% 61%;
+    --primary-foreground: 220 13% 8%;
+    --primary-glow: 197 89% 71%;
+
+    /* Electric accents */
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 13% 12%;
+    --muted-foreground: 215 12% 55%;
+
+    --accent: 166 67% 51%;
+    --accent-foreground: 220 13% 8%;
+    --accent-glow: 166 67% 61%;
+
+    /* System colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 92%;
+
+    --warning: 38 92% 65%;
+    --warning-foreground: 220 13% 8%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 20% 92%;
+
+    --border: 220 13% 18%;
+    --input: 220 13% 15%;
+    --ring: 197 89% 61%;
+
+    --radius: 0.75rem;
+
+    /* Tech gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(197 89% 61%), hsl(166 67% 51%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 20%));
+    --gradient-tech: linear-gradient(135deg, hsl(197 89% 61% / 0.1), hsl(166 67% 51% / 0.1));
+    
+    /* Shadows and glows */
+    --shadow-primary: 0 0 20px hsl(197 89% 61% / 0.3);
+    --shadow-accent: 0 0 20px hsl(166 67% 51% / 0.3);
+    --shadow-card: 0 8px 32px hsl(220 13% 5% / 0.5);
+    
+    /* Animations */
+    --transition-tech: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-glow: box-shadow 0.3s ease-in-out;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  
+  .font-code {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .tech-glow {
+    box-shadow: var(--shadow-primary);
+    transition: var(--transition-glow);
+  }
+  
+  .tech-glow:hover {
+    box-shadow: var(--shadow-primary), var(--shadow-accent);
+  }
+  
+  .gradient-tech {
+    background: var(--gradient-tech);
+  }
+  
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+}
+
+@layer utilities {
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: var(--shadow-primary); 
+    }
+    50% { 
+      box-shadow: var(--shadow-primary), var(--shadow-accent); 
+    }
+  }
+}
