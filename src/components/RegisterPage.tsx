@@ -5,24 +5,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 
-interface LoginPageProps {
-  onSwitchToRegister: () => void;
+interface RegisterPageProps {
+  onSwitchToLogin: () => void;
 }
 
-export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
+export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword || !name) {
       toast({
         title: 'Campos requeridos',
         description: 'Por favor, completa todos los campos',
@@ -31,29 +34,49 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
       return;
     }
 
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Error en contraseñas',
+        description: 'Las contraseñas no coinciden',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: 'Contraseña muy corta',
+        description: 'La contraseña debe tener al menos 6 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signUp(email, password, name);
       
       if (error) {
         toast({
-          title: 'Error de autenticación',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Credenciales incorrectas' 
+          title: 'Error de registro',
+          description: error.message === 'User already registered' 
+            ? 'El usuario ya está registrado' 
             : error.message,
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Bienvenido',
-          description: 'Has iniciado sesión correctamente',
+          title: 'Registro exitoso',
+          description: 'Administrador registrado correctamente. Ya puedes iniciar sesión.',
         });
+        // Switch to login after successful registration
+        onSwitchToLogin();
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Error inesperado al iniciar sesión',
+        description: 'Error inesperado durante el registro',
         variant: 'destructive',
       });
     } finally {
@@ -68,13 +91,29 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Panel de Administración</CardTitle>
+          <CardTitle className="text-2xl">Registro de Administrador</CardTitle>
           <CardDescription>
-            Accede al sistema de gestión de votaciones
+            Crea una cuenta para acceder al panel de administración
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre completo</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Tu nombre completo"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="pl-10"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <div className="relative">
@@ -115,6 +154,30 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-10 pr-10"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  disabled={loading}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
             <Button 
               type="submit" 
               className="w-full" 
@@ -123,29 +186,29 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
               {loading ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  Iniciando sesión...
+                  Registrando...
                 </>
               ) : (
-                'Iniciar sesión'
+                'Registrar Administrador'
               )}
             </Button>
           </form>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              ¿No tienes una cuenta?
+              ¿Ya tienes una cuenta?
             </p>
             <Button 
               variant="ghost" 
-              onClick={onSwitchToRegister}
+              onClick={onSwitchToLogin}
               disabled={loading}
               className="text-primary hover:text-primary/80"
             >
-              Registrar administrador
+              Iniciar sesión
             </Button>
           </div>
           
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-center text-xs text-muted-foreground">
             Sistema de votaciones MCM
           </div>
         </CardContent>

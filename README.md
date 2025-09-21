@@ -80,6 +80,13 @@ npm run preview
 
 ### Crear Primer Administrador
 
+La aplicación ahora incluye un sistema completo de registro y autenticación:
+
+1. **Registro automático**: Accede al panel de administración (`?admin=true`) y utiliza el formulario de registro
+2. **Asignación automática de rol**: Los nuevos administradores reciben automáticamente el rol `super_admin`
+3. **Validación integrada**: El sistema valida contraseñas, emails y campos requeridos
+
+#### Método manual (alternativo):
 1. Registra un usuario en Supabase Auth
 2. Ejecuta en SQL Editor:
 ```sql
@@ -136,6 +143,9 @@ vercel --prod
 
 - [x] Infraestructura base con Supabase
 - [x] Sistema de autenticación para admins
+- [x] **Registro de administradores con interfaz gráfica**
+- [x] **Protección de rutas con validación de roles**
+- [x] **Validación de formularios y manejo de errores**
 - [x] Página de votación pública responsive
 - [x] Panel de administración con dashboard
 - [x] Prevención de votos duplicados por dispositivo
@@ -174,9 +184,12 @@ El sistema utiliza un **hash único** generado por:
 
 ### Autenticación
 
+- **Registro automático** con formulario integrado en la aplicación
 - **Supabase Auth** con email/password
+- **Creación automática** de perfil en `public.users` con rol `super_admin`
 - **JWT tokens** para sesiones seguras
-- **Roles de usuario** (admin, super_admin)
+- **Protección de rutas** basada en roles de usuario
+- **Validación de formularios** con mensajes de error claros
 - **Políticas RLS** a nivel de base de datos
 
 ## 🤝 Contribución

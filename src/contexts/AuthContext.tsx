@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  userProfile: any | null;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error?: AuthError }>;
   signOut: () => Promise<{ error?: AuthError }>;
@@ -17,7 +19,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Computed property to check if user is admin
+  const isAdmin = userProfile?.role === 'super_admin' || userProfile?.role === 'admin';
+
+  // Function to load user profile from public.users table
+  const loadUserProfile = async (userId: string) => {
+    if (!isSupabaseConfigured) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (!error && data) {
+        setUserProfile(data);
+      } else {
+        setUserProfile(null);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setUserProfile(null);
+    }
+  };
 
   useEffect(() => {
     // Skip auth setup if Supabase is not configured
@@ -30,6 +58,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        loadUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
+      
       setLoading(false);
     }).catch(() => {
       setLoading(false);
@@ -41,6 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await loadUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
+      
       setLoading(false);
     });
 
@@ -64,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: new Error('Supabase not configured') as AuthError };
     }
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -73,6 +115,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     });
+
+    // If signup was successful and we have a user, create their profile
+    if (!error && data.user) {
+      try {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email: email,
+            name: name,
+            role: 'super_admin'
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Note: We could optionally delete the auth user here if profile creation fails
+          // but for now we'll just log the error
+        }
+      } catch (profileError) {
+        console.error('Unexpected error creating user profile:', profileError);
+      }
+    }
+    
     return { error };
   };
 
@@ -97,6 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     session,
+    userProfile,
+    isAdmin,
     loading,
     signIn,
     signUp,
