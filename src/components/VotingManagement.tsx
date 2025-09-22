@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -22,7 +23,9 @@ import {
   Eye,
   EyeOff,
   Save,
-  X
+  X,
+  ChevronRight,
+  Award
 } from 'lucide-react';
 
 interface Round {
@@ -30,10 +33,14 @@ interface Round {
   title: string;
   description: string;
   year: number;
-  team: string;
+  team: 'ECE' | 'ECL';
   expected_voters: number;
   is_active: boolean;
   is_closed: boolean;
+  current_round_number: number;
+  max_votes_per_round: number;
+  max_selected_candidates: number;
+  selected_candidates_count: number;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
@@ -43,11 +50,29 @@ interface Candidate {
   id: string;
   round_id: string;
   name: string;
+  surname: string;
+  location: string | null;
+  group_name: string | null;
+  age: number | null;
   description: string | null;
   image_url: string | null;
   order_index: number;
+  is_eliminated: boolean;
+  is_selected: boolean;
+  elimination_round: number | null;
   created_at: string;
   updated_at: string;
+}
+
+interface RoundResult {
+  id: string;
+  round_id: string;
+  round_number: number;
+  candidate_id: string;
+  vote_count: number;
+  is_visible: boolean;
+  created_at: string;
+  candidate?: Candidate;
 }
 
 interface RoundWithCandidates extends Round {
@@ -59,12 +84,16 @@ interface NewRoundForm {
   title: string;
   description: string;
   year: number;
-  team: string;
+  team: 'ECE' | 'ECL';
   expected_voters: number;
 }
 
 interface NewCandidateForm {
   name: string;
+  surname: string;
+  location: string;
+  group_name: string;
+  age: number | '';
   description: string;
   image_url: string;
 }
@@ -75,20 +104,26 @@ export function VotingManagement() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('rounds');
   const [selectedRound, setSelectedRound] = useState<RoundWithCandidates | null>(null);
+  const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
   const [isNewRoundDialogOpen, setIsNewRoundDialogOpen] = useState(false);
   const [isNewCandidateDialogOpen, setIsNewCandidateDialogOpen] = useState(false);
   const [isEditingRound, setIsEditingRound] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   
   const [newRoundForm, setNewRoundForm] = useState<NewRoundForm>({
     title: '',
     description: '',
     year: new Date().getFullYear(),
-    team: '',
+    team: 'ECE',
     expected_voters: 100
   });
 
   const [newCandidateForm, setNewCandidateForm] = useState<NewCandidateForm>({
     name: '',
+    surname: '',
+    location: '',
+    group_name: '',
+    age: '',
     description: '',
     image_url: ''
   });
@@ -143,10 +178,10 @@ export function VotingManagement() {
 
   const createRound = async () => {
     try {
-      if (!newRoundForm.title.trim() || !newRoundForm.team.trim()) {
+      if (!newRoundForm.title.trim()) {
         toast({
           title: 'Error',
-          description: 'El título y el equipo son obligatorios',
+          description: 'El título es obligatorio',
           variant: 'destructive',
         });
         return;
@@ -158,7 +193,7 @@ export function VotingManagement() {
           title: newRoundForm.title.trim(),
           description: newRoundForm.description.trim(),
           year: newRoundForm.year,
-          team: newRoundForm.team.trim(),
+          team: newRoundForm.team,
           expected_voters: newRoundForm.expected_voters,
         }]);
 
@@ -176,7 +211,7 @@ export function VotingManagement() {
         title: '',
         description: '',
         year: new Date().getFullYear(),
-        team: '',
+        team: 'ECE',
         expected_voters: 100
       });
       
@@ -279,10 +314,10 @@ export function VotingManagement() {
     if (!selectedRound) return;
 
     try {
-      if (!newCandidateForm.name.trim()) {
+      if (!newCandidateForm.name.trim() || !newCandidateForm.surname.trim()) {
         toast({
           title: 'Error',
-          description: 'El nombre del candidato es obligatorio',
+          description: 'El nombre y apellido son obligatorios',
           variant: 'destructive',
         });
         return;
@@ -296,6 +331,10 @@ export function VotingManagement() {
         .insert([{
           round_id: selectedRound.id,
           name: newCandidateForm.name.trim(),
+          surname: newCandidateForm.surname.trim(),
+          location: newCandidateForm.location.trim() || null,
+          group_name: newCandidateForm.group_name.trim() || null,
+          age: typeof newCandidateForm.age === 'number' ? newCandidateForm.age : null,
           description: newCandidateForm.description.trim() || null,
           image_url: newCandidateForm.image_url.trim() || null,
           order_index: maxOrderIndex + 1,
@@ -313,6 +352,10 @@ export function VotingManagement() {
       setIsNewCandidateDialogOpen(false);
       setNewCandidateForm({
         name: '',
+        surname: '',
+        location: '',
+        group_name: '',
+        age: '',
         description: '',
         image_url: ''
       });
@@ -443,12 +486,18 @@ export function VotingManagement() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="team">Equipo/Categoría *</Label>
-                <Input
-                  id="team"
+                <Select
                   value={newRoundForm.team}
-                  onChange={(e) => setNewRoundForm(prev => ({ ...prev, team: e.target.value }))}
-                  placeholder="Ej: Equipo A, Consejo Directivo, etc."
-                />
+                  onValueChange={(value: 'ECE' | 'ECL') => setNewRoundForm(prev => ({ ...prev, team: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un equipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ECE">ECE (Equipo Coordinador Europa)</SelectItem>
+                    <SelectItem value="ECL">ECL (Equipo Coordinador Local)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -590,18 +639,61 @@ export function VotingManagement() {
                       Agregar Candidato
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Agregar Candidato</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="candidate_name">Nombre *</Label>
+                          <Input
+                            id="candidate_name"
+                            value={newCandidateForm.name}
+                            onChange={(e) => setNewCandidateForm(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Nombre"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="candidate_surname">Apellidos *</Label>
+                          <Input
+                            id="candidate_surname"
+                            value={newCandidateForm.surname}
+                            onChange={(e) => setNewCandidateForm(prev => ({ ...prev, surname: e.target.value }))}
+                            placeholder="Apellidos"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="candidate_location">Lugar de pertenencia</Label>
+                          <Input
+                            id="candidate_location"
+                            value={newCandidateForm.location}
+                            onChange={(e) => setNewCandidateForm(prev => ({ ...prev, location: e.target.value }))}
+                            placeholder="Ciudad, región..."
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="candidate_group">Grupo</Label>
+                          <Input
+                            id="candidate_group"
+                            value={newCandidateForm.group_name}
+                            onChange={(e) => setNewCandidateForm(prev => ({ ...prev, group_name: e.target.value }))}
+                            placeholder="Grupo de pertenencia"
+                          />
+                        </div>
+                      </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="candidate_name">Nombre *</Label>
+                        <Label htmlFor="candidate_age">Edad</Label>
                         <Input
-                          id="candidate_name"
-                          value={newCandidateForm.name}
-                          onChange={(e) => setNewCandidateForm(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Nombre del candidato"
+                          id="candidate_age"
+                          type="number"
+                          value={newCandidateForm.age}
+                          onChange={(e) => setNewCandidateForm(prev => ({ ...prev, age: e.target.value ? parseInt(e.target.value) : '' }))}
+                          placeholder="Edad"
+                          min="18"
+                          max="100"
                         />
                       </div>
                       <div className="grid gap-2">
@@ -611,6 +703,7 @@ export function VotingManagement() {
                           value={newCandidateForm.description}
                           onChange={(e) => setNewCandidateForm(prev => ({ ...prev, description: e.target.value }))}
                           placeholder="Descripción del candidato..."
+                          rows={3}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -668,8 +761,36 @@ export function VotingManagement() {
                               />
                             </div>
                           )}
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg">{candidate.name}</CardTitle>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-lg">{candidate.name} {candidate.surname}</CardTitle>
+                              <div className="mt-2 space-y-1">
+                                {candidate.age && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {candidate.age} años
+                                    </Badge>
+                                  </div>
+                                )}
+                                {candidate.location && (
+                                  <p className="text-sm text-muted-foreground">📍 {candidate.location}</p>
+                                )}
+                                {candidate.group_name && (
+                                  <p className="text-sm text-muted-foreground">👥 {candidate.group_name}</p>
+                                )}
+                                {candidate.is_selected && (
+                                  <Badge variant="default" className="text-xs">
+                                    <Award className="w-3 h-3 mr-1" />
+                                    Seleccionado
+                                  </Badge>
+                                )}
+                                {candidate.is_eliminated && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    Eliminado
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button variant="outline" size="sm">
@@ -680,7 +801,7 @@ export function VotingManagement() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>¿Eliminar candidato?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta acción eliminará al candidato "{candidate.name}" de la votación.
+                                    Esta acción eliminará al candidato "{candidate.name} {candidate.surname}" de la votación.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
