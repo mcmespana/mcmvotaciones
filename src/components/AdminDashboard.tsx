@@ -107,6 +107,148 @@ export function AdminDashboard() {
     }
   };
 
+  const handleNewVotation = () => {
+    setActiveTab('votaciones');
+    toast({
+      title: 'Nueva Votación',
+      description: 'Redirigiendo a la gestión de votaciones...',
+    });
+  };
+
+  const handleViewResults = async () => {
+    try {
+      // Get active rounds with vote counts
+      const { data: rounds, error: roundsError } = await supabase
+        .from('rounds')
+        .select(`
+          id, title, description, is_active, is_closed,
+          candidates!candidates_round_id_fkey (
+            id, name, votes!votes_candidate_id_fkey (id)
+          )
+        `);
+
+      if (roundsError) {
+        toast({
+          title: 'Error',
+          description: 'No se pudieron cargar los resultados',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!rounds || rounds.length === 0) {
+        toast({
+          title: 'Sin resultados',
+          description: 'No hay votaciones para mostrar resultados',
+        });
+        return;
+      }
+
+      // Show basic results in a toast for now
+      const activeRound = rounds.find(r => r.is_active && !r.is_closed);
+      if (activeRound) {
+        const candidateResults = activeRound.candidates.map(c => ({
+          name: c.name,
+          votes: c.votes?.length || 0
+        }));
+        
+        const topCandidate = candidateResults.sort((a, b) => b.votes - a.votes)[0];
+        toast({
+          title: 'Resultados Parciales',
+          description: `Liderando: ${topCandidate?.name || 'N/A'} con ${topCandidate?.votes || 0} votos`,
+        });
+      } else {
+        toast({
+          title: 'Resultados',
+          description: 'Ver resultados de votaciones cerradas próximamente',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading results:', error);
+      toast({
+        title: 'Error',
+        description: 'Error al cargar los resultados',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      // Get all voting data
+      const { data: rounds, error: roundsError } = await supabase
+        .from('rounds')
+        .select(`
+          id, title, description, is_active, is_closed, created_at,
+          candidates!candidates_round_id_fkey (
+            id, name, description, order_index,
+            votes!votes_candidate_id_fkey (id, device_hash, created_at)
+          )
+        `);
+
+      if (roundsError) {
+        toast({
+          title: 'Error',
+          description: 'No se pudieron exportar los datos',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!rounds || rounds.length === 0) {
+        toast({
+          title: 'Sin datos',
+          description: 'No hay datos para exportar',
+        });
+        return;
+      }
+
+      // Create export data
+      const exportData = {
+        timestamp: new Date().toISOString(),
+        stats: stats,
+        rounds: rounds.map(round => ({
+          ...round,
+          totalVotes: round.candidates.reduce((sum, c) => sum + (c.votes?.length || 0), 0),
+          candidates: round.candidates.map(candidate => ({
+            ...candidate,
+            voteCount: candidate.votes?.length || 0,
+            votes: candidate.votes?.map(vote => ({
+              id: vote.id,
+              timestamp: vote.created_at
+              // device_hash excluded for privacy
+            }))
+          }))
+        }))
+      };
+
+      // Create and download JSON file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `votaciones-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Exportación completada',
+        description: 'Los datos se han descargado correctamente',
+      });
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast({
+        title: 'Error',
+        description: 'Error al exportar los datos',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -232,7 +374,7 @@ export function AdminDashboard() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Crear una nueva ronda de votación con candidatos
                   </p>
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handleNewVotation}>
                     Crear Votación
                   </Button>
                 </CardContent>
@@ -249,7 +391,7 @@ export function AdminDashboard() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Consultar los resultados de las votaciones
                   </p>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleViewResults}>
                     Ver Resultados
                   </Button>
                 </CardContent>
@@ -266,7 +408,7 @@ export function AdminDashboard() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Descargar resultados en formato Excel o JSON
                   </p>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleExportData}>
                     Exportar
                   </Button>
                 </CardContent>
@@ -297,7 +439,17 @@ export function AdminDashboard() {
                 <div className="text-center py-8 text-muted-foreground">
                   <Vote className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Funcionalidad de gestión de votaciones</p>
-                  <p className="text-sm">Esta sección estará disponible próximamente</p>
+                  <p className="text-sm mb-4">Esta sección estará disponible próximamente</p>
+                  <div className="text-sm text-left max-w-md mx-auto">
+                    <p className="font-medium mb-2">Próximas funcionalidades:</p>
+                    <ul className="space-y-1">
+                      <li>• Crear nuevas rondas de votación</li>
+                      <li>• Gestionar candidatos y sus datos</li>
+                      <li>• Configurar fechas de inicio y fin</li>
+                      <li>• Activar/desactivar votaciones</li>
+                      <li>• Monitoreo en tiempo real</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
