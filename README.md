@@ -169,16 +169,16 @@ vercel --prod
 ### ✅ Implementado
 
 - [x] Infraestructura base con Supabase
-- [x] Sistema de autenticación para admins
-- [x] **Registro de administradores con interfaz gráfica**
-- [x] **Protección de rutas con validación de roles**
-- [x] **Validación de formularios y manejo de errores**
-- [x] **Enrutamiento mejorado: `/` para votación, `/admin` para administración**
+- [x] **Sistema de autenticación simplificado**
+- [x] **Configuración automática del primer super administrador**
+- [x] **Gestión de usuarios integrada en el panel**
+- [x] **Roles claramente diferenciados (Super Admin / Admin)**
+- [x] **Script de reset completo de base de datos**
 - [x] Página de votación pública responsive
-- [x] Panel de administración con dashboard
+- [x] Panel de administración con dashboard mejorado
 - [x] Prevención de votos duplicados por dispositivo
 - [x] Base de datos con RLS y políticas de seguridad
-- [x] **Política de inserción corregida para registro de usuarios**
+- [x] **Triggers automáticos para asignación de roles**
 - [x] Configuración para Vercel
 
 ### 🔄 En Desarrollo
@@ -211,15 +211,15 @@ El sistema utiliza un **hash único** generado por:
 - ID de la ronda
 - Dirección IP (cuando esté disponible)
 
-### Autenticación
+### Autenticación Simplificada
 
-- **Registro automático** con formulario integrado en la aplicación
-- **Supabase Auth** con email/password
-- **Creación automática** de perfil en `public.users` con rol `super_admin`
-- **JWT tokens** para sesiones seguras
-- **Protección de rutas** basada en roles de usuario
-- **Validación de formularios** con mensajes de error claros
-- **Políticas RLS** a nivel de base de datos
+- **Configuración automática**: El primer usuario se convierte en super administrador automáticamente
+- **Email/contraseña estándar**: Sistema simple y confiable
+- **Gestión integrada**: Los super admins pueden crear otros usuarios desde el panel
+- **Roles claros**: Super Admin (gestión completa) vs Admin (operaciones)
+- **JWT tokens**: Sesiones seguras con Supabase Auth
+- **Políticas RLS**: Protección a nivel de base de datos
+- **Reset completo**: Script de limpieza para desarrollo/troubleshooting
 
 ## 🤝 Contribución
 
