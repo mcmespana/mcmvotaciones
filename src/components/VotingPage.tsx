@@ -11,6 +11,11 @@ interface Round {
   id: string;
   title: string;
   description: string;
+  team: 'ECE' | 'ECL';
+  current_round_number: number;
+  max_votes_per_round: number;
+  max_selected_candidates: number;
+  selected_candidates_count: number;
   is_active: boolean;
   is_closed: boolean;
 }
@@ -18,15 +23,21 @@ interface Round {
 interface Candidate {
   id: string;
   name: string;
+  surname: string;
+  location: string | null;
+  group_name: string | null;
+  age: number | null;
   description: string | null;
   image_url: string | null;
   order_index: number;
+  is_eliminated: boolean;
+  is_selected: boolean;
 }
 
 export function VotingPage() {
   const [activeRound, setActiveRound] = useState<Round | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -78,15 +89,28 @@ export function VotingPage() {
       const round = rounds[0];
       setActiveRound(round);
 
-      // Check if already voted
-      const alreadyVoted = hasVotedLocally(round.id);
-      setHasVoted(alreadyVoted);
+      // Check if already voted in current round
+      const deviceHash = generateDeviceHash(round.id);
+      const { data: existingVotes, error: voteCheckError } = await supabase
+        .from('votes')
+        .select('id')
+        .eq('round_id', round.id)
+        .eq('device_hash', deviceHash)
+        .eq('round_number', round.current_round_number);
 
-      // Load candidates for this round
+      if (voteCheckError) {
+        console.error('Error checking existing votes:', voteCheckError);
+      } else {
+        const alreadyVoted = (existingVotes && existingVotes.length > 0) || hasVotedLocally(round.id);
+        setHasVoted(alreadyVoted);
+      }
+
+      // Load active candidates for this round (not eliminated)
       const { data: candidateData, error: candidateError } = await supabase
         .from('candidates')
         .select('*')
         .eq('round_id', round.id)
+        .eq('is_eliminated', false)
         .order('order_index');
 
       if (candidateError) {
@@ -113,7 +137,7 @@ export function VotingPage() {
   };
 
   const submitVote = async () => {
-    if (!selectedCandidate || !activeRound) return;
+    if (selectedCandidates.length === 0 || !activeRound) return;
 
     try {
       setVoting(true);
@@ -121,13 +145,13 @@ export function VotingPage() {
       const deviceHash = generateDeviceHash(activeRound.id);
       const userAgent = navigator.userAgent;
       
-      // Check if this device has already voted
+      // Check if this device has already voted in this round
       const { data: existingVote, error: checkError } = await supabase
         .from('votes')
         .select('id')
         .eq('round_id', activeRound.id)
         .eq('device_hash', deviceHash)
-        .limit(1);
+        .eq('round_number', activeRound.current_round_number);
 
       if (checkError) {
         console.error('Error checking existing vote:', checkError);
@@ -150,16 +174,19 @@ export function VotingPage() {
         return;
       }
 
-      // Submit the vote
+      // Submit votes for each selected candidate
+      const votes = selectedCandidates.map(candidateId => ({
+        round_id: activeRound.id,
+        candidate_id: candidateId,
+        device_hash: deviceHash,
+        user_agent: userAgent,
+        round_number: activeRound.current_round_number,
+        ip_address: 'browser-client',
+      }));
+
       const { error: voteError } = await supabase
         .from('votes')
-        .insert({
-          round_id: activeRound.id,
-          candidate_id: selectedCandidate,
-          device_hash: deviceHash,
-          user_agent: userAgent,
-          ip_address: 'browser-client', // This would be filled by edge functions in production
-        });
+        .insert(votes);
 
       if (voteError) {
         console.error('Error submitting vote:', voteError);
@@ -177,7 +204,7 @@ export function VotingPage() {
       
       toast({
         title: '¡Voto registrado!',
-        description: 'Tu voto ha sido registrado correctamente',
+        description: `Has votado por ${selectedCandidates.length} candidato${selectedCandidates.length > 1 ? 's' : ''}`,
       });
 
     } catch (error) {
@@ -190,6 +217,31 @@ export function VotingPage() {
     } finally {
       setVoting(false);
     }
+  };
+
+  const toggleCandidateSelection = (candidateId: string) => {
+    if (!activeRound) return;
+
+    setSelectedCandidates(prev => {
+      const isSelected = prev.includes(candidateId);
+      
+      if (isSelected) {
+        // Remove candidate
+        return prev.filter(id => id !== candidateId);
+      } else {
+        // Add candidate if under limit
+        if (prev.length < activeRound.max_votes_per_round) {
+          return [...prev, candidateId];
+        } else {
+          toast({
+            title: 'Límite alcanzado',
+            description: `Solo puedes votar por ${activeRound.max_votes_per_round} candidato${activeRound.max_votes_per_round > 1 ? 's' : ''} en esta ronda`,
+            variant: 'destructive',
+          });
+          return prev;
+        }
+      }
+    });
   };
 
   if (loading) {
@@ -226,15 +278,6 @@ export function VotingPage() {
           <p className="text-muted-foreground mb-4">
             No hay votaciones disponibles en este momento.
           </p>
-          <div className="text-xs text-muted-foreground border-t pt-4">
-            <p>¿Eres administrador?</p>
-            <button
-              onClick={() => navigate('/admin')}
-              className="text-primary hover:text-primary/80 text-sm underline"
-            >
-              Acceder al panel de administración
-            </button>
-          </div>
         </Card>
       </div>
     );
@@ -249,7 +292,7 @@ export function VotingPage() {
           </div>
           <h1 className="text-xl font-bold mb-2">¡Gracias por votar!</h1>
           <p className="text-muted-foreground">
-            Tu voto ha sido registrado para la votación "{activeRound.title}".
+            Tu voto ha sido registrado para la votación "{activeRound?.title}".
           </p>
         </Card>
       </div>
@@ -262,8 +305,13 @@ export function VotingPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">{activeRound.title}</h1>
           {activeRound.description && (
-            <p className="text-muted-foreground text-lg">{activeRound.description}</p>
+            <p className="text-muted-foreground text-lg mb-4">{activeRound.description}</p>
           )}
+          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+            <span>🏆 {activeRound.team}</span>
+            <span>🔄 Ronda {activeRound.current_round_number}</span>
+            <span>📊 Máximo {activeRound.max_votes_per_round} voto{activeRound.max_votes_per_round > 1 ? 's' : ''}</span>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -271,23 +319,28 @@ export function VotingPage() {
             <Card 
               key={candidate.id}
               className={`cursor-pointer transition-all hover:border-primary/50 ${
-                selectedCandidate === candidate.id 
+                selectedCandidates.includes(candidate.id)
                   ? 'border-primary ring-2 ring-primary/20' 
                   : ''
               }`}
-              onClick={() => setSelectedCandidate(candidate.id)}
+              onClick={() => toggleCandidateSelection(candidate.id)}
             >
               <CardHeader className="pb-3">
                 {candidate.image_url && (
                   <div className="aspect-square overflow-hidden rounded-lg mb-3">
                     <img 
                       src={candidate.image_url} 
-                      alt={candidate.name}
+                      alt={`${candidate.name} ${candidate.surname}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 )}
-                <CardTitle className="text-lg">{candidate.name}</CardTitle>
+                <CardTitle className="text-lg">{candidate.name} {candidate.surname}</CardTitle>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {candidate.age && <div>🎂 {candidate.age} años</div>}
+                  {candidate.location && <div>📍 {candidate.location}</div>}
+                  {candidate.group_name && <div>👥 {candidate.group_name}</div>}
+                </div>
               </CardHeader>
               {candidate.description && (
                 <CardContent>
@@ -301,10 +354,19 @@ export function VotingPage() {
         </div>
 
         <div className="text-center">
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground">
+              {selectedCandidates.length > 0 ? (
+                `Has seleccionado ${selectedCandidates.length} de ${activeRound.max_votes_per_round} candidato${activeRound.max_votes_per_round > 1 ? 's' : ''}`
+              ) : (
+                `Selecciona entre 1 y ${activeRound.max_votes_per_round} candidato${activeRound.max_votes_per_round > 1 ? 's' : ''}`
+              )}
+            </p>
+          </div>
           <Button 
             size="lg"
             onClick={submitVote}
-            disabled={!selectedCandidate || voting}
+            disabled={selectedCandidates.length === 0 || voting}
             className="min-w-32"
           >
             {voting ? (
@@ -315,13 +377,16 @@ export function VotingPage() {
             ) : (
               <>
                 <Vote className="w-4 h-4 mr-2" />
-                Votar
+                Votar por {selectedCandidates.length} candidato{selectedCandidates.length !== 1 ? 's' : ''}
               </>
             )}
           </Button>
-          {selectedCandidate && (
+          {selectedCandidates.length > 0 && (
             <p className="text-sm text-muted-foreground mt-2">
-              Has seleccionado: {candidates.find(c => c.id === selectedCandidate)?.name}
+              Has seleccionado: {selectedCandidates.map(id => {
+                const candidate = candidates.find(c => c.id === id);
+                return `${candidate?.name} ${candidate?.surname}`;
+              }).join(', ')}
             </p>
           )}
         </div>
