@@ -133,7 +133,7 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              ¿No tienes una cuenta?
+              ¿Primera vez en el sistema?
             </p>
             <Button 
               variant="ghost" 
@@ -141,7 +141,7 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
               disabled={loading}
               className="text-primary hover:text-primary/80"
             >
-              Registrar administrador
+              Configurar primer administrador
             </Button>
           </div>
           

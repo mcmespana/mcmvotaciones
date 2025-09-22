@@ -80,8 +80,8 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         });
       } else {
         toast({
-          title: 'Registro exitoso',
-          description: 'Administrador registrado correctamente. Ya puedes iniciar sesión.',
+          title: 'Configuración completada',
+          description: 'Super administrador creado correctamente. Ya puedes iniciar sesión.',
         });
         // Switch to login after successful registration
         onSwitchToLogin();
@@ -105,9 +105,9 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Registro de Administrador</CardTitle>
+          <CardTitle className="text-2xl">Configuración Inicial</CardTitle>
           <CardDescription>
-            Crea una cuenta para acceder al panel de administración
+            Crea la primera cuenta de super administrador del sistema
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,7 +203,7 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
                   Registrando...
                 </>
               ) : (
-                'Registrar Administrador'
+                'Crear Super Administrador'
               )}
             </Button>
           </form>

@@ -95,6 +95,15 @@ CREATE POLICY "Admins can view all users" ON public.users
     )
   );
 
+-- Super admins can create and manage other admin users
+CREATE POLICY "Super admins can manage users" ON public.users
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE id = auth.uid() AND role = 'super_admin'
+    )
+  );
+
 -- Rounds policies
 CREATE POLICY "Anyone can view active rounds" ON public.rounds
   FOR SELECT USING (is_active = true AND is_closed = false);
@@ -199,8 +208,31 @@ CREATE TRIGGER update_candidates_updated_at
 -- INSERT INTO public.rounds (title, description, year, team, expected_voters, is_active) 
 -- VALUES ('Votación de Prueba 2024', 'Una votación de ejemplo para testing', 2024, 'MCM Team', 100, true);
 
--- Note: To create your first admin user, you'll need to:
--- 1. Sign up through the Supabase Auth interface first
--- 2. Then run: INSERT INTO public.users (id, email, name, role) VALUES (auth.uid(), 'your-email@example.com', 'Your Name', 'super_admin');
+-- Simplified admin setup:
+-- The first registered user automatically becomes super_admin
+-- Super admins can then create additional admin users through the interface
+
+-- Function to automatically assign super_admin role to the first user
+CREATE OR REPLACE FUNCTION auto_assign_first_super_admin()
+RETURNS TRIGGER AS $$
+DECLARE
+  user_count INTEGER;
+BEGIN
+  -- Count existing users
+  SELECT COUNT(*) INTO user_count FROM public.users;
+  
+  -- If this is the first user, make them super_admin
+  IF user_count = 0 THEN
+    NEW.role = 'super_admin';
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically assign super_admin role to first user
+CREATE TRIGGER auto_assign_first_super_admin_trigger
+  BEFORE INSERT ON public.users
+  FOR EACH ROW EXECUTE FUNCTION auto_assign_first_super_admin();
 
 

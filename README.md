@@ -81,32 +81,38 @@ npm run preview
 
 ### Crear Primer Administrador
 
-La aplicación ahora incluye un sistema completo de registro y autenticación:
+El sistema ha sido simplificado para facilitar la configuración inicial:
 
-1. **Registro automático**: Accede al panel de administración (`/admin`) y utiliza el formulario de registro
-2. **Asignación automática de rol**: Los nuevos administradores reciben automáticamente el rol `super_admin`
-3. **Validación integrada**: El sistema valida contraseñas, emails y campos requeridos
+1. **Configuración automática**: Accede al panel de administración (`/admin`) 
+2. **Primer usuario**: El primer usuario registrado se convierte automáticamente en super administrador
+3. **Gestión de usuarios**: Los super administradores pueden crear usuarios adicionales desde el panel
+4. **Login simple**: Sistema de email/contraseña estándar
 
-#### Método manual (alternativo):
-1. Registra un usuario en Supabase Auth
-2. Ejecuta en SQL Editor:
-```sql
-INSERT INTO public.users (id, email, name, role) 
-VALUES (auth.uid(), 'tu-email@ejemplo.com', 'Tu Nombre', 'super_admin');
-```
+#### Pasos para configurar:
+1. Accede a `/admin`
+2. Haz clic en "Configurar primer administrador"
+3. Completa el formulario de registro
+4. ¡Listo! Ya puedes gestionar el sistema
+
+#### Gestión de usuarios adicionales:
+- Los super administradores pueden crear nuevos usuarios desde la pestaña "Usuarios" del panel
+- Pueden asignar roles de administrador o super administrador
+- Interfaz simplificada para gestión de equipos
 
 ### Resetear Base de Datos
 
-Si necesitas limpiar completamente la base de datos:
+Si necesitas limpiar completamente la base de datos, ahora tienes un script especializado:
 
 1. Ve al SQL Editor de tu proyecto Supabase
 2. Ejecuta el script `database-reset.sql`
 3. ⚠️ **ADVERTENCIA**: Esto eliminará TODOS los datos existentes
 4. Útil para desarrollo o cuando hay problemas con el esquema
+5. Después del reset, vuelve a ejecutar `supabase-schema.sql` para recrear las tablas
 
 ```bash
-# El script está en la raíz del proyecto
-cat database-reset.sql
+# Los scripts están en la raíz del proyecto
+cat database-reset.sql    # Para limpiar todo
+cat supabase-schema.sql   # Para recrear el esquema
 ```
 1. Registra un usuario en Supabase Auth
 2. Ejecuta en SQL Editor:
