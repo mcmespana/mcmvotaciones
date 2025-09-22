@@ -8,21 +8,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Shield } from 'lucide-react';
 
-export function AppRouter() {
+interface AppRouterProps {
+  isAdminRoute?: boolean;
+}
+
+export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
   const { user, loading, isAdmin } = useAuth();
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(isAdminRoute);
 
   useEffect(() => {
-    // Check if we're in admin mode based on URL params or local storage
-    const urlParams = new URLSearchParams(window.location.search);
-    const adminParam = urlParams.get('admin');
-    const savedMode = localStorage.getItem('adminMode');
-    
-    if (adminParam === 'true' || savedMode === 'true') {
+    // Set admin mode based on route or URL params for backward compatibility
+    if (isAdminRoute) {
       setIsAdminMode(true);
       localStorage.setItem('adminMode', 'true');
+    } else {
+      // Check URL params for backward compatibility
+      const urlParams = new URLSearchParams(window.location.search);
+      const adminParam = urlParams.get('admin');
+      
+      if (adminParam === 'true') {
+        setIsAdminMode(true);
+        localStorage.setItem('adminMode', 'true');
+      } else {
+        // If not admin route and no admin param, clear admin mode
+        setIsAdminMode(false);
+        localStorage.removeItem('adminMode');
+      }
     }
-  }, []);
+  }, [isAdminRoute]);
 
   // Show demo page if Supabase is not configured
   if (!isSupabaseConfigured) {
