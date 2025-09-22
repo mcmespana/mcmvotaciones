@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { VotingPage } from './VotingPage';
-import { LoginPage } from './LoginPage';
+import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
 import { DemoPage } from './DemoPage';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { Shield } from 'lucide-react';
 
 export function AppRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
@@ -42,7 +43,47 @@ export function AppRouter() {
 
   // Admin mode logic
   if (isAdminMode) {
-    return user ? <AdminDashboard /> : <LoginPage />;
+    // User is not authenticated
+    if (!user) {
+      return <AuthForm />;
+    }
+    
+    // User is authenticated but not an admin
+    if (!isAdmin) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 rounded-full flex items-center justify-center">
+                <Shield className="w-8 h-8 text-destructive" />
+              </div>
+              <CardTitle className="text-2xl">Acceso Denegado</CardTitle>
+              <CardDescription>
+                No tienes permisos para acceder al panel de administración
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                Solo los administradores pueden acceder a esta sección.
+              </p>
+              <button
+                onClick={() => {
+                  setIsAdminMode(false);
+                  localStorage.removeItem('adminMode');
+                  window.location.href = '/';
+                }}
+                className="text-primary hover:text-primary/80 text-sm underline"
+              >
+                Volver a la página principal
+              </button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    
+    // User is authenticated and is an admin
+    return <AdminDashboard />;
   }
 
   // Public voting page
