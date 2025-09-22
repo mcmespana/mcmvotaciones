@@ -110,6 +110,170 @@ export function VotingManagement() {
   const [isEditingRound, setIsEditingRound] = useState(false);
   const [showResults, setShowResults] = useState(false);
   
+  // Functions for multi-round voting
+  const calculateCurrentMaxVotes = (round: Round) => {
+    const activeCount = round.max_selected_candidates - round.selected_candidates_count;
+    if (activeCount <= 1) return 1;
+    if (activeCount <= 2) return 2;
+    return 3;
+  };
+
+  const loadRoundResults = async (roundId: string, roundNumber: number) => {
+    try {
+      const { data, error } = await supabase
+        .from('round_results')
+        .select(`
+          *,
+          candidate:candidates (
+            id,
+            name,
+            surname,
+            location,
+            group_name,
+            age,
+            image_url,
+            is_eliminated,
+            is_selected
+          )
+        `)
+        .eq('round_id', roundId)
+        .eq('round_number', roundNumber)
+        .order('vote_count', { ascending: false });
+
+      if (error) throw error;
+      
+      setRoundResults(data || []);
+    } catch (error) {
+      console.error('Error loading round results:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar los resultados',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const nextRound = async (round: RoundWithCandidates) => {
+    try {
+      // Calculate current round results
+      await supabase.rpc('calculate_round_results', {
+        round_id: round.id,
+        round_number: round.current_round_number
+      });
+
+      // Load and show results
+      await loadRoundResults(round.id, round.current_round_number);
+      setShowResults(true);
+      
+      toast({
+        title: 'Resultados calculados',
+        description: `Resultados de la ronda ${round.current_round_number} listos para mostrar`,
+      });
+    } catch (error) {
+      console.error('Error calculating round results:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron calcular los resultados',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const showResultsToUsers = async (round: RoundWithCandidates) => {
+    try {
+      // Make results visible to users
+      await supabase
+        .from('round_results')
+        .update({ is_visible: true })
+        .eq('round_id', round.id)
+        .eq('round_number', round.current_round_number);
+
+      toast({
+        title: 'Resultados publicados',
+        description: 'Los usuarios pueden ver los resultados de esta ronda',
+      });
+    } catch (error) {
+      console.error('Error publishing results:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron publicar los resultados',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const hideResultsFromUsers = async (round: RoundWithCandidates) => {
+    try {
+      await supabase
+        .from('round_results')
+        .update({ is_visible: false })
+        .eq('round_id', round.id)
+        .eq('round_number', round.current_round_number);
+
+      toast({
+        title: 'Resultados ocultados',
+        description: 'Los resultados han sido ocultados de los usuarios',
+      });
+    } catch (error) {
+      console.error('Error hiding results:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron ocultar los resultados',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const startNextRound = async (round: RoundWithCandidates) => {
+    try {
+      // Hide current results
+      await hideResultsFromUsers(round);
+      
+      // Get candidates with lowest votes to eliminate
+      const sortedResults = roundResults.sort((a, b) => a.vote_count - b.vote_count);
+      
+      // Find candidates with 0 votes or those with majority elimination
+      const candidatesToEliminate = sortedResults.filter(result => 
+        result.vote_count === 0 || 
+        (roundResults.length > round.max_selected_candidates && result.vote_count < Math.max(...roundResults.map(r => r.vote_count)) / 2)
+      );
+      
+      // Eliminate candidates
+      if (candidatesToEliminate.length > 0) {
+        await supabase
+          .from('candidates')
+          .update({ 
+            is_eliminated: true, 
+            elimination_round: round.current_round_number 
+          })
+          .in('id', candidatesToEliminate.map(c => c.candidate_id));
+      }
+
+      // Update round to next round number
+      const updates: Partial<Round> = {
+        current_round_number: round.current_round_number + 1,
+        max_votes_per_round: calculateCurrentMaxVotes(round),
+        updated_at: new Date().toISOString()
+      };
+
+      await updateRound(round.id, updates);
+      setShowResults(false);
+      setRoundResults([]);
+      
+      toast({
+        title: 'Nueva ronda iniciada',
+        description: `Ronda ${round.current_round_number + 1} lista para votar`,
+      });
+    } catch (error) {
+      console.error('Error starting next round:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo iniciar la siguiente ronda',
+        variant: 'destructive',
+      });
+    }
+  };
+  
   const [newRoundForm, setNewRoundForm] = useState<NewRoundForm>({
     title: '',
     description: '',
@@ -847,10 +1011,16 @@ export function VotingManagement() {
                 {rounds.filter(r => r.is_active).map((round) => (
                   <div key={round.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">{round.title}</h4>
+                      <div>
+                        <h4 className="font-medium">{round.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ronda {round.current_round_number} • {round.team} • Máximo {round.max_votes_per_round} votos por usuario
+                        </p>
+                      </div>
                       <Badge variant="default">Activa</Badge>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    
+                    <div className="grid grid-cols-4 gap-4 text-sm mb-4">
                       <div>
                         <span className="text-muted-foreground">Votos actuales:</span>
                         <p className="text-2xl font-bold">{round.vote_count || 0}</p>
@@ -868,13 +1038,88 @@ export function VotingManagement() {
                           }
                         </p>
                       </div>
+                      <div>
+                        <span className="text-muted-foreground">Seleccionados:</span>
+                        <p className="text-2xl font-bold">{round.selected_candidates_count}/{round.max_selected_candidates}</p>
+                      </div>
                     </div>
+
+                    {/* Round Results Display */}
+                    {showResults && roundResults.length > 0 && (
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                        <h5 className="font-medium mb-3">Resultados Ronda {round.current_round_number}</h5>
+                        <div className="space-y-2">
+                          {roundResults
+                            .filter(result => result.vote_count > 0)
+                            .sort((a, b) => b.vote_count - a.vote_count)
+                            .map((result) => (
+                            <div key={result.candidate_id} className="flex items-center justify-between p-2 bg-white rounded border">
+                              <div>
+                                <span className="font-medium">
+                                  {result.candidate?.name} {result.candidate?.surname}
+                                </span>
+                                {result.candidate?.location && (
+                                  <span className="text-sm text-muted-foreground ml-2">
+                                    • {result.candidate.location}
+                                  </span>
+                                )}
+                              </div>
+                              <Badge variant="secondary">{result.vote_count} votos</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Round Management Controls */}
                     {!round.is_closed && (
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" size="sm" onClick={() => toggleRoundStatus(round)}>
-                          <Pause className="w-4 h-4 mr-2" />
-                          Pausar
-                        </Button>
+                      <div className="flex flex-wrap gap-2">
+                        {!showResults ? (
+                          <>
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              onClick={() => nextRound(round)}
+                            >
+                              <ChevronRight className="w-4 h-4 mr-2" />
+                              Finalizar Ronda {round.current_round_number}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => toggleRoundStatus(round)}>
+                              <Pause className="w-4 h-4 mr-2" />
+                              Pausar
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button 
+                              variant="secondary" 
+                              size="sm" 
+                              onClick={() => showResultsToUsers(round)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Mostrar Resultados
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => hideResultsFromUsers(round)}
+                            >
+                              <EyeOff className="w-4 h-4 mr-2" />
+                              Ocultar Resultados
+                            </Button>
+                            {round.selected_candidates_count < round.max_selected_candidates && (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                onClick={() => startNextRound(round)}
+                              >
+                                <Play className="w-4 h-4 mr-2" />
+                                Iniciar Ronda {round.current_round_number + 1}
+                              </Button>
+                            )}
+                          </>
+                        )}
+                        
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm">

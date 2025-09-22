@@ -226,6 +226,15 @@ export function VotingPage() {
           <p className="text-muted-foreground mb-4">
             No hay votaciones disponibles en este momento.
           </p>
+          <div className="text-xs text-muted-foreground border-t pt-4">
+            <p>¿Eres administrador?</p>
+            <button
+              onClick={() => navigate('/admin')}
+              className="text-primary hover:text-primary/80 text-sm underline"
+            >
+              Acceder al panel de administración
+            </button>
+          </div>
         </Card>
       </div>
     );
