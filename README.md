@@ -146,10 +146,12 @@ vercel --prod
 - [x] **Registro de administradores con interfaz gráfica**
 - [x] **Protección de rutas con validación de roles**
 - [x] **Validación de formularios y manejo de errores**
+- [x] **Enrutamiento mejorado: `/` para votación, `/admin` para administración**
 - [x] Página de votación pública responsive
 - [x] Panel de administración con dashboard
 - [x] Prevención de votos duplicados por dispositivo
 - [x] Base de datos con RLS y políticas de seguridad
+- [x] **Política de inserción corregida para registro de usuarios**
 - [x] Configuración para Vercel
 
 ### 🔄 En Desarrollo
