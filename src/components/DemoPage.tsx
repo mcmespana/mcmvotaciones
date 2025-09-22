@@ -40,6 +40,11 @@ export function DemoPage() {
             <p className="mt-4 text-sm">
               Ver <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">README.md</code> para instrucciones detalladas.
             </p>
+            <div className="mt-4">
+              <Button asChild>
+                <a href="/admin/demo">Ver Demo del Panel de Admin</a>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

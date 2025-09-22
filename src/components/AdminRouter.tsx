@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
 import { DemoPage } from './DemoPage';
+import { DemoAdminDashboard } from './DemoAdminDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Shield } from 'lucide-react';
@@ -27,7 +28,12 @@ export function AdminRouter() {
 
   // Show demo page if Supabase is not configured
   if (!isSupabaseConfigured) {
-    return <DemoPage />;
+    return (
+      <Routes>
+        <Route path="/demo" element={<DemoAdminDashboard />} />
+        <Route path="/*" element={<DemoPage />} />
+      </Routes>
+    );
   }
 
   // Show loading spinner while checking auth

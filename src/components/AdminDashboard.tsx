@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { UserManagement } from './UserManagement';
+import { VotingManagement } from './VotingManagement';
 import { 
   Users, 
   Vote, 
@@ -431,28 +432,7 @@ export function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="votaciones" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Votaciones</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Vote className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Funcionalidad de gestión de votaciones</p>
-                  <p className="text-sm mb-4">Esta sección estará disponible próximamente</p>
-                  <div className="text-sm text-left max-w-md mx-auto">
-                    <p className="font-medium mb-2">Próximas funcionalidades:</p>
-                    <ul className="space-y-1">
-                      <li>• Crear nuevas rondas de votación</li>
-                      <li>• Gestionar candidatos y sus datos</li>
-                      <li>• Configurar fechas de inicio y fin</li>
-                      <li>• Activar/desactivar votaciones</li>
-                      <li>• Monitoreo en tiempo real</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <VotingManagement />
           </TabsContent>
 
           {isSuperAdmin && (
