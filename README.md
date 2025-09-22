@@ -74,7 +74,8 @@ npm run preview
 
 ### Panel de Administración
 
-- Accede con `?admin=true` (ej: `https://tu-app.vercel.app?admin=true`)
+- Accede directamente con `/admin` (ej: `https://tu-app.vercel.app/admin`)
+- Compatible con el formato anterior `?admin=true` (redirige automáticamente)
 - Inicia sesión con credenciales de administrador
 - Gestiona rondas, candidatos y consulta resultados
 
@@ -82,11 +83,31 @@ npm run preview
 
 La aplicación ahora incluye un sistema completo de registro y autenticación:
 
-1. **Registro automático**: Accede al panel de administración (`?admin=true`) y utiliza el formulario de registro
+1. **Registro automático**: Accede al panel de administración (`/admin`) y utiliza el formulario de registro
 2. **Asignación automática de rol**: Los nuevos administradores reciben automáticamente el rol `super_admin`
 3. **Validación integrada**: El sistema valida contraseñas, emails y campos requeridos
 
 #### Método manual (alternativo):
+1. Registra un usuario en Supabase Auth
+2. Ejecuta en SQL Editor:
+```sql
+INSERT INTO public.users (id, email, name, role) 
+VALUES (auth.uid(), 'tu-email@ejemplo.com', 'Tu Nombre', 'super_admin');
+```
+
+### Resetear Base de Datos
+
+Si necesitas limpiar completamente la base de datos:
+
+1. Ve al SQL Editor de tu proyecto Supabase
+2. Ejecuta el script `database-reset.sql`
+3. ⚠️ **ADVERTENCIA**: Esto eliminará TODOS los datos existentes
+4. Útil para desarrollo o cuando hay problemas con el esquema
+
+```bash
+# El script está en la raíz del proyecto
+cat database-reset.sql
+```
 1. Registra un usuario en Supabase Auth
 2. Ejecuta en SQL Editor:
 ```sql
