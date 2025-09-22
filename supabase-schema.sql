@@ -202,3 +202,5 @@ CREATE TRIGGER update_candidates_updated_at
 -- Note: To create your first admin user, you'll need to:
 -- 1. Sign up through the Supabase Auth interface first
 -- 2. Then run: INSERT INTO public.users (id, email, name, role) VALUES (auth.uid(), 'your-email@example.com', 'Your Name', 'super_admin');
+
+
