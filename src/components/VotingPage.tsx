@@ -1,5 +1,6 @@
 import { Vote } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateDeviceHash, hasVotedLocally, markAsVoted, isVotingAvailable } from '@/lib/device';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,10 +31,19 @@ export function VotingPage() {
   const [voting, setVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Handle backward compatibility for ?admin=true parameter
+    const adminParam = searchParams.get('admin');
+    if (adminParam === 'true') {
+      navigate('/admin', { replace: true });
+      return;
+    }
+    
     loadActiveRound();
-  }, []);
+  }, [navigate, searchParams]);
 
   const loadActiveRound = async () => {
     try {
@@ -218,7 +228,12 @@ export function VotingPage() {
           </p>
           <div className="text-xs text-muted-foreground border-t pt-4">
             <p>¿Eres administrador?</p>
-            <p>Accede al panel con <code className="bg-muted px-1 rounded">?admin=true</code></p>
+            <button
+              onClick={() => navigate('/admin')}
+              className="text-primary hover:text-primary/80 text-sm underline"
+            >
+              Acceder al panel de administración
+            </button>
           </div>
         </Card>
       </div>

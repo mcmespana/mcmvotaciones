@@ -58,11 +58,24 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
       const { error } = await signUp(email, password, name);
       
       if (error) {
+        let errorMessage = error.message;
+        
+        // Provide more specific error messages in Spanish
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'El usuario ya está registrado';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'El formato del email no es válido';
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+        } else if (error.message.includes('Failed to create user profile')) {
+          errorMessage = 'Error al crear el perfil de usuario. Verifica la configuración de la base de datos.';
+        } else if (error.message.includes('Supabase not configured')) {
+          errorMessage = 'La base de datos no está configurada correctamente';
+        }
+        
         toast({
           title: 'Error de registro',
-          description: error.message === 'User already registered' 
-            ? 'El usuario ya está registrado' 
-            : error.message,
+          description: errorMessage,
           variant: 'destructive',
         });
       } else {
@@ -74,6 +87,7 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         onSwitchToLogin();
       }
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: 'Error',
         description: 'Error inesperado durante el registro',

@@ -2,11 +2,20 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'super_admin';
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  userProfile: any | null;
+  userProfile: UserProfile | null;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error?: AuthError }>;
@@ -19,7 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<any | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Computed property to check if user is admin
@@ -119,6 +128,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // If signup was successful and we have a user, create their profile
     if (!error && data.user) {
       try {
+        // Wait a bit for the auth session to be properly established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         const { error: profileError } = await supabase
           .from('users')
           .insert({
@@ -130,11 +142,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (profileError) {
           console.error('Error creating user profile:', profileError);
-          // Note: We could optionally delete the auth user here if profile creation fails
-          // but for now we'll just log the error
+          // Return a more specific error for profile creation
+          return { 
+            error: new Error(`Failed to create user profile: ${profileError.message}`) as AuthError 
+          };
         }
       } catch (profileError) {
         console.error('Unexpected error creating user profile:', profileError);
+        return { 
+          error: new Error('Unexpected error creating user profile') as AuthError 
+        };
       }
     }
     
