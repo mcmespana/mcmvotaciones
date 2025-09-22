@@ -26,7 +26,7 @@ interface DashboardStats {
 }
 
 export function AdminDashboard() {
-  const { user, userProfile, isSuperAdmin, signOut } = useAuth();
+  const { adminUser, isSuperAdmin, signOut } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({
     totalRounds: 0,
@@ -126,7 +126,7 @@ export function AdminDashboard() {
           <div>
             <h1 className="text-2xl font-bold">Panel de Administración</h1>
             <p className="text-sm text-muted-foreground">
-              Bienvenido, {userProfile?.name || user?.email} ({userProfile?.role === 'super_admin' ? 'Super Admin' : 'Admin'})
+              Bienvenido, {adminUser?.name} ({adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'})
             </p>
           </div>
           <Button variant="outline" onClick={handleSignOut}>

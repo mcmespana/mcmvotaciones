@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
-interface UserProfile {
+interface AdminUser {
   id: string;
+  username: string;
   email: string;
   name: string;
   role: 'admin' | 'super_admin';
@@ -11,239 +11,132 @@ interface UserProfile {
   updated_at: string;
 }
 
+interface AuthError {
+  message: string;
+}
+
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  adminUser: AdminUser | null;
   loading: boolean;
-  userProfile: UserProfile | null;
   isAdmin: boolean;
   isSuperAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: AuthError }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: AuthError }>;
+  signIn: (username: string, password: string) => Promise<{ error?: AuthError }>;
   signOut: () => Promise<{ error?: AuthError }>;
-  resetPassword: (email: string) => Promise<{ error?: AuthError }>;
-  createAdminUser: (email: string, password: string, name: string, role: 'admin' | 'super_admin') => Promise<{ error?: AuthError }>;
+  createAdminUser: (username: string, password: string, name: string, email: string, role: 'admin' | 'super_admin') => Promise<{ error?: AuthError }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Computed property to check if user is admin
-  const isAdmin = userProfile?.role === 'super_admin' || userProfile?.role === 'admin';
-  const isSuperAdmin = userProfile?.role === 'super_admin';
+  // Computed properties to check if user is admin
+  const isAdmin = adminUser?.role === 'super_admin' || adminUser?.role === 'admin';
+  const isSuperAdmin = adminUser?.role === 'super_admin';
 
-  // Function to load user profile from public.users table
-  const loadUserProfile = async (userId: string) => {
-    if (!isSupabaseConfigured) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (!error && data) {
-        setUserProfile(data);
-      } else {
-        setUserProfile(null);
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-      setUserProfile(null);
-    }
-  };
-
+  // Load admin user from localStorage on init
   useEffect(() => {
-    // Skip auth setup if Supabase is not configured
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
+    const savedUser = localStorage.getItem('mcm_admin_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        setAdminUser(user);
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('mcm_admin_user');
+      }
     }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        loadUserProfile(session.user.id);
-      } else {
-        setUserProfile(null);
-      }
-      
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await loadUserProfile(session.user.id);
-      } else {
-        setUserProfile(null);
-      }
-      
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    setLoading(false);
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
     if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase not configured') as AuthError };
-    }
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
-  };
-
-  const signUp = async (email: string, password: string, name: string) => {
-    if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase not configured') as AuthError };
-    }
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-        },
-      },
-    });
-
-    // If signup was successful and we have a user, create their profile
-    if (!error && data.user) {
-      try {
-        // Wait a bit for the auth session to be properly established
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: email,
-            name: name,
-            // Let the database trigger assign the role automatically
-            // First user becomes super_admin, others become admin by default
-          });
-
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          // Return a more specific error for profile creation
-          return { 
-            error: new Error(`Failed to create user profile: ${profileError.message}`) as AuthError 
-          };
-        }
-      } catch (profileError) {
-        console.error('Unexpected error creating user profile:', profileError);
-        return { 
-          error: new Error('Unexpected error creating user profile') as AuthError 
-        };
-      }
-    }
-    
-    return { error };
-  };
-
-  const signOut = async () => {
-    if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase not configured') as AuthError };
-    }
-    
-    const { error } = await supabase.auth.signOut();
-    return { error };
-  };
-
-  const resetPassword = async (email: string) => {
-    if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase not configured') as AuthError };
-    }
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    return { error };
-  };
-
-  const createAdminUser = async (email: string, password: string, name: string, role: 'admin' | 'super_admin') => {
-    if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase not configured') as AuthError };
-    }
-
-    // Only super admins can create other admin users
-    if (!isSuperAdmin) {
-      return { error: new Error('Access denied. Only super admins can create admin users.') as AuthError };
+      return { error: { message: 'Supabase not configured' } };
     }
 
     try {
-      // For simplicity, we'll use the regular signup method and manually insert the user profile
-      // In production, you might want to use the service role key for admin user creation
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name }
-        }
+      // Call the verify_password function to authenticate
+      const { data, error } = await supabase.rpc('authenticate_admin', {
+        input_username: username,
+        input_password: password
       });
 
       if (error) {
-        return { error };
+        console.error('Authentication error:', error);
+        return { error: { message: 'Error de autenticación' } };
       }
 
-      if (data.user) {
-        // Create the user profile with specific role
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: email,
-            name: name,
-            role: role
-          });
+      if (!data || data.length === 0) {
+        return { error: { message: 'Credenciales incorrectas' } };
+      }
 
-        if (profileError) {
-          console.error('Error creating admin user profile:', profileError);
-          return { 
-            error: new Error(`Failed to create admin user profile: ${profileError.message}`) as AuthError 
-          };
+      const user = data[0];
+      setAdminUser(user);
+      localStorage.setItem('mcm_admin_user', JSON.stringify(user));
+      
+      return { error: undefined };
+    } catch (error) {
+      console.error('Sign in error:', error);
+      return { error: { message: 'Error inesperado al iniciar sesión' } };
+    }
+  };
+
+  const signOut = async () => {
+    setAdminUser(null);
+    localStorage.removeItem('mcm_admin_user');
+    return { error: undefined };
+  };
+
+  const createAdminUser = async (username: string, password: string, name: string, email: string, role: 'admin' | 'super_admin') => {
+    if (!isSupabaseConfigured) {
+      return { error: { message: 'Supabase not configured' } };
+    }
+
+    // Only super admins can create other admin users (except for the first user)
+    if (adminUser && !isSuperAdmin) {
+      return { error: { message: 'Access denied. Only super admins can create admin users.' } };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .insert({
+          username,
+          password_hash: password, // Will be hashed by trigger
+          name,
+          email,
+          role
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating admin user:', error);
+        if (error.code === '23505') {
+          if (error.constraint?.includes('username')) {
+            return { error: { message: 'El nombre de usuario ya existe' } };
+          } else if (error.constraint?.includes('email')) {
+            return { error: { message: 'El email ya existe' } };
+          }
         }
+        return { error: { message: `Error creating admin user: ${error.message}` } };
       }
 
       return { error: undefined };
     } catch (error) {
       console.error('Error creating admin user:', error);
-      return { 
-        error: new Error('Unexpected error creating admin user') as AuthError 
-      };
+      return { error: { message: 'Unexpected error creating admin user' } };
     }
   };
 
   const value = {
-    user,
-    session,
-    userProfile,
+    adminUser,
     isAdmin,
     isSuperAdmin,
     loading,
     signIn,
-    signUp,
     signOut,
-    resetPassword,
     createAdminUser,
   };
 

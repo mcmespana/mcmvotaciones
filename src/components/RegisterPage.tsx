@@ -13,19 +13,20 @@ interface RegisterPageProps {
 
 export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { createAdminUser } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !confirmPassword || !name) {
+    if (!email || !username || !password || !confirmPassword || !name) {
       toast({
         title: 'Campos requeridos',
         description: 'Por favor, completa todos los campos',
@@ -55,27 +56,12 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
     setLoading(true);
     
     try {
-      const { error } = await signUp(email, password, name);
+      const { error } = await createAdminUser(username, password, name, email, 'super_admin');
       
       if (error) {
-        let errorMessage = error.message;
-        
-        // Provide more specific error messages in Spanish
-        if (error.message.includes('User already registered')) {
-          errorMessage = 'El usuario ya está registrado';
-        } else if (error.message.includes('Invalid email')) {
-          errorMessage = 'El formato del email no es válido';
-        } else if (error.message.includes('Password should be at least')) {
-          errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-        } else if (error.message.includes('Failed to create user profile')) {
-          errorMessage = 'Error al crear el perfil de usuario. Verifica la configuración de la base de datos.';
-        } else if (error.message.includes('Supabase not configured')) {
-          errorMessage = 'La base de datos no está configurada correctamente';
-        }
-        
         toast({
           title: 'Error de registro',
-          description: errorMessage,
+          description: error.message,
           variant: 'destructive',
         });
       } else {
@@ -122,6 +108,22 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
                   placeholder="Tu nombre completo"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  className="pl-10"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username">Nombre de usuario</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="admin"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="pl-10"
                   disabled={loading}
                 />

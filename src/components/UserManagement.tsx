@@ -11,6 +11,7 @@ import { Users, UserPlus, Shield, Mail, User, Lock } from 'lucide-react';
 
 interface AdminUser {
   id: string;
+  username: string;
   email: string;
   name: string;
   role: 'admin' | 'super_admin';
@@ -23,6 +24,7 @@ export function UserManagement() {
   const [creating, setCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newUser, setNewUser] = useState({
+    username: '',
     email: '',
     password: '',
     name: '',
@@ -35,8 +37,8 @@ export function UserManagement() {
   const loadUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
+        .from('admin_users')
+        .select('id, username, email, name, role, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -63,7 +65,7 @@ export function UserManagement() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newUser.email || !newUser.password || !newUser.name) {
+    if (!newUser.username || !newUser.email || !newUser.password || !newUser.name) {
       toast({
         title: 'Campos requeridos',
         description: 'Por favor, completa todos los campos',
@@ -85,9 +87,10 @@ export function UserManagement() {
 
     try {
       const { error } = await createAdminUser(
-        newUser.email,
+        newUser.username,
         newUser.password,
         newUser.name,
+        newUser.email,
         newUser.role
       );
 
@@ -102,7 +105,7 @@ export function UserManagement() {
           title: 'Usuario creado',
           description: `${newUser.name} ha sido creado correctamente`,
         });
-        setNewUser({ email: '', password: '', name: '', role: 'admin' });
+        setNewUser({ username: '', email: '', password: '', name: '', role: 'admin' });
         setShowCreateForm(false);
         loadUsers(); // Reload the users list
       }
@@ -185,6 +188,22 @@ export function UserManagement() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="username">Nombre de usuario</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="admin"
+                          value={newUser.username}
+                          onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                          className="pl-10"
+                          disabled={creating}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="email">Correo electrónico</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
@@ -215,25 +234,25 @@ export function UserManagement() {
                         />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="role">Rol</Label>
-                      <Select
-                        value={newUser.role}
-                        onValueChange={(value: 'admin' | 'super_admin') => 
-                          setNewUser({ ...newUser, role: value })
-                        }
-                        disabled={creating}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Administrador</SelectItem>
-                          <SelectItem value="super_admin">Super Administrador</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rol</Label>
+                    <Select
+                      value={newUser.role}
+                      onValueChange={(value: 'admin' | 'super_admin') => 
+                        setNewUser({ ...newUser, role: value })
+                      }
+                      disabled={creating}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="super_admin">Super Administrador</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex gap-2">
@@ -296,7 +315,8 @@ export function UserManagement() {
                           </div>
                           <div>
                             <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
                         </div>
                         <div className="text-right">

@@ -5,14 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface LoginPageProps {
   onSwitchToRegister: () => void;
 }
 
 export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!username || !password) {
       toast({
         title: 'Campos requeridos',
         description: 'Por favor, completa todos los campos',
@@ -34,14 +34,12 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
     setLoading(true);
     
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(username, password);
       
       if (error) {
         toast({
           title: 'Error de autenticación',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Credenciales incorrectas' 
-            : error.message,
+          description: error.message,
           variant: 'destructive',
         });
       } else {
@@ -76,15 +74,15 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="username">Usuario</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@ejemplo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="admin"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="pl-10"
                   disabled={loading}
                 />

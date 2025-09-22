@@ -9,7 +9,7 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { Shield } from 'lucide-react';
 
 export function AdminRouter() {
-  const { user, loading, isAdmin } = useAuth();
+  const { adminUser, loading, isAdmin } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function AdminRouter() {
   }
 
   // User is not authenticated
-  if (!user) {
+  if (!adminUser) {
     return (
       <Routes>
         <Route path="/*" element={<AuthForm />} />
