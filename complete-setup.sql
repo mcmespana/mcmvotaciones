@@ -1,20 +1,31 @@
--- MCM Voting System - Complete Database Setup with Default Admin
--- Run this script to set up the complete database schema and default admin user
+-- MCM Voting System - Complete Database Setup with Simplified Authentication
+-- Run this script to set up the complete database schema with simplified admin authentication
 -- 
--- IMPORTANT: You must first create the admin user in Supabase Auth UI:
--- Email: admin@movimientoconsolacion.com
--- Password: Votaciones2025
--- Then run this script to complete the setup
+-- This includes:
+-- - Simplified admin_users table with bcrypt password hashing
+-- - Direct username/password authentication (no Supabase Auth dependency)
+-- - Default admin user: username="admin", password="Votaciones2025"
 
 -- Create custom types
-CREATE TYPE user_role AS ENUM ('admin', 'super_admin');
-CREATE TYPE team_type AS ENUM ('ECE', 'ECL');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'super_admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- Users table (extends Supabase auth.users)
-CREATE TABLE IF NOT EXISTS public.users (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
+DO $$ BEGIN
+    CREATE TYPE team_type AS ENUM ('ECE', 'ECL');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Admin users table for simplified authentication (replaces old users table)
+CREATE TABLE IF NOT EXISTS public.admin_users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
   role user_role DEFAULT 'admin',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -90,7 +101,7 @@ CREATE TABLE IF NOT EXISTS public.vote_history (
   total_votes INTEGER NOT NULL,
   results JSONB NOT NULL,
   exported_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  exported_by UUID REFERENCES public.users(id),
+  exported_by UUID REFERENCES public.admin_users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -107,50 +118,31 @@ CREATE INDEX IF NOT EXISTS idx_round_results ON public.round_results(round_id, r
 -- Row Level Security (RLS) policies
 
 -- Enable RLS
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.round_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vote_history ENABLE ROW LEVEL SECURITY;
 
--- Users policies
-CREATE POLICY "Users can view their own profile" ON public.users
-  FOR SELECT USING (auth.uid() = id);
+-- Admin users policies (simplified - authorization handled in app logic)
+CREATE POLICY "Admins can view all admin users" ON public.admin_users
+  FOR SELECT USING (true);
 
-CREATE POLICY "Allow user registration" ON public.users
-  FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Allow admin user creation" ON public.admin_users
+  FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Admins can view all users" ON public.users
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow admin user updates" ON public.admin_users
+  FOR UPDATE USING (true);
 
--- Super admins can create and manage other admin users
-CREATE POLICY "Super admins can manage users" ON public.users
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'super_admin'
-    )
-  );
-
--- Rounds policies
+-- Rounds policies (simplified - removed auth.uid() dependencies)
 CREATE POLICY "Anyone can view active rounds" ON public.rounds
   FOR SELECT USING (is_active = true AND is_closed = false);
 
-CREATE POLICY "Admins can manage rounds" ON public.rounds
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow round management" ON public.rounds
+  FOR ALL USING (true); -- Authorization handled in application logic
 
--- Candidates policies  
+-- Candidates policies (simplified)
 CREATE POLICY "Anyone can view candidates for active rounds" ON public.candidates
   FOR SELECT USING (
     EXISTS (
@@ -159,13 +151,8 @@ CREATE POLICY "Anyone can view candidates for active rounds" ON public.candidate
     )
   );
 
-CREATE POLICY "Admins can manage candidates" ON public.candidates
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow candidate management" ON public.candidates
+  FOR ALL USING (true); -- Authorization handled in application logic
 
 -- Votes policies
 CREATE POLICY "Anyone can insert votes" ON public.votes
@@ -176,36 +163,67 @@ CREATE POLICY "Anyone can insert votes" ON public.votes
     )
   );
 
-CREATE POLICY "Admins can view votes" ON public.votes
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow vote viewing" ON public.votes
+  FOR SELECT USING (true); -- Authorization handled in application logic
 
 -- Round results policies
 CREATE POLICY "Anyone can view visible round results" ON public.round_results
   FOR SELECT USING (is_visible = true);
 
-CREATE POLICY "Admins can manage round results" ON public.round_results
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow round results management" ON public.round_results
+  FOR ALL USING (true); -- Authorization handled in application logic
 
 -- Vote history policies
-CREATE POLICY "Admins can manage vote history" ON public.vote_history
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "Allow vote history management" ON public.vote_history
+  FOR ALL USING (true); -- Authorization handled in application logic
 
 -- Functions
+
+-- Function to hash passwords using bcrypt
+CREATE OR REPLACE FUNCTION hash_password_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only hash if password_hash is a plain text password (not already hashed)
+  -- Bcrypt hashes start with $2a$, $2b$, $2y$, etc.
+  IF NEW.password_hash IS NOT NULL AND NOT (NEW.password_hash ~ '^\$2[ayb]\$') THEN
+    -- Hash the password using crypt with bcrypt
+    -- Generate a random salt with cost factor 12
+    NEW.password_hash = crypt(NEW.password_hash, gen_salt('bf', 12));
+  END IF;
+  
+  -- Update timestamp
+  NEW.updated_at = timezone('utc'::text, now());
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to authenticate admin users
+CREATE OR REPLACE FUNCTION authenticate_admin(input_username TEXT, input_password TEXT)
+RETURNS TABLE (
+  id UUID,
+  username TEXT,
+  email TEXT,
+  name TEXT,
+  role user_role,
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    au.id,
+    au.username,
+    au.email,
+    au.name,
+    au.role,
+    au.created_at,
+    au.updated_at
+  FROM public.admin_users au
+  WHERE au.username = input_username
+    AND au.password_hash = crypt(input_password, au.password_hash);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to get vote results for a round and specific round number
 CREATE OR REPLACE FUNCTION get_vote_results(round_id UUID, round_number INTEGER DEFAULT NULL)
@@ -273,19 +291,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers for updated_at
-CREATE TRIGGER update_users_updated_at 
-  BEFORE UPDATE ON public.users 
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_rounds_updated_at 
-  BEFORE UPDATE ON public.rounds 
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_candidates_updated_at 
-  BEFORE UPDATE ON public.candidates 
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- Function to automatically assign super_admin role to the first user
 CREATE OR REPLACE FUNCTION auto_assign_first_super_admin()
 RETURNS TRIGGER AS $$
@@ -293,7 +298,7 @@ DECLARE
   user_count INTEGER;
 BEGIN
   -- Count existing users
-  SELECT COUNT(*) INTO user_count FROM public.users;
+  SELECT COUNT(*) INTO user_count FROM public.admin_users;
   
   -- If this is the first user, make them super_admin
   IF user_count = 0 THEN
@@ -304,43 +309,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger to automatically assign super_admin role to first user
+-- Triggers for updated_at and password hashing
+CREATE TRIGGER hash_password_trigger
+  BEFORE INSERT OR UPDATE ON public.admin_users
+  FOR EACH ROW EXECUTE FUNCTION hash_password_trigger();
+
 CREATE TRIGGER auto_assign_first_super_admin_trigger
-  BEFORE INSERT ON public.users
+  BEFORE INSERT ON public.admin_users
   FOR EACH ROW EXECUTE FUNCTION auto_assign_first_super_admin();
 
--- Insert the default admin user (run this AFTER creating auth user)
--- This requires the admin user to be created first in Supabase Auth with:
--- Email: admin@movimientoconsolacion.com
--- Password: Votaciones2025
+CREATE TRIGGER update_admin_users_updated_at 
+  BEFORE UPDATE ON public.admin_users 
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_rounds_updated_at 
+  BEFORE UPDATE ON public.rounds 
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_candidates_updated_at 
+  BEFORE UPDATE ON public.candidates 
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create default admin user with username "admin" and password "Votaciones2025"
 DO $$
-DECLARE
-  admin_auth_id UUID;
 BEGIN
-  -- Get the auth user ID for the admin email
-  SELECT id INTO admin_auth_id 
-  FROM auth.users 
-  WHERE email = 'admin@movimientoconsolacion.com';
-  
-  -- Only insert if the auth user exists
-  IF admin_auth_id IS NOT NULL THEN
-    INSERT INTO public.users (id, email, name, role) 
+  -- Check if admin user already exists
+  IF NOT EXISTS (SELECT 1 FROM public.admin_users WHERE username = 'admin') THEN
+    INSERT INTO public.admin_users (username, password_hash, name, email, role) 
     VALUES (
-      admin_auth_id,
-      'admin@movimientoconsolacion.com', 
+      'admin',
+      'Votaciones2025', -- Will be hashed by trigger
       'Administrador MCM', 
+      'admin@movimientoconsolacion.com',
       'super_admin'
-    )
-    ON CONFLICT (email) DO UPDATE SET 
-      role = 'super_admin',
-      name = 'Administrador MCM';
-      
-    RAISE NOTICE 'Admin user setup completed successfully';
+    );
+    RAISE NOTICE 'Default admin user created successfully with username: admin';
   ELSE
-    RAISE NOTICE 'Admin auth user not found. Please create the auth user first with email: admin@movimientoconsolacion.com';
+    RAISE NOTICE 'Admin user already exists, skipping creation';
   END IF;
 END $$;
 
+-- Grant necessary permissions
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON public.admin_users TO authenticated;
+GRANT EXECUTE ON FUNCTION authenticate_admin TO anon, authenticated;
+
 -- Success message
-SELECT 'MCM Voting System database setup completed successfully!' as setup_status;
+SELECT 'MCM Voting System database setup completed successfully!' as setup_status,
+       'Default admin: username=admin, password=Votaciones2025' as admin_credentials;

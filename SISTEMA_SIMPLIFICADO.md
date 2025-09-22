@@ -50,25 +50,24 @@ RETURNS TRIGGER
 
 ## 🚀 Configuración Inicial
 
-### Paso 1: Ejecutar el Nuevo Schema
+### Paso 1: Ejecutar el Schema de Base de Datos
 1. Abre tu panel de Supabase
 2. Ve a SQL Editor
-3. Ejecuta el archivo `supabase-schema-simplified.sql`
+3. Ejecuta el archivo `complete-setup.sql` (**actualizado con autenticación simplificada**)
+4. Este script creará automáticamente:
+   - La tabla `admin_users` con funciones de hashing bcrypt
+   - La función `authenticate_admin` para login
+   - Un usuario admin por defecto: `username=admin`, `password=Votaciones2025`
 
-### Paso 2: Crear Primer Administrador
-1. Ve a `/admin` en tu aplicación
-2. Haz clic en "Configurar primer administrador"
-3. Llena el formulario:
-   - **Nombre**: Tu nombre completo
-   - **Usuario**: `admin` (o el que prefieras)
-   - **Email**: Tu email
-   - **Contraseña**: Mínimo 6 caracteres
-4. El primer usuario creado será automáticamente `super_admin`
+### Paso 2: Login Directo (¡Sin configuración adicional!)
+- **Usuario**: `admin`
+- **Contraseña**: `Votaciones2025`
+- Ve a `/admin` en tu aplicación e inicia sesión directamente
 
-### Paso 3: Login Simplificado
-- **Usuario**: El username que configuraste
-- **Contraseña**: La contraseña que configuraste
-- Ya no se necesita email complicado ni Supabase Auth
+### Paso 3: Crear Administradores Adicionales (Opcional)
+1. Inicia sesión como super_admin
+2. Ve a la sección "Gestión de Usuarios"
+3. Crea nuevos administradores desde la interfaz
 
 ## 📊 Tablas de Base de Datos Actualizadas
 
@@ -161,6 +160,16 @@ ORDER BY created_at;
 -- Crear admin desde SQL (si necesitas)
 INSERT INTO public.admin_users (username, password_hash, name, email, role)
 VALUES ('nuevo_admin', 'password123', 'Nombre Admin', 'admin@email.com', 'admin');
+
+-- Verificar el usuario admin por defecto
+SELECT username, name, email, role, created_at 
+FROM public.admin_users 
+WHERE username = 'admin';
+
+-- Cambiar contraseña del admin por defecto (recomendado)
+UPDATE public.admin_users 
+SET password_hash = 'nueva_contraseña_segura' 
+WHERE username = 'admin';
 
 -- Cambiar rol de usuario
 UPDATE public.admin_users 

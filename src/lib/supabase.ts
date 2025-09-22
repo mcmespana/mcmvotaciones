@@ -4,7 +4,19 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-// Only throw error if we're trying to actually use Supabase
+// Check if we have real Supabase configuration
+const hasRealSupabaseConfig = !!(
+  supabaseUrl && 
+  supabaseAnonKey && 
+  supabaseUrl !== 'your-supabase-url' &&
+  supabaseAnonKey !== 'your-supabase-anon-key' &&
+  supabaseUrl !== 'https://placeholder.supabase.co' &&
+  supabaseAnonKey !== 'placeholder-key'
+);
+
+// For the simplified authentication system, we consider it "configured" 
+// if we have any valid-looking URL and key (even placeholders)
+// This allows the login system to work with the new admin_users table
 export const isSupabaseConfigured = !!(
   supabaseUrl && 
   supabaseAnonKey && 
