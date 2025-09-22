@@ -84,6 +84,9 @@ ALTER TABLE public.vote_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own profile" ON public.users
   FOR SELECT USING (auth.uid() = id);
 
+CREATE POLICY "Allow user registration" ON public.users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Admins can view all users" ON public.users
   FOR SELECT USING (
     EXISTS (

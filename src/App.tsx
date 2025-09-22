@@ -18,8 +18,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+<<<<<<< HEAD
             <Route path="/" element={<VotingPage />} />
             <Route path="/admin/*" element={<AdminRouter />} />
+=======
+            <Route path="/" element={<AppRouter />} />
+            <Route path="/admin" element={<AppRouter isAdminRoute={true} />} />
+>>>>>>> origin/copilot/fix-dc6ffd41-08d8-4564-8ff2-db716d33ca03
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
