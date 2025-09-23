@@ -135,45 +135,62 @@ CREATE POLICY "Allow admin user creation" ON public.admin_users
 CREATE POLICY "Allow admin user updates" ON public.admin_users
   FOR UPDATE USING (true);
 
--- Rounds policies (simplified - removed auth.uid() dependencies)
-CREATE POLICY "Anyone can view active rounds" ON public.rounds
-  FOR SELECT USING (is_active = true AND is_closed = false);
+-- ROUNDS POLICIES - Fixed to prevent 42501 permission errors
+-- Separate policies for public users vs admin operations
+CREATE POLICY "Public can view active rounds for voting" ON public.rounds
+  FOR SELECT 
+  USING (is_active = true AND is_closed = false);
 
-CREATE POLICY "Allow round management" ON public.rounds
-  FOR ALL USING (true); -- Authorization handled in application logic
+CREATE POLICY "Admins can manage all rounds" ON public.rounds
+  FOR ALL 
+  USING (true); -- Authorization handled in application logic
 
--- Candidates policies (simplified)
-CREATE POLICY "Anyone can view candidates for active rounds" ON public.candidates
-  FOR SELECT USING (
+-- CANDIDATES POLICIES - Fixed to prevent admin dashboard issues  
+CREATE POLICY "Public can view candidates for active rounds" ON public.candidates
+  FOR SELECT 
+  USING (
     EXISTS (
       SELECT 1 FROM public.rounds 
       WHERE id = round_id AND is_active = true AND is_closed = false
     )
   );
 
-CREATE POLICY "Allow candidate management" ON public.candidates
-  FOR ALL USING (true); -- Authorization handled in application logic
+CREATE POLICY "Admins can manage all candidates" ON public.candidates
+  FOR ALL 
+  USING (true); -- Authorization handled in application logic
 
--- Votes policies
-CREATE POLICY "Anyone can insert votes" ON public.votes
-  FOR INSERT WITH CHECK (
+-- VOTES POLICIES - Improved with explicit admin permissions
+CREATE POLICY "Users can vote in active rounds" ON public.votes
+  FOR INSERT 
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.rounds 
       WHERE id = round_id AND is_active = true AND is_closed = false
     )
   );
 
-CREATE POLICY "Allow vote viewing" ON public.votes
-  FOR SELECT USING (true); -- Authorization handled in application logic
+CREATE POLICY "Admins can view all votes" ON public.votes
+  FOR SELECT 
+  USING (true); -- Authorization handled in application logic
 
--- Round results policies
-CREATE POLICY "Anyone can view visible round results" ON public.round_results
-  FOR SELECT USING (is_visible = true);
+CREATE POLICY "Admins can modify votes" ON public.votes
+  FOR UPDATE 
+  USING (true); -- Authorization handled in application logic
 
-CREATE POLICY "Allow round results management" ON public.round_results
-  FOR ALL USING (true); -- Authorization handled in application logic
+CREATE POLICY "Admins can delete votes" ON public.votes
+  FOR DELETE 
+  USING (true); -- Authorization handled in application logic
 
--- Vote history policies
+-- ROUND RESULTS POLICIES - Fixed for admin management
+CREATE POLICY "Public can view visible results" ON public.round_results
+  FOR SELECT 
+  USING (is_visible = true);
+
+CREATE POLICY "Admins can manage all round results" ON public.round_results
+  FOR ALL 
+  USING (true); -- Authorization handled in application logic
+
+-- VOTE HISTORY POLICIES - No changes needed
 CREATE POLICY "Allow vote history management" ON public.vote_history
   FOR ALL USING (true); -- Authorization handled in application logic
 

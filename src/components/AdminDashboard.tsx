@@ -85,11 +85,20 @@ export function AdminDashboard() {
         totalCandidates: candidatesCount || 0,
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error loading dashboard stats:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'No se pudieron cargar las estadísticas';
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
+        errorMessage = 'Error de permisos: Ejecuta el script fix-rls-policies.sql en tu base de datos';
+      } else if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
       toast({
         title: 'Error',
-        description: 'No se pudieron cargar las estadísticas',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
