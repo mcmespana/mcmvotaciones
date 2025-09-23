@@ -91,7 +91,7 @@ export function AdminDashboard() {
       // Provide more specific error messages
       let errorMessage = 'No se pudieron cargar las estadísticas';
       if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
-        errorMessage = 'Error de permisos: Ejecuta el script fix-rls-policies.sql en tu base de datos';
+        errorMessage = 'Error de permisos: Para desarrollo, ejecuta reset-database.sql en Supabase. Para producción, revisa las políticas RLS y permisos de usuario.';
       } else if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
         errorMessage = `Error: ${error.message}`;
       }
