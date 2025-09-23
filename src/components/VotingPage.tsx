@@ -45,17 +45,6 @@ export function VotingPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    // Handle backward compatibility for ?admin=true parameter
-    const adminParam = searchParams.get('admin');
-    if (adminParam === 'true') {
-      navigate('/admin', { replace: true });
-      return;
-    }
-    
-    loadActiveRound();
-  }, [navigate, loadActiveRound, searchParams]);
-
   const loadActiveRound = useCallback(async () => {
     try {
       setLoading(true);
@@ -135,6 +124,17 @@ export function VotingPage() {
       setLoading(false);
     }
   }, [toast]);
+
+  useEffect(() => {
+    // Handle backward compatibility for ?admin=true parameter
+    const adminParam = searchParams.get('admin');
+    if (adminParam === 'true') {
+      navigate('/admin', { replace: true });
+      return;
+    }
+    
+    loadActiveRound();
+  }, [navigate, loadActiveRound, searchParams]);
 
   const submitVote = async () => {
     if (selectedCandidates.length === 0 || !activeRound) return;
