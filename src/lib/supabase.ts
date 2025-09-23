@@ -166,7 +166,7 @@ export interface Database {
           id: string;
           round_id: string;
           total_votes: number;
-          results: Record<string, any>;
+          results: Record<string, unknown>;
           exported_at: string;
           exported_by: string;
           created_at: string;
@@ -175,7 +175,7 @@ export interface Database {
           id?: string;
           round_id: string;
           total_votes: number;
-          results: Record<string, any>;
+          results: Record<string, unknown>;
           exported_at: string;
           exported_by: string;
           created_at?: string;
@@ -184,7 +184,7 @@ export interface Database {
           id?: string;
           round_id?: string;
           total_votes?: number;
-          results?: Record<string, any>;
+          results?: Record<string, unknown>;
           exported_at?: string;
           exported_by?: string;
           created_at?: string;

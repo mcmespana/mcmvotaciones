@@ -14,22 +14,21 @@ Un sistema de votaciones internas basado en **Supabase** y **Vercel**, diseñado
 ### Backend + Database
 - **Supabase** como backend completo (Base de datos, Auth, Real-time)
 - **PostgreSQL** con Row Level Security (RLS)
-- **Autenticación segura** para administradores
+- **Autenticación simplificada** con tabla admin_users
 - **API REST** automática generada por Supabase
 
 ### Panel de Administración
-- **Autenticación segura** con Supabase Auth
+- **Autenticación simplificada** usuario/contraseña
 - **Gestión completa** de rondas, candidatos y usuarios
-- **Importación desde Excel** (próximamente)
 - **Exportación de resultados** en JSON/Excel
 - **Dashboard en tiempo real**
 
-## 🚀 Instalación y Configuración
+## 🚀 Instalación y Configuración (Simplificado)
 
 ### 1. Configurar Supabase
 
 1. Crea un proyecto en [Supabase](https://supabase.com)
-2. Ve a **SQL Editor** y ejecuta el script `supabase-schema.sql`
+2. Ve a **SQL Editor** y ejecuta el script `complete-setup.sql`
 3. Copia las credenciales desde **Settings** > **API**
 
 ### 2. Configurar Variables de Entorno
@@ -47,7 +46,15 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-clave-publica-anonima
 ```
 
-### 3. Instalar y Ejecutar
+### 3. Acceso Inicial
+
+**Usuario administrador por defecto:**
+- **Usuario**: `admin`
+- **Contraseña**: `Votaciones2025`
+
+Ve a `/admin` en tu aplicación e inicia sesión directamente.
+
+### 4. Instalar y Ejecutar
 
 ```bash
 # Instalar dependencias
@@ -79,56 +86,21 @@ npm run preview
 - Inicia sesión con credenciales de administrador
 - Gestiona rondas, candidatos y consulta resultados
 
-### Crear Primer Administrador
+### Gestión de Usuarios Adicionales
 
-El sistema ha sido simplificado para facilitar la configuración inicial:
-
-1. **Configuración automática**: Accede al panel de administración (`/admin`) 
-2. **Primer usuario**: El primer usuario registrado se convierte automáticamente en super administrador
-3. **Gestión de usuarios**: Los super administradores pueden crear usuarios adicionales desde el panel
-4. **Login simple**: Sistema de email/contraseña estándar
-
-#### Pasos para configurar:
-1. Accede a `/admin`
-2. Haz clic en "Configurar primer administrador"
-3. Completa el formulario de registro
-4. ¡Listo! Ya puedes gestionar el sistema
-
-#### Gestión de usuarios adicionales:
-- Los super administradores pueden crear nuevos usuarios desde la pestaña "Usuarios" del panel
-- Pueden asignar roles de administrador o super administrador
-- Interfaz simplificada para gestión de equipos
-
-### Resetear Base de Datos
-
-Si necesitas limpiar completamente la base de datos, ahora tienes un script especializado:
-
-1. Ve al SQL Editor de tu proyecto Supabase
-2. Ejecuta el script `database-reset.sql`
-3. ⚠️ **ADVERTENCIA**: Esto eliminará TODOS los datos existentes
-4. Útil para desarrollo o cuando hay problemas con el esquema
-5. Después del reset, vuelve a ejecutar `supabase-schema.sql` para recrear las tablas
-
-```bash
-# Los scripts están en la raíz del proyecto
-cat database-reset.sql    # Para limpiar todo
-cat supabase-schema.sql   # Para recrear el esquema
-```
-1. Registra un usuario en Supabase Auth
-2. Ejecuta en SQL Editor:
-```sql
-INSERT INTO public.users (id, email, name, role) 
-VALUES (auth.uid(), 'tu-email@ejemplo.com', 'Tu Nombre', 'super_admin');
-```
+Una vez logueado como administrador principal, puedes:
+- Crear nuevos usuarios desde la pestaña "Usuarios" del panel
+- Asignar roles de administrador o super administrador
+- Gestionar equipos de trabajo
 
 ## 🗃️ Base de Datos
 
 ### Tablas Principales
 
-- **`rounds`** - Rondas de votación
+- **`admin_users`** - Usuarios administradores (autenticación simplificada)
+- **`rounds`** - Rondas de votación  
 - **`candidates`** - Candidatos por ronda
 - **`votes`** - Votos emitidos (con hash de dispositivo)
-- **`users`** - Usuarios administradores
 - **`vote_history`** - Historial de exportaciones
 
 ### Seguridad
@@ -136,11 +108,48 @@ VALUES (auth.uid(), 'tu-email@ejemplo.com', 'Tu Nombre', 'super_admin');
 - **Row Level Security (RLS)** habilitado en todas las tablas
 - **Políticas de acceso** granulares por rol
 - **Prevención de votos duplicados** por dispositivo
-- **Autenticación JWT** para administradores
+- **Hashing bcrypt** automático para contraseñas
 
 ## 🌐 Despliegue en Vercel
 
 ### Automático desde GitHub
+
+1. Conecta tu repositorio a Vercel
+2. Configura las variables de entorno de Supabase
+3. ¡Despliega automáticamente!
+
+### Variables de Entorno en Vercel
+
+```
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-clave-publica-anonima
+```
+
+## 🛠️ Características Técnicas
+
+### Funcionalidades Implementadas
+
+- ✅ Sistema de votación anónimo por dispositivo
+- ✅ Panel de administración completo
+- ✅ Prevención de votos duplicados
+- ✅ Exportación de resultados
+- ✅ Responsive design para móviles
+- ✅ Autenticación simplificada para admins
+- ✅ Gestión de rondas y candidatos
+- ✅ Dashboard con estadísticas en tiempo real
+
+### Stack Tecnológico
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + shadcn/ui components
+- **Backend**: Supabase (PostgreSQL + API REST)
+- **Autenticación**: Sistema simplificado con tabla admin_users
+- **Hosting**: Vercel (recomendado)
+- **Base de Datos**: PostgreSQL con Row Level Security
+
+## 📞 Soporte
+
+Para soporte técnico o consultas sobre el sistema, contacta al equipo de desarrollo.
 
 1. Conecta tu repositorio con [Vercel](https://vercel.com)
 2. Configura las variables de entorno:

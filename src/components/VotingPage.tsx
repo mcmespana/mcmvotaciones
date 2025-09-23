@@ -1,5 +1,5 @@
 import { Vote } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateDeviceHash, hasVotedLocally, markAsVoted, isVotingAvailable } from '@/lib/device';
@@ -54,9 +54,9 @@ export function VotingPage() {
     }
     
     loadActiveRound();
-  }, [navigate, searchParams]);
+  }, [navigate, loadActiveRound, searchParams]);
 
-  const loadActiveRound = async () => {
+  const loadActiveRound = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -134,7 +134,7 @@ export function VotingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const submitVote = async () => {
     if (selectedCandidates.length === 0 || !activeRound) return;

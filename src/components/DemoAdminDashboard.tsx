@@ -21,8 +21,28 @@ import {
   EyeOff
 } from 'lucide-react';
 
+interface MockRound {
+  id: string;
+  title: string;
+  description: string;
+  year: number;
+  team: string;
+  expected_voters: number;
+  is_active: boolean;
+  is_closed: boolean;
+  created_at: string;
+  vote_count: number;
+  candidates: Array<{
+    id: string;
+    name: string;
+    surname: string;
+    description: string;
+    order_index: number;
+  }>;
+}
+
 // Mock data for demonstration
-const mockRounds = [
+const mockRounds: MockRound[] = [
   {
     id: '1',
     title: 'Votación MCM 2024 - Consejo Directivo',
@@ -134,7 +154,7 @@ export function DemoAdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedRound, setSelectedRound] = useState(mockRounds[0]);
 
-  const getRoundStatusBadge = (round: any) => {
+  const getRoundStatusBadge = (round: MockRound) => {
     if (round.is_closed) {
       return <Badge variant="secondary">Cerrada</Badge>;
     }
