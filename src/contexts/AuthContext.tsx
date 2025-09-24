@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const user = JSON.parse(savedUser);
         setAdminUser(user);
       } catch (error) {
-        console.error('Error parsing saved user:', error);
+        // Error parsing saved user - clean up localStorage
         localStorage.removeItem('mcm_admin_user');
       }
     }
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('Authentication error:', error);
+        // Authentication error
         return { error: { message: 'Error de autenticación' } };
       }
 
@@ -77,7 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return { error: undefined };
     } catch (error) {
-      console.error('Sign in error:', error);
       return { error: { message: 'Error inesperado al iniciar sesión' } };
     }
   };
@@ -112,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error creating admin user:', error);
+        // Error creating admin user
         if (error.code === '23505') {
           if (error.constraint?.includes('username')) {
             return { error: { message: 'El nombre de usuario ya existe' } };
@@ -125,7 +124,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error: undefined };
     } catch (error) {
-      console.error('Error creating admin user:', error);
       return { error: { message: 'Unexpected error creating admin user' } };
     }
   };

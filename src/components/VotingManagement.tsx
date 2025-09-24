@@ -144,7 +144,6 @@ export function VotingManagement() {
       
       setRoundResults(data || []);
     } catch (error) {
-      console.error('Error loading round results:', error);
       toast({
         title: 'Error',
         description: 'No se pudieron cargar los resultados',
@@ -170,7 +169,6 @@ export function VotingManagement() {
         description: `Resultados de la ronda ${round.current_round_number} listos para mostrar`,
       });
     } catch (error) {
-      console.error('Error calculating round results:', error);
       toast({
         title: 'Error',
         description: 'No se pudieron calcular los resultados',
@@ -193,7 +191,6 @@ export function VotingManagement() {
         description: 'Los usuarios pueden ver los resultados de esta ronda',
       });
     } catch (error) {
-      console.error('Error publishing results:', error);
       toast({
         title: 'Error',
         description: 'No se pudieron publicar los resultados',
@@ -215,7 +212,6 @@ export function VotingManagement() {
         description: 'Los resultados han sido ocultados de los usuarios',
       });
     } catch (error) {
-      console.error('Error hiding results:', error);
       toast({
         title: 'Error',
         description: 'No se pudieron ocultar los resultados',
@@ -265,7 +261,6 @@ export function VotingManagement() {
         description: `Ronda ${round.current_round_number + 1} lista para votar`,
       });
     } catch (error) {
-      console.error('Error starting next round:', error);
       toast({
         title: 'Error',
         description: 'No se pudo iniciar la siguiente ronda',
@@ -329,8 +324,6 @@ export function VotingManagement() {
 
       setRounds(roundsWithVoteCounts);
     } catch (error: unknown) {
-      console.error('Error loading rounds:', error);
-      
       // Provide more specific error messages
       let errorMessage = 'No se pudieron cargar las votaciones';
       if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
@@ -390,8 +383,6 @@ export function VotingManagement() {
       
       await loadRounds();
     } catch (error: unknown) {
-      console.error('Error creating round:', error);
-      
       // Provide more specific error messages
       let errorMessage = 'No se pudo crear la votación';
       if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
@@ -426,7 +417,6 @@ export function VotingManagement() {
       
       await loadRounds();
     } catch (error) {
-      console.error('Error updating round:', error);
       toast({
         title: 'Error',
         description: 'No se pudo actualizar la votación',
@@ -454,7 +444,6 @@ export function VotingManagement() {
       await loadRounds();
       setSelectedRound(null);
     } catch (error) {
-      console.error('Error deleting round:', error);
       toast({
         title: 'Error',
         description: 'No se pudo eliminar la votación',
@@ -550,7 +539,6 @@ export function VotingManagement() {
         setSelectedRound(updatedRound);
       }
     } catch (error) {
-      console.error('Error adding candidate:', error);
       toast({
         title: 'Error',
         description: 'No se pudo agregar el candidato',
@@ -585,7 +573,6 @@ export function VotingManagement() {
         }
       }
     } catch (error) {
-      console.error('Error deleting candidate:', error);
       toast({
         title: 'Error',
         description: 'No se pudo eliminar el candidato',

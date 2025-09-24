@@ -73,7 +73,7 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         onSwitchToLogin();
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      // Registration error
       toast({
         title: 'Error',
         description: 'Error inesperado durante el registro',

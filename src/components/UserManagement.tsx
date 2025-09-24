@@ -42,7 +42,7 @@ export function UserManagement() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading users:', error);
+        // Error loading users
         toast({
           title: 'Error',
           description: 'No se pudieron cargar los usuarios',
@@ -52,7 +52,7 @@ export function UserManagement() {
         setUsers(data || []);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      // Error loading users
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ export function UserManagement() {
         loadUsers(); // Reload the users list
       }
     } catch (error) {
-      console.error('Error creating user:', error);
+      // Error creating user
       toast({
         title: 'Error',
         description: 'Error inesperado al crear el usuario',

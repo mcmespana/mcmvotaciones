@@ -52,7 +52,7 @@ export function AdminDashboard() {
         .select('id, is_active, is_closed');
 
       if (roundsError) {
-        console.error('Error loading rounds:', roundsError);
+        // Error loading rounds
         // Continue with other stats even if this fails
       }
 
@@ -62,7 +62,7 @@ export function AdminDashboard() {
         .select('*', { count: 'exact', head: true });
 
       if (votesError) {
-        console.error('Error loading votes:', votesError);
+        // Error loading votes
       }
 
       // Get candidates count
@@ -71,7 +71,7 @@ export function AdminDashboard() {
         .select('*', { count: 'exact', head: true });
 
       if (candidatesError) {
-        console.error('Error loading candidates:', candidatesError);
+        // Error loading candidates
       }
 
       // Calculate stats
@@ -86,8 +86,6 @@ export function AdminDashboard() {
       });
 
     } catch (error: unknown) {
-      console.error('Error loading dashboard stats:', error);
-      
       // Provide more specific error messages
       let errorMessage = 'No se pudieron cargar las estadísticas';
       if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
@@ -174,7 +172,6 @@ export function AdminDashboard() {
         });
       }
     } catch (error) {
-      console.error('Error loading results:', error);
       toast({
         title: 'Error',
         description: 'Error al cargar los resultados',
@@ -250,7 +247,7 @@ export function AdminDashboard() {
         description: 'Los datos se han descargado correctamente',
       });
     } catch (error) {
-      console.error('Error exporting data:', error);
+      // Error exporting data
       toast({
         title: 'Error',
         description: 'Error al exportar los datos',
