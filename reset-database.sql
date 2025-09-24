@@ -159,52 +159,48 @@ ALTER TABLE public.round_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vote_history ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
--- PHASE 5: CREATE SIMPLIFIED RLS POLICIES (FIXED FOR ADMIN ACCESS)
+-- PHASE 5: CREATE SIMPLIFIED RLS POLICIES 
+-- ============================================================================
+-- 
+-- SECURITY NOTE: These policies are permissive because this application handles
+-- authentication at the application level using the admin_users table.
+-- The frontend enforces access control by:
+-- 1. Requiring admin login through the custom auth system
+-- 2. Only showing admin panels to authenticated admin users
+-- 3. Using localStorage to maintain admin sessions
+-- 
+-- This approach is suitable for internal voting systems where:
+-- - Admin access is tightly controlled 
+-- - The application runs in a controlled environment
+-- - Database access is restricted to the application layer
 -- ============================================================================
 
 -- ADMIN USERS POLICIES - Allow all operations (auth handled in app)
 CREATE POLICY "Allow all admin user operations" ON public.admin_users FOR ALL USING (true);
 
--- ROUNDS POLICIES - Separate public and admin access
-CREATE POLICY "Public can view active rounds only" ON public.rounds 
-  FOR SELECT USING (is_active = true AND is_closed = false);
-
-CREATE POLICY "Allow all admin round operations" ON public.rounds 
+-- ROUNDS POLICIES - Allow all operations for both public and admin access
+-- Since we handle authentication at the application level, we need to be permissive here
+CREATE POLICY "Allow all rounds operations" ON public.rounds 
   FOR ALL USING (true);
 
--- CANDIDATES POLICIES - Separate public and admin access  
-CREATE POLICY "Public can view candidates for active rounds only" ON public.candidates 
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.rounds 
-      WHERE id = round_id AND is_active = true AND is_closed = false
-    )
-  );
-
-CREATE POLICY "Allow all admin candidate operations" ON public.candidates 
+-- CANDIDATES POLICIES - Allow all operations for both public and admin access
+-- Since we handle authentication at the application level, we need to be permissive here
+CREATE POLICY "Allow all candidates operations" ON public.candidates 
   FOR ALL USING (true);
 
--- VOTES POLICIES - Public can vote, admins can manage
-CREATE POLICY "Allow voting in active rounds" ON public.votes 
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.rounds 
-      WHERE id = round_id AND is_active = true AND is_closed = false
-    )
-  );
-
-CREATE POLICY "Allow all admin vote operations" ON public.votes 
+-- VOTES POLICIES - Allow all operations for both public and admin access  
+-- Since we handle authentication at the application level, we need to be permissive here
+CREATE POLICY "Allow all votes operations" ON public.votes 
   FOR ALL USING (true);
 
--- ROUND RESULTS POLICIES - Public can view visible results, admins manage all
-CREATE POLICY "Public can view visible results only" ON public.round_results 
-  FOR SELECT USING (is_visible = true);
-
-CREATE POLICY "Allow all admin round results operations" ON public.round_results 
+-- ROUND RESULTS POLICIES - Allow all operations 
+-- Since we handle authentication at the application level, we need to be permissive here
+CREATE POLICY "Allow all round results operations" ON public.round_results 
   FOR ALL USING (true);
 
--- VOTE HISTORY POLICIES - Admin only
-CREATE POLICY "Allow all admin vote history operations" ON public.vote_history 
+-- VOTE HISTORY POLICIES - Allow all operations
+-- Since we handle authentication at the application level, we need to be permissive here  
+CREATE POLICY "Allow all vote history operations" ON public.vote_history 
   FOR ALL USING (true);
 
 -- ============================================================================
@@ -394,10 +390,10 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
 -- ============================================================================
 
 -- Add helpful comments for documentation
-COMMENT ON TABLE public.rounds IS 'Voting rounds with RLS: public users see active rounds, admins manage all';
-COMMENT ON TABLE public.candidates IS 'Candidates with RLS: public users see candidates for active rounds, admins manage all';
-COMMENT ON TABLE public.votes IS 'Votes with RLS: users vote in active rounds, admins manage all';
-COMMENT ON TABLE public.admin_users IS 'Admin users with bcrypt authentication';
+COMMENT ON TABLE public.rounds IS 'Voting rounds with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.candidates IS 'Candidates with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.votes IS 'Votes with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.admin_users IS 'Admin users with bcrypt authentication - application-level access control';
 
 -- Success message
 SELECT 
