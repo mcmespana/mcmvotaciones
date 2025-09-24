@@ -13,15 +13,23 @@ Un sistema de votaciones internas basado en **Supabase** y **Vercel**, diseñado
 
 ### Backend + Database
 - **Supabase** como backend completo (Base de datos, Auth, Real-time)
-- **PostgreSQL** con Row Level Security (RLS)
+- **PostgreSQL** con Row Level Security (RLS) permisivo
 - **Autenticación simplificada** con tabla admin_users
 - **API REST** automática generada por Supabase
+- **Seguridad a nivel de aplicación**: El control de acceso se maneja en el frontend
 
 ### Panel de Administración
 - **Autenticación simplificada** usuario/contraseña
 - **Gestión completa** de rondas, candidatos y usuarios
 - **Exportación de resultados** en JSON/Excel
 - **Dashboard en tiempo real**
+
+### 🔒 Modelo de Seguridad
+Este sistema utiliza un **modelo de seguridad a nivel de aplicación**:
+- Las políticas RLS de Supabase son permisivas (`USING (true)`)
+- El control de acceso se implementa en el frontend mediante autenticación de admin
+- Adecuado para sistemas internos donde el acceso a la base de datos está controlado
+- La seguridad se basa en la autenticación de administradores y el entorno controlado
 
 ## 🚀 Instalación y Configuración (Simplificado)
 
