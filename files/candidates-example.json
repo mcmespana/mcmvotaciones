@@ -1,0 +1,94 @@
+{
+  "candidates": [
+    {
+      "name": "María",
+      "surname": "García López",
+      "location": "Madrid",
+      "group_name": "Grupo Norte",
+      "age": 28,
+      "description": "Licenciada en Comunicación con 5 años de experiencia en coordinación de eventos. Apasionada por el trabajo en equipo y el desarrollo comunitario.",
+      "image_url": "https://i.pravatar.cc/300?img=1"
+    },
+    {
+      "name": "Juan",
+      "surname": "Martínez Silva",
+      "location": "Barcelona",
+      "group_name": "Grupo Levante",
+      "age": 32,
+      "description": "Ingeniero informático dedicado al voluntariado desde hace 8 años. Especialista en gestión de proyectos y liderazgo participativo.",
+      "image_url": "https://i.pravatar.cc/300?img=2"
+    },
+    {
+      "name": "Ana",
+      "surname": "Rodríguez Pérez",
+      "location": "Valencia",
+      "group_name": "Grupo Centro",
+      "age": 26,
+      "description": "Maestra de primaria con vocación de servicio. Experiencia en coordinación de actividades juveniles y formación.",
+      "image_url": "https://i.pravatar.cc/300?img=3"
+    },
+    {
+      "name": "Carlos",
+      "surname": "Fernández Torres",
+      "location": "Sevilla",
+      "group_name": "Grupo Sur",
+      "age": 30,
+      "description": "Trabajador social comprometido con la inclusión y la igualdad. Amplia experiencia en mediación y resolución de conflictos.",
+      "image_url": "https://i.pravatar.cc/300?img=4"
+    },
+    {
+      "name": "Laura",
+      "surname": "López Sánchez",
+      "location": "Zaragoza",
+      "group_name": "Grupo Aragón",
+      "age": 29,
+      "description": "Psicóloga especializada en dinámicas grupales. Facilitadora de procesos de participación y toma de decisiones.",
+      "image_url": "https://i.pravatar.cc/300?img=5"
+    },
+    {
+      "name": "David",
+      "surname": "González Ruiz",
+      "location": "Bilbao",
+      "group_name": "Grupo Norte",
+      "age": 34,
+      "description": "Economista con experiencia en gestión de recursos. Coordinador de equipos multiculturales durante 6 años.",
+      "image_url": "https://i.pravatar.cc/300?img=6"
+    },
+    {
+      "name": "Carmen",
+      "surname": "Díaz Moreno",
+      "location": "Granada",
+      "group_name": "Grupo Sur",
+      "age": 27,
+      "description": "Periodista y comunicadora social. Responsable de proyectos de sensibilización y campañas de impacto social.",
+      "image_url": "https://i.pravatar.cc/300?img=7"
+    },
+    {
+      "name": "Miguel",
+      "surname": "Álvarez Castro",
+      "location": "Valladolid",
+      "group_name": "Grupo Centro",
+      "age": 31,
+      "description": "Educador social con pasión por el acompañamiento juvenil. Experiencia en coordinación territorial.",
+      "image_url": "https://i.pravatar.cc/300?img=8"
+    },
+    {
+      "name": "Elena",
+      "surname": "Romero Jiménez",
+      "location": "Murcia",
+      "group_name": "Grupo Levante",
+      "age": 25,
+      "description": "Licenciada en Pedagogía. Especialista en formación de formadores y metodologías participativas.",
+      "image_url": "https://i.pravatar.cc/300?img=9"
+    },
+    {
+      "name": "Pablo",
+      "surname": "Torres Navarro",
+      "location": "Salamanca",
+      "group_name": "Grupo Centro",
+      "age": 33,
+      "description": "Filósofo y dinamizador cultural. Coordinador de grupos de reflexión y espacios de diálogo comunitario.",
+      "image_url": "https://i.pravatar.cc/300?img=10"
+    }
+  ]
+}

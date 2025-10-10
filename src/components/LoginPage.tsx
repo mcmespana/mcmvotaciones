@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { SupabaseConfigAlert } from './SupabaseConfigAlert';
 
 interface LoginPageProps {
   onSwitchToRegister: () => void;
@@ -61,18 +62,20 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-            <Shield className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">Panel de Administración</CardTitle>
-          <CardDescription>
-            Accede al sistema de gestión de votaciones
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="w-full max-w-md space-y-4">
+        <SupabaseConfigAlert />
+        <Card className="w-full">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+              <Shield className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Panel de Administración</CardTitle>
+            <CardDescription>
+              Accede al sistema de gestión de votaciones
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Usuario</Label>
               <div className="relative">
@@ -147,7 +150,8 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
             Sistema de votaciones MCM
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

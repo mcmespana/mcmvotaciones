@@ -11,18 +11,33 @@ const hasRealSupabaseConfig = !!(
   supabaseUrl !== 'your-supabase-url' &&
   supabaseAnonKey !== 'your-supabase-anon-key' &&
   supabaseUrl !== 'https://placeholder.supabase.co' &&
-  supabaseAnonKey !== 'placeholder-key'
+  supabaseAnonKey !== 'placeholder-key' &&
+  !supabaseUrl.includes('tu-proyecto')
 );
+
+// Show warning if Supabase is not properly configured
+if (!hasRealSupabaseConfig) {
+  console.error(
+    '%c⚠️ SUPABASE NO CONFIGURADO ⚠️',
+    'background: #ff4444; color: white; font-size: 16px; font-weight: bold; padding: 10px;'
+  );
+  console.error(
+    '%cDebes configurar las credenciales de Supabase para que la aplicación funcione.\n\n' +
+    '📖 Sigue las instrucciones en SUPABASE_SETUP.md\n\n' +
+    '1️⃣  Crea un archivo .env.local en la raíz del proyecto\n' +
+    '2️⃣  Agrega tus credenciales de Supabase:\n' +
+    '    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co\n' +
+    '    VITE_SUPABASE_ANON_KEY=tu-anon-key\n' +
+    '3️⃣  Reinicia el servidor de desarrollo (npm run dev)\n\n' +
+    '🔗 Más información: https://supabase.com/docs/guides/getting-started',
+    'color: #ff4444; font-size: 14px;'
+  );
+}
 
 // For the simplified authentication system, we consider it "configured" 
 // if we have any valid-looking URL and key (even placeholders)
 // This allows the login system to work with the new admin_users table
-export const isSupabaseConfigured = !!(
-  supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'your-supabase-url' &&
-  supabaseAnonKey !== 'your-supabase-anon-key'
-);
+export const isSupabaseConfigured = hasRealSupabaseConfig;
 
 // Create a dummy client if not configured to prevent errors
 export const supabase = isSupabaseConfigured 

@@ -1,55 +1,40 @@
--- MCM Votaciones - Complete Database Reset Script
--- This script drops everything and recreates the database from scratch
--- Use this script when you need a clean database setup after commits
+-- ============================================================================
+-- MCM VOTACIONES - COMPLETE DATABASE SETUP
+-- ============================================================================
+-- This script sets up the complete database schema for the MCM Voting System
+-- Execute this in the Supabase SQL Editor: Dashboard → SQL Editor → New Query
 -- 
--- IMPORTANT: This will DELETE ALL DATA - use only for development or fresh setups
---
--- Usage: Execute this entire script in your PostgreSQL/Supabase SQL editor
-
--- ============================================================================
--- PHASE 1: DROP EVERYTHING TO START CLEAN
+-- IMPORTANT: This script is idempotent and can be run multiple times safely
 -- ============================================================================
 
--- Drop all triggers first to avoid dependency issues
-DROP TRIGGER IF EXISTS hash_password_trigger ON public.admin_users;
-DROP TRIGGER IF EXISTS auto_assign_first_super_admin_trigger ON public.admin_users;
-DROP TRIGGER IF EXISTS update_admin_users_updated_at ON public.admin_users;
-DROP TRIGGER IF EXISTS update_rounds_updated_at ON public.rounds;
-DROP TRIGGER IF EXISTS update_candidates_updated_at ON public.candidates;
-
--- Drop all functions
-DROP FUNCTION IF EXISTS hash_password_trigger();
-DROP FUNCTION IF EXISTS authenticate_admin(TEXT, TEXT);
-DROP FUNCTION IF EXISTS get_vote_results(UUID, INTEGER);
-DROP FUNCTION IF EXISTS calculate_round_results(UUID, INTEGER);
-DROP FUNCTION IF EXISTS update_updated_at_column();
-DROP FUNCTION IF EXISTS auto_assign_first_super_admin();
-
--- Drop all tables (CASCADE to remove dependencies)
-DROP TABLE IF EXISTS public.vote_history CASCADE;
-DROP TABLE IF EXISTS public.round_results CASCADE;
-DROP TABLE IF EXISTS public.votes CASCADE;
-DROP TABLE IF EXISTS public.candidates CASCADE;
-DROP TABLE IF EXISTS public.rounds CASCADE;
-DROP TABLE IF EXISTS public.admin_users CASCADE;
-
--- Drop custom types
-DROP TYPE IF EXISTS user_role CASCADE;
-DROP TYPE IF EXISTS team_type CASCADE;
-
--- Drop all RLS policies (they'll be removed with tables, but being explicit)
--- Note: Policies are automatically dropped when tables are dropped
-
 -- ============================================================================
--- PHASE 2: RECREATE EVERYTHING FROM SCRATCH
+-- PHASE 1: ENABLE REQUIRED EXTENSIONS
 -- ============================================================================
 
--- Create custom types
-CREATE TYPE user_role AS ENUM ('admin', 'super_admin');
-CREATE TYPE team_type AS ENUM ('ECE', 'ECL');
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
+-- ============================================================================
+-- PHASE 2: CREATE CUSTOM TYPES
+-- ============================================================================
+
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('admin', 'super_admin');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE team_type AS ENUM ('ECE', 'ECL');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+-- ============================================================================
+-- PHASE 3: CREATE TABLES
+-- ============================================================================
 
 -- Admin users table for simplified authentication
-CREATE TABLE public.admin_users (
+CREATE TABLE IF NOT EXISTS public.admin_users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
@@ -61,15 +46,18 @@ CREATE TABLE public.admin_users (
 );
 
 -- Voting rounds table
-CREATE TABLE public.rounds (
+CREATE TABLE IF NOT EXISTS public.rounds (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
   year INTEGER NOT NULL,
   team team_type NOT NULL,
   expected_voters INTEGER DEFAULT 0,
+  votes_current_round INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT false,
   is_closed BOOLEAN DEFAULT false,
+  round_finalized BOOLEAN DEFAULT false,
+  show_results_to_voters BOOLEAN DEFAULT false,
   current_round_number INTEGER DEFAULT 1,
   max_votes_per_round INTEGER DEFAULT 3,
   max_selected_candidates INTEGER DEFAULT 6,
@@ -80,7 +68,7 @@ CREATE TABLE public.rounds (
 );
 
 -- Candidates table
-CREATE TABLE public.candidates (
+CREATE TABLE IF NOT EXISTS public.candidates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   round_id UUID REFERENCES public.rounds(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -99,7 +87,7 @@ CREATE TABLE public.candidates (
 );
 
 -- Votes table
-CREATE TABLE public.votes (
+CREATE TABLE IF NOT EXISTS public.votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   round_id UUID REFERENCES public.rounds(id) ON DELETE CASCADE,
   candidate_id UUID REFERENCES public.candidates(id) ON DELETE CASCADE,
@@ -112,7 +100,7 @@ CREATE TABLE public.votes (
 );
 
 -- Round results table for storing results between rounds
-CREATE TABLE public.round_results (
+CREATE TABLE IF NOT EXISTS public.round_results (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   round_id UUID REFERENCES public.rounds(id) ON DELETE CASCADE,
   round_number INTEGER NOT NULL,
@@ -124,7 +112,7 @@ CREATE TABLE public.round_results (
 );
 
 -- Vote history table for exports
-CREATE TABLE public.vote_history (
+CREATE TABLE IF NOT EXISTS public.vote_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   round_id UUID REFERENCES public.rounds(id) ON DELETE CASCADE,
   total_votes INTEGER NOT NULL,
@@ -135,76 +123,20 @@ CREATE TABLE public.vote_history (
 );
 
 -- ============================================================================
--- PHASE 3: CREATE INDEXES FOR PERFORMANCE
+-- PHASE 4: CREATE INDEXES FOR PERFORMANCE
 -- ============================================================================
 
-CREATE INDEX idx_rounds_active ON public.rounds(is_active, is_closed);
-CREATE INDEX idx_candidates_round ON public.candidates(round_id, order_index);
-CREATE INDEX idx_candidates_eliminated ON public.candidates(round_id, is_eliminated, is_selected);
-CREATE INDEX idx_votes_round ON public.votes(round_id);
-CREATE INDEX idx_votes_device ON public.votes(device_hash);
-CREATE INDEX idx_votes_candidate ON public.votes(candidate_id);
-CREATE INDEX idx_votes_round_number ON public.votes(round_id, round_number);
-CREATE INDEX idx_round_results ON public.round_results(round_id, round_number);
+CREATE INDEX IF NOT EXISTS idx_rounds_active ON public.rounds(is_active, is_closed);
+CREATE INDEX IF NOT EXISTS idx_candidates_round ON public.candidates(round_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_candidates_eliminated ON public.candidates(round_id, is_eliminated, is_selected);
+CREATE INDEX IF NOT EXISTS idx_votes_round ON public.votes(round_id);
+CREATE INDEX IF NOT EXISTS idx_votes_device ON public.votes(device_hash);
+CREATE INDEX IF NOT EXISTS idx_votes_candidate ON public.votes(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_votes_round_number ON public.votes(round_id, round_number);
+CREATE INDEX IF NOT EXISTS idx_round_results ON public.round_results(round_id, round_number);
 
 -- ============================================================================
--- PHASE 4: ENABLE ROW LEVEL SECURITY
--- ============================================================================
-
-ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.rounds ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.votes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.round_results ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.vote_history ENABLE ROW LEVEL SECURITY;
-
--- ============================================================================
--- PHASE 5: CREATE SIMPLIFIED RLS POLICIES 
--- ============================================================================
--- 
--- SECURITY NOTE: These policies are permissive because this application handles
--- authentication at the application level using the admin_users table.
--- The frontend enforces access control by:
--- 1. Requiring admin login through the custom auth system
--- 2. Only showing admin panels to authenticated admin users
--- 3. Using localStorage to maintain admin sessions
--- 
--- This approach is suitable for internal voting systems where:
--- - Admin access is tightly controlled 
--- - The application runs in a controlled environment
--- - Database access is restricted to the application layer
--- ============================================================================
-
--- ADMIN USERS POLICIES - Allow all operations (auth handled in app)
-CREATE POLICY "Allow all admin user operations" ON public.admin_users FOR ALL USING (true);
-
--- ROUNDS POLICIES - Allow all operations for both public and admin access
--- Since we handle authentication at the application level, we need to be permissive here
-CREATE POLICY "Allow all rounds operations" ON public.rounds 
-  FOR ALL USING (true);
-
--- CANDIDATES POLICIES - Allow all operations for both public and admin access
--- Since we handle authentication at the application level, we need to be permissive here
-CREATE POLICY "Allow all candidates operations" ON public.candidates 
-  FOR ALL USING (true);
-
--- VOTES POLICIES - Allow all operations for both public and admin access  
--- Since we handle authentication at the application level, we need to be permissive here
-CREATE POLICY "Allow all votes operations" ON public.votes 
-  FOR ALL USING (true);
-
--- ROUND RESULTS POLICIES - Allow all operations 
--- Since we handle authentication at the application level, we need to be permissive here
-CREATE POLICY "Allow all round results operations" ON public.round_results 
-  FOR ALL USING (true);
-
--- VOTE HISTORY POLICIES - Allow all operations
--- Since we handle authentication at the application level, we need to be permissive here  
-CREATE POLICY "Allow all vote history operations" ON public.vote_history 
-  FOR ALL USING (true);
-
--- ============================================================================
--- PHASE 6: CREATE FUNCTIONS
+-- PHASE 5: CREATE FUNCTIONS
 -- ============================================================================
 
 -- Function to hash passwords using bcrypt
@@ -216,7 +148,7 @@ BEGIN
   IF NEW.password_hash IS NOT NULL AND NOT (NEW.password_hash ~ '^\$2[ayb]\$') THEN
     -- Hash the password using crypt with bcrypt
     -- Generate a random salt with cost factor 12
-    NEW.password_hash = crypt(NEW.password_hash, gen_salt('bf', 12));
+    NEW.password_hash = extensions.crypt(NEW.password_hash, extensions.gen_salt('bf', 12));
   END IF;
   
   -- Update timestamp
@@ -249,7 +181,7 @@ BEGIN
     au.updated_at
   FROM public.admin_users au
   WHERE au.username = input_username
-    AND au.password_hash = crypt(input_password, au.password_hash);
+    AND au.password_hash = extensions.crypt(input_password, au.password_hash);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -338,34 +270,100 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- PHASE 7: CREATE TRIGGERS
+-- PHASE 6: CREATE TRIGGERS
 -- ============================================================================
 
+DROP TRIGGER IF EXISTS hash_password_trigger ON public.admin_users;
 CREATE TRIGGER hash_password_trigger
   BEFORE INSERT OR UPDATE ON public.admin_users
   FOR EACH ROW EXECUTE FUNCTION hash_password_trigger();
 
+DROP TRIGGER IF EXISTS auto_assign_first_super_admin_trigger ON public.admin_users;
 CREATE TRIGGER auto_assign_first_super_admin_trigger
   BEFORE INSERT ON public.admin_users
   FOR EACH ROW EXECUTE FUNCTION auto_assign_first_super_admin();
 
+DROP TRIGGER IF EXISTS update_admin_users_updated_at ON public.admin_users;
 CREATE TRIGGER update_admin_users_updated_at 
   BEFORE UPDATE ON public.admin_users 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_rounds_updated_at ON public.rounds;
 CREATE TRIGGER update_rounds_updated_at 
   BEFORE UPDATE ON public.rounds 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_candidates_updated_at ON public.candidates;
 CREATE TRIGGER update_candidates_updated_at 
   BEFORE UPDATE ON public.candidates 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- PHASE 8: CREATE DEFAULT ADMIN USER
+-- PHASE 7: ENABLE ROW LEVEL SECURITY
 -- ============================================================================
 
--- Create default admin user with username "admin" and password "Votaciones2025"
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rounds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.votes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.round_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vote_history ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================================
+-- PHASE 8: CREATE RLS POLICIES 
+-- ============================================================================
+-- 
+-- SECURITY NOTE: These policies are permissive because this application handles
+-- authentication at the application level using the admin_users table.
+-- ============================================================================
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Allow all admin user operations" ON public.admin_users;
+DROP POLICY IF EXISTS "Allow all rounds operations" ON public.rounds;
+DROP POLICY IF EXISTS "Allow all candidates operations" ON public.candidates;
+DROP POLICY IF EXISTS "Allow all votes operations" ON public.votes;
+DROP POLICY IF EXISTS "Allow all round results operations" ON public.round_results;
+DROP POLICY IF EXISTS "Allow all vote history operations" ON public.vote_history;
+
+-- Create new policies
+CREATE POLICY "Allow all admin user operations" ON public.admin_users FOR ALL USING (true);
+CREATE POLICY "Allow all rounds operations" ON public.rounds FOR ALL USING (true);
+CREATE POLICY "Allow all candidates operations" ON public.candidates FOR ALL USING (true);
+CREATE POLICY "Allow all votes operations" ON public.votes FOR ALL USING (true);
+CREATE POLICY "Allow all round results operations" ON public.round_results FOR ALL USING (true);
+CREATE POLICY "Allow all vote history operations" ON public.vote_history FOR ALL USING (true);
+
+-- ============================================================================
+-- PHASE 9: GRANT PERMISSIONS
+-- ============================================================================
+
+-- Grant permissions to both anon and authenticated roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+-- Grant full access to authenticated users
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+
+-- Grant full access to anon users (needed for public voting and admin access)
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
+
+-- Allow both roles to execute functions
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
+
+-- ============================================================================
+-- PHASE 10: ADD TABLE COMMENTS
+-- ============================================================================
+
+COMMENT ON TABLE public.rounds IS 'Voting rounds with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.candidates IS 'Candidates with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.votes IS 'Votes with permissive RLS: access control handled at application level';
+COMMENT ON TABLE public.admin_users IS 'Admin users with bcrypt authentication - application-level access control';
+
+-- ============================================================================
+-- PHASE 11: CREATE DEFAULT ADMIN USER (IF NOT EXISTS)
+-- ============================================================================
+
 INSERT INTO public.admin_users (username, password_hash, name, email, role) 
 VALUES (
   'admin',
@@ -373,31 +371,14 @@ VALUES (
   'Administrador MCM', 
   'admin@movimientoconsolacion.com',
   'super_admin'
-);
+)
+ON CONFLICT (username) DO NOTHING;
 
 -- ============================================================================
--- PHASE 9: GRANT PERMISSIONS
+-- SUCCESS!
 -- ============================================================================
 
--- Grant necessary permissions for Supabase
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
-
--- ============================================================================
--- PHASE 10: SUCCESS CONFIRMATION
--- ============================================================================
-
--- Add helpful comments for documentation
-COMMENT ON TABLE public.rounds IS 'Voting rounds with permissive RLS: access control handled at application level';
-COMMENT ON TABLE public.candidates IS 'Candidates with permissive RLS: access control handled at application level';
-COMMENT ON TABLE public.votes IS 'Votes with permissive RLS: access control handled at application level';
-COMMENT ON TABLE public.admin_users IS 'Admin users with bcrypt authentication - application-level access control';
-
--- Success message
 SELECT 
-  'MCM Voting System database reset completed successfully!' as status,
-  'All tables dropped and recreated' as action,
+  'MCM Voting System database setup completed successfully!' as status,
   'Default admin: username=admin, password=Votaciones2025' as credentials,
-  'You can now use the admin panel without permission errors' as next_step;
+  'IMPORTANT: Change the default password after first login!' as warning;

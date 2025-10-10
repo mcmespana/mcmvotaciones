@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<candidates>
+  <candidate>
+    <name>María</name>
+    <surname>García López</surname>
+    <location>Madrid</location>
+    <group_name>Grupo Norte</group_name>
+    <age>28</age>
+    <description>Licenciada en Comunicación con 5 años de experiencia en coordinación de eventos. Apasionada por el trabajo en equipo y el desarrollo comunitario.</description>
+    <image_url>https://i.pravatar.cc/300?img=1</image_url>
+  </candidate>
+  <candidate>
+    <name>Juan</name>
+    <surname>Martínez Silva</surname>
+    <location>Barcelona</location>
+    <group_name>Grupo Levante</group_name>
+    <age>32</age>
+    <description>Ingeniero informático dedicado al voluntariado desde hace 8 años. Especialista en gestión de proyectos y liderazgo participativo.</description>
+    <image_url>https://i.pravatar.cc/300?img=2</image_url>
+  </candidate>
+  <candidate>
+    <name>Ana</name>
+    <surname>Rodríguez Pérez</surname>
+    <location>Valencia</location>
+    <group_name>Grupo Centro</group_name>
+    <age>26</age>
+    <description>Maestra de primaria con vocación de servicio. Experiencia en coordinación de actividades juveniles y formación.</description>
+    <image_url>https://i.pravatar.cc/300?img=3</image_url>
+  </candidate>
+  <candidate>
+    <name>Carlos</name>
+    <surname>Fernández Torres</surname>
+    <location>Sevilla</location>
+    <group_name>Grupo Sur</group_name>
+    <age>30</age>
+    <description>Trabajador social comprometido con la inclusión y la igualdad. Amplia experiencia en mediación y resolución de conflictos.</description>
+    <image_url>https://i.pravatar.cc/300?img=4</image_url>
+  </candidate>
+  <candidate>
+    <name>Laura</name>
+    <surname>López Sánchez</surname>
+    <location>Zaragoza</location>
+    <group_name>Grupo Aragón</group_name>
+    <age>29</age>
+    <description>Psicóloga especializada en dinámicas grupales. Facilitadora de procesos de participación y toma de decisiones.</description>
+    <image_url>https://i.pravatar.cc/300?img=5</image_url>
+  </candidate>
+  <candidate>
+    <name>David</name>
+    <surname>González Ruiz</surname>
+    <location>Bilbao</location>
+    <group_name>Grupo Norte</group_name>
+    <age>34</age>
+    <description>Economista con experiencia en gestión de recursos. Coordinador de equipos multiculturales durante 6 años.</description>
+    <image_url>https://i.pravatar.cc/300?img=6</image_url>
+  </candidate>
+  <candidate>
+    <name>Carmen</name>
+    <surname>Díaz Moreno</surname>
+    <location>Granada</location>
+    <group_name>Grupo Sur</group_name>
+    <age>27</age>
+    <description>Periodista y comunicadora social. Responsable de proyectos de sensibilización y campañas de impacto social.</description>
+    <image_url>https://i.pravatar.cc/300?img=7</image_url>
+  </candidate>
+  <candidate>
+    <name>Miguel</name>
+    <surname>Álvarez Castro</surname>
+    <location>Valladolid</location>
+    <group_name>Grupo Centro</group_name>
+    <age>31</age>
+    <description>Educador social con pasión por el acompañamiento juvenil. Experiencia en coordinación territorial.</description>
+    <image_url>https://i.pravatar.cc/300?img=8</image_url>
+  </candidate>
+  <candidate>
+    <name>Elena</name>
+    <surname>Romero Jiménez</surname>
+    <location>Murcia</location>
+    <group_name>Grupo Levante</group_name>
+    <age>25</age>
+    <description>Licenciada en Pedagogía. Especialista en formación de formadores y metodologías participativas.</description>
+    <image_url>https://i.pravatar.cc/300?img=9</image_url>
+  </candidate>
+  <candidate>
+    <name>Pablo</name>
+    <surname>Torres Navarro</surname>
+    <location>Salamanca</location>
+    <group_name>Grupo Centro</group_name>
+    <age>33</age>
+    <description>Filósofo y dinamizador cultural. Coordinador de grupos de reflexión y espacios de diálogo comunitario.</description>
+    <image_url>https://i.pravatar.cc/300?img=10</image_url>
+  </candidate>
+</candidates>
