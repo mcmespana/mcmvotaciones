@@ -57,12 +57,14 @@
 
 | Documento | Descripción | Tiempo |
 |-----------|-------------|---------|
-| [**QUICK_START.md**](./docs/QUICK_START.md) | Guía de inicio rápido (5 pasos) | ⏱️ 60-90 min |
-| [**EXECUTIVE_SUMMARY.md**](./docs/EXECUTIVE_SUMMARY.md) | Resumen ejecutivo v2.0.0 | 📖 15 min |
-| [**MIGRATION_INSTRUCTIONS.md**](./docs/MIGRATION_INSTRUCTIONS.md) | Guía paso a paso con tests | 🔧 45 min |
-| [**VOTING_PAGE_IMPLEMENTATION_GUIDE.md**](./docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md) | Código completo VotingPage | 💻 30 min |
-| [**IMPLEMENTATION_SUMMARY.md**](./docs/IMPLEMENTATION_SUMMARY.md) | Estado técnico del proyecto | 📊 10 min |
-| [**CHANGELOG.md**](./docs/CHANGELOG.md) | Historial de cambios | 📝 5 min |
+| [**QUICK_START.md**](./docs/QUICK_START.md) | Pasos mínimos para levantar el entorno local. | ⏱️ 30 min |
+| [**MIGRATION_INSTRUCTIONS.md**](./docs/MIGRATION_INSTRUCTIONS.md) | Procedimiento detallado de migraciones con validaciones. | 🔧 45 min |
+| [**REALTIME_ROUND_UPDATES.md**](./docs/REALTIME_ROUND_UPDATES.md) | Cómo se asegura la sincronización automática de rondas. | 🔄 5 min |
+| [**VOTING_PAGE_IMPLEMENTATION_GUIDE.md**](./docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md) | Implementación completa de la página de votación. | 💻 30 min |
+| [**PROJECT_STRUCTURE.md**](./docs/PROJECT_STRUCTURE.md) | Convenciones de carpetas y módulos del repositorio. | 🗂️ 10 min |
+| [**CHANGELOG.md**](./docs/CHANGELOG.md) | Historial resumido de cambios relevantes. | 📝 5 min |
+
+> Para una visión ejecutiva consulta [`docs/EXECUTIVE_SUMMARY.md`](./docs/EXECUTIVE_SUMMARY.md).
 
 **📖 Índice completo**: [`docs/README.md`](./docs/README.md)
 
@@ -86,17 +88,17 @@ npm install
    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
    VITE_SUPABASE_ANON_KEY=tu-anon-key-aqui
    ```
-4. Ejecuta el script `setup-database.sql` en el SQL Editor de Supabase
+4. Ejecuta el script `setup-database.sql` en el SQL Editor de Supabase.
 5. **[NUEVO v2.0.0]** Ejecuta las migraciones:
-   - **Opción A (Recomendada)**: Copia `supabase/sqls/000-ALL-MIGRATIONS-COMBINED.sql` en Supabase SQL Editor
-   - **Opción B**: Ejecuta los 4 archivos SQL individuales en orden (001, 002, 003, 004)
+   - **Opción A (recomendada)**: `supabase/sqls/upgrade-to-v2-0-0.sql` (incluye los pasos 001–004).
+   - **Opción B**: Ejecuta los 4 archivos SQL individuales en orden (`001`, `002`, `003`, `004`).
 
 #### Para actualizar proyectos existentes a v2.0.0:
 📚 **Lee la documentación completa**: [`docs/README.md`](./docs/README.md)
 
 **Resumen**:
-1. Crear backup de base de datos
-2. Ejecutar migraciones SQL (`000-ALL-MIGRATIONS-COMBINED.sql`)
+1. Crear backup de base de datos.
+2. Ejecutar migraciones SQL (`supabase/sqls/upgrade-to-v2-0-0.sql`).
 3. Desplegar frontend actualizado
 4. Validar con tests de aceptación
 
@@ -117,10 +119,12 @@ La aplicación estará disponible en `http://localhost:8080`
 mcmvotaciones/
 ├── docs/                    # 📚 Documentación completa
 │   ├── README.md            # Índice de documentación
-│   ├── QUICK_START.md       # Guía de inicio rápido
-│   ├── EXECUTIVE_SUMMARY.md # Resumen ejecutivo v2.0.0
+│   ├── QUICK_START.md
+│   ├── EXECUTIVE_SUMMARY.md
 │   ├── MIGRATION_INSTRUCTIONS.md
+│   ├── REALTIME_ROUND_UPDATES.md
 │   ├── VOTING_PAGE_IMPLEMENTATION_GUIDE.md
+│   ├── PROJECT_STRUCTURE.md
 │   ├── IMPLEMENTATION_SUMMARY.md
 │   └── CHANGELOG.md
 ├── src/
@@ -135,11 +139,13 @@ mcmvotaciones/
 │   └── hooks/               # Custom React hooks
 ├── supabase/
 │   └── sqls/                # Scripts SQL
-│       ├── 000-ALL-MIGRATIONS-COMBINED.sql  # ⭐ Todo en uno
+│       ├── README.md                        # Orden y propósito de cada script
+│       ├── upgrade-to-v2-0-0.sql            # ⭐ Migración combinada v2.0.0
 │       ├── 001-rename-expected-voters-to-max-votantes.sql
 │       ├── 002-create-seats-table.sql
 │       ├── 003-update-majority-to-fixed-threshold.sql
-│       └── 004-seats-management-api.sql
+│       ├── 004-seats-management-api.sql
+│       └── … (scripts de soporte)
 └── PROJECT_STRUCTURE.md     # Guía detallada de organización
 ```
 
