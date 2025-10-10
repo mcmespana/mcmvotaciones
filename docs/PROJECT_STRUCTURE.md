@@ -9,15 +9,16 @@ Toda la documentación técnica está organizada en la carpeta `/docs/`:
 - **[EXECUTIVE_SUMMARY.md](./docs/EXECUTIVE_SUMMARY.md)** - Resumen ejecutivo
 - **[MIGRATION_INSTRUCTIONS.md](./docs/MIGRATION_INSTRUCTIONS.md)** - Instrucciones de migraciones SQL
 - **[VOTING_PAGE_IMPLEMENTATION_GUIDE.md](./docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md)** - Guía de implementación frontend
+- **[REALTIME_ROUND_UPDATES.md](./docs/REALTIME_ROUND_UPDATES.md)** - Cambios clave del realtime consolidado
 - **[IMPLEMENTATION_SUMMARY.md](./docs/IMPLEMENTATION_SUMMARY.md)** - Resumen técnico
 - **[CHANGELOG.md](./docs/CHANGELOG.md)** - Historial de cambios v2.0.0
 
 ## 🗄️ Migraciones SQL (`/supabase/sqls/`)
 
-### Archivo Único (Recomendado para Supabase Snippet)
-- **`000-ALL-MIGRATIONS-COMBINED.sql`** ⭐  
-  Archivo único con las 4 migraciones combinadas.  
-  **Uso**: Copiar y pegar completo en Supabase SQL Editor
+### Archivo único (recomendado)
+- **`upgrade-to-v2-0-0.sql`** ⭐
+  Script combinado que ejecuta las migraciones 001–004 con avisos y validaciones básicas.
+  **Uso**: Copiar y pegar completo en Supabase SQL Editor.
 
 ### Archivos Individuales (Para ejecución por pasos)
 1. **`001-rename-expected-voters-to-max-votantes.sql`**
@@ -38,7 +39,7 @@ Toda la documentación técnica está organizada en la carpeta `/docs/`:
 ## 🚀 Inicio Rápido
 
 1. **Leer documentación**: `docs/QUICK_START.md`
-2. **Ejecutar SQL**: Copiar `supabase/sqls/000-ALL-MIGRATIONS-COMBINED.sql` en Supabase
+2. **Ejecutar SQL**: `supabase/sqls/upgrade-to-v2-0-0.sql` (o seguir los pasos 001–004 del `README.md` de la carpeta `sqls/`).
 3. **Implementar frontend**: Seguir `docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md`
 4. **Desplegar**: Build y deploy normal
 

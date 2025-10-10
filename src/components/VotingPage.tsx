@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateDeviceHash, hasVotedLocally, markAsVoted, isVotingAvailable } from '@/lib/device';
+import { getMaxVotesAllowed } from '@/lib/votingRules';
+import { debugLog } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -62,19 +64,7 @@ export function VotingPage() {
   const computeMaxVotesThisRound = useCallback(() => {
     if (!activeRound) return 0;
     const currentlySelected = candidates.filter(c => c.is_selected).length;
-    const remainingToSelect = activeRound.max_selected_candidates - currentlySelected;
-    // Regla: Siempre máximo 3 votos, excepto cuando solo quedan 2 o 1 por seleccionar
-    // Ejemplo: max_selected_candidates = 6
-    // - 0/6 seleccionados → quedan 6 → max 3 votos
-    // - 1/6 seleccionados → quedan 5 → max 3 votos
-    // - 2/6 seleccionados → quedan 4 → max 3 votos
-    // - 3/6 seleccionados → quedan 3 → max 3 votos
-    // - 4/6 seleccionados → quedan 2 → max 2 votos
-    // - 5/6 seleccionados → queda 1 → max 1 voto
-    if (remainingToSelect > 2) return 3;
-    if (remainingToSelect === 2) return 2;
-    if (remainingToSelect === 1) return 1;
-    return 0;
+    return getMaxVotesAllowed(activeRound.max_selected_candidates, currentlySelected);
   }, [activeRound, candidates]);
 
   const loadResults = useCallback(async (roundId: string, roundNumber: number) => {
@@ -221,7 +211,7 @@ export function VotingPage() {
           filter: 'is_active=eq.true'
         }, 
         (payload) => {
-          console.log('🆕 New active round created:', payload);
+          debugLog('🆕 New active round created:', payload);
           const newRound = (payload as unknown as { new: Partial<Round> }).new;
           
           // Mostrar notificación al usuario
@@ -242,7 +232,7 @@ export function VotingPage() {
           table: 'rounds' 
         }, 
         (payload) => {
-          console.log('🔄 Round updated:', payload);
+          debugLog('🔄 Round updated:', payload);
           const updated = (payload as unknown as { new: Partial<Round> }).new;
           if (!updated) return;
           const current = activeRoundRef.current;
@@ -261,7 +251,7 @@ export function VotingPage() {
               updated.current_round_number !== undefined && updated.current_round_number !== current.current_round_number
             );
             if (affectsVoter) {
-              console.log('🔄 Current round updated with voter impact, reloading...');
+              debugLog('🔄 Current round updated with voter impact, reloading...');
               // Agregar toast específico según el tipo de cambio
               if (updated.is_active === false) {
                 toast({
@@ -279,7 +269,7 @@ export function VotingPage() {
           }
           // Si se activó una ronda diferente o cuando no había ninguna activa
           else if (updated.is_active === true) {
-            console.log('🔄 Different round became active, reloading...', {
+            debugLog('🔄 Different round became active, reloading...', {
               updatedId: updated.id,
               currentId: current?.id || 'none'
             });
@@ -292,15 +282,15 @@ export function VotingPage() {
         }
       )
       .subscribe((status) => {
-        console.log('📡 Subscription status:', status);
+        debugLog('📡 Subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to rounds updates (INSERT + UPDATE)');
+          debugLog('✅ Successfully subscribed to rounds updates (INSERT + UPDATE)');
         }
       });
 
     // Cleanup subscriptions on unmount
     return () => {
-      console.log('🔌 Unsubscribing from rounds updates');
+      debugLog('🔌 Unsubscribing from rounds updates');
       supabase.removeChannel(roundsChannel);
     };
   }, [navigate, loadActiveRound, searchParams, toast]);

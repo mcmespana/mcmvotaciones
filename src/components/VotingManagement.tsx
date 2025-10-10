@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/lib/supabase';
+import { getMaxVotesAllowed } from '@/lib/votingRules';
+import { debugLog } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -174,12 +176,8 @@ export function VotingManagement() {
   const [finalizingRounds, setFinalizingRounds] = useState<Set<string>>(new Set());
   
   // Functions for multi-round voting
-  const calculateCurrentMaxVotes = (round: Round) => {
-    const activeCount = round.max_selected_candidates - round.selected_candidates_count;
-    if (activeCount <= 1) return 1;
-    if (activeCount <= 2) return 2;
-    return 3;
-  };
+  const calculateCurrentMaxVotes = (round: Round) =>
+    getMaxVotesAllowed(round.max_selected_candidates, round.selected_candidates_count);
 
   const loadRoundResults = async (roundId: string, roundNumber: number) => {
     try {
@@ -401,7 +399,7 @@ export function VotingManagement() {
           table: 'votes' 
         }, 
         (payload) => {
-          console.log('📊 Vote change detected:', payload);
+          debugLog('📊 Vote change detected:', payload);
           // Reload rounds when votes change - use setTimeout to avoid stale closure
           setTimeout(() => {
             // Create a new instance of loadRounds to avoid dependency issues
@@ -445,7 +443,7 @@ export function VotingManagement() {
         }
       )
       .subscribe((status) => {
-        console.log('📡 Votes channel status:', status);
+        debugLog('📡 Votes channel status:', status);
       });
 
     // Subscribe to real-time updates for round_results
@@ -458,18 +456,18 @@ export function VotingManagement() {
           table: 'round_results' 
         }, 
         (payload) => {
-          console.log('📈 Round results change detected:', payload);
+          debugLog('📈 Round results change detected:', payload);
           // Reload round results when they change - avoid using state dependencies
           // This will be handled by the individual loadRoundResults calls
         }
       )
       .subscribe((status) => {
-        console.log('📡 Results channel status:', status);
+        debugLog('📡 Results channel status:', status);
       });
 
     // Cleanup subscriptions on unmount ONLY
     return () => {
-      console.log('🔌 Cleaning up subscriptions');
+      debugLog('🔌 Cleaning up subscriptions');
       supabase.removeChannel(votesChannel);
       supabase.removeChannel(resultsChannel);
     };
@@ -546,14 +544,14 @@ export function VotingManagement() {
           table: 'rounds' 
         }, 
         (payload) => {
-          console.log('🔄 Round change detected:', payload);
+          debugLog('🔄 Round change detected:', payload);
           // Update rounds state efficiently without full reload
           const eventType = payload.eventType;
           const newRound = payload.new as RoundWithCandidates;
           const oldRound = payload.old as RoundWithCandidates;
           
           if (eventType === 'INSERT' && newRound) {
-            console.log('➕ New round inserted, need to fetch with candidates');
+            debugLog('➕ New round inserted, need to fetch with candidates');
             // Para INSERT, necesitamos recargar para obtener los candidatos
             loadRounds();
           } else if (eventType === 'UPDATE' && newRound) {
@@ -561,7 +559,7 @@ export function VotingManagement() {
             setRounds(prevRounds => {
               const existingRound = prevRounds.find(r => r.id === newRound.id);
               if (!existingRound) {
-                console.log('⚠️ Round not found in state, reloading all');
+                debugLog('⚠️ Round not found in state, reloading all');
                 loadRounds();
                 return prevRounds;
               }
@@ -580,12 +578,12 @@ export function VotingManagement() {
               );
               
               if (!hasSignificantChange) {
-                console.log('⏭️ No significant changes detected, skipping update');
+                debugLog('⏭️ No significant changes detected, skipping update');
                 return prevRounds;
               }
-              
-              console.log('✏️ Significant change detected, updating round in state');
-              return prevRounds.map(round => 
+
+              debugLog('✏️ Significant change detected, updating round in state');
+              return prevRounds.map(round =>
                 round.id === newRound.id ? { ...round, ...newRound, candidates: round.candidates } : round
               );
             });
@@ -596,7 +594,7 @@ export function VotingManagement() {
               return { ...prev, ...newRound, candidates: prev.candidates };
             });
           } else if (eventType === 'DELETE' && oldRound) {
-            console.log('🗑️ Round deleted, removing from state');
+            debugLog('🗑️ Round deleted, removing from state');
             // Remove deleted round from the list
             setRounds(prevRounds => 
               prevRounds.filter(round => round.id !== oldRound.id)
@@ -613,12 +611,12 @@ export function VotingManagement() {
         }
       )
       .subscribe((status) => {
-        console.log('📡 Rounds channel status:', status);
+        debugLog('📡 Rounds channel status:', status);
       });
 
     // Cleanup subscription on unmount
     return () => {
-      console.log('🔌 Cleaning up rounds subscription');
+      debugLog('🔌 Cleaning up rounds subscription');
       supabase.removeChannel(roundsChannel);
     };
   }, [loadRounds]); // Add loadRounds as dependency

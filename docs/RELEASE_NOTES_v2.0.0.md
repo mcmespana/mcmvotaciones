@@ -180,7 +180,7 @@ const [browserInstanceId] = useState(() => generateBrowserInstanceId());
 | `002-create-seats-table.sql` | Tabla de asientos | ✅ Listo |
 | `003-update-majority-to-fixed-threshold.sql` | Lógica de umbral | ✅ Listo |
 | `004-seats-management-api.sql` | API completa | ✅ Listo |
-| `000-ALL-MIGRATIONS-COMBINED.sql` | Todo en uno | ✅ Listo |
+| `upgrade-to-v2-0-0.sql` | Migración combinada con pasos 001–004 | ✅ Listo |
 
 ### Frontend
 
@@ -225,7 +225,7 @@ cp .env.example .env.local
 # 4. Ejecutar SQL
 # En Supabase SQL Editor:
 # - setup-database.sql
-# - 000-ALL-MIGRATIONS-COMBINED.sql
+# - upgrade-to-v2-0-0.sql
 
 # 5. Iniciar desarrollo
 npm run dev
@@ -242,7 +242,7 @@ npm install
 
 # 2. Ejecutar migraciones SQL
 # En Supabase SQL Editor:
-supabase/sqls/000-ALL-MIGRATIONS-COMBINED.sql
+supabase/sqls/upgrade-to-v2-0-0.sql
 
 # 3. Validar migración
 # Ejecuta queries de verificación (ver docs/MIGRATION_INSTRUCTIONS.md)

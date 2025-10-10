@@ -16,9 +16,11 @@ CREATE TABLE votes_backup AS SELECT * FROM votes;
 CREATE TABLE round_results_backup AS SELECT * FROM round_results;
 ```
 
-## 📋 ORDEN DE EJECUCIÓN
+## 📋 Orden de ejecución
 
-Ejecutar en el **Supabase SQL Editor** en este orden exacto:
+> 📌 **Atajo recomendado**: ejecuta `supabase/sqls/upgrade-to-v2-0-0.sql` para aplicar todas las migraciones de la versión 2.0.0 en una sola corrida. El archivo incluye los pasos 1 a 4 descritos abajo y muestra avisos en cada fase.
+
+Si prefieres correr cada script individualmente, ejecútalos en el **Supabase SQL Editor** en este orden exacto:
 
 ### ✅ Paso 1: Renombrar expected_voters → max_votantes
 **Archivo**: `supabase/sqls/001-rename-expected-voters-to-max-votantes.sql`
