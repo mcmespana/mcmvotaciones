@@ -1,0 +1,120 @@
+<form id="uploadForm" style="max-width:480px">
+  <input id="dni" placeholder="DNI" required style="width:100%"><br><br>
+
+  <select id="category" style="width:100%">
+    <option value="">-vacío-</option>
+    <option value="autorizacion">Autorización para participar</option>
+    <option value="legal_vol_acuerdo_incorporacion">Voluntariado: Acuerdo incorporación</option>
+    <option value="legal_cert_delitos">Certificado Contacto Menores</option>
+    <option value="legal_cer_delitos_autorizacion">Certificado Menores - Autorización</option>
+    <option value="legal_compliance_compromiso">Compliance</option>
+    <option value="formacion_titulo_mat">Formación: Título MAT</option>
+    <option value="formacion_titulo_dat">Formación: Título DAT</option>
+    <option value="formacion_titulo_fa">Formación: Título FA</option>
+    <option value="formacion_titulo_otros">Formación: Otros</option>
+  </select><br><br>
+
+  <input type="file" id="file" accept="application/pdf,image/*" required><br><br>
+  <button>Subir</button>
+</form>
+
+<pre id="result"></pre>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script>
+const PROXY = "https://comunica.movimientoconsolacion.com/crm_proxy_test2.php";
+const USER = "api_user";
+const PASS = "w780kAp6GeG&EEffJBe0iVa)";
+
+let sessionId;
+
+async function callCRM(method, data) {
+  const r = await fetch(PROXY, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      method,
+      input_type: "JSON",
+      response_type: "JSON",
+      rest_data: JSON.stringify(data)
+    })
+  });
+  return r.json();
+}
+
+async function login() {
+  const r = await callCRM("login", {
+    user_auth: { user_name: USER, password: md5(PASS) }
+  });
+  sessionId = r.id;
+}
+
+async function findContact(dni) {
+  const r = await callCRM("get_entry_list", {
+    session: sessionId,
+    module_name: "Contacts",
+    query: `contacts_cstm.stic_identification_number_c='${dni}'`,
+    max_results: 1
+  });
+  if (!r.entry_list.length) throw "DNI no encontrado";
+  return r.entry_list[0].id;
+}
+
+async function createDocument(name, category) {
+  const r = await callCRM("set_entry", {
+    session: sessionId,
+    module_name: "Documents",
+    name_value_list: {
+      document_name: name,
+      category_id: category,
+      status_id: "Active"
+    }
+  });
+  return r.id;
+}
+
+async function uploadRevision(docId, file) {
+  const buf = await file.arrayBuffer();
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+  await callCRM("set_entry", {
+    session: sessionId,
+    module_name: "DocumentRevisions",
+    name_value_list: {
+      document_id: docId,
+      revision: "1",
+      filename: file.name,
+      file_mime_type: file.type,
+      file: base64
+    }
+  });
+}
+
+async function relate(docId, contactId) {
+  await callCRM("set_relationship", {
+    session: sessionId,
+    module_name: "Documents",
+    module_id: docId,
+    link_field_name: "contacts",
+    related_ids: [contactId]
+  });
+}
+
+uploadForm.onsubmit = async e => {
+  e.preventDefault();
+  result.textContent = "Procesando…";
+
+  try {
+    await login();
+    const contactId = await findContact(dni.value);
+    const docId = await createDocument(file.files[0].name, category.value);
+    await uploadRevision(docId, file.files[0]);
+    await relate(docId, contactId);
+    result.textContent = "✔ Documento subido correctamente";
+  } catch (e) {
+    result.textContent = "❌ Error";
+    console.error(e);
+  }
+};
+</script>

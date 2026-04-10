@@ -1,0 +1,60 @@
+<div>
+  <input id="dni" placeholder="DNI/NIE" />
+  <button id="b1">Validar</button>
+  <div id="info"></div>
+  <input id="f" type="file" accept="application/pdf" />
+  <button id="b2" disabled>Subir Título MAT</button>
+  <div id="res"></div>
+</div>
+
+<script>
+let contact = null;
+
+const $ = (id)=>document.getElementById(id);
+
+$("b1").onclick = async () => {
+  $("info").textContent = "Buscando…";
+  contact = null;
+  $("b2").disabled = true;
+
+  const dni = ($("dni").value || "").toUpperCase().replace(/[^0-9A-Z]/g,"").trim();
+  const r = await fetch("/crm_proxy_min.php?action=lookup", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ dni })
+  });
+  const txt = await r.text();
+  let j;
+  try { j = JSON.parse(txt); }
+  catch(e){
+    console.error("NO JSON:", txt);
+    throw new Error("Respuesta no JSON: " + txt.slice(0,200));
+  }
+
+
+  if (!j.ok) return $("info").textContent = "Error: " + (j.error || "unknown");
+  if (!j.found) return $("info").textContent = "No existe en el CRM";
+
+  contact = j.contact;
+  $("info").textContent = "OK: " + contact.full_name;
+  $("b2").disabled = false;
+};
+
+$("b2").onclick = async () => {
+  $("res").textContent = "Subiendo…";
+  const file = $("f").files[0];
+  if (!contact) return $("res").textContent = "Primero valida";
+  if (!file) return $("res").textContent = "Selecciona PDF";
+
+  const fd = new FormData();
+  fd.append("dni", $("dni").value);
+  fd.append("contact_id", contact.id);
+  fd.append("file", file);
+
+  const r = await fetch("/crm_proxy_min.php?action=upload_mat", { method:"POST", body: fd });
+  const j = await r.json();
+
+  if (!j.ok) return $("res").textContent = "Error: " + (j.error || "unknown");
+  $("res").textContent = "Subido ✅ " + j.document.filename;
+};
+</script>

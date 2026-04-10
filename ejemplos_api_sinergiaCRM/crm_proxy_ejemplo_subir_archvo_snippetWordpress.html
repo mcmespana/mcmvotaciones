@@ -1,0 +1,121 @@
+<div class="mat-box">
+  <div class="row">
+    <label>DNI / NIE</label>
+    <input id="dni" type="text" placeholder="12345678Z" />
+    <button id="btnLookup" type="button">Validar</button>
+  </div>
+
+  <div id="lookupMsg" class="msg"></div>
+
+  <div class="row">
+    <label>Archivo (Título MAT)</label>
+    <input id="matFile" type="file" accept="application/pdf" disabled />
+    <button id="btnUpload" type="button" disabled>Subir “Título MAT”</button>
+  </div>
+
+  <div id="uploadMsg" class="msg"></div>
+</div>
+
+<style>
+  .mat-box{max-width:680px;padding:16px;border:1px solid #ddd;border-radius:10px}
+  .row{display:flex;gap:10px;align-items:center;margin:10px 0}
+  label{min-width:140px;font-weight:600}
+  input[type="text"]{flex:1;padding:10px;border:1px solid #ccc;border-radius:8px}
+  input[type="file"]{flex:1}
+  button{padding:10px 12px;border:0;border-radius:8px;cursor:pointer}
+  #btnLookup{background:#222;color:#fff}
+  #btnUpload{background:#0a7;color:#fff}
+  button[disabled]{opacity:.5;cursor:not-allowed}
+  .msg{padding:8px 2px;font-size:14px;white-space:pre-wrap}
+  .ok{color:#0a7}
+  .err{color:#c00}
+</style>
+
+<script>
+(() => {
+  const $dni = document.getElementById('dni');
+  const $btnLookup = document.getElementById('btnLookup');
+  const $lookupMsg = document.getElementById('lookupMsg');
+
+  const $matFile = document.getElementById('matFile');
+  const $btnUpload = document.getElementById('btnUpload');
+  const $uploadMsg = document.getElementById('uploadMsg');
+
+  let contact = null;
+
+  const proxy = (path) => `${location.origin}/crm_proxy_test2.php?action=${path}`;
+
+  const setMsg = (el, txt, ok) => {
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+    el.textContent = txt;
+  };
+
+  const normalizeDni = (s) => (s || '').toUpperCase().replace(/[^0-9A-Z]/g, '').trim();
+
+  $btnLookup.addEventListener('click', async () => {
+    contact = null;
+    $matFile.disabled = true;
+    $btnUpload.disabled = true;
+    setMsg($lookupMsg, 'Validando…', true);
+
+    const dni = normalizeDni($dni.value);
+    if (!dni) return setMsg($lookupMsg, 'DNI vacío.', false);
+
+    try {
+      const r = await fetch(proxy('lookup'), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ dni })
+      });
+      const j = await r.json();
+
+      if (!j.ok) {
+        return setMsg($lookupMsg, `Error: ${j.error}\n\n${JSON.stringify(j, null, 2)}`, false);
+      }
+
+      if (!j.found) {
+        return setMsg($lookupMsg, `No existe ninguna persona con DNI ${dni} en el CRM.`, false);
+      }
+
+      contact = j.contact;
+      setMsg($lookupMsg, `OK ✅ Persona: ${contact.full_name} (ID: ${contact.id})`, true);
+
+      $matFile.disabled = false;
+      $btnUpload.disabled = false;
+    } catch (e) {
+      setMsg($lookupMsg, 'Fallo de red o respuesta inválida: ' + e.message, false);
+    }
+  });
+
+  $btnUpload.addEventListener('click', async () => {
+    $uploadMsg.textContent = '';
+    if (!contact) return setMsg($uploadMsg, 'Primero valida el DNI.', false);
+    const file = $matFile.files && $matFile.files[0];
+    if (!file) return setMsg($uploadMsg, 'Selecciona un PDF.', false);
+    if (file.type && file.type !== 'application/pdf') return setMsg($uploadMsg, 'Tiene que ser PDF.', false);
+
+    setMsg($uploadMsg, 'Subiendo… (sí, los humanos todavía subís PDFs en 2026) 📄', true);
+
+    const fd = new FormData();
+    fd.append('dni', normalizeDni($dni.value));
+    fd.append('contact_id', contact.id);
+    fd.append('mat_file', file, file.name);
+
+    try {
+      const r = await fetch(proxy('upload_mat'), { method: 'POST', body: fd });
+      const j = await r.json();
+
+      if (!j.ok) {
+        return setMsg($uploadMsg, `Error: ${j.error}\n\n${JSON.stringify(j, null, 2)}`, false);
+      }
+
+      setMsg($uploadMsg,
+        `Subido ✅\nDocumento: ${j.document.document_name}\nArchivo: ${j.document.filename}\nDocID: ${j.document.id}\nRevID: ${j.revision.id ?? '(sin id)'}`,
+        true
+      );
+    } catch (e) {
+      setMsg($uploadMsg, 'Fallo de red o respuesta inválida: ' + e.message, false);
+    }
+  });
+})();
+</script>

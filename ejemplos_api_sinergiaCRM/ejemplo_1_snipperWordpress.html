@@ -1,0 +1,87 @@
+<div style="padding:12px;border:1px solid #ddd;border-radius:10px;max-width:820px">
+  <h3 style="margin-top:0">Buscar Persona por DNI (SinergiaCRM)</h3>
+
+  <input id="dniInput" type="text" placeholder="Introduce DNI"
+         style="padding:8px;width:240px" />
+  <button id="btnBuscar" style="padding:8px 12px;margin-left:6px">Buscar</button>
+
+  <div id="resultado" style="margin-top:14px"></div>
+</div>
+
+<script>
+  const PROXY_URL = "/crm_proxy.php";
+
+  function esc(s){ return String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+  function renderSections(sections) {
+    let html = "";
+
+    sections.forEach(sec => {
+      html += `<h4 style="margin:18px 0 8px">${esc(sec.title)}</h4>`;
+      html += `<table style="width:100%;border-collapse:collapse">`;
+
+      sec.items.forEach(it => {
+        let valHtml = "";
+
+        if (it.empty) {
+          valHtml = `<span style="opacity:.65;font-style:italic">No disponible</span>`;
+        } else if (Array.isArray(it.value)) {
+          valHtml = esc(it.value.join(", "));
+        } else {
+          // Si es texto largo, lo mostramos en bloque
+          if (it.type === "textarea" && String(it.value).length > 80) {
+            valHtml = `<div style="white-space:pre-wrap;border:1px solid #eee;border-radius:8px;padding:8px">${esc(it.value)}</div>`;
+          } else {
+            valHtml = esc(it.value);
+          }
+        }
+
+        html += `
+          <tr>
+            <td style="vertical-align:top;width:34%;padding:8px;border-top:1px solid #eee">
+              <strong>${esc(it.label)}</strong>
+              <div style="opacity:.55;font-size:12px">${esc(it.name)}</div>
+            </td>
+            <td style="vertical-align:top;padding:8px;border-top:1px solid #eee">
+              ${valHtml}
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</table>`;
+    });
+
+    return html;
+  }
+
+  async function onBuscar() {
+    const out = document.getElementById("resultado");
+    out.textContent = "Buscando...";
+
+    const dni = document.getElementById("dniInput").value.trim();
+    if (!dni) { out.textContent = "Introduce un DNI."; return; }
+
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dni })
+    });
+
+    const data = await res.json();
+
+    if (!data.found) {
+      out.innerHTML = `<div style="padding:10px;border:1px solid #f0f0f0;border-radius:8px">❌ No existe persona con ese DNI.</div>`;
+      return;
+    }
+
+    out.innerHTML = `
+      <div style="padding:10px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:10px">
+        ✅ Encontrado (ID: <code>${esc(data.id)}</code>)
+      </div>
+      ${renderSections(data.sections)}
+    `;
+  }
+
+  document.getElementById("btnBuscar").addEventListener("click", onBuscar);
+</script>
