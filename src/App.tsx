@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { VotingPage } from "@/components/VotingPage";
 import { AdminRouter } from "@/components/AdminRouter";
+import { ComunicaRouter } from "@/components/ComunicaRouter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<VotingPage />} />
             <Route path="/admin/*" element={<AdminRouter />} />
+            <Route path="/comunica/*" element={<ComunicaRouter />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
