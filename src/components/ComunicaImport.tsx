@@ -235,16 +235,26 @@ export function ComunicaImport() {
       order_index: idx,
     }));
 
-    // Upsert en lotes de 100 para no superar límites
+    // Obtener crm_ids que ya existen en esta ronda para no duplicar
+    const { data: existing } = await supabase
+      .from('candidates')
+      .select('crm_id')
+      .eq('round_id', selectedRoundId)
+      .not('crm_id', 'is', null);
+
+    const alreadyExists = new Set((existing ?? []).map(e => e.crm_id as string));
+    const newRows = rows.filter(r => !alreadyExists.has(r.crm_id));
+    const skipped = rows.length - newRows.length;
+
+    // Insertar en lotes de 100
     const BATCH = 100;
     let inserted = 0;
-    let skipped = 0;
 
-    for (let i = 0; i < rows.length; i += BATCH) {
-      const batch = rows.slice(i, i + BATCH);
+    for (let i = 0; i < newRows.length; i += BATCH) {
+      const batch = newRows.slice(i, i + BATCH);
       const { data, error } = await supabase
         .from('candidates')
-        .upsert(batch, { onConflict: 'round_id,crm_id', ignoreDuplicates: true })
+        .insert(batch)
         .select('id');
 
       if (error) {
@@ -258,7 +268,6 @@ export function ComunicaImport() {
       }
 
       inserted += (data ?? []).length;
-      skipped += batch.length - (data ?? []).length;
     }
 
     setImportResult({ inserted, skipped });
