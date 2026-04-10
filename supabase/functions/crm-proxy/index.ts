@@ -4,8 +4,8 @@
 
 const CRM_URL = Deno.env.get('SINERGIA_URL') ??
   'https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php';
-const CRM_USER = Deno.env.get('SINERGIA_USER') ?? '';
-const CRM_PASS = Deno.env.get('SINERGIA_PASS') ?? '';
+const CRM_USER_SECRET = Deno.env.get('SINERGIA_USER') ?? '';
+const CRM_PASS_SECRET = Deno.env.get('SINERGIA_PASS') ?? '';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -29,11 +29,11 @@ async function crmCall(method: string, params: unknown): Promise<Record<string, 
   return res.json() as Promise<Record<string, unknown>>;
 }
 
-async function crmLogin(): Promise<string> {
+async function crmLogin(user: string, pass: string): Promise<string> {
   const res = await crmCall('login', {
     user_auth: {
-      user_name: CRM_USER,
-      password: CRM_PASS,
+      user_name: user,
+      password: pass,
       encryption: 'PLAIN',
     },
     application: 'mcmvotaciones',
@@ -57,6 +57,7 @@ const SELECT_FIELDS = [
   'ajmcm_asamblea_responsabilid_c',
   'ajmcm_monitor_desde_c',
   'ajmcm_monitor_de_c',
+  'stic_relationship_type_c',
 ];
 
 interface CRMEntryList {
@@ -114,8 +115,8 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const body = await req.json() as { action?: string };
-    const { action } = body;
+    const body = await req.json() as { action?: string; user?: string; pass?: string };
+    const { action, user: bodyUser, pass: bodyPass } = body;
 
     if (action !== 'list-contacts') {
       return new Response(
@@ -124,14 +125,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!CRM_USER || !CRM_PASS) {
+    // Usar credenciales del body si se proporcionan; si no, tirar de secrets
+    const loginUser = bodyUser?.trim() || CRM_USER_SECRET;
+    const loginPass = bodyPass?.trim() || CRM_PASS_SECRET;
+
+    if (!loginUser || !loginPass) {
       return new Response(
         JSON.stringify({ ok: false, error: 'CRM credentials not configured (SINERGIA_USER / SINERGIA_PASS)' }),
         { status: 500, headers: { ...CORS_HEADERS, 'content-type': 'application/json' } },
       );
     }
 
-    const session = await crmLogin();
+    const session = await crmLogin(loginUser, loginPass);
     const contacts = await fetchAllContacts(session);
 
     // Logout en background (no bloquea la respuesta)

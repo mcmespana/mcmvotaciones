@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,12 +18,12 @@ import { getMaxVotesAllowed } from '@/lib/votingRules';
 import { debugLog } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Users, 
-  Play, 
-  Pause, 
+  Plus,
+  Edit,
+  Trash2,
+  Users,
+  Play,
+  Pause,
   Calendar,
   Eye,
   EyeOff,
@@ -31,7 +32,8 @@ import {
   ChevronRight,
   Award,
   Upload,
-  FileDown
+  FileDown,
+  Database
 } from 'lucide-react';
 
 interface Round {
@@ -158,6 +160,7 @@ type ImportCandidate = Omit<NewCandidateForm, 'age'> & { age: number | null };
 
 export function VotingManagement() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [rounds, setRounds] = useState<RoundWithCandidates[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('rounds');
@@ -1526,6 +1529,14 @@ export function VotingManagement() {
                     </AlertDialog>
                   )}
                   
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/comunica?round=${selectedRound.id}`)}
+                  >
+                    <Database className="w-4 h-4 mr-2" />
+                    Importar desde SinergiaCRM
+                  </Button>
+
                   <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline">

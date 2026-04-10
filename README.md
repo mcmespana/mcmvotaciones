@@ -58,6 +58,7 @@
 | Documento | Descripción | Tiempo |
 |-----------|-------------|---------|
 | [**QUICK_START.md**](./docs/QUICK_START.md) | Pasos mínimos para levantar el entorno local. | ⏱️ 30 min |
+| [**COMUNICA_IMPORT_GUIDE.md**](./docs/COMUNICA_IMPORT_GUIDE.md) | Importación de candidatos desde SinergiaCRM. | 📥 15 min |
 | [**MIGRATION_INSTRUCTIONS.md**](./docs/MIGRATION_INSTRUCTIONS.md) | Procedimiento detallado de migraciones con validaciones. | 🔧 45 min |
 | [**REALTIME_ROUND_UPDATES.md**](./docs/REALTIME_ROUND_UPDATES.md) | Cómo se asegura la sincronización automática de rondas. | 🔄 5 min |
 | [**VOTING_PAGE_IMPLEMENTATION_GUIDE.md**](./docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md) | Implementación completa de la página de votación. | 💻 30 min |
@@ -289,6 +290,13 @@ Este proyecto está bajo la licencia MIT. Ver [`LICENSE`](./LICENSE) para más d
 - �🗂️ [Estructura del proyecto](./PROJECT_STRUCTURE.md) - Organización de archivos
 - 🤖 [Guías para AI agents](./AGENTS.md) - Contexto para desarrollo asistido
 - 🔍 [Debugging en tiempo real](./DEBUGGING_REALTIME.md) - Troubleshooting Supabase
+
+---
+
+## 📚 Referencia CRM
+
+Para detalles sobre los campos de SinergiaCRM y su mapeo a la base de datos, consulta:
+- [Campos de SinergiaCRM](./docs/crm-reference/CAMPOS_SINERGIA_CRM.md) - Documentación completa de todos los campos disponibles
 
 ---
 

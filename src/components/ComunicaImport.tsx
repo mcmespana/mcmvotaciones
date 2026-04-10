@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { fetchAllCRMContacts, groupByLocation, CRMContact, CRMContactGroup } from '@/lib/sinergiaCRM';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-import { Users, RefreshCw, Download, Search, CheckSquare, Square, ArrowLeft, Database } from 'lucide-react';
+import { Users, RefreshCw, Download, Search, CheckSquare, Square, ArrowLeft, Database, Plus, X } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Tipos locales
@@ -49,12 +50,18 @@ interface Round {
 
 type WizardStep = 'select-round' | 'confirm-fetch' | 'review' | 'importing' | 'done';
 
+const SESSIONKEY_USER = 'crm_user';
+const SESSIONKEY_PASS = 'crm_pass';
+
+const DEFAULT_RELATIONSHIP_TYPES = ['grupo', 'monitor'];
+
 // ---------------------------------------------------------------------------
 // Componente principal
 // ---------------------------------------------------------------------------
 
 export function ComunicaImport() {
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   // — Wizard state —
   const [step, setStep] = useState<WizardStep>('select-round');
@@ -63,6 +70,14 @@ export function ComunicaImport() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundsLoading, setRoundsLoading] = useState(true);
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
+
+  // — Credenciales CRM —
+  const [crmUser, setCrmUser] = useState(() => sessionStorage.getItem(SESSIONKEY_USER) ?? '');
+  const [crmPass, setCrmPass] = useState(() => sessionStorage.getItem(SESSIONKEY_PASS) ?? '');
+
+  // — Filtro de tipos de relación —
+  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(DEFAULT_RELATIONSHIP_TYPES);
+  const [newRelType, setNewRelType] = useState('');
 
   // — Paso 2-3: contactos CRM —
   const [contacts, setContacts] = useState<CRMContact[]>([]);
@@ -108,25 +123,64 @@ export function ComunicaImport() {
         countMap[c.round_id] = (countMap[c.round_id] ?? 0) + 1;
       });
 
-      setRounds((data ?? []).map(r => ({ ...r, candidate_count: countMap[r.id] ?? 0 })));
+      const roundsWithCount = (data ?? []).map(r => ({ ...r, candidate_count: countMap[r.id] ?? 0 }));
+      setRounds(roundsWithCount);
+
+      // Preseleccionar desde ?round= param
+      const paramRound = searchParams.get('round');
+      if (paramRound && roundsWithCount.some(r => r.id === paramRound)) {
+        setSelectedRoundId(paramRound);
+      }
+
       setRoundsLoading(false);
     }
 
     loadRounds();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ---------------------------------------------------------------------------
+  // Gestión de tipos de relación
+  // ---------------------------------------------------------------------------
+
+  function toggleRelType(type: string) {
+    setSelectedRelTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  }
+
+  function addRelType() {
+    const val = newRelType.trim().toLowerCase();
+    if (val && !selectedRelTypes.includes(val)) {
+      setSelectedRelTypes(prev => [...prev, val]);
+    }
+    setNewRelType('');
+  }
 
   // ---------------------------------------------------------------------------
   // Paso 2: traer contactos del CRM
   // ---------------------------------------------------------------------------
 
   async function handleFetchContacts() {
+    // Guardar credenciales en sessionStorage
+    if (crmUser) sessionStorage.setItem(SESSIONKEY_USER, crmUser);
+    else sessionStorage.removeItem(SESSIONKEY_USER);
+    if (crmPass) sessionStorage.setItem(SESSIONKEY_PASS, crmPass);
+    else sessionStorage.removeItem(SESSIONKEY_PASS);
+
     setFetchLoading(true);
-    setStep('confirm-fetch');
     try {
-      const data = await fetchAllCRMContacts();
-      setContacts(data);
-      setGroups(groupByLocation(data));
-      setSelected(new Set(data.map(c => c.crm_id))); // todos seleccionados por defecto
+      const credentials = crmUser && crmPass ? { user: crmUser, pass: crmPass } : undefined;
+      const data = await fetchAllCRMContacts(credentials);
+
+      // Filtrar por tipos de relación seleccionados (OR)
+      const filtered = selectedRelTypes.length > 0
+        ? data.filter(c => c.relationship_types.some(rt => selectedRelTypes.includes(rt)))
+        : data;
+
+      setContacts(filtered);
+      setGroups(groupByLocation(filtered));
+      setSelected(new Set(filtered.map(c => c.crm_id))); // todos seleccionados por defecto
 
       // Obtener crm_ids que ya existen en esta ronda
       const { data: existing } = await supabase
@@ -144,7 +198,6 @@ export function ComunicaImport() {
         description: err instanceof Error ? err.message : String(err),
         variant: 'destructive',
       });
-      setStep('select-round');
     } finally {
       setFetchLoading(false);
     }
@@ -216,7 +269,6 @@ export function ComunicaImport() {
 
     const toImport = contacts.filter(c => selected.has(c.crm_id));
 
-    // Calcular order_index: los contactos ya vienen ordenados por (location, age)
     const rows = toImport.map((c, idx) => ({
       round_id: selectedRoundId,
       name: c.first_name,
@@ -231,6 +283,7 @@ export function ComunicaImport() {
       asamblea_responsabilidad: c.asamblea_responsabilidad,
       monitor_desde: c.monitor_desde,
       monitor_de: c.monitor_de,
+      crm_relationship_types: c.relationship_types.length > 0 ? c.relationship_types.join(',') : null,
       crm_source: 'sinergiacrm',
       order_index: idx,
     }));
@@ -332,20 +385,20 @@ export function ComunicaImport() {
         </div>
 
         {/* ================================================================
-            PASO 1 — Seleccionar votación
+            PASO 1 — Seleccionar votación + credenciales + filtro relaciones
         ================================================================ */}
-        {(step === 'select-round') && (
+        {step === 'select-round' && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">1</span>
-                Selecciona la votación de destino
+                Configurar consulta
               </CardTitle>
               <CardDescription>
-                Los candidatos importados quedarán vinculados a esta votación.
+                Elige la votación de destino y configura la conexión con SinergiaCRM.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {roundsLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
                   <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
@@ -357,8 +410,9 @@ export function ComunicaImport() {
                 </p>
               ) : (
                 <>
+                  {/* Selector de votación */}
                   <div className="space-y-2">
-                    <Label>Votación</Label>
+                    <Label>Votación de destino</Label>
                     <Select value={selectedRoundId} onValueChange={setSelectedRoundId}>
                       <SelectTrigger>
                         <SelectValue placeholder="Elige una votación..." />
@@ -372,15 +426,96 @@ export function ComunicaImport() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {selectedRound && (
+                      <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                        <p><span className="font-medium">Votación:</span> {selectedRound.title}</p>
+                        <p><span className="font-medium">Año / Equipo:</span> {selectedRound.year} · {selectedRound.team}</p>
+                        <p><span className="font-medium">Candidatos actuales:</span> {selectedRound.candidate_count}</p>
+                      </div>
+                    )}
                   </div>
 
-                  {selectedRound && (
-                    <div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-1">
-                      <p><span className="font-medium">Votación:</span> {selectedRound.title}</p>
-                      <p><span className="font-medium">Año / Equipo:</span> {selectedRound.year} · {selectedRound.team}</p>
-                      <p><span className="font-medium">Candidatos actuales:</span> {selectedRound.candidate_count}</p>
+                  {/* Credenciales CRM */}
+                  <div className="space-y-3 border rounded-lg p-4">
+                    <div>
+                      <p className="text-sm font-medium">Acceso a SinergiaCRM</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Usuario y contraseña del MCM Local o nacional con acceso a{' '}
+                        <span className="font-mono text-xs">movimientoconsolacion.sinergiacrm.org</span>
+                      </p>
                     </div>
-                  )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="crm-user" className="text-xs">Usuario</Label>
+                        <Input
+                          id="crm-user"
+                          placeholder="usuario@mcm..."
+                          value={crmUser}
+                          onChange={e => setCrmUser(e.target.value)}
+                          autoComplete="username"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="crm-pass" className="text-xs">Contraseña</Label>
+                        <Input
+                          id="crm-pass"
+                          type="password"
+                          placeholder="••••••••"
+                          value={crmPass}
+                          onChange={e => setCrmPass(e.target.value)}
+                          autoComplete="current-password"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filtro tipos de relación */}
+                  <div className="space-y-3 border rounded-lg p-4">
+                    <div>
+                      <p className="text-sm font-medium">Filtrar por tipo de relación</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Solo se importarán personas con al menos una de las relaciones marcadas.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {Array.from(new Set([...DEFAULT_RELATIONSHIP_TYPES, ...selectedRelTypes])).map(type => (
+                        <label key={type} className="flex items-center gap-2 cursor-pointer select-none text-sm">
+                          <Checkbox
+                            checked={selectedRelTypes.includes(type)}
+                            onCheckedChange={() => toggleRelType(type)}
+                          />
+                          <span className="capitalize">{type}</span>
+                          {!DEFAULT_RELATIONSHIP_TYPES.includes(type) && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRelTypes(prev => prev.filter(t => t !== type))}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Añadir otro tipo..."
+                        value={newRelType}
+                        onChange={e => setNewRelType(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addRelType(); } }}
+                        className="h-8 text-sm"
+                      />
+                      <Button variant="outline" size="sm" onClick={addRelType} disabled={!newRelType.trim()}>
+                        <Plus className="w-3 h-3 mr-1" />
+                        Añadir
+                      </Button>
+                    </div>
+                    {selectedRelTypes.length === 0 && (
+                      <p className="text-xs text-amber-600">
+                        Sin filtro activo se traerán todos los contactos del CRM.
+                      </p>
+                    )}
+                  </div>
 
                   <Button
                     disabled={!selectedRoundId}
@@ -406,8 +541,12 @@ export function ComunicaImport() {
                 Consultar SinergiaCRM
               </CardTitle>
               <CardDescription>
-                Se descargarán <strong>todas las personas</strong> registradas en el CRM.
-                Esto puede tardar unos segundos dependiendo del número de registros.
+                Se descargarán los contactos con{' '}
+                {selectedRelTypes.length > 0
+                  ? <>relación <strong>{selectedRelTypes.join(', ')}</strong></>
+                  : <strong>cualquier relación</strong>
+                }.
+                {' '}Esto puede tardar unos segundos.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -447,7 +586,8 @@ export function ComunicaImport() {
                   Selecciona los candidatos a importar
                 </CardTitle>
                 <CardDescription>
-                  {contacts.length} personas encontradas en SinergiaCRM.
+                  {contacts.length} personas encontradas con relación{' '}
+                  <strong>{selectedRelTypes.join(', ') || 'cualquiera'}</strong>.
                   {existingCrmIds.size > 0 && (
                     <> <span className="text-amber-600">{existingCrmIds.size} ya están en esta votación</span> (marcadas en naranja).</>
                   )}
@@ -512,8 +652,8 @@ export function ComunicaImport() {
                                     <th className="pb-2 text-center font-medium">Edad</th>
                                     <th className="pb-2 text-left font-medium hidden md:table-cell">DNI</th>
                                     <th className="pb-2 text-left font-medium hidden md:table-cell">Etapa</th>
+                                    <th className="pb-2 text-left font-medium hidden lg:table-cell">Relación</th>
                                     <th className="pb-2 text-left font-medium hidden lg:table-cell">Monitor de</th>
-                                    <th className="pb-2 text-left font-medium hidden lg:table-cell">Desde</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -544,8 +684,15 @@ export function ComunicaImport() {
                                         <td className="py-2 pr-3 text-center">{c.age ?? '—'}</td>
                                         <td className="py-2 pr-3 hidden md:table-cell">{c.dni ?? '—'}</td>
                                         <td className="py-2 pr-3 hidden md:table-cell">{c.etapa ?? '—'}</td>
-                                        <td className="py-2 pr-3 hidden lg:table-cell">{c.monitor_de ?? '—'}</td>
-                                        <td className="py-2 hidden lg:table-cell">{c.monitor_desde ?? '—'}</td>
+                                        <td className="py-2 pr-3 hidden lg:table-cell">
+                                          {c.relationship_types.length > 0
+                                            ? c.relationship_types.map(rt => (
+                                              <Badge key={rt} variant="secondary" className="mr-1 text-xs capitalize">{rt}</Badge>
+                                            ))
+                                            : '—'
+                                          }
+                                        </td>
+                                        <td className="py-2 hidden lg:table-cell">{c.monitor_de ?? '—'}</td>
                                       </tr>
                                     );
                                   })}

@@ -18,6 +18,19 @@ export interface CRMContact {
   asamblea_responsabilidad: string | null;  // ajmcm_asamblea_responsabilid_c
   monitor_desde: string | null;  // ajmcm_monitor_desde_c
   monitor_de: string | null;     // ajmcm_monitor_de_c
+  relationship_types: string[];  // stic_relationship_type_c → ej: ["grupo","monitor"]
+}
+
+// ---------------------------------------------------------------------------
+// Parseo de tipos de relación: "^grupo^,^monitor^" → ["grupo","monitor"]
+// ---------------------------------------------------------------------------
+
+function parseRelationshipTypes(raw: string | undefined): string[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(',')
+    .map(s => s.replace(/\^/g, '').trim().toLowerCase())
+    .filter(Boolean);
 }
 
 // ---------------------------------------------------------------------------
@@ -45,6 +58,7 @@ function normalize(raw: Record<string, string>): CRMContact {
     asamblea_responsabilidad: n(raw['ajmcm_asamblea_responsabilid_c']),
     monitor_desde: n(raw['ajmcm_monitor_desde_c']),
     monitor_de: n(raw['ajmcm_monitor_de_c']),
+    relationship_types: parseRelationshipTypes(raw['stic_relationship_type_c']),
   };
 }
 
@@ -63,12 +77,20 @@ function sortContacts(contacts: CRMContact[]): CRMContact[] {
 
 // ---------------------------------------------------------------------------
 // Función principal: consulta el proxy y devuelve los contactos normalizados y ordenados
+// Acepta credenciales opcionales; si no se pasan, el proxy usa sus secrets.
 // ---------------------------------------------------------------------------
 
-export async function fetchAllCRMContacts(): Promise<CRMContact[]> {
-  const { data, error } = await supabase.functions.invoke('crm-proxy', {
-    body: { action: 'list-contacts' },
-  });
+export interface CRMCredentials {
+  user?: string;
+  pass?: string;
+}
+
+export async function fetchAllCRMContacts(credentials?: CRMCredentials): Promise<CRMContact[]> {
+  const body: Record<string, string> = { action: 'list-contacts' };
+  if (credentials?.user) body.user = credentials.user;
+  if (credentials?.pass) body.pass = credentials.pass;
+
+  const { data, error } = await supabase.functions.invoke('crm-proxy', { body });
 
   if (error) {
     throw new Error(`Error al conectar con el proxy CRM: ${error.message}`);
