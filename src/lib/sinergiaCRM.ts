@@ -64,13 +64,23 @@ function normalize(raw: Record<string, string>): CRMContact {
 
 // ---------------------------------------------------------------------------
 // Ordenación: por MCM Local (location) asc, luego por edad asc
+// Nota: Los "Asesora" salen al final (después de otros etapa dentro de su delegación)
 // ---------------------------------------------------------------------------
 
 function sortContacts(contacts: CRMContact[]): CRMContact[] {
   return [...contacts].sort((a, b) => {
     const locA = (a.location ?? 'zzz').toLowerCase();
     const locB = (b.location ?? 'zzz').toLowerCase();
+
+    // Primero por delegación
     if (locA !== locB) return locA.localeCompare(locB, 'es');
+
+    // Dentro de la delegación: no-Asesora primero, Asesora al final
+    const isAsesoraA = a.etapa?.toLowerCase() === 'asesora' ? 1 : 0;
+    const isAsesoraB = b.etapa?.toLowerCase() === 'asesora' ? 1 : 0;
+    if (isAsesoraA !== isAsesoraB) return isAsesoraA - isAsesoraB;
+
+    // Finalmente por edad
     return (a.age ?? 9999) - (b.age ?? 9999);
   });
 }

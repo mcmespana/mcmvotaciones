@@ -180,7 +180,7 @@ export function ComunicaImport() {
 
       setContacts(filtered);
       setGroups(groupByLocation(filtered));
-      setSelected(new Set(filtered.map(c => c.crm_id))); // todos seleccionados por defecto
+      setSelected(new Set(filtered.filter(c => c.etapa?.toLowerCase() !== 'asesora').map(c => c.crm_id))); // todos menos Asesora
 
       // Obtener crm_ids que ya existen en esta ronda
       const { data: existing } = await supabase
