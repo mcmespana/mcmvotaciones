@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { UserManagement } from './UserManagement';
-import { VotingManagement } from './VotingManagement';
+import { AdminVotingList } from './AdminVotingList';
 import { 
   Users, 
   Vote, 
@@ -16,7 +16,7 @@ import {
   Plus,
   BarChart3,
   Download,
-  Shield 
+  Shield
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -121,63 +121,6 @@ export function AdminDashboard() {
       title: 'Nueva Votación',
       description: 'Redirigiendo a la gestión de votaciones...',
     });
-  };
-
-  const handleViewResults = async () => {
-    try {
-      // Get active rounds with vote counts
-      const { data: rounds, error: roundsError } = await supabase
-        .from('rounds')
-        .select(`
-          id, title, description, is_active, is_closed,
-          candidates!candidates_round_id_fkey (
-            id, name, votes!votes_candidate_id_fkey (id)
-          )
-        `);
-
-      if (roundsError) {
-        toast({
-          title: 'Error',
-          description: 'No se pudieron cargar los resultados',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (!rounds || rounds.length === 0) {
-        toast({
-          title: 'Sin resultados',
-          description: 'No hay votaciones para mostrar resultados',
-        });
-        return;
-      }
-
-      // Show basic results in a toast for now
-      const activeRound = rounds.find(r => r.is_active && !r.is_closed);
-      if (activeRound) {
-        const candidateResults = activeRound.candidates.map(c => ({
-          name: c.name,
-          votes: c.votes?.length || 0
-        }));
-        
-        const topCandidate = candidateResults.sort((a, b) => b.votes - a.votes)[0];
-        toast({
-          title: 'Resultados Parciales',
-          description: `Liderando: ${topCandidate?.name || 'N/A'} con ${topCandidate?.votes || 0} votos`,
-        });
-      } else {
-        toast({
-          title: 'Resultados',
-          description: 'Ver resultados de votaciones cerradas próximamente',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Error al cargar los resultados',
-        variant: 'destructive',
-      });
-    }
   };
 
   const handleExportData = async () => {
@@ -287,7 +230,7 @@ export function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3">
+          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Dashboard
@@ -398,7 +341,7 @@ export function AdminDashboard() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Consultar los resultados de las votaciones
                   </p>
-                  <Button variant="outline" className="w-full" onClick={handleViewResults}>
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab('votaciones')}>
                     Ver Resultados
                   </Button>
                 </CardContent>
@@ -438,7 +381,7 @@ export function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="votaciones" className="space-y-6">
-            <VotingManagement />
+            <AdminVotingList />
           </TabsContent>
 
           {isSuperAdmin && (

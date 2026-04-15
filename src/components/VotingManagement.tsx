@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+﻿import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/lib/supabase';
 import { getMaxVotesAllowed } from '@/lib/votingRules';
+import { testDatasets } from '@/lib/testDatasets';
 import { debugLog } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -36,6 +37,8 @@ import {
   Database
 } from 'lucide-react';
 
+type CensusMode = 'maximum' | 'exact';
+
 interface Round {
   id: string;
   title: string;
@@ -43,6 +46,8 @@ interface Round {
   year: number;
   team: 'ECE' | 'ECL';
   max_votantes: number; // Renamed from expected_voters - defines fixed voter quota
+  access_code: string | null;
+  census_mode: CensusMode;
   votes_current_round: number;
   is_active: boolean;
   is_closed: boolean;
@@ -142,6 +147,8 @@ interface NewRoundForm {
   year: number;
   team: 'ECE' | 'ECL';
   max_votantes: number; // Renamed from expected_voters - defines fixed voter quota
+  access_code: string;
+  census_mode: CensusMode;
   is_active: boolean; // Whether to activate immediately after creation
 }
 
@@ -158,6 +165,15 @@ interface NewCandidateForm {
 // Strongly typed shape for imports where age is number|null
 type ImportCandidate = Omit<NewCandidateForm, 'age'> & { age: number | null };
 
+const ACCESS_CODE_REGEX = /^[A-Z0-9]{3,5}$/;
+
+const normalizeCensusMode = (value: unknown): CensusMode => (value === 'exact' ? 'exact' : 'maximum');
+
+const normalizeAccessCode = (rawAccessCode: string): string | null => {
+  const trimmed = rawAccessCode.trim().toUpperCase();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 export function VotingManagement() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -169,10 +185,14 @@ export function VotingManagement() {
   const [isNewRoundDialogOpen, setIsNewRoundDialogOpen] = useState(false);
   const [isNewCandidateDialogOpen, setIsNewCandidateDialogOpen] = useState(false);
   const [isEditCandidateDialogOpen, setIsEditCandidateDialogOpen] = useState(false);
+  const [isRoundConfigDialogOpen, setIsRoundConfigDialogOpen] = useState(false);
+  const [isTestDatasetDialogOpen, setIsTestDatasetDialogOpen] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
+  const [editingRound, setEditingRound] = useState<RoundWithCandidates | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [importingFile, setImportingFile] = useState(false);
-  const [isEditingRound, setIsEditingRound] = useState(false);
+  const [loadingTestDataset, setLoadingTestDataset] = useState(false);
+  const [selectedTestDatasetId, setSelectedTestDatasetId] = useState<string>(testDatasets[0]?.id ?? '');
   const [showResults, setShowResults] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
   // Guard to avoid double auto-finalization triggers
@@ -217,6 +237,15 @@ export function VotingManagement() {
   };
 
   const nextRound = async (round: RoundWithCandidates) => {
+    if (round.census_mode === 'exact' && (round.votes_current_round || 0) < round.max_votantes) {
+      toast({
+        title: 'Censo exacto incompleto',
+        description: `Esta ronda requiere ${round.max_votantes} votantes y actualmente hay ${round.votes_current_round || 0}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       // Procesar resultados de la ronda actual (marca candidatos con mayoría absoluta como seleccionados)
       const { data: processResult, error: processError } = await supabase.rpc('process_round_results', {
@@ -336,6 +365,19 @@ export function VotingManagement() {
     year: new Date().getFullYear(),
     team: 'ECE',
     max_votantes: 100,
+    access_code: '',
+    census_mode: 'maximum',
+    is_active: false
+  });
+
+  const [editRoundForm, setEditRoundForm] = useState<NewRoundForm>({
+    title: '',
+    description: '',
+    year: new Date().getFullYear(),
+    team: 'ECE',
+    max_votantes: 100,
+    access_code: '',
+    census_mode: 'maximum',
     is_active: false
   });
 
@@ -431,7 +473,9 @@ export function VotingManagement() {
                     return {
                       ...round,
                       vote_count: count || 0,
-                      votes_current_round: round.votes_current_round || 0
+                      votes_current_round: round.votes_current_round || 0,
+                      access_code: round.access_code ?? null,
+                      census_mode: normalizeCensusMode(round.census_mode),
                     };
                   })
                 );
@@ -510,7 +554,9 @@ export function VotingManagement() {
           return {
             ...round,
             vote_count: count || 0,
-            votes_current_round: round.votes_current_round || 0 // Asegurar que existe
+            votes_current_round: round.votes_current_round || 0, // Asegurar que existe
+            access_code: round.access_code ?? null,
+            census_mode: normalizeCensusMode(round.census_mode),
           };
         })
       );
@@ -577,7 +623,9 @@ export function VotingManagement() {
                 newRound.votes_current_round !== existingRound.votes_current_round ||
                 newRound.title !== existingRound.title ||
                 newRound.description !== existingRound.description ||
-                newRound.max_votantes !== existingRound.max_votantes
+                newRound.max_votantes !== existingRound.max_votantes ||
+                (newRound.access_code ?? null) !== (existingRound.access_code ?? null) ||
+                normalizeCensusMode(newRound.census_mode) !== normalizeCensusMode(existingRound.census_mode)
               );
               
               if (!hasSignificantChange) {
@@ -587,14 +635,28 @@ export function VotingManagement() {
 
               debugLog('✏️ Significant change detected, updating round in state');
               return prevRounds.map(round =>
-                round.id === newRound.id ? { ...round, ...newRound, candidates: round.candidates } : round
+                round.id === newRound.id
+                  ? {
+                      ...round,
+                      ...newRound,
+                      access_code: newRound.access_code ?? null,
+                      census_mode: normalizeCensusMode(newRound.census_mode),
+                      candidates: round.candidates
+                    }
+                  : round
               );
             });
             
             // Update selected round if it's the one that changed (preserving candidates)
             setSelectedRound(prev => {
               if (!prev || prev.id !== newRound.id) return prev;
-              return { ...prev, ...newRound, candidates: prev.candidates };
+              return {
+                ...prev,
+                ...newRound,
+                access_code: newRound.access_code ?? null,
+                census_mode: normalizeCensusMode(newRound.census_mode),
+                candidates: prev.candidates
+              };
             });
           } else if (eventType === 'DELETE' && oldRound) {
             debugLog('🗑️ Round deleted, removing from state');
@@ -624,12 +686,38 @@ export function VotingManagement() {
     };
   }, [loadRounds]); // Add loadRounds as dependency
 
+  const validateAccessCode = (rawAccessCode: string): { value: string | null; error?: string } => {
+    const normalized = normalizeAccessCode(rawAccessCode);
+    if (!normalized) {
+      return { value: null };
+    }
+
+    if (!ACCESS_CODE_REGEX.test(normalized)) {
+      return {
+        value: null,
+        error: 'El código de acceso debe ser alfanumérico y tener entre 3 y 5 caracteres.',
+      };
+    }
+
+    return { value: normalized };
+  };
+
   const createRound = async () => {
     try {
       if (!newRoundForm.title.trim()) {
         toast({
           title: 'Error',
           description: 'El título es obligatorio',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const validatedAccessCode = validateAccessCode(newRoundForm.access_code);
+      if (validatedAccessCode.error) {
+        toast({
+          title: 'Código de acceso inválido',
+          description: validatedAccessCode.error,
           variant: 'destructive',
         });
         return;
@@ -643,6 +731,8 @@ export function VotingManagement() {
           year: newRoundForm.year,
           team: newRoundForm.team,
           max_votantes: newRoundForm.max_votantes,
+          access_code: validatedAccessCode.value,
+          census_mode: newRoundForm.census_mode,
           is_active: false, // Always create inactive rounds
         }]);
 
@@ -651,7 +741,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Votación creada correctamente',
       });
 
@@ -662,6 +752,8 @@ export function VotingManagement() {
         year: new Date().getFullYear(),
         team: 'ECE',
         max_votantes: 100,
+        access_code: '',
+        census_mode: 'maximum',
         is_active: false
       });
       
@@ -695,17 +787,98 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Votación actualizada correctamente',
       });
       
       // No need to reload - real-time subscription will handle the update
+      return true;
     } catch (error) {
       toast({
         title: 'Error',
         description: 'No se pudo actualizar la votación',
         variant: 'destructive',
       });
+      return false;
+    }
+  };
+
+  const refreshRoundWithCandidates = async (roundId: string) => {
+    const { data: freshRound, error: fetchError } = await supabase
+      .from('rounds')
+      .select('*, candidates(*)')
+      .eq('id', roundId)
+      .single();
+
+    if (fetchError || !freshRound) {
+      return;
+    }
+
+    const normalizedRound = {
+      ...freshRound,
+      access_code: freshRound.access_code ?? null,
+      census_mode: normalizeCensusMode(freshRound.census_mode),
+      votes_current_round: freshRound.votes_current_round || 0,
+    };
+
+    setSelectedRound((prev) => (prev?.id === roundId ? normalizedRound : prev));
+    setRounds((prevRounds) =>
+      prevRounds.map((round) => (round.id === roundId ? normalizedRound : round))
+    );
+  };
+
+  const openRoundConfig = (round: RoundWithCandidates) => {
+    setEditingRound(round);
+    setEditRoundForm({
+      title: round.title,
+      description: round.description ?? '',
+      year: round.year,
+      team: round.team,
+      max_votantes: round.max_votantes,
+      access_code: round.access_code ?? '',
+      census_mode: normalizeCensusMode(round.census_mode),
+      is_active: round.is_active,
+    });
+    setIsRoundConfigDialogOpen(true);
+  };
+
+  const saveRoundConfig = async () => {
+    if (!editingRound) return;
+
+    if (!editRoundForm.title.trim()) {
+      toast({
+        title: 'Error',
+        description: 'El título es obligatorio',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const validatedAccessCode = validateAccessCode(editRoundForm.access_code);
+    if (validatedAccessCode.error) {
+      toast({
+        title: 'Código de acceso inválido',
+        description: validatedAccessCode.error,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const success = await updateRound(editingRound.id, {
+      title: editRoundForm.title.trim(),
+      description: editRoundForm.description.trim(),
+      year: editRoundForm.year,
+      team: editRoundForm.team,
+      max_votantes: editRoundForm.max_votantes,
+      access_code: validatedAccessCode.value,
+      census_mode: editRoundForm.census_mode,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (success) {
+      setIsRoundConfigDialogOpen(false);
+      setEditingRound(null);
+      await refreshRoundWithCandidates(editingRound.id);
     }
   };
 
@@ -721,7 +894,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Votación eliminada correctamente',
       });
       
@@ -800,7 +973,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Candidato agregado correctamente',
       });
 
@@ -885,7 +1058,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Candidato actualizado correctamente',
       });
 
@@ -901,22 +1074,8 @@ export function VotingManagement() {
         image_url: ''
       });
       
-      // Update selected round with fresh data (sin recargar todo)
       if (selectedRound) {
-        const { data: freshRound, error: fetchError } = await supabase
-          .from('rounds')
-          .select('*, candidates(*)')
-          .eq('id', selectedRound.id)
-          .single();
-        
-        if (!fetchError && freshRound) {
-          setSelectedRound(freshRound);
-          
-          // Update in the rounds list without full reload
-          setRounds(prevRounds => 
-            prevRounds.map(r => r.id === selectedRound.id ? freshRound : r)
-          );
-        }
+        await refreshRoundWithCandidates(selectedRound.id);
       }
     } catch (error) {
       toast({
@@ -1053,21 +1212,7 @@ export function VotingManagement() {
       // Close dialog
       setIsImportDialogOpen(false);
       
-      // Fetch fresh data for the selected round (sin recargar todo)
-      const { data: freshRound, error: fetchError } = await supabase
-        .from('rounds')
-        .select('*, candidates(*)')
-        .eq('id', selectedRound.id)
-        .single();
-      
-      if (!fetchError && freshRound) {
-        setSelectedRound(freshRound);
-        
-        // Update in the rounds list without full reload
-        setRounds(prevRounds => 
-          prevRounds.map(r => r.id === selectedRound.id ? freshRound : r)
-        );
-      }
+      await refreshRoundWithCandidates(selectedRound.id);
       
       // Switch to candidates tab to show the imported candidates
       setActiveTab('candidates');
@@ -1080,6 +1225,61 @@ export function VotingManagement() {
       });
     } finally {
       setImportingFile(false);
+    }
+  };
+
+  const loadTestDataset = async () => {
+    if (!selectedRound) return;
+
+    const selectedDataset = testDatasets.find((dataset) => dataset.id === selectedTestDatasetId);
+    if (!selectedDataset) {
+      toast({
+        title: 'Dataset no encontrado',
+        description: 'Selecciona un dataset válido para continuar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setLoadingTestDataset(true);
+
+      const maxOrderIndex = Math.max(0, ...selectedRound.candidates.map((candidate) => candidate.order_index));
+      const rows = selectedDataset.candidates.map((candidate, index) => ({
+        round_id: selectedRound.id,
+        name: candidate.name.trim(),
+        surname: candidate.surname.trim(),
+        location: candidate.location?.trim() || null,
+        group_name: candidate.group_name?.trim() || null,
+        age: typeof candidate.age === 'number' ? candidate.age : null,
+        description: candidate.description?.trim() || null,
+        image_url: candidate.image_url?.trim() || null,
+        order_index: maxOrderIndex + index + 1,
+      }));
+
+      const { error } = await supabase
+        .from('candidates')
+        .insert(rows);
+
+      if (error) {
+        throw error;
+      }
+
+      await refreshRoundWithCandidates(selectedRound.id);
+      setIsTestDatasetDialogOpen(false);
+
+      toast({
+        title: 'Datos de prueba cargados',
+        description: `${rows.length} candidatos insertados en "${selectedRound.title}".`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar los datos de prueba',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingTestDataset(false);
     }
   };
 
@@ -1136,7 +1336,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Candidato eliminado correctamente',
       });
       
@@ -1193,7 +1393,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: `${candidateIds.length} candidatos eliminados correctamente`,
       });
       
@@ -1242,7 +1442,7 @@ export function VotingManagement() {
       }
 
       toast({
-        title: 'Éxito',
+        title: 'Á‰xito',
         description: 'Todos los candidatos eliminados correctamente',
       });
       
@@ -1357,6 +1557,32 @@ export function VotingManagement() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="access_code">Código de acceso (opcional)</Label>
+                <Input
+                  id="access_code"
+                  value={newRoundForm.access_code}
+                  onChange={(e) => setNewRoundForm(prev => ({ ...prev, access_code: e.target.value.toUpperCase() }))}
+                  placeholder="ABC1"
+                  maxLength={5}
+                />
+                <p className="text-xs text-muted-foreground">3-5 caracteres alfanuméricos. Si queda vacío, la votación será abierta.</p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="census_mode">Modo de censo</Label>
+                <Select
+                  value={newRoundForm.census_mode}
+                  onValueChange={(value: CensusMode) => setNewRoundForm(prev => ({ ...prev, census_mode: value }))}
+                >
+                  <SelectTrigger id="census_mode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="maximum">Máximo (se puede cerrar en cualquier momento)</SelectItem>
+                    <SelectItem value="exact">Exacto (solo se puede cerrar al completar el cupo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
             </div>
             <div className="flex justify-end gap-2">
@@ -1366,6 +1592,114 @@ export function VotingManagement() {
               <Button onClick={createRound}>
                 <Save className="w-4 h-4 mr-2" />
                 Crear Votación
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={isRoundConfigDialogOpen}
+          onOpenChange={(open) => {
+            setIsRoundConfigDialogOpen(open);
+            if (!open) {
+              setEditingRound(null);
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Editar Configuración de Votación</DialogTitle>
+              <DialogDescription>
+                Ajusta el código de acceso, el modo de censo y los datos principales de la ronda.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-round-title">Título</Label>
+                <Input
+                  id="edit-round-title"
+                  value={editRoundForm.title}
+                  onChange={(e) => setEditRoundForm((prev) => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-round-description">Descripción</Label>
+                <Textarea
+                  id="edit-round-description"
+                  value={editRoundForm.description}
+                  onChange={(e) => setEditRoundForm((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-round-year">Año</Label>
+                  <Input
+                    id="edit-round-year"
+                    type="number"
+                    value={editRoundForm.year}
+                    onChange={(e) => setEditRoundForm((prev) => ({ ...prev, year: parseInt(e.target.value) || new Date().getFullYear() }))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-round-max-votantes">Cupo máximo</Label>
+                  <Input
+                    id="edit-round-max-votantes"
+                    type="number"
+                    min="1"
+                    value={editRoundForm.max_votantes}
+                    onChange={(e) => setEditRoundForm((prev) => ({ ...prev, max_votantes: parseInt(e.target.value) || 100 }))}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-round-team">Equipo/Categoría</Label>
+                <Select
+                  value={editRoundForm.team}
+                  onValueChange={(value: 'ECE' | 'ECL') => setEditRoundForm((prev) => ({ ...prev, team: value }))}
+                >
+                  <SelectTrigger id="edit-round-team">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ECE">ECE (Equipo Coordinador Europa)</SelectItem>
+                    <SelectItem value="ECL">ECL (Equipo Coordinador Local)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-round-access-code">Código de acceso</Label>
+                <Input
+                  id="edit-round-access-code"
+                  value={editRoundForm.access_code}
+                  onChange={(e) => setEditRoundForm((prev) => ({ ...prev, access_code: e.target.value.toUpperCase() }))}
+                  placeholder="ABC1"
+                  maxLength={5}
+                />
+                <p className="text-xs text-muted-foreground">Opcional. 3-5 caracteres alfanuméricos.</p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-round-census-mode">Modo de censo</Label>
+                <Select
+                  value={editRoundForm.census_mode}
+                  onValueChange={(value: CensusMode) => setEditRoundForm((prev) => ({ ...prev, census_mode: value }))}
+                >
+                  <SelectTrigger id="edit-round-census-mode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="maximum">Máximo</SelectItem>
+                    <SelectItem value="exact">Exacto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsRoundConfigDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveRoundConfig}>
+                <Save className="w-4 h-4 mr-2" />
+                Guardar Cambios
               </Button>
             </div>
           </DialogContent>
@@ -1429,6 +1763,13 @@ export function VotingManagement() {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openRoundConfig(round)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
                         {!round.is_closed && (
                           <Button
                             variant={round.is_active ? "destructive" : "default"}
@@ -1486,6 +1827,16 @@ export function VotingManagement() {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge variant="outline">
+                        Censo: {round.census_mode === 'exact' ? 'Exacto' : 'Máximo'}
+                      </Badge>
+                      {round.access_code ? (
+                        <Badge variant="secondary">Código: {round.access_code}</Badge>
+                      ) : (
+                        <Badge variant="outline">Sin código de acceso</Badge>
+                      )}
+                    </div>
                     {round.description && (
                       <p className="text-muted-foreground mt-3">{round.description}</p>
                     )}
@@ -1528,6 +1879,60 @@ export function VotingManagement() {
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+                  <Dialog open={isTestDatasetDialogOpen} onOpenChange={setIsTestDatasetDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <Database className="w-4 h-4 mr-2" />
+                        Cargar datos de prueba
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[560px]">
+                      <DialogHeader>
+                        <DialogTitle>Cargar Datos de Prueba</DialogTitle>
+                        <DialogDescription>
+                          Inserta un dataset predefinido para probar rápido la votación seleccionada.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-2">
+                        <div className="grid gap-2">
+                          <Label htmlFor="test-dataset">Dataset</Label>
+                          <Select value={selectedTestDatasetId} onValueChange={setSelectedTestDatasetId}>
+                            <SelectTrigger id="test-dataset">
+                              <SelectValue placeholder="Selecciona un dataset" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {testDatasets.map((dataset) => (
+                                <SelectItem key={dataset.id} value={dataset.id}>
+                                  {dataset.emoji} {dataset.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {selectedTestDatasetId && (
+                          <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                            <p className="font-medium">
+                              {testDatasets.find((dataset) => dataset.id === selectedTestDatasetId)?.title}
+                            </p>
+                            <p className="text-muted-foreground">
+                              {testDatasets.find((dataset) => dataset.id === selectedTestDatasetId)?.description}
+                            </p>
+                            <p className="text-muted-foreground">
+                              Candidatos: {testDatasets.find((dataset) => dataset.id === selectedTestDatasetId)?.candidates.length ?? 0}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsTestDatasetDialogOpen(false)} disabled={loadingTestDataset}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={loadTestDataset} disabled={loadingTestDataset}>
+                          {loadingTestDataset ? 'Cargando...' : 'Insertar Dataset'}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   
                   <Button
                     variant="outline"
@@ -1903,7 +2308,7 @@ export function VotingManagement() {
                                   </div>
                                 )}
                                 {candidate.location && (
-                                  <p className="text-sm text-muted-foreground">📍 {candidate.location}</p>
+                                  <p className="text-sm text-muted-foreground">📍 {candidate.location}</p>
                                 )}
                                 {candidate.group_name && (
                                   <p className="text-sm text-muted-foreground">👥 {candidate.group_name}</p>
@@ -2032,6 +2437,13 @@ export function VotingManagement() {
                         </p>
                       </div>
                     )}
+                    {round.census_mode === 'exact' && round.votes_current_round < round.max_votantes && !showResults && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                        <p className="text-sm font-medium text-amber-700">
+                          Censo exacto activo: faltan {round.max_votantes - (round.votes_current_round || 0)} votantes para finalizar la ronda.
+                        </p>
+                      </div>
+                    )}
 
                     {/* Round Results Display */}
                     {showResults && roundResults.length > 0 && (
@@ -2069,6 +2481,7 @@ export function VotingManagement() {
                               variant="default" 
                               size="sm" 
                               onClick={() => nextRound(round)}
+                              disabled={round.census_mode === 'exact' && (round.votes_current_round || 0) < round.max_votantes}
                             >
                               <ChevronRight className="w-4 h-4 mr-2" />
                               Finalizar Ronda {round.current_round_number}
@@ -2153,3 +2566,4 @@ export function VotingManagement() {
     </div>
   );
 }
+

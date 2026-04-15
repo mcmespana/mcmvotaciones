@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
 import { SupabaseConfigAlert } from './SupabaseConfigAlert';
 
-interface LoginPageProps {
-  onSwitchToRegister: () => void;
-}
-
-export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
+export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -130,23 +126,7 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
                 'Iniciar sesión'
               )}
             </Button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              ¿Primera vez en el sistema?
-            </p>
-            <Button 
-              variant="ghost" 
-              onClick={onSwitchToRegister}
-              disabled={loading}
-              className="text-primary hover:text-primary/80"
-            >
-              Configurar primer administrador
-            </Button>
-          </div>
-          
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          </form>          <div className="mt-4 text-center text-sm text-muted-foreground">
             Sistema de votaciones MCM
           </div>
         </CardContent>

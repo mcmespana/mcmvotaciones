@@ -236,7 +236,11 @@ export function ComunicaImport() {
   function toggleContact(crmId: string) {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(crmId) ? next.delete(crmId) : next.add(crmId);
+      if (next.has(crmId)) {
+        next.delete(crmId);
+      } else {
+        next.add(crmId);
+      }
       return next;
     });
   }

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
+import { AdminVotingDetail } from './AdminVotingDetail';
 import { DemoPage } from './DemoPage';
 import { DemoAdminDashboard } from './DemoAdminDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -95,6 +96,7 @@ export function AdminRouter() {
     <Routes>
       <Route path="/" element={<AdminDashboard />} />
       <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route path="/votaciones/:roundId" element={<AdminVotingDetail />} />
       <Route path="/*" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   );

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { VotingPage } from "@/components/VotingPage";
 import { AdminRouter } from "@/components/AdminRouter";
 import { ComunicaRouter } from "@/components/ComunicaRouter";
+import { ProjectionPage } from "@/components/ProjectionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<VotingPage />} />
+            <Route path="/proyeccion" element={<ProjectionPage />} />
             <Route path="/admin/*" element={<AdminRouter />} />
             <Route path="/comunica/*" element={<ComunicaRouter />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
