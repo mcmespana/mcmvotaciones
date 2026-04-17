@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Control Detallado de Ronda - Votely</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#ffb4a8",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fe624e",
+                        "surface-variant": "#e1e3e4",
+                        "primary-container": "#2563eb",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#8f0f07",
+                        "on-background": "#191c1d",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "tertiary-container": "#bc4800",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container": "#edeeef",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-fixed": "#ffdad4",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#f0f1f2",
+                        "error": "#ba1a1a",
+                        "tertiary": "#943700",
+                        "on-tertiary-container": "#ffede6",
+                        "on-secondary-container": "#650000",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface": "#f8f9fa",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-bright": "#f8f9fa",
+                        "surface-tint": "#0053db",
+                        "on-surface": "#191c1d",
+                        "secondary": "#b22b1d",
+                        "on-secondary-fixed": "#410000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #191c1d; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gradient-primary { background: linear-gradient(135deg, #004ac6, #2563eb); }
+        .ambient-shadow { box-shadow: 0 4px 6px -1px rgba(0, 74, 198, 0.04), 0 10px 15px -3px rgba(0, 74, 198, 0.08); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-slate-50 dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-['Inter'] text-sm font-medium h-screen w-64 border-r border-slate-200 dark:border-slate-800 hidden lg:flex flex-col h-full p-4 flex-shrink-0 z-40 relative shadow-sm">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-on-primary font-bold text-xl">V</div>
+<div>
+<div class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Admin Panel</div>
+<div class="text-xs text-slate-500">Election 2024</div>
+</div>
+</div>
+<button class="mb-8 w-full min-h-[56px] rounded-lg gradient-primary text-on-primary font-semibold flex items-center justify-center space-x-2 hover:opacity-90 transition-opacity ambient-shadow">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+<span>Launch New Poll</span>
+</button>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Overview</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-xl active:scale-98 transition-all font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">ballot</span>
+<span>Election Rounds</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Voter Management</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Results</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Audit Log</span>
+</a>
+</li>
+</ul>
+<ul class="mt-auto space-y-2 pt-4 border-t border-slate-200/50">
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help</span>
+</a>
+</li>
+<li>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Sign Out</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col bg-surface-container-low overflow-y-auto relative z-0">
+<!-- TopNavBar (Web) -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl fixed top-0 w-full z-50 shadow-sm dark:shadow-none flex justify-between items-center px-6 py-3 max-w-full mx-auto hidden md:flex sticky">
+<div class="flex items-center space-x-8">
+<div class="text-2xl font-bold tracking-tighter text-blue-600 dark:text-blue-400 font-['Plus_Jakarta_Sans'] mr-8">Votely</div>
+<nav class="hidden md:flex space-x-6">
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 font-['Plus_Jakarta_Sans'] tracking-tight hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-lg" href="#">Dashboard</a>
+<a class="text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600 font-['Plus_Jakarta_Sans'] tracking-tight px-3 py-2" href="#">Polls</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 font-['Plus_Jakarta_Sans'] tracking-tight hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-lg" href="#">Users</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 font-['Plus_Jakarta_Sans'] tracking-tight hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-lg" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<button class="p-2 text-slate-500 hover:text-blue-500 hover:bg-slate-50 rounded-full transition-colors scale-95 duration-150 ease-in-out">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-blue-500 hover:bg-slate-50 rounded-full transition-colors scale-95 duration-150 ease-in-out">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden ml-4">
+<img alt="Admin profile avatar" class="w-full h-full object-cover" data-alt="professional portrait of an administrative user in soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArCxW_Ie3Ja7zQBbmahjjNHXKXcvSv9mA84ngwRFCAM519cCrcbqnuQjl1oVmf62iqUzuPvsPkbtDD20dmjXy7ckEDidTt4A4UTpnCUbpSxjX9WRNeFOP0hINBgoF8hbPeEDJA1KrvmVjO78ODfk5_WwOUTWPcYCkhVI_XGbBYljgrrP962aaTpIeuC1ZlQ3kLoGzL3Kj_ANjzNWzSGrGBDdFtPnnQS15Ly8qefTYkIzXy-7fYvvjaDpk7r7Rq0hCx9wy2_GJtcz4"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 max-w-7xl mx-auto w-full">
+<!-- Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<div class="inline-flex items-center space-x-2 bg-secondary-container/20 text-secondary px-3 py-1 rounded-full text-label-md font-bold mb-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span>LIVE NOW</span>
+</div>
+<h1 class="font-headline text-display-lg font-bold tracking-tight text-on-surface">Mission Control</h1>
+<p class="font-body text-body-lg text-on-surface-variant mt-1">General Election 2024 - Presidential Round</p>
+</div>
+<div class="flex items-center space-x-3 bg-surface-container-lowest p-2 rounded-xl ambient-shadow">
+<button class="min-h-[48px] px-6 rounded-lg bg-surface-variant text-on-surface-variant font-semibold hover:bg-surface-dim transition-colors flex items-center space-x-2">
+<span class="material-symbols-outlined">pause</span>
+<span>Pause</span>
+</button>
+<button class="min-h-[48px] px-6 rounded-lg bg-secondary text-on-secondary font-semibold hover:opacity-90 transition-colors flex items-center space-x-2">
+<span class="material-symbols-outlined">stop</span>
+<span>End Round</span>
+</button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-surface-container-lowest rounded-xl p-6 ambient-shadow relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl">how_to_vote</span>
+</div>
+<h3 class="font-label text-label-md text-on-surface-variant font-semibold tracking-wider uppercase mb-2">Total Votes Cast</h3>
+<div class="font-headline text-5xl font-extrabold text-primary tracking-tighter">1,245,892</div>
+<div class="flex items-center space-x-1 mt-3 text-sm text-emerald-600 font-medium">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12.5% this hour</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 ambient-shadow relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl">group</span>
+</div>
+<h3 class="font-label text-label-md text-on-surface-variant font-semibold tracking-wider uppercase mb-2">Active Users</h3>
+<div class="font-headline text-5xl font-extrabold text-on-surface tracking-tighter">45,210</div>
+<div class="flex items-center space-x-1 mt-3 text-sm text-on-surface-variant font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Currently connected</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 ambient-shadow relative overflow-hidden gradient-primary text-on-primary">
+<div class="absolute top-0 right-0 p-4 opacity-20">
+<span class="material-symbols-outlined text-6xl">timer</span>
+</div>
+<h3 class="font-label text-label-md text-on-primary/80 font-semibold tracking-wider uppercase mb-2">Time Remaining</h3>
+<div class="font-headline text-5xl font-extrabold tracking-tighter">04:22:15</div>
+<div class="flex items-center space-x-1 mt-3 text-sm text-on-primary/90 font-medium">
+<span>Closes at 8:00 PM EST</span>
+</div>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Candidates -->
+<div class="lg:col-span-7 space-y-6">
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline text-headline-lg font-bold text-on-surface">Live Results</h2>
+<span class="text-sm text-on-surface-variant font-medium">Updating in real-time</span>
+</div>
+<!-- Candidate Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-6 ambient-shadow border border-outline-variant/15 relative">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center space-x-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Candidate 1" class="w-full h-full object-cover" data-alt="professional headshot of a female politician smiling warmly against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg6GZj7nomY4Cfx9UXCa4GWNhdU8yh4JpYijNsN09OxERvIyeOqeKSwrZz5SrfK74FwxFqlJwD_oSGNEMbuWNlnsCyO_7TQiIwhX0dTJWhcj3rwGsc3mMF_BT-BzF6Mud6flr3Eky2kq6SRPGvat1djxKq94kKyRMHytQX7zQ0vvOyAm4IvUWY1USky7MdYA5jLdPNd_5zJ3LF7yRrbZu74pk80YG-22z_WN313-HED0nE5D82dDDwax_VJ-KZDg69IcQPDfmPLEI"/>
+</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-on-surface">Sarah Jenkins</h3>
+<p class="font-body text-sm text-on-surface-variant">Progressive Party</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline text-2xl font-extrabold text-primary">542,104</div>
+<div class="text-sm font-semibold text-on-surface-variant">43.5%</div>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-1000" style="width: 43.5%"></div>
+</div>
+</div>
+<!-- Candidate Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-6 ambient-shadow border border-outline-variant/15">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center space-x-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Candidate 2" class="w-full h-full object-cover" data-alt="professional headshot of a male politician in a suit against a light background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsLY8oz8__9dCnLpdmQZZiWikPtinkU3Ou46AyUQTlwuk4kxlAB7CuFO4AYKG79SwIXOzH02rcDYTeBfPLPyqqk2G4o0an0V0M9iKvDjML4ZajpxeidFFfsWFFtU9WNbqEh9s6QheO7lSU72PjXtXK1X5sY4dcPuSOVwst12S-pNyoIZ9EBtzLJWY0s2JM_3oTLn-HrirbCwHrhrH9sUr1M56d1VzX4UoOzRz7FtEzRBPmd2-4rVuhZDfYN5RgGv63oLJwAJV8b0Y"/>
+</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-on-surface">Michael Chang</h3>
+<p class="font-body text-sm text-on-surface-variant">Conservative Alliance</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline text-2xl font-extrabold text-on-surface">480,321</div>
+<div class="text-sm font-semibold text-on-surface-variant">38.5%</div>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-slate-400 h-full rounded-full transition-all duration-1000" style="width: 38.5%"></div>
+</div>
+</div>
+<!-- Candidate Card 3 -->
+<div class="bg-surface-container-lowest rounded-lg p-6 ambient-shadow border border-outline-variant/15">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center space-x-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-bold text-xl">
+                                    O
+                                </div>
+<div>
+<h3 class="font-headline text-xl font-bold text-on-surface">Other / Write-in</h3>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline text-2xl font-extrabold text-on-surface">223,467</div>
+<div class="text-sm font-semibold text-on-surface-variant">18.0%</div>
+</div>
+</div>
+<div class="w-full bg-surface-container h-3 rounded-full overflow-hidden">
+<div class="bg-slate-300 h-full rounded-full transition-all duration-1000" style="width: 18.0%"></div>
+</div>
+</div>
+</div>
+<!-- Right Column: Live Monitoring -->
+<div class="lg:col-span-5 space-y-6">
+<h2 class="font-headline text-headline-lg font-bold text-on-surface mb-4">Live Activity</h2>
+<!-- Map/Region Block -->
+<div class="bg-surface-container-lowest rounded-xl p-1 ambient-shadow overflow-hidden relative min-h-[300px]">
+<!-- Placeholder for map -->
+<div class="absolute inset-0 bg-surface-container-low flex items-center justify-center">
+<img alt="Heatmap" class="w-full h-full object-cover opacity-60 mix-blend-multiply" data-alt="abstract digital heatmap of a country highlighting areas of high activity in blue and red hues" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp2WsbyekYv0QxWcQdRBrah6HWE0rzUOSX3cX8cBRAgk5O3hIHPWabqRPTR7UM77ISAjYMyWBdPbPsX9MNIevzMbSxcnxdVefpPdDVbV9v2PEKWyD-uCcgwuFnzfgB6Z0Q9CEMTVQw7GULBVApXdO85leCvEpJ5HO5BW7VkIWQerGkbISLUApoa_ELdtAht2M_0OMsmZAdWBEzklnAymkvPviw_GkGc6r8-JtntxxvENR7KvNCx7XpxbVAms8Z1m5-QKU4Mrrkm8c"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+</div>
+<div class="relative z-10 p-5">
+<div class="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-primary shadow-sm">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Regional Surge: District 4</span>
+</div>
+</div>
+</div>
+<!-- Activity Log -->
+<div class="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline text-lg font-bold text-on-surface">System Log</h3>
+<button class="text-primary text-sm font-semibold hover:underline">View All</button>
+</div>
+<div class="space-y-4">
+<!-- Log Item 1 -->
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm">verified_user</span>
+</div>
+<div>
+<p class="font-body text-sm text-on-surface"><span class="font-semibold">Node 4A</span> synced successfully.</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Just now</p>
+</div>
+</div>
+<!-- Log Item 2 -->
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-on-secondary-fixed text-sm">warning</span>
+</div>
+<div>
+<p class="font-body text-sm text-on-surface"><span class="font-semibold text-secondary">High latency</span> detected in Region B.</p>
+<p class="text-xs text-on-surface-variant mt-0.5">2 mins ago</p>
+</div>
+</div>
+<!-- Log Item 3 -->
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">how_to_vote</span>
+</div>
+<div>
+<p class="font-body text-sm text-on-surface">Milestone: <span class="font-semibold">1.2M votes</span> reached.</p>
+<p class="text-xs text-on-surface-variant mt-0.5">15 mins ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-24"></div> <!-- Bottom padding -->
+</div>
+</main>
+</body></html>

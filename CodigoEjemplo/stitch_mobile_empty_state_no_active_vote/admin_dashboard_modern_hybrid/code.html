@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Consolación - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#737686",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-fixed-dim": "#ffb4a8",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e3132",
+                        "primary": "#004ac6",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-container": "#fe624e",
+                        "background": "#f8f9fa",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary-container": "#ffede6",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary-container": "#650000",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed": "#ffdad4",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-tint": "#0053db",
+                        "surface-container": "#edeeef",
+                        "on-secondary-fixed": "#410000",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-variant": "#e1e3e4",
+                        "primary-fixed": "#dbe1ff",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#2563eb",
+                        "on-background": "#191c1d",
+                        "surface-container-high": "#e7e8e9",
+                        "error": "#ba1a1a",
+                        "secondary": "#b22b1d",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary": "#943700",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary-fixed-variant": "#8f0f07",
+                        "tertiary-container": "#bc4800",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-dim": "#d9dadb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%); }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 border-r border-surface-container-high shadow-[4px_0_24px_-12px_rgba(0,74,198,0.08)] z-50">
+<div class="p-6 flex items-center gap-4">
+<img alt="Organization Logo" class="w-10 h-10 rounded-full object-cover" data-alt="clean minimal abstract blue geometric logo symbol" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk1bmjGrIrZ0bwBn9xVqqaDdGPVItSSMbFaiDCUlSFLI56aCqw4z0Rwr3wWV0jgwvgKYgkmrfdfUDVUT8DjIx5FGq_7N-zqbLg-bRNnq2_CFHb0NIIzvgzDLQZKDXrzgkVdTK5TbEU06V6vQPWrHtkxnnmB6SO85X1b1eQUObEL1AJ399kSxTmn2QHALhGLx-gkNTvgXrr-yrzEytRZuosGt5bNxbrtbIuolRi9pG_EWn64EgaeB1lsjK-5AmHyO2z4TzZIQPP8Ck"/>
+<div>
+<h1 class="font-headline font-bold text-xl tracking-tighter text-primary">Consolación</h1>
+<p class="text-xs text-on-surface-variant font-label">Admin Portal</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 px-4 mt-6">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-fixed text-on-primary-fixed font-headline font-bold transition-all transform hover:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface hover:text-primary transition-colors font-headline font-medium" href="#">
+<span class="material-symbols-outlined">how_to_vote</span>
+<span>Rounds</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface hover:text-primary transition-colors font-headline font-medium" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span>Candidates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface hover:text-primary transition-colors font-headline font-medium" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface hover:text-primary transition-colors font-headline font-medium" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Results</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-6 py-4 bg-surface-container-lowest/80 backdrop-blur-xl docked full-width top-0 sticky z-40 border-b border-surface-container-high/50 shadow-[0_4px_24px_-12px_rgba(0,74,198,0.04)]">
+<div class="md:hidden flex items-center gap-3">
+<img alt="Organization Logo" class="w-8 h-8 rounded-full object-cover" data-alt="clean minimal abstract blue geometric logo symbol" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpWW8Ho2XtN-d5eiAm88d-tQsO6G-i-5sO4CU8x-nGFW1INhlYZEBD0Ybu75zDYlKgkIaeBH2Mobz0dnQnpHME_oTu7iYw-NDDh4IWVoTjUsWjV92W13zBM14Pw6NK20Hhuf7qp6h5079UTpBCdFTZTv4wjVDA4KnQALHDhDKM6F8kMrsUdRQagEWEIZvnP60v5vGeo3TxkBVmk61YHpcH0OASAUUFbG6lY0a6tAxji0otDICM6Yx2lRa18L2_CtPKk_RG4bSg-uY"/>
+<h1 class="font-headline font-black tracking-tighter text-xl text-primary">Consolación</h1>
+</div>
+<!-- Spacer for desktop to align right icons correctly since logo is in sidebar -->
+<div class="hidden md:block flex-1"></div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="Admin User Profile" class="w-10 h-10 rounded-full border-2 border-surface-container object-cover" data-alt="professional headshot of a smiling man in a business casual blue shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB8_3HLOR8RMT0KmV40eD-c6OI9aQI83Uhcm_EV7vvBVOZUOx9zyR-3LJrVf1L4vlZt1f35ICOiNVSutpmBvbA1lyDkOexrYWUoyqwtBpXFRqKEnnShnzYmZPegJOcex7g98L6yZSLwLwn1nOicVb3zngPEoGBFa3cm9QMDWSevqVCs7bvAAszTtGgGSPGVy13wZ2i3017cQyrTG3u1wMLwiVttBa3v-kPgIru9itKHR-xUpDXtsEIs9J5Bf2vhS9PAtaKaddYQxQ"/>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-6 md:p-8 lg:p-12 overflow-y-auto">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+<div>
+<h2 class="font-headline text-4xl md:text-[3.5rem] font-bold text-on-surface tracking-tight leading-none mb-2">Overview</h2>
+<p class="text-on-surface-variant text-lg">Current voting session statistics and live activity.</p>
+</div>
+<div class="flex flex-wrap gap-4">
+<button class="flex items-center gap-2 px-6 py-4 rounded-lg text-primary font-headline font-semibold hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">download</span>
+                        Export Results
+                    </button>
+<button class="flex items-center gap-2 px-8 py-4 rounded-lg bg-gradient-primary text-on-primary font-headline font-semibold shadow-[0_10px_20px_-10px_rgba(0,74,198,0.4)] hover:shadow-[0_15px_25px_-10px_rgba(0,74,198,0.5)] transition-all transform hover:-translate-y-1">
+<span class="material-symbols-outlined">add</span>
+                        New Voting Round
+                    </button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 relative overflow-hidden group shadow-[0_4px_24px_-12px_rgba(0,74,198,0.06)]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-500 opacity-50"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-on-surface-variant font-label text-sm uppercase tracking-widest font-semibold">Total Votes</span>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-2 rounded-full">how_to_vote</span>
+</div>
+<div class="font-headline text-5xl font-black text-on-surface tracking-tighter">
+                            1,234,567
+                        </div>
+<div class="mt-4 flex items-center gap-2 text-sm">
+<span class="inline-flex items-center text-primary font-medium bg-primary-fixed/50 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> +12%
+                            </span>
+<span class="text-on-surface-variant">vs last hour</span>
+</div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 relative overflow-hidden group shadow-[0_4px_24px_-12px_rgba(0,74,198,0.06)]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-fixed rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-500 opacity-50"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-on-surface-variant font-label text-sm uppercase tracking-widest font-semibold">Active Users</span>
+<span class="material-symbols-outlined text-secondary bg-secondary-fixed p-2 rounded-full">group</span>
+</div>
+<div class="font-headline text-5xl font-black text-on-surface tracking-tighter">
+                            450
+                        </div>
+<div class="mt-4 flex items-center gap-2 text-sm">
+<span class="inline-flex items-center text-secondary font-medium bg-secondary-fixed/50 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[16px]">pulse_alert</span> Live
+                            </span>
+<span class="text-on-surface-variant">currently voting</span>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 relative overflow-hidden group shadow-[0_4px_24px_-12px_rgba(0,74,198,0.06)]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-500 opacity-50"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-on-surface-variant font-label text-sm uppercase tracking-widest font-semibold">Time Remaining</span>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-2 rounded-full">timer</span>
+</div>
+<div class="font-headline text-5xl font-black text-on-surface tracking-tighter">
+                            02:45:10
+                        </div>
+<div class="mt-4 flex items-center gap-2 text-sm">
+<span class="text-on-surface-variant">Round closes at 18:00 EST</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Section -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-[0_4px_24px_-12px_rgba(0,74,198,0.06)]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline text-2xl font-bold text-on-surface tracking-tight">Recent Activity</h3>
+<button class="text-primary font-medium hover:text-primary-container transition-colors">View All</button>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Activity Item 1 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-headline font-semibold text-on-surface">Vote Cast</h4>
+<span class="text-xs text-on-surface-variant font-label">Just now</span>
+</div>
+<p class="text-sm text-on-surface-variant">Anonymous User #8492 successfully submitted their ballot.</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-headline font-semibold text-on-surface">Vote Cast</h4>
+<span class="text-xs text-on-surface-variant font-label">2 mins ago</span>
+</div>
+<p class="text-sm text-on-surface-variant">Anonymous User #8491 successfully submitted their ballot.</p>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-headline font-semibold text-on-surface">Authentication Failed</h4>
+<span class="text-xs text-on-surface-variant font-label">5 mins ago</span>
+</div>
+<p class="text-sm text-on-surface-variant">Multiple failed login attempts from IP 192.168.1.104.</p>
+</div>
+</div>
+<!-- Activity Item 4 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-headline font-semibold text-on-surface">Vote Cast</h4>
+<span class="text-xs text-on-surface-variant font-label">12 mins ago</span>
+</div>
+<p class="text-sm text-on-surface-variant">Anonymous User #8490 successfully submitted their ballot.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

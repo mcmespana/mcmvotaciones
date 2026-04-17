@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Votación en Vivo - Projection</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface": "#191c1d",
+                        "outline": "#737686",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#650000",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed-variant": "#8f0f07",
+                        "surface-tint": "#0053db",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container-low": "#f3f4f5",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary": "#943700",
+                        "secondary-fixed-dim": "#ffb4a8",
+                        "surface-container": "#edeeef",
+                        "tertiary-container": "#bc4800",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "surface-dim": "#d9dadb",
+                        "on-tertiary-container": "#ffede6",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary-fixed": "#410000",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9fa",
+                        "primary-container": "#2563eb",
+                        "background": "#f8f9fa",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-variant": "#e1e3e4",
+                        "primary-fixed": "#dbe1ff",
+                        "secondary-container": "#fe624e",
+                        "primary": "#004ac6",
+                        "secondary": "#b22b1d",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-background": "#191c1d",
+                        "on-tertiary-fixed": "#360f00",
+                        "secondary-fixed": "#ffdad4",
+                        "on-primary-container": "#eeefff",
+                        "inverse-surface": "#2e3132"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body h-screen w-screen overflow-hidden flex selection:bg-primary-fixed selection:text-on-primary-fixed">
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col py-8 rounded-r-[3rem] bg-[#edeeef] z-50">
+<div class="px-8 mb-12 flex flex-col items-start gap-4">
+<img alt="Event Logo" class="w-16 h-16 rounded-2xl shadow-sm object-cover" data-alt="Abstract geometric logo mark with vibrant blue overlapping shapes representing unity and voting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-7aZJ6UekoovUZfDfyWE54gvEw-l7-Dl_cSd38dYR0anYyOZp6RAICgLKEGrfbIlIr-CT6UuZu73_6qv5u_LHpJRp3YK3ORTONOrN2Yzy0UKYSnfY46PT2y99ggF6FuW8fDKRciBJr-FCAynVB-cmBAyjhC_TFmcx797H6q5BEM1uua4Ew2iFoxDBX-DkS_STzMK3avqI6_guqWzGEktCRkv72O31qOfhOP50iEKmdaiN0j39imSWAtTNlK30Bp8uqOQfwK4BpNI"/>
+<div>
+<h2 class="font-['Plus_Jakarta_Sans'] font-bold text-lg text-[#004ac6]">Asamblea 2024</h2>
+<p class="font-['Inter'] font-medium text-sm text-[#191c1d] opacity-60">Sesión Plenaria</p>
+</div>
+</div>
+<div class="flex-1 px-4 flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 text-[#191c1d] opacity-60 hover:bg-[#e1e3e4] rounded-full transition-transform duration-200 hover:translate-x-1 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined group-hover:icon-fill">info</span>
+                Instrucciones
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 bg-gradient-to-br from-[#004ac6] to-[#2563eb] text-white rounded-full mx-2 my-1 shadow-[0_10px_15px_-3px_rgba(0,74,198,0.2)] transition-transform duration-200 font-['Inter'] font-medium text-sm" href="#">
+<span class="material-symbols-outlined icon-fill">leaderboard</span>
+                Votación Real
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#191c1d] opacity-60 hover:bg-[#e1e3e4] rounded-full transition-transform duration-200 hover:translate-x-1 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined group-hover:icon-fill">emoji_events</span>
+                Resultados
+            </a>
+</div>
+</nav>
+<main class="flex-1 flex flex-col md:ml-64 h-full relative overflow-hidden bg-surface-container-low/50">
+<header class="flex justify-between items-center w-full px-8 py-4 max-w-full docked top-0 bg-[#f8f9fa] backdrop-blur-md bg-opacity-80 z-40 shadow-[0_4px_6px_-1px_rgba(0,74,198,0.04),0_10px_15px_-3px_rgba(0,74,198,0.08)] rounded-b-[2rem] mx-4 mt-4 w-[calc(100%-2rem)]">
+<div class="flex items-center gap-4">
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-2xl text-[#004ac6]">Votación en Vivo</h1>
+<span class="bg-secondary-container text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse tracking-wide uppercase">Live</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-3 rounded-full hover:bg-[#f3f4f5] transition-all duration-300 text-[#004ac6] scale-95 active:scale-90">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-3 rounded-full hover:bg-[#f3f4f5] transition-all duration-300 text-[#004ac6] scale-95 active:scale-90">
+<span class="material-symbols-outlined">fullscreen</span>
+</button>
+<img alt="User avatar" class="w-12 h-12 rounded-full border-2 border-surface shadow-sm object-cover ml-2" data-alt="Professional headshot of a man in a modern office setting smiling softly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqTa917mjgKPzUAzv2Ikl67QMtIcfaDoSO-idIKb1YipjrWsvHhjIXeWgzQxeUDnBPoWO9v8P4rImMh1277HXslGKGaVc9Za9tEY4ylSd737qOkCWMQCQpkXe35l0h9lz_VAPqHh-j5XHBTsIBSjFsMXh2M3sry9iBSxWiM_X9NhVMTjMeXkLJaVPC-kmRY7yS_JXB1k5RtiE9KfQo8vR-rKgZ7VsvEOU2oBq1mvISWWMNdVNex68A4RRx__NgV2xduMa9pqaGbPw"/>
+</div>
+</header>
+<div class="flex-1 p-8 overflow-y-auto">
+<div class="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 h-full">
+<div class="xl:col-span-5 flex flex-col gap-8 h-full">
+<div class="bg-gradient-to-br from-primary to-primary-container rounded-xl p-10 shadow-[0_20px_40px_-15px_rgba(0,74,198,0.3)] relative overflow-hidden flex-1 flex flex-col justify-center min-h-[400px]">
+<div class="absolute -right-20 -top-20 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
+<div class="absolute -left-10 -bottom-10 w-64 h-64 bg-primary-fixed opacity-10 rounded-full blur-2xl"></div>
+<div class="relative z-10 flex flex-col items-center text-center">
+<h2 class="font-headline text-on-primary/80 text-xl font-semibold tracking-wide mb-2">Participación Global</h2>
+<div class="text-[8rem] leading-none font-headline font-extrabold text-white tracking-tighter mb-8 drop-shadow-md">
+                                75<span class="text-4xl text-on-primary/70 ml-1">%</span>
+</div>
+<div class="w-full max-w-sm bg-black/20 rounded-full h-4 mb-4 overflow-hidden backdrop-blur-sm shadow-inner">
+<div class="bg-white h-full rounded-full w-[75%] shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
+</div>
+<div class="flex justify-between w-full max-w-sm text-on-primary/80 text-sm font-medium font-label">
+<span>1,500 Emitidos</span>
+<span>2,000 Total</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-outline-variant/10">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline text-xl font-bold text-on-surface">Estado de Mesas</h3>
+<span class="material-symbols-outlined text-outline">how_to_vote</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low rounded-lg p-5 flex flex-col gap-2">
+<span class="text-3xl font-headline font-bold text-primary">42</span>
+<span class="text-sm font-label text-on-surface-variant">Mesas Abiertas</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-5 flex flex-col gap-2">
+<span class="text-3xl font-headline font-bold text-outline">3</span>
+<span class="text-sm font-label text-on-surface-variant">Por Abrir</span>
+</div>
+</div>
+</div>
+</div>
+<div class="xl:col-span-7 bg-surface-container-lowest rounded-xl p-10 shadow-[0_12px_40px_-12px_rgba(0,74,198,0.08)] border border-outline-variant/10 flex flex-col h-full min-h-[600px]">
+<div class="flex justify-between items-end mb-10 pb-6 border-b border-surface-container-highest">
+<div>
+<h2 class="font-headline text-3xl font-extrabold text-on-surface tracking-tight mb-2">Tendencias en Tiempo Real</h2>
+<p class="font-body text-on-surface-variant">Resultados preliminares actualizados al instante.</p>
+</div>
+<div class="bg-primary-fixed text-on-primary-fixed font-label text-sm font-bold px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-sm icon-fill">sync</span>
+                            Sincronizado
+                        </div>
+</div>
+<div class="flex flex-col gap-8 flex-1 overflow-y-auto pr-4 custom-scrollbar">
+<div class="flex items-center gap-6 group">
+<div class="relative">
+<img class="w-20 h-20 rounded-full object-cover shadow-md border-4 border-surface-container-lowest z-10 relative" data-alt="Professional portrait of a mature woman with glasses smiling confidently in a well-lit office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY4OpuoDQsikM6_C7D1hrvhHazIoF9yNGgL9EkLF0-HV2O8esL7Z80ipCQHst7XkPxVibjx8kDaPlgj4WreWbXObEeHHghpQ9fkICTjicwz09aUEsbuCmvIK9l_-tPaUAist0jJ5MkeZDhuk6hsIIJUBq5sakiNnXn2ScJbU6dtP78TdorqSYyFwwATsjYHvJmpAmsvsqEVUftwbizmV3Bwdgx1aODddyzTvEPpWG-OrvAoEIgVSU7QgJWCe6nKU_lXMv3lXUeyMo"/>
+<div class="absolute -bottom-2 -right-2 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md z-20">1</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-end mb-3">
+<h3 class="font-headline text-xl font-bold text-on-surface group-hover:text-primary transition-colors">Dra. Elena Ramírez</h3>
+<span class="font-headline font-bold text-2xl text-primary">42%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-3 overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full w-[42%] shadow-[0_0_10px_rgba(0,74,198,0.3)]"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6 group">
+<div class="relative">
+<img class="w-20 h-20 rounded-full object-cover shadow-md border-4 border-surface-container-lowest z-10 relative" data-alt="Corporate portrait of a middle-aged man in a sharp suit with arms crossed looking determined" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwRO5WkL3qg2Ya1OsSSDa2c9-RdUtiJ6_JwC-MV_50aCar58OHT4_8cp-8O10iSpYq4m7fLuOrLuFjziLO4UNOGiNirph54JDYhtRwYZzQkkxx6hPLCltg2yMXLyEG97i0NwYo_BHDAekhDCFWI1-wq_6nFTO3rWy6e5ABzrNX89HS8xrRY8gGl1TI5iN19XfAOmQNkYzPUjC6FSvckEPxxOKARdfyKsqXcdalBJVrMEYUc8mXCCUKPpeQUm9oNeT3dm7kLsConSw"/>
+<div class="absolute -bottom-2 -right-2 bg-surface-variant text-on-surface w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-20">2</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-end mb-3">
+<h3 class="font-headline text-xl font-bold text-on-surface group-hover:text-primary transition-colors">Lic. Carlos Mendoza</h3>
+<span class="font-headline font-bold text-2xl text-on-surface-variant">28%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-3 overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full w-[28%] opacity-80"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6 group">
+<div class="relative">
+<img class="w-20 h-20 rounded-full object-cover shadow-md border-4 border-surface-container-lowest z-10 relative" data-alt="Bright natural portrait of a young professional woman with warm ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvdjiKxz7cumovNH0jMq6ngDCcZwdIRCnRyNz-e3R4Q8DqMEQdcGH0fKVHPgrKJM2mtkHbTE2zG5P3Lexy7gZoa3306HHaXwTKeDYbXIQ_vrrfM7DTRbFrYQ4k7P6xNk3SB3V9ojwQ6gejYC8Jg5t9tisinwRBe94bgkRZe6ZDdCYsIsBWLM2GMVHQXEuANRuhs0VadmJ4hcX-xL7shcbd9DFC2badzhd6tE-rute6irPPRNGJ_SHygyL5hU1OuRpN0wz1zlRYmzc"/>
+<div class="absolute -bottom-2 -right-2 bg-surface-variant text-on-surface w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-20">3</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-end mb-3">
+<h3 class="font-headline text-xl font-bold text-on-surface group-hover:text-primary transition-colors">Ing. Sofia Castro</h3>
+<span class="font-headline font-bold text-2xl text-on-surface-variant">18%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-3 overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full w-[18%] opacity-60"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6 group opacity-80">
+<div class="relative">
+<div class="w-20 h-20 rounded-full bg-surface-container-highest flex items-center justify-center shadow-sm border-4 border-surface-container-lowest z-10 relative">
+<span class="material-symbols-outlined text-outline text-3xl">how_to_vote</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-end mb-3">
+<h3 class="font-headline text-xl font-medium text-on-surface-variant">Votos en Blanco / Nulos</h3>
+<span class="font-headline font-bold text-xl text-outline">12%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-outline-variant h-full rounded-full w-[12%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e1e3e4;
+            border-radius: 20px;
+        }
+    </style>
+</body></html>

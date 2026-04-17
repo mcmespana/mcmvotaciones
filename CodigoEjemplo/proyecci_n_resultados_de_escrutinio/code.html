@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Resultados Finales - Consolación</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#d9dadb",
+                    "primary-fixed": "#dbe1ff",
+                    "primary-container": "#2563eb",
+                    "surface-variant": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f3f4f5",
+                    "inverse-on-surface": "#f0f1f2",
+                    "tertiary": "#943700",
+                    "primary": "#004ac6",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#650000",
+                    "on-secondary-fixed-variant": "#8f0f07",
+                    "inverse-primary": "#b4c5ff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "secondary-container": "#fe624e",
+                    "on-secondary-fixed": "#410000",
+                    "secondary": "#b22b1d",
+                    "surface-container": "#edeeef",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "secondary-fixed-dim": "#ffb4a8",
+                    "inverse-surface": "#2e3132",
+                    "tertiary-container": "#bc4800",
+                    "outline-variant": "#c3c6d7",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00174b",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-surface-variant": "#434655",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-container-high": "#e7e8e9",
+                    "error-container": "#ffdad6",
+                    "background": "#f8f9fa",
+                    "on-surface": "#191c1d",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffdbcd",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-container": "#ffede6",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "outline": "#737686",
+                    "on-background": "#191c1d",
+                    "on-primary-container": "#eeefff",
+                    "surface-tint": "#0053db",
+                    "secondary-fixed": "#ffdad4",
+                    "surface": "#f8f9fa",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Inter"
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: theme('colors.surface-container-lowest');
+            color: theme('colors.on-surface');
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.02em;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, theme('colors.primary') 0%, theme('colors.primary-container') 100%);
+        }
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, theme('colors.secondary') 0%, theme('colors.secondary-container') 100%);
+        }
+        .shadow-ambient {
+            box-shadow: 0 4px 6px -1px rgba(0, 74, 198, 0.04), 0 10px 15px -3px rgba(0, 74, 198, 0.08);
+        }
+        .shadow-ambient-lg {
+             box-shadow: 0 20px 25px -5px rgba(0, 74, 198, 0.05), 0 10px 10px -5px rgba(0, 74, 198, 0.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-white overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex justify-between items-center px-8 h-20 max-w-full mx-auto tonal-shift bg-slate-50 dark:bg-slate-800/50 shadow-[0_4px_6px_-1px_rgba(0,74,198,0.04)] font-['Plus_Jakarta_Sans'] tracking-tight">
+<div class="flex items-center gap-4">
+<img alt="Logo Consolación" class="h-10 w-auto rounded-lg" data-alt="Logotipo institucional de la organización Consolación en colores azul vibrante y granate sobre fondo transparente" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6KCc0b6AVEk7d4jXhi3N3duSOr0WEWtSJrPJVDsLgbxol-FMsck_7VF_Mk3lm4Rktq28BVNyMeo5jEcCRDQeYsYwbNTHzb2T3N0dcM_Mvz-GOfC1qgRp4yk5g0fTk-luWJBk6bZpG9ApFgL_nNIk5ck0TVDa0XO6OjJMh0CcfZ0i_WfPFcUN-nrwhauAT1VCE1shM74lFMPwVmatrdv_5hhDV7vEH3_DlxBXpzJQLKt1z4BMrWFSvDDDVqOTC3P1f7IiIBBqz6b4"/>
+<span class="text-2xl font-bold tracking-tighter text-blue-700 dark:text-blue-500">Resultados Electorales 2024</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-600 font-bold pb-1 text-lg" href="#">Resumen</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-600 transition-colors text-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-xl px-4 py-2" href="#">Geografía</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-600 transition-colors text-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-xl px-4 py-2" href="#">Participación</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-600 transition-colors text-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-xl px-4 py-2" href="#">Histórico</a>
+</div>
+<div class="flex items-center gap-4 text-blue-600 dark:text-blue-400">
+<button class="p-2 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-xl transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined text-2xl">share</span>
+</button>
+<button class="p-2 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-xl transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined text-2xl">refresh</span>
+</button>
+<img alt="Usuario Administrador" class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" data-alt="Retrato profesional de un hombre sonriente en traje de negocios sobre fondo neutro" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8D1wE7G8dTXErDkkj33sopFGmavBELxZLyQ0BpQkgLIa2ebYf6Ola6osop1QDVhgFd0XBCDx7X39BRuTl9T6ugtSGFMac8PCyeo1PFHTqWcmh5w5_KJCnZSvx4Y0n1AAjynUlJNT9rNlAgCIaRN9cdH8quN4eqnZCur5cXc6_aQluVsErQrbqVwvgimiVtuRTjWg6c3zAm31vAeOq6smei6oyTC3DL7v7ynFmzRnpmrtQb6jBoC_65sQWaBxhVW0Vuv3v7kIyVeE"/>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-28 pb-24 px-6 md:px-12 max-w-screen-2xl mx-auto w-full flex flex-col gap-12 bg-surface-container-lowest">
+<!-- Page Header -->
+<header class="text-center space-y-4 pt-8">
+<div class="inline-flex items-center justify-center gap-2 bg-secondary-container text-white px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-2 shadow-ambient">
+<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                Escrutinio 100% Completado
+            </div>
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold text-primary-container">Resultados Finales</h1>
+<p class="text-xl md:text-2xl text-on-surface-variant max-w-2xl mx-auto font-medium">Elecciones a la Presidencia 2024</p>
+</header>
+<!-- Uniform List Layout -->
+<div class="flex flex-col gap-6 max-w-4xl mx-auto w-full">
+<!-- Candidate 1 -->
+<div class="bg-white border border-surface-variant rounded-2xl p-6 shadow-ambient flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
+<img alt="Candidata Ganadora" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-surface shadow-sm shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl8RUxpkgY5YH2f4f7xFm-dW2-yb_BF75mzwf6oHx19XqmDfvV-Iz5AyfFJAO_ibDtiT539jKtqB1as7q6K_EVnKDHwyE5xLZ4uk_Gapm9hscDKt3yraxzDFHASoCk0saZUOLycqqShxj_MEC9QRFjyy8DTNSP2_nyj6VbCgKNHkOM627R4tvtJY0TPmZSxXilzfFBlwST7qQ3uCfmP8UQ4I242FgzD-4khevY5WaqbPq-8Plwos-HF7FRhb-EsIjkeLjrSECiUR4"/>
+<div class="flex-grow text-center md:text-left w-full">
+<div class="flex flex-col md:flex-row justify-between items-center md:items-baseline mb-4">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Dra. Elena Ramírez</h2>
+<p class="text-sm text-on-surface-variant font-medium">Partido Innovación Futura</p>
+</div>
+<div class="text-right mt-2 md:mt-0 flex flex-col items-center md:items-end">
+<span class="font-headline text-4xl font-black text-primary-container">54.2%</span>
+<p class="text-sm text-outline font-semibold">1,245,678 votos</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="relative w-full bg-surface-container-high rounded-full h-4 mt-8 mb-2">
+<!-- 50% Marker -->
+<div class="absolute left-1/2 top-[-16px] bottom-[-16px] w-px bg-secondary z-10 border-l-2 border-dashed border-secondary">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] font-bold text-secondary uppercase tracking-wider whitespace-nowrap bg-white px-2 rounded-full border border-secondary/20">Umbral 50%</span>
+</div>
+<!-- Fill -->
+<div class="bg-primary h-full rounded-full relative z-0" style="width: 54.2%"></div>
+</div>
+</div>
+</div>
+<!-- Candidate 2 -->
+<div class="bg-white border border-surface-variant rounded-2xl p-6 shadow-ambient flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
+<img alt="Candidato 2" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-surface shadow-sm shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvWh-UPeLhoQstH1dXjnO6RSPgJ153zSusMbS5EXf4tWeEaN1YLtQBCtYrDoG1yIZ1DSqGEjRj8LFjsph-u5znUxsWVMToWAixmNZBTh_0yyvE037e19ZYpiFVIdGMdIl2dzmeD7zno1lyWdjUmvvIxHg-ZURAyy63TGeQcfhyIO7xeiCRGI5llANV5IbY3O-c6M-X2Ee0UFqt-HCuok8cAcnusExcX4ncR5UBnn1oC9LhkwGzHtswIDrpfU7V7-VaUOxUiI8gs-w"/>
+<div class="flex-grow text-center md:text-left w-full">
+<div class="flex flex-col md:flex-row justify-between items-center md:items-baseline mb-4">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Carlos Mendoza</h2>
+<p class="text-sm text-on-surface-variant font-medium">Alianza Ciudadana</p>
+</div>
+<div class="text-right mt-2 md:mt-0 flex flex-col items-center md:items-end">
+<span class="font-headline text-4xl font-black text-on-surface-variant">32.8%</span>
+<p class="text-sm text-outline font-semibold">754,320 votos</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="relative w-full bg-surface-container-high rounded-full h-4 mt-8 mb-2">
+<!-- 50% Marker -->
+<div class="absolute left-1/2 top-[-16px] bottom-[-16px] w-px bg-secondary z-10 border-l-2 border-dashed border-secondary">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] font-bold text-secondary uppercase tracking-wider whitespace-nowrap bg-white px-2 rounded-full border border-secondary/20">Umbral 50%</span>
+</div>
+<!-- Fill -->
+<div class="bg-primary/70 h-full rounded-full relative z-0" style="width: 32.8%"></div>
+</div>
+</div>
+</div>
+<!-- Candidate 3 -->
+<div class="bg-white border border-surface-variant rounded-2xl p-6 shadow-ambient flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
+<img alt="Candidata 3" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-surface shadow-sm shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6wLV3WJPg9Ki8GkuYdj388w-WKPdLnBjFWE7vZt7MPSQA5--JqJ6O4UiAESY8Q4gLmdpb7s3OV3_XbPrJa_Tu83852wptUhYT8-sVkD9ms1KhTrN6c6xps-XyPGcmX_kHEorN6LdhYKx5uKErlGm13KC0yXeUPSNK-QuYo_GlXMQBApdOyupxAaGIsCbVezA0h5jgep204wjB6qUCw_iOmhkzZvr0rafyh3TVa4C5nqE-IxPGRg_-U8o0dWmcRD3OVU9km46_XcM"/>
+<div class="flex-grow text-center md:text-left w-full">
+<div class="flex flex-col md:flex-row justify-between items-center md:items-baseline mb-4">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Ana Silva</h2>
+<p class="text-sm text-on-surface-variant font-medium">Movimiento Verde</p>
+</div>
+<div class="text-right mt-2 md:mt-0 flex flex-col items-center md:items-end">
+<span class="font-headline text-4xl font-black text-on-surface-variant">8.5%</span>
+<p class="text-sm text-outline font-semibold">195,430 votos</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="relative w-full bg-surface-container-high rounded-full h-4 mt-8 mb-2">
+<!-- 50% Marker -->
+<div class="absolute left-1/2 top-[-16px] bottom-[-16px] w-px bg-secondary z-10 border-l-2 border-dashed border-secondary">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] font-bold text-secondary uppercase tracking-wider whitespace-nowrap bg-white px-2 rounded-full border border-secondary/20">Umbral 50%</span>
+</div>
+<!-- Fill -->
+<div class="bg-primary/50 h-full rounded-full relative z-0" style="width: 8.5%"></div>
+</div>
+</div>
+</div>
+<!-- Otros -->
+<div class="bg-white border border-surface-variant rounded-2xl p-6 shadow-ambient flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
+<div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-surface-container flex items-center justify-center text-outline border-4 border-surface shadow-sm shrink-0">
+<span class="material-symbols-outlined text-4xl">groups</span>
+</div>
+<div class="flex-grow text-center md:text-left w-full">
+<div class="flex flex-col md:flex-row justify-between items-center md:items-baseline mb-4">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Otros Candidatos</h2>
+<p class="text-sm text-on-surface-variant font-medium">Votos combinados</p>
+</div>
+<div class="text-right mt-2 md:mt-0 flex flex-col items-center md:items-end">
+<span class="font-headline text-4xl font-black text-on-surface-variant">4.5%</span>
+<p class="text-sm text-outline font-semibold">103,450 votos</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="relative w-full bg-surface-container-high rounded-full h-4 mt-8 mb-2">
+<!-- 50% Marker -->
+<div class="absolute left-1/2 top-[-16px] bottom-[-16px] w-px bg-secondary z-10 border-l-2 border-dashed border-secondary">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] font-bold text-secondary uppercase tracking-wider whitespace-nowrap bg-white px-2 rounded-full border border-secondary/20">Umbral 50%</span>
+</div>
+<!-- Fill -->
+<div class="bg-outline h-full rounded-full relative z-0" style="width: 4.5%"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

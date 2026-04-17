@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tutorial de Votación</title>
+<!-- Google Fonts: Plus Jakarta Sans for Headlines, Inter for Body/Labels -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Design System Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#ffb4a8",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fe624e",
+                        "surface-variant": "#e1e3e4",
+                        "primary-container": "#2563eb",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#8f0f07",
+                        "on-background": "#191c1d",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "tertiary-container": "#bc4800",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container": "#edeeef",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-fixed": "#ffdad4",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#f0f1f2",
+                        "error": "#ba1a1a",
+                        "tertiary": "#943700",
+                        "on-tertiary-container": "#ffede6",
+                        "on-secondary-container": "#650000",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface": "#f8f9fa",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-bright": "#f8f9fa",
+                        "surface-tint": "#0053db",
+                        "on-surface": "#191c1d",
+                        "secondary": "#b22b1d",
+                        "on-secondary-fixed": "#410000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styles mapped to Design System Fonts */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-low min-h-screen flex items-center justify-center sm:p-8">
+<!-- Mobile Screen Simulator for Presentation -->
+<div class="bg-surface-container-lowest w-full max-w-[400px] h-[884px] sm:h-[850px] sm:rounded-xl sm:shadow-[0_4px_6px_-1px_rgba(0,74,198,0.04),0_10px_15px_-3px_rgba(0,74,198,0.08)] overflow-hidden relative flex flex-col">
+<!-- Top Action Bar (Skip) -->
+<div class="flex justify-end items-center p-6 z-10 absolute top-0 w-full">
+<button class="font-label text-sm font-semibold text-primary px-4 py-2 rounded-full hover:bg-surface-container transition-colors">
+                Saltar
+            </button>
+</div>
+<!-- Main Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto pb-32">
+<!-- Hero Illustration Area - Asymmetric & Energetic -->
+<div class="w-full h-[55%] min-h-[400px] bg-primary-fixed rounded-b-xl relative flex items-center justify-center overflow-hidden">
+<!-- Decorative background shapes for vitality -->
+<div class="absolute top-[-10%] right-[-20%] w-64 h-64 bg-surface-container-lowest rounded-full opacity-40 mix-blend-overlay"></div>
+<div class="absolute bottom-[-15%] left-[-10%] w-48 h-48 bg-primary rounded-full opacity-10 mix-blend-multiply"></div>
+<!-- Main Illustration -->
+<img alt="Ilustración de votación" class="w-[85%] h-[85%] object-contain drop-shadow-[0_20px_30px_rgba(0,74,198,0.15)] z-10 relative mt-8" data-alt="Friendly 3D vector illustration of a diverse person tapping a stylized digital ballot on a floating smartphone surrounded by abstract geometric shapes and checkmarks in soft pastel blue lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA0RAYXtTivtwDQCF7C81lEqbWD6sdZVK3Ji64f-EqIHIkMgiv9k0Z6Rx0x6uHlwFYm_gGqlDtDPZZwuvtuTlJ3m2tks4NmfVCyEK9ZjVw4a-bBYEtOFQdqSn2EpHPcofD6OJxJxeN-lnIMhD5WB3pSU80JCvaDFP8jx8XPfJcoOUCdWFxXdGuhSseYZcBYwrTTj14iSlP_fkXxv0reKPl2DVRGDp9OIBePNBOemIqOFNBR2AdavbgMxLHYgt8cp6zMiYlg2qLi_4"/>
+</div>
+<!-- Content Area -->
+<div class="px-8 pt-10 pb-8 flex flex-col items-center text-center">
+<!-- Pagination Indicators -->
+<div class="flex gap-2 mb-8">
+<div class="w-8 h-2 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+</div>
+<!-- Headline -->
+<h1 class="font-headline text-[2rem] leading-tight font-bold text-on-surface tracking-[-0.02em] mb-4">
+                    Selecciona a tus candidatos
+                </h1>
+<!-- Body Text -->
+<p class="font-body text-base text-on-surface-variant leading-relaxed">
+                    Navega por las opciones disponibles y marca a tus candidatos favoritos para cada puesto. El proceso es intuitivo y completamente seguro.
+                </p>
+</div>
+</div>
+<!-- Fixed Bottom Action Area with Gradient & Glassmorphism -->
+<div class="absolute bottom-0 w-full p-6 bg-surface-container-lowest/90 backdrop-blur-xl border-t-0 shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.05)]">
+<button class="w-full min-h-[56px] bg-gradient-to-br from-primary to-primary-container text-on-primary font-label text-lg font-semibold rounded-lg shadow-[0_4px_6px_-1px_rgba(0,74,198,0.2),0_10px_15px_-3px_rgba(0,74,198,0.1)] hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                Siguiente
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 600;">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>
