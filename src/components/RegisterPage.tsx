@@ -85,13 +85,13 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+      <Card className="admin-shell w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Configuración Inicial</CardTitle>
+          <CardTitle className="font-headline text-4xl font-black tracking-tight">Configuración Inicial</CardTitle>
           <CardDescription>
             Crea la primera cuenta de super administrador del sistema
           </CardDescription>
@@ -196,7 +196,7 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="h-11 w-full rounded-xl" 
               disabled={loading}
             >
               {loading ? (
@@ -218,7 +218,7 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
               variant="ghost" 
               onClick={onSwitchToLogin}
               disabled={loading}
-              className="text-primary hover:text-primary/80"
+              className="h-10 rounded-xl text-primary hover:text-primary/80"
             >
               Iniciar sesión
             </Button>

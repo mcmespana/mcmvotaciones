@@ -699,13 +699,17 @@ export function AdminVotingDetail() {
     await supabase
       .from("rounds")
       .update({
+        is_active: true,
+        round_finalized: false,
+        is_voting_open: true,
+        join_locked: true,
         show_results_to_voters: false,
         show_ballot_summary_projection: false,
         updated_at: new Date().toISOString(),
       })
       .eq("id", roundId);
 
-    toast({ title: "Siguiente ronda iniciada", description: `Ronda ${parsed?.round_number || "nueva"} preparada` });
+    toast({ title: "Siguiente ronda iniciada", description: `Ronda ${parsed?.round_number || "nueva"} en curso` });
     await loadRound();
   };
 
@@ -1144,281 +1148,286 @@ export function AdminVotingDetail() {
   }
 
   return (
-    <div className="admin-canvas min-h-screen">
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-6 md:py-8">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <Button variant="outline" size="sm" onClick={() => navigate("/admin/dashboard")}> 
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver a votaciones
-        </Button>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            asChild
-            className="h-11 min-w-[178px] justify-between rounded-xl px-4 text-white shadow-[0_18px_34px_-18px_rgba(37,99,235,0.9)]"
-          >
-            <a href="/proyeccion" target="_blank" rel="noreferrer" className="font-semibold">
-              Ir a proyeccion
-              <ArrowUpRight className="w-4 h-4 ml-2" />
-            </a>
-          </Button>
-          <div className="flex items-center gap-2 rounded-xl border border-blue-300/60 bg-white/75 px-3 py-2 text-xs dark:border-blue-500/25 dark:bg-slate-900/70">
-            <span
-              className={`rounded-full border px-2.5 py-1 font-medium ${
-                roomIsOpen
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200"
-                  : ""
-              }`}
+    <div className="admin-canvas min-h-screen bg-slate-50/30 dark:bg-background">
+      <div className="container mx-auto max-w-screen-2xl space-y-6 px-4 py-6 md:px-8 md:py-8">
+        
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-outline-variant/30 pb-6 dark:border-border">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/dashboard")} className="h-8 rounded-full"> 
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver a votaciones
+              </Button>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span
+                  className={`rounded-full border px-2.5 py-1 font-medium ${
+                    roomIsOpen
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200"
+                      : "border-outline-variant/60 bg-surface-container-lowest/90 dark:border-outline-variant/70 dark:bg-surface-container-low/90 text-foreground"
+                  }`}
+                >
+                  {roundStatusLabel}
+                </span>
+                <span className="admin-chip">Ronda {round.current_round_number}</span>
+                <Badge variant="outline" className="font-normal border-outline-variant/40 opacity-80 rounded-full px-2 py-0.5">
+                  Proyeccion: {projectionStageLabel}
+                </Badge>
+              </div>
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{round.title}</h1>
+              {round.description && <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">{round.description}</p>}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={() => setIsAnalyticsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
+              Analisis
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setIsBallotsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
+              Papeletas
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setIsSettingsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
+              <Settings2 className="w-4 h-4 mr-2" />
+              Ajustes
+            </Button>
+            <Button
+              size="sm"
+              asChild
+              className="h-9 justify-between rounded-xl px-4 text-white shadow-[0_12px_24px_-12px_rgba(37,99,235,0.7)]"
             >
-              {roundStatusLabel}
-            </span>
-            <span className="admin-chip">Ronda {round.current_round_number}</span>
+              <a href="/proyeccion" target="_blank" rel="noreferrer" className="font-semibold">
+                Ir a proyeccion
+                <ArrowUpRight className="w-4 h-4 ml-2" />
+              </a>
+            </Button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <section className="admin-shell space-y-4 p-5 md:p-6">
-        <h1 className="text-xl font-semibold">{round.title}</h1>
-        {round.description && <p className="text-sm text-muted-foreground">{round.description}</p>}
+        {/* Dashboard Upper Section: KPIs and Controls */}
+        <div className="grid gap-6 lg:grid-cols-12 items-start">
+          <div className="lg:col-span-8 xl:col-span-9 grid gap-4 grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Equipo</p>
+                <p className="text-xl font-bold text-foreground">{round.team}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Cupo</p>
+                <p className="text-xl font-bold text-foreground">{round.max_votantes}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Conectados</p>
+                <p className="text-xl font-bold text-foreground">{seatStatus?.occupied_seats ?? 0}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Activos</p>
+                <p className="text-xl font-bold text-foreground">{activeCandidatesCount}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Codigo sala</p>
+                <p className="text-xl font-mono font-bold text-foreground">{round.access_code || "----"}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
+              <CardContent className="p-4 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Censo</p>
+                <p className="text-xl font-bold text-foreground capitalize">{round.census_mode === "exact" ? "Exacto" : "Maximo"}</p>
+              </CardContent>
+            </Card>
+          </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Equipo</p>
-            <p className="text-sm font-semibold">{round.team}</p>
-          </div>
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Cupo</p>
-            <p className="text-sm font-semibold">{round.max_votantes}</p>
-          </div>
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Conectados</p>
-            <p className="text-sm font-semibold">{seatStatus?.occupied_seats ?? 0}</p>
-          </div>
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Activos</p>
-            <p className="text-sm font-semibold">{activeCandidatesCount}</p>
-          </div>
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Codigo sala</p>
-            <p className="font-mono text-sm font-semibold">{round.access_code || "----"}</p>
-          </div>
-          <div className="admin-soft px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Censo</p>
-            <p className="text-sm font-semibold">{round.census_mode === "exact" ? "exacto" : "maximo"}</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Sala y ronda</p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={canPauseRound ? pauseRound : resumeRound}
-                disabled={!canPauseRound && !canResumeRound}
-              >
-                <Pause className="w-4 h-4 mr-2" />
-                {canPauseRound ? "Pausar ronda" : "Reanudar ronda"}
-              </Button>
-              <Button
-                size="sm"
-                className={`h-11 w-full justify-start rounded-xl px-3 ${
-                  workflowActionVariant === "default"
-                    ? "text-white shadow-[0_18px_34px_-18px_rgba(37,99,235,0.9)]"
-                    : "border border-blue-300/70 bg-white/90 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                }`}
-                variant={workflowActionVariant}
-                onClick={runProjectionWorkflowStep}
-                disabled={workflowActionDisabled}
-              >
-                {(workflowActionLabel === "Iniciar ronda" || workflowActionLabel === "Abrir sala") ? (
-                  <Play className="w-4 h-4 mr-2" />
-                ) : (
-                  <StepForward className="w-4 h-4 mr-2" />
+          <div className="lg:col-span-4 xl:col-span-3">
+            <Card className="rounded-2xl shadow-md border-outline-variant/60 bg-surface-container-lowest/90 dark:bg-surface-container-low/60 overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+              <CardContent className="p-5 space-y-3 relative z-10">
+                <div className="flex items-center justify-between mb-1 text-sm">
+                  <h3 className="font-semibold text-foreground">Control de Votacion</h3>
+                </div>
+                <Button
+                  size="default"
+                  className={`h-11 w-full justify-center rounded-xl px-4 text-sm font-semibold transition-all ${
+                    workflowActionVariant === "default"
+                      ? "text-white shadow-[0_8px_16px_-8px_rgba(37,99,235,0.6)]"
+                      : "border border-outline-variant/60 bg-surface-container-lowest/90 text-foreground hover:bg-muted/50"
+                  }`}
+                  variant={workflowActionVariant}
+                  onClick={runProjectionWorkflowStep}
+                  disabled={workflowActionDisabled}
+                >
+                  {(workflowActionLabel === "Iniciar ronda" || workflowActionLabel === "Abrir sala") ? (
+                    <Play className="w-4 h-4 mr-2" />
+                  ) : (
+                    <StepForward className="w-4 h-4 mr-2" />
+                  )}
+                  {workflowActionLabel}
+                </Button>
+                
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 rounded-xl h-9 border-outline-variant/60 text-xs font-medium"
+                    variant="outline"
+                    onClick={canPauseRound ? pauseRound : resumeRound}
+                    disabled={!canPauseRound && !canResumeRound}
+                  >
+                    <Pause className="w-3.5 h-3.5 mr-1.5" />
+                    {canPauseRound ? "Pausar" : "Reanudar"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 rounded-xl h-9 text-xs font-medium hover:bg-destructive/90 hover:text-white"
+                    variant="ghost"
+                    onClick={closeVoting}
+                    disabled={round.is_closed}
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                    Cerrar
+                  </Button>
+                </div>
+                
+                {selectionQuotaReached && round.round_finalized && (
+                  <Button
+                    size="sm"
+                    className="w-full mt-2 h-9 rounded-xl bg-gradient-to-r from-primary/90 to-primary text-primary-foreground hover:opacity-95 shadow-sm font-medium animate-pulse"
+                    onClick={toggleFinalResults}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {round.show_results_to_voters ? "Ocultar resultados" : "Mostrar resultados finales"}
+                  </Button>
                 )}
-                {workflowActionLabel}
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl px-3 text-white shadow-[0_18px_34px_-18px_rgba(225,29,72,0.9)]"
-                variant="destructive"
-                onClick={closeVoting}
-                disabled={round.is_closed}
-              >
-                Cerrar votacion
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Candidatos</p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={openAddCandidateDialog}
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Añadir
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={() => setIsImportOpen(true)}
-              >
-                <FileUp className="w-4 h-4 mr-2" />
-                Importar archivo
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={openComunicaImport}
-              >
-                <ArrowUpRight className="w-4 h-4 mr-2" />
-                Importar desde Comunica
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={() => setIsDatasetOpen(true)}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Cargar dataset ejemplo
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Publicacion en proyeccion</p>
-              <Badge variant="outline">Proyeccion: {projectionStageLabel}</Badge>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={() => setIsAnalyticsOpen(true)}
-              >
-                Analisis
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={() => setIsBallotsOpen(true)}
-              >
-                Papeletas
-              </Button>
-              <Button
-                size="sm"
-                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
-                variant="outline"
-                onClick={() => setIsSettingsOpen(true)}
-              >
-                <Settings2 className="w-4 h-4 mr-2" />
-                Ajustes
-              </Button>
-            </div>
-            {selectionQuotaReached && round.round_finalized && (
-              <Button
-                size="sm"
-                className="w-full justify-start bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 text-white hover:opacity-95 animate-pulse"
-                onClick={toggleFinalResults}
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {round.show_results_to_voters ? "Ocultar resultados finales" : "Mostrar resultados finales"}
-              </Button>
-            )}
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </section>
 
-      <section className="grid gap-6 lg:grid-cols-5">
-        <div className="space-y-3 lg:col-span-3">
-          <div className="flex items-center justify-between text-sm">
-            <h2 className="font-medium">Candidatos</h2>
-            <span className="text-muted-foreground">Seleccionados: {selectedCandidatesCount} / Activos: {activeCandidatesCount}</span>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-blue-300/60 bg-white/80 dark:border-blue-500/25 dark:bg-slate-900/75">
-            {candidates.length === 0 ? (
-              <div className="px-3 py-5 text-sm text-muted-foreground">Todavia no hay candidatos. Usa Añadir o Importar archivo.</div>
-            ) : (
-              <div className="divide-y">
-                {candidates.map((candidate) => (
-                  <div key={candidate.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                    <div>
-                      <p className="font-medium">{candidate.name} {candidate.surname}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {candidate.location || "Sin ubicacion"} {candidate.group_name ? `• ${candidate.group_name}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {candidate.is_selected && <Badge>Seleccionado</Badge>}
-                      {candidate.is_eliminated && <Badge variant="destructive">Eliminado</Badge>}
-                      <Button size="icon" variant="ghost" onClick={() => openEditCandidateDialog(candidate)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => deleteCandidate(candidate.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+        {/* Lists Section: Candidates & Seats */}
+        <section className="grid gap-8 lg:grid-cols-12 pt-4">
+          
+          <div className="lg:col-span-8 xl:col-span-9 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 dark:border-border pb-4">
+              <div>
+                <h2 className="text-xl font-semibold tracking-tight text-foreground">Candidatos</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Seleccionados: <span className="font-medium">{selectedCandidatesCount}</span> / Activos: <span className="font-medium">{activeCandidatesCount}</span></p>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-3 lg:col-span-2">
-          <h2 className="text-sm font-medium">Asientos conectados</h2>
-          <p className="text-xs text-muted-foreground">Dispositivos conectados a la sala "{round.title}"</p>
-
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="admin-soft p-2">
-              <p className="text-muted-foreground">Ocupados</p>
-              <p className="font-medium">{seatStatus?.occupied_seats ?? 0}</p>
-            </div>
-            <div className="admin-soft p-2">
-              <p className="text-muted-foreground">Disponibles</p>
-              <p className="font-medium">{seatStatus?.available_seats ?? 0}</p>
-            </div>
-            <div className="admin-soft p-2">
-              <p className="text-muted-foreground">Expirados</p>
-              <p className="font-medium">{seatStatus?.expired_seats ?? 0}</p>
-            </div>
-            <div className="admin-soft p-2">
-              <p className="text-muted-foreground">Entrada</p>
-              <p className="font-medium">{round.join_locked ? "Bloqueada" : "Abierta"}</p>
-            </div>
-          </div>
-
-          <div className="max-h-72 overflow-auto rounded-2xl border border-blue-300/60 bg-white/80 dark:border-blue-500/25 dark:bg-slate-900/75">
-            {seats.length === 0 ? (
-              <p className="p-3 text-sm text-muted-foreground">Sin asientos registrados todavia.</p>
-            ) : (
-              <div className="divide-y">
-                {seats.map((seat) => (
-                  <div key={seat.id} className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
-                    <span className="font-mono">{seat.browser_instance_id.slice(0, 12)}...</span>
-                    <Badge variant={seat.estado === "ocupado" ? "default" : seat.estado === "expirado" ? "secondary" : "outline"}>{seat.estado}</Badge>
-                    <span className="text-muted-foreground">{new Date(seat.last_seen_at).toLocaleTimeString("es-ES")}</span>
-                  </div>
-                ))}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="secondary" onClick={openAddCandidateDialog} className="rounded-xl h-9 shadow-sm">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Añadir
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setIsImportOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                  <FileUp className="w-4 h-4 mr-2 text-muted-foreground" />
+                  Importar
+                </Button>
+                <Button size="sm" variant="secondary" onClick={openComunicaImport} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                  <ArrowUpRight className="w-4 h-4 mr-2 text-muted-foreground" />
+                  Comunica
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setIsDatasetOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                  <Download className="w-4 h-4 mr-2 text-muted-foreground" />
+                  Dataset
+                </Button>
               </div>
-            )}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <div className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest/80 dark:border-outline-variant/50 dark:bg-surface-container-low/40 shadow-sm">
+              {candidates.length === 0 ? (
+                <div className="px-6 py-10 text-center text-sm text-muted-foreground flex flex-col items-center">
+                  <UserPlus className="w-8 h-8 mb-3 opacity-20" />
+                  <p>Todavía no hay candidatos.</p>
+                  <p className="text-xs mt-1">Usa Añadir o Importar para comenzar.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-outline-variant/20 dark:divide-outline-variant/30">
+                  {candidates.map((candidate) => (
+                    <div key={candidate.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-muted/30 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">{candidate.name} {candidate.surname}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {candidate.location || "Sin ubicacion"} {candidate.group_name ? `• ${candidate.group_name}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                        {candidate.is_selected && <Badge className="bg-primary/10 text-primary hover:bg-primary/20">Seleccionado</Badge>}
+                        {candidate.is_eliminated && <Badge variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-transparent">Eliminado</Badge>}
+                        <div className="flex items-center ml-2 border-l border-outline-variant/30 pl-2">
+                          <Button size="icon" variant="ghost" onClick={() => openEditCandidateDialog(candidate)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => deleteCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 xl:col-span-3 space-y-5">
+            <div className="border-b border-outline-variant/30 dark:border-border pb-4">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Conexiones</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Estado de la sala</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Ocupados</p>
+                <p className="font-bold text-base mt-0.5">{seatStatus?.occupied_seats ?? 0}</p>
+              </Card>
+              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Disponibles</p>
+                <p className="font-bold text-base mt-0.5">{seatStatus?.available_seats ?? 0}</p>
+              </Card>
+              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Expirados</p>
+                <p className="font-bold text-base mt-0.5">{seatStatus?.expired_seats ?? 0}</p>
+              </Card>
+              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Entrada</p>
+                <p className="font-bold text-base mt-0.5">{round.join_locked ? "Bloqueada" : "Abierta"}</p>
+              </Card>
+            </div>
+
+            <div className="max-h-72 overflow-y-auto rounded-2xl border border-outline-variant/40 bg-surface-container-lowest/80 dark:border-outline-variant/50 dark:bg-surface-container-low/40 shadow-sm scrollbar-thin">
+              {seats.length === 0 ? (
+                <p className="p-5 text-center text-sm text-muted-foreground">Sin conexiones registradas.</p>
+              ) : (
+                <div className="divide-y divide-outline-variant/20 dark:divide-outline-variant/30">
+                  {seats.map((seat) => (
+                    <div key={seat.id} className="flex items-center justify-between gap-2 px-4 py-2.5 text-xs hover:bg-muted/30 transition-colors">
+                      <span className="font-mono text-muted-foreground">{seat.browser_instance_id.slice(0, 8)}...</span>
+                      <Badge 
+                        variant="outline" 
+                        className={`px-1.5 py-0 text-[10px] font-medium border-transparent ${
+                          seat.estado === "ocupado" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : 
+                          seat.estado === "expirado" ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                        }`}
+                      >
+                        {seat.estado}
+                      </Badge>
+                      <span className="text-muted-foreground/70">{new Date(seat.last_seen_at).toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Dialogs and Modals */}
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <DialogContent className="admin-shell max-w-2xl">
           <DialogHeader>
             <DialogTitle>Configuracion de la votacion</DialogTitle>
@@ -1474,8 +1483,8 @@ export function AdminVotingDetail() {
       </Dialog>
 
       {isAnalyticsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setIsAnalyticsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl border border-blue-300/60 bg-white/90 shadow-2xl dark:border-blue-500/25 dark:bg-slate-950/90" onClick={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--backdrop)/0.6)] p-4 backdrop-blur-sm" onClick={() => setIsAnalyticsOpen(false)}>
+          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest/92 shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">Análisis de resultados</h3>
               <Button size="sm" variant="ghost" onClick={() => setIsAnalyticsOpen(false)}>Cerrar</Button>
@@ -1488,8 +1497,8 @@ export function AdminVotingDetail() {
       )}
 
       {isBallotsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setIsBallotsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl border border-blue-300/60 bg-white/90 shadow-2xl dark:border-blue-500/25 dark:bg-slate-950/90" onClick={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--backdrop)/0.6)] p-4 backdrop-blur-sm" onClick={() => setIsBallotsOpen(false)}>
+          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest/92 shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
               <h3 className="text-sm font-semibold">Revisión de papeletas</h3>
               <div className="flex items-center gap-2">

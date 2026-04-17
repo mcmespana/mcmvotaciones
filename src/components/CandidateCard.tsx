@@ -51,7 +51,7 @@ function AvatarFallback({ name, surname }: { name: string; surname: string }) {
 
   return (
     <div
-      className="aspect-square w-full flex items-center justify-center rounded-lg relative overflow-hidden"
+      className="aspect-square w-full flex items-center justify-center rounded-full relative overflow-hidden"
       style={{ backgroundColor: color.light }}
     >
       {/* Silueta de persona */}
@@ -97,13 +97,10 @@ export function CandidateCard({
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-all duration-200 relative group",
-        "hover:shadow-md hover:border-primary/40",
+        "group relative cursor-pointer overflow-hidden border border-outline-variant/55 bg-surface-container-lowest/95 transition-all duration-200",
+        "hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-glow",
         isSelected && [
-          "border-2 border-primary/80 dark:border-cyan-400/80",
-          "shadow-[inset_0_0_0_1px_rgba(14,165,233,0.2)]",
-          "shadow-lg shadow-primary/20",
-          // Removed scale-[1.02] so it doesn't get clipped by the accordion's hidden overflow
+          "border-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 dark:border-indigo-400 shadow-md shadow-indigo-600/30",
         ],
         disabled && "opacity-60 pointer-events-none"
       )}
@@ -112,35 +109,45 @@ export function CandidateCard({
       {/* Checkmark overlay */}
       <div
         className={cn(
-          "absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+          "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
           isSelected
-            ? "bg-primary text-primary-foreground opacity-100"
-            : "bg-muted/80 text-muted-foreground scale-75 opacity-0 group-hover:opacity-60 group-hover:scale-90"
+            ? "border-transparent bg-indigo-600 text-white opacity-100 scale-110 shadow-lg shadow-indigo-600/40"
+            : "border-zinc-300 bg-white/80 dark:border-zinc-700 dark:bg-zinc-800/80 text-zinc-400 opacity-0 group-hover:opacity-100"
         )}
       >
         <Check className="w-5 h-5" strokeWidth={3} />
       </div>
 
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="flex-row items-center gap-3 space-y-0 p-4 pr-14 pb-3">
         {/* Imagen o avatar fallback */}
-        <div className="aspect-square overflow-hidden rounded-lg mb-2">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-low">
           {candidate.image_url ? (
-            <img
-              src={candidate.image_url}
-              alt={`${candidate.name} ${candidate.surname}`}
-              className={cn(
-                "w-full h-full object-cover transition-all duration-300",
-                isSelected && "brightness-105 contrast-105"
-              )}
-              loading="lazy"
-              onError={(e) => {
-                // Si la imagen falla, ocultar y mostrar fallback
-                const target = e.target as HTMLImageElement;
-                target.style.display = "none";
-                const fallback = target.nextSibling as HTMLElement;
-                if (fallback) fallback.style.display = "flex";
-              }}
-            />
+            <>
+              <img
+                src={candidate.image_url}
+                alt={`${candidate.name} ${candidate.surname}`}
+                className={cn(
+                  "h-full w-full object-cover transition-all duration-300",
+                  isSelected && "brightness-105 contrast-105"
+                )}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                  const fallback = target.nextElementSibling as HTMLElement | null;
+                  if (fallback) {
+                    fallback.classList.remove("hidden");
+                    fallback.classList.add("flex");
+                  }
+                }}
+              />
+              <div className="hidden h-full w-full items-center justify-center">
+                <AvatarFallback
+                  name={candidate.name}
+                  surname={candidate.surname}
+                />
+              </div>
+            </>
           ) : (
             <AvatarFallback
               name={candidate.name}
@@ -149,20 +156,22 @@ export function CandidateCard({
           )}
         </div>
 
-        <CardTitle className="text-lg leading-tight">
-          {candidate.name} {candidate.surname}
-        </CardTitle>
+        <div className="min-w-0 flex-1">
+          <CardTitle className="font-headline text-2xl leading-tight">
+            {candidate.name} {candidate.surname}
+          </CardTitle>
 
-        <div className="space-y-1 text-sm text-muted-foreground mt-1">
-          {candidate.age && <div>🎂 {candidate.age} años</div>}
-          {candidate.location && <div>📍 {candidate.location}</div>}
-          {candidate.group_name && <div>👥 {candidate.group_name}</div>}
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-medium text-muted-foreground">
+            {candidate.age && <span className="rounded-full bg-surface-container-low px-2 py-0.5">Edad {candidate.age}</span>}
+            {candidate.location && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.location}</span>}
+            {candidate.group_name && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.group_name}</span>}
+          </div>
         </div>
       </CardHeader>
 
       {candidate.description && (
         <CardContent className="px-4 pt-0 pb-4">
-          <p className="text-sm text-muted-foreground line-clamp-3">
+          <p className="line-clamp-2 text-sm text-muted-foreground">
             {candidate.description}
           </p>
         </CardContent>
@@ -171,8 +180,8 @@ export function CandidateCard({
       {/* Selected indicator bar at bottom */}
       <div
         className={cn(
-          "absolute bottom-0 left-0 right-0 h-1 rounded-b-lg transition-all duration-300",
-          isSelected ? "bg-primary" : "bg-transparent"
+          "absolute bottom-0 left-0 right-0 h-2 rounded-b-[1.9rem] transition-all duration-300",
+          isSelected ? "bg-indigo-600" : "bg-transparent"
         )}
       />
     </Card>

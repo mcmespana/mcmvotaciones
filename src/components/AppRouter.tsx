@@ -5,6 +5,7 @@ import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
 import { DemoPage } from './DemoPage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Shield } from 'lucide-react';
 
@@ -45,8 +46,8 @@ export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
   // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Cargando...</p>
         </Card>
@@ -64,8 +65,8 @@ export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
     // User is authenticated but not an admin
     if (!isAdmin) {
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
+        <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+          <Card className="admin-shell w-full max-w-md">
             <CardHeader className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 rounded-full flex items-center justify-center">
                 <Shield className="w-8 h-8 text-destructive" />
@@ -79,16 +80,16 @@ export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
               <p className="text-sm text-muted-foreground mb-4">
                 Solo los administradores pueden acceder a esta sección.
               </p>
-              <button
+              <Button
+                variant="link"
                 onClick={() => {
                   setIsAdminMode(false);
                   localStorage.removeItem('adminMode');
                   window.location.href = '/';
                 }}
-                className="text-primary hover:text-primary/80 text-sm underline"
               >
                 Volver a la página principal
-              </button>
+              </Button>
             </CardContent>
           </Card>
         </div>

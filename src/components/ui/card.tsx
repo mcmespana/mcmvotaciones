@@ -15,11 +15,11 @@ const Card = React.forwardRef<
   <HeroCard
     ref={ref}
     className={cn(
-      "rounded-3xl border border-blue-300/60 bg-card/92 text-card-foreground shadow-[0_24px_56px_-36px_rgba(37,99,235,0.72)] backdrop-blur-sm transition-all duration-300 motion-reduce:transition-none hover:border-blue-400/70 hover:shadow-[0_28px_64px_-34px_rgba(37,99,235,0.82)] dark:border-blue-500/25 dark:bg-slate-900/80",
+      "rounded-[2rem] border border-outline-variant/55 bg-surface-container-lowest/95 text-card-foreground shadow-tech backdrop-blur-md transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow dark:border-outline-variant/65 dark:bg-surface-container-low/85",
       className
     )}
-    radius="xl"
-    shadow="sm"
+    radius="lg"
+    shadow="none"
     {...props}
   />
 ))
@@ -44,7 +44,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "font-headline text-2xl font-bold leading-none tracking-tight",
       className
     )}
     {...props}

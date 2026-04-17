@@ -8,6 +8,12 @@ interface NavigatorWithDeviceMemory extends Navigator {
   deviceMemory?: number;
 }
 
+const inMemoryDeviceHashCache: Record<string, string> = {};
+
+function getDeviceHashStorageKey(roundId: string): string {
+  return `mcm_device_hash_${roundId}`;
+}
+
 /**
  * Get enhanced device information including advanced fingerprinting
  */
@@ -84,7 +90,7 @@ function getCanvasFingerprint(): string {
     ctx.fillStyle = '#f60';
     ctx.fillRect(125, 1, 62, 20);
     ctx.fillStyle = '#069';
-    ctx.fillText('MCM Votaciones 🗳️', 2, 15);
+    ctx.fillText('MCM Votaciones', 2, 15);
     ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
     ctx.fillText('Canvas FP', 4, 17);
     
@@ -98,6 +104,22 @@ function getCanvasFingerprint(): string {
  * Generate an enhanced device fingerprint hash
  */
 export function generateDeviceHash(roundId: string, ipAddress?: string): string {
+  const storageKey = getDeviceHashStorageKey(roundId);
+
+  if (inMemoryDeviceHashCache[storageKey]) {
+    return inMemoryDeviceHashCache[storageKey];
+  }
+
+  try {
+    const storedHash = localStorage.getItem(storageKey);
+    if (storedHash) {
+      inMemoryDeviceHashCache[storageKey] = storedHash;
+      return storedHash;
+    }
+  } catch {
+    // Ignore localStorage errors and continue with a computed hash.
+  }
+
   const deviceInfo = getDeviceInfo();
   
   // Create a comprehensive fingerprint based on device characteristics
@@ -119,7 +141,16 @@ export function generateDeviceHash(roundId: string, ipAddress?: string): string 
   ].join('|');
   
   // Use a simple hash function for browser compatibility
-  return simpleHash(fingerprint);
+  const hash = simpleHash(fingerprint);
+
+  inMemoryDeviceHashCache[storageKey] = hash;
+  try {
+    localStorage.setItem(storageKey, hash);
+  } catch {
+    // Ignore localStorage write failures (private mode or restricted contexts).
+  }
+
+  return hash;
 }
 
 /**
@@ -186,7 +217,9 @@ function getCookie(name: string): string | null {
 function setCookie(name: string, value: string, days: number): void {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict;Secure`;
+  const isSecureContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secureFlag = isSecureContext ? ';Secure' : '';
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict${secureFlag}`;
 }
 
 /**

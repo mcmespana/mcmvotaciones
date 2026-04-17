@@ -213,34 +213,36 @@ export function AdminDashboard() {
   return (
     <div className="admin-canvas min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-blue-300/50 bg-white/70 backdrop-blur-md dark:border-blue-500/20 dark:bg-slate-900/65">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 border-b border-outline-variant/55 bg-surface-container-lowest/85 backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/82">
+        <div className="mx-auto flex max-w-screen-2xl flex-col items-start justify-between gap-3 px-4 py-4 sm:flex-row sm:items-center sm:px-6 xl:px-8">
           <div>
-            <h1 className="text-2xl font-bold">Panel de Administración</h1>
+            <h1 className="font-headline text-3xl font-black tracking-tight">Panel de Administracion</h1>
             <p className="text-sm text-muted-foreground">
               Bienvenido, {adminUser?.name} ({adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'})
             </p>
           </div>
-          <Button variant="outline" className="bg-white/80 dark:bg-slate-800/80" onClick={handleSignOut}>
+          <Button variant="outline" className="bg-surface-container-lowest/80" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />
             Cerrar sesión
           </Button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="mx-auto max-w-screen-2xl space-y-6 p-4 sm:p-6 xl:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`admin-shell grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+          <TabsList
+            className={`grid h-12 w-full items-center rounded-2xl border border-outline-variant/55 bg-surface-container-lowest/88 p-1 dark:border-outline-variant/65 dark:bg-surface-container-low/86 ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}
+          >
+            <TabsTrigger value="dashboard" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
               <BarChart3 className="w-4 h-4" />
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="votaciones" className="flex items-center gap-2">
+            <TabsTrigger value="votaciones" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
               <Vote className="w-4 h-4" />
               Votaciones
             </TabsTrigger>
             {isSuperAdmin && (
-              <TabsTrigger value="usuarios" className="flex items-center gap-2">
+              <TabsTrigger value="usuarios" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
                 <Shield className="w-4 h-4" />
                 Usuarios
               </TabsTrigger>
@@ -252,13 +254,13 @@ export function AdminDashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Votaciones Totales
                   </CardTitle>
-                  <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                  <Calendar className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalRounds}</div>
+                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalRounds}</div>
                   <p className="admin-chip mt-2 inline-flex">
                     {stats.activeRounds} activas
                   </p>
@@ -267,13 +269,13 @@ export function AdminDashboard() {
 
               <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Votos Emitidos
                   </CardTitle>
-                  <Vote className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                  <Vote className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalVotes}</div>
+                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalVotes}</div>
                   <p className="admin-chip mt-2 inline-flex">
                     Total acumulado
                   </p>
@@ -282,13 +284,13 @@ export function AdminDashboard() {
 
               <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Candidatos
                   </CardTitle>
-                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                  <Users className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalCandidates}</div>
+                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalCandidates}</div>
                   <p className="admin-chip mt-2 inline-flex">
                     En todas las rondas
                   </p>
@@ -297,13 +299,13 @@ export function AdminDashboard() {
 
               <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Estado del Sistema
                   </CardTitle>
-                  <Settings className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                  <Settings className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-emerald-500">●</div>
+                  <div className="font-headline text-4xl font-black tracking-tight text-emerald-500">●</div>
                   <p className="admin-chip mt-2 inline-flex">
                     Sistema operativo
                   </p>
@@ -313,7 +315,7 @@ export function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
+              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Plus className="w-5 h-5" />
@@ -330,7 +332,7 @@ export function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
+              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
@@ -347,7 +349,7 @@ export function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
+              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Download className="w-5 h-5" />

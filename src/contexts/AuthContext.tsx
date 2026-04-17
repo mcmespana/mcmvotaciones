@@ -23,6 +23,7 @@ interface AuthContextType {
   signIn: (username: string, password: string) => Promise<{ error?: AuthError }>;
   signOut: () => Promise<{ error?: AuthError }>;
   createAdminUser: (username: string, password: string, name: string, email: string, role: 'admin' | 'super_admin') => Promise<{ error?: AuthError }>;
+  changeUserPassword: (targetUserId: string, newPassword: string) => Promise<{ error?: AuthError }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -128,6 +129,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const changeUserPassword = async (targetUserId: string, newPassword: string) => {
+    if (!isSupabaseConfigured) {
+      return { error: { message: 'Supabase not configured' } };
+    }
+
+    if (!adminUser || !isSuperAdmin) {
+      return { error: { message: 'Acceso denegado. Solo los super administradores pueden cambiar contraseñas.' } };
+    }
+
+    try {
+      const { error } = await supabase
+        .from('admin_users')
+        .update({
+          password_hash: newPassword
+        })
+        .eq('id', targetUserId);
+
+      if (error) {
+        return { error: { message: `Error cambiando la contraseña: ${error.message}` } };
+      }
+
+      return { error: undefined };
+    } catch (error) {
+      return { error: { message: 'Error inesperado al cambiar contraseña' } };
+    }
+  };
+
   const value = {
     adminUser,
     isAdmin,
@@ -136,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     createAdminUser,
+    changeUserPassword,
   };
 
   return (

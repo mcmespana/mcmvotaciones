@@ -167,9 +167,9 @@ export function DemoAdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Demo Notice */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+      <div className="border-b border-outline-variant/55 bg-primary-fixed/65 dark:border-outline-variant/65 dark:bg-primary-fixed/35">
         <div className="max-w-7xl mx-auto px-4 py-2">
-          <p className="text-center text-sm text-blue-700 dark:text-blue-300">
+          <p className="text-center text-sm text-primary">
             <strong>MODO DEMO</strong> - Esta es una vista previa del panel de administración con datos de ejemplo
           </p>
         </div>

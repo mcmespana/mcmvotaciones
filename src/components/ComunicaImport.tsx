@@ -372,7 +372,7 @@ export function ComunicaImport() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="admin-canvas min-h-screen p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header */}
@@ -392,7 +392,7 @@ export function ComunicaImport() {
             PASO 1 — Seleccionar votación + credenciales + filtro relaciones
         ================================================================ */}
         {step === 'select-round' && (
-          <Card>
+          <Card className="admin-shell">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">1</span>
@@ -431,7 +431,7 @@ export function ComunicaImport() {
                       </SelectContent>
                     </Select>
                     {selectedRound && (
-                      <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                      <div className="admin-soft rounded-xl p-3 text-sm space-y-1">
                         <p><span className="font-medium">Votación:</span> {selectedRound.title}</p>
                         <p><span className="font-medium">Año / Equipo:</span> {selectedRound.year} · {selectedRound.team}</p>
                         <p><span className="font-medium">Candidatos actuales:</span> {selectedRound.candidate_count}</p>
@@ -440,7 +440,7 @@ export function ComunicaImport() {
                   </div>
 
                   {/* Credenciales CRM */}
-                  <div className="space-y-3 border rounded-lg p-4">
+                  <div className="space-y-3 rounded-xl border border-outline-variant/50 bg-surface-container-low/70 p-4 dark:border-outline-variant/65 dark:bg-surface-container/55">
                     <div>
                       <p className="text-sm font-medium">Acceso a SinergiaCRM</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -474,7 +474,7 @@ export function ComunicaImport() {
                   </div>
 
                   {/* Filtro tipos de relación */}
-                  <div className="space-y-3 border rounded-lg p-4">
+                  <div className="space-y-3 rounded-xl border border-outline-variant/50 bg-surface-container-low/70 p-4 dark:border-outline-variant/65 dark:bg-surface-container/55">
                     <div>
                       <p className="text-sm font-medium">Filtrar por tipo de relación</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -524,7 +524,7 @@ export function ComunicaImport() {
                   <Button
                     disabled={!selectedRoundId}
                     onClick={() => setStep('confirm-fetch')}
-                    className="w-full"
+                    className="h-11 w-full rounded-xl"
                   >
                     Continuar
                   </Button>
@@ -538,7 +538,7 @@ export function ComunicaImport() {
             PASO 2 — Confirmar consulta al CRM
         ================================================================ */}
         {step === 'confirm-fetch' && (
-          <Card>
+          <Card className="admin-shell">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">2</span>
@@ -563,12 +563,12 @@ export function ComunicaImport() {
                   </p>
                 </div>
               ) : (
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep('select-round')}>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button variant="outline" onClick={() => setStep('select-round')} className="h-11 rounded-xl sm:w-auto">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Volver
                   </Button>
-                  <Button onClick={handleFetchContacts} className="flex-1">
+                  <Button onClick={handleFetchContacts} className="h-11 flex-1 rounded-xl">
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Traer personas de SinergiaCRM
                   </Button>
@@ -583,7 +583,7 @@ export function ComunicaImport() {
         ================================================================ */}
         {step === 'review' && (
           <>
-            <Card>
+            <Card className="admin-shell">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">3</span>
@@ -713,15 +713,15 @@ export function ComunicaImport() {
             </Card>
 
             {/* Botones de acción */}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep('confirm-fetch')}>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button variant="outline" onClick={() => setStep('confirm-fetch')} className="h-11 rounded-xl sm:w-auto">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Volver
               </Button>
               <Button
                 disabled={selectedCount === 0}
                 onClick={() => setConfirmOpen(true)}
-                className="flex-1"
+                className="h-11 flex-1 rounded-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Importar {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} a «{selectedRound?.title}»
@@ -734,7 +734,7 @@ export function ComunicaImport() {
             PASO 4 — Importando
         ================================================================ */}
         {step === 'importing' && (
-          <Card>
+          <Card className="admin-shell">
             <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
               <div className="animate-spin w-10 h-10 border-2 border-primary border-t-transparent rounded-full" />
               <p className="text-lg font-medium">Importando candidatos…</p>
@@ -747,7 +747,7 @@ export function ComunicaImport() {
             PASO 5 — Hecho
         ================================================================ */}
         {step === 'done' && importResult && (
-          <Card>
+          <Card className="admin-shell">
             <CardHeader>
               <CardTitle>Importación completada</CardTitle>
               <CardDescription>
@@ -755,23 +755,23 @@ export function ComunicaImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg border bg-muted/40 p-4 text-center">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="admin-soft rounded-xl p-4 text-center">
                   <p className="text-3xl font-bold text-primary">{importResult.inserted}</p>
                   <p className="text-sm text-muted-foreground mt-1">Candidatos añadidos</p>
                 </div>
                 {importResult.skipped > 0 && (
-                  <div className="rounded-lg border bg-muted/40 p-4 text-center">
+                  <div className="admin-soft rounded-xl p-4 text-center">
                     <p className="text-3xl font-bold text-muted-foreground">{importResult.skipped}</p>
                     <p className="text-sm text-muted-foreground mt-1">Ya existían (omitidos)</p>
                   </div>
                 )}
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={resetWizard} className="flex-1">
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button variant="outline" onClick={resetWizard} className="h-11 flex-1 rounded-xl">
                   Importar a otra votación
                 </Button>
-                <Button onClick={() => { window.location.href = '/admin'; }} className="flex-1">
+                <Button onClick={() => { window.location.href = '/admin'; }} className="h-11 flex-1 rounded-xl">
                   Ir al panel de administración
                 </Button>
               </div>
@@ -783,7 +783,7 @@ export function ComunicaImport() {
             Diálogo de confirmación antes de importar
         ================================================================ */}
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent className="overflow-hidden rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low/94">
             <AlertDialogHeader>
               <AlertDialogTitle>¿Confirmar importación?</AlertDialogTitle>
               <AlertDialogDescription>

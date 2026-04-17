@@ -57,10 +57,10 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
         <SupabaseConfigAlert />
-        <Card className="w-full">
+        <Card className="admin-shell w-full">
           <CardHeader className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
               <Shield className="w-8 h-8 text-primary" />
@@ -114,7 +114,7 @@ export function LoginPage() {
 
             <Button 
               type="submit" 
-              className="w-full" 
+                className="h-11 w-full rounded-xl" 
               disabled={loading}
             >
               {loading ? (
@@ -126,7 +126,8 @@ export function LoginPage() {
                 'Iniciar sesión'
               )}
             </Button>
-          </form>          <div className="mt-4 text-center text-sm text-muted-foreground">
+          </form>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Sistema de votaciones MCM
           </div>
         </CardContent>

@@ -55,38 +55,38 @@ export function ProjectionWaiting({
   const connectionProgress = Math.min(connectedCount, 100);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 text-slate-900 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 dark:text-slate-100">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary-fixed/65 via-surface-container-lowest to-surface-container-low text-foreground dark:from-background dark:via-surface-container-low dark:to-background">
       <div className="pointer-events-none absolute inset-0">
         <div
-          className="absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-cyan-500/25 blur-3xl dark:bg-cyan-500/15"
+          className="absolute left-[-12%] top-[8%] h-[420px] w-[420px] rounded-full bg-primary/22 blur-3xl dark:bg-primary/16"
           style={{ animation: "float 8s ease-in-out infinite" }}
         />
         <div
-          className="absolute bottom-[-8%] right-[-8%] h-[420px] w-[420px] rounded-full bg-blue-600/20 blur-3xl dark:bg-indigo-500/20"
+          className="absolute bottom-[-8%] right-[-8%] h-[420px] w-[420px] rounded-full bg-primary-container/20 blur-3xl dark:bg-primary-container/22"
           style={{ animation: "float 10s ease-in-out infinite reverse" }}
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-10">
-        <div className="grid w-full gap-6 lg:grid-cols-[1.3fr_1fr]">
-          <Surface className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-[0_32px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-md dark:border-white/10 dark:bg-slate-900/70 sm:p-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <Chip color={modeColor} variant="flat" className="font-semibold uppercase tracking-wide">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full flex-col justify-center items-center px-8 py-12 lg:px-24">
+        <div className="grid w-full gap-12 lg:grid-cols-[1.2fr_1fr] items-center">
+          <Surface className="rounded-[3rem] border-2 border-outline-variant/55 bg-surface-container-lowest/90 p-10 shadow-tech backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/88 sm:p-14">
+            <div className="flex flex-wrap items-center gap-4">
+              <Chip color={modeColor} variant="flat" size="lg" className="text-xl font-bold uppercase tracking-wider px-6 py-6">
                 {modeLabel}
               </Chip>
             </div>
 
-            <h1 className="mt-6 text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-6xl">
+            <h1 className="mt-10 text-6xl font-black tracking-tight text-foreground sm:text-8xl">
               MCM Votaciones
             </h1>
-            <p className="mt-3 max-w-3xl text-base text-slate-700 dark:text-slate-300 sm:text-xl">
+            <p className="mt-6 max-w-4xl text-3xl text-muted-foreground sm:text-4xl leading-relaxed">
               {subtitle}
             </p>
 
             {accessCode && (
-              <div className="mt-8">
-                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-300">
-                  Codigo de acceso
+              <div className="mt-12">
+                <p className="mb-6 text-2xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
+                  Código de acceso
                 </p>
                 <InputOTP.Root
                   value={accessCode}
@@ -100,7 +100,7 @@ export function ProjectionWaiting({
                       <InputOTP.Slot
                         key={`${char}-${index}`}
                         index={index}
-                        className="h-14 w-12 rounded-2xl border border-cyan-300/70 bg-white/90 text-2xl font-black text-cyan-800 shadow-lg shadow-cyan-500/10 dark:border-cyan-400/30 dark:bg-slate-800/80 dark:text-cyan-200 sm:h-16 sm:w-14 sm:text-3xl"
+                        className="h-24 w-20 rounded-3xl border-2 border-outline-variant/60 bg-surface-container-lowest/92 text-6xl font-black text-primary shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88 sm:h-32 sm:w-28 sm:text-7xl"
                       />
                     ))}
                   </InputOTP.Group>
@@ -108,33 +108,33 @@ export function ProjectionWaiting({
               </div>
             )}
 
-            <div className="mt-6 flex items-center gap-3 rounded-2xl border border-slate-300/70 bg-slate-100/80 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
-              <QrCode className="h-5 w-5" />
-              <span className="truncate font-mono">{votingUrl}</span>
+            <div className="mt-12 flex items-center gap-6 rounded-3xl border-2 border-outline-variant/55 bg-surface-container-low px-8 py-6 text-2xl text-muted-foreground dark:border-outline-variant/65 dark:bg-surface-container/80">
+              <QrCode className="h-10 w-10 flex-shrink-0" />
+              <span className="truncate font-mono font-bold tracking-tight">{votingUrl}</span>
             </div>
           </Surface>
 
-          <div className="grid gap-6">
+          <div className="grid gap-10">
             {showConnectedCount && (
-              <Card className="overflow-hidden border-cyan-300/50 bg-white/85 text-slate-900 shadow-[0_25px_50px_-28px_rgba(8,145,178,0.6)] dark:border-cyan-400/20 dark:bg-slate-900/75 dark:text-white">
-                <CardHeader className="pb-0">
-                  <CardTitle className="text-lg">Conexiones activas</CardTitle>
+              <Card className="overflow-hidden border-2 border-outline-variant/55 bg-surface-container-lowest/88 text-foreground shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem]">
+                <CardHeader className="pb-4 pt-10 px-10">
+                  <CardTitle className="text-3xl font-bold">Conexiones activas</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="rounded-2xl border border-cyan-300/55 bg-cyan-500/10 p-4 dark:border-cyan-400/25 dark:bg-cyan-500/15">
-                    <div className="flex items-center justify-between gap-3">
+                <CardContent className="px-10 pb-10">
+                  <div className="rounded-[2.5rem] border-2 border-primary/35 bg-primary-fixed/65 p-10 dark:border-primary/40 dark:bg-primary-fixed/35">
+                    <div className="flex items-center justify-between gap-6">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-200">Conectadas ahora</p>
-                        <p className="mt-1 text-5xl font-black tabular-nums leading-none">{connectedCount}</p>
-                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">personas en sala</p>
+                        <p className="text-xl uppercase tracking-[0.2em] font-bold text-primary">Conectadas ahora</p>
+                        <p className="mt-4 text-8xl font-black tabular-nums leading-none">{connectedCount}</p>
+                        <p className="mt-4 text-2xl text-muted-foreground font-medium">personas en sala</p>
                       </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-800 dark:text-cyan-100">
-                        <Users className="h-7 w-7" />
+                      <div className="flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-primary-fixed text-primary">
+                        <Users className="h-16 w-16" />
                       </div>
                     </div>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-cyan-100/90 dark:bg-cyan-950/55">
+                    <div className="mt-10 h-4 overflow-hidden rounded-full bg-surface-container-high">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-primary transition-all duration-500"
                         style={{ width: `${connectionProgress}%` }}
                       />
                     </div>
@@ -143,13 +143,13 @@ export function ProjectionWaiting({
               </Card>
             )}
 
-            <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
-              <CardContent className="flex items-center justify-between pt-6">
-                <div className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem]">
+              <CardContent className="flex items-center justify-between py-10 px-10">
+                <div className="text-2xl font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Hora local
                 </div>
-                <div className="flex items-center gap-2 text-3xl font-black tabular-nums text-slate-900 dark:text-slate-100">
-                  <Clock className="h-6 w-6" />
+                <div className="flex items-center gap-4 text-6xl font-black tabular-nums text-foreground">
+                  <Clock className="h-12 w-12 text-primary" />
                   {currentTime.toLocaleTimeString("es-ES", {
                     hour: "2-digit",
                     minute: "2-digit",

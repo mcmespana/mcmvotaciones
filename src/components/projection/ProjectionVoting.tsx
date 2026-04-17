@@ -59,118 +59,118 @@ export function ProjectionVoting({
   }, [voteCount, prevVoteCount]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 text-slate-900 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 dark:text-slate-100">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary-fixed/65 via-surface-container-lowest to-surface-container-low text-foreground dark:from-background dark:via-surface-container-low dark:to-background">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-6%] top-[-5%] h-[360px] w-[360px] rounded-full bg-blue-500/25 blur-3xl dark:bg-blue-500/15" />
-        <div className="absolute bottom-[-8%] right-[-10%] h-[360px] w-[360px] rounded-full bg-indigo-500/20 blur-3xl dark:bg-indigo-500/20" />
+        <div className="absolute left-[-6%] top-[-5%] h-[360px] w-[360px] rounded-full bg-primary/22 blur-3xl dark:bg-primary/16" />
+        <div className="absolute bottom-[-8%] right-[-10%] h-[360px] w-[360px] rounded-full bg-primary-container/20 blur-3xl dark:bg-primary-container/22" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10">
-        <Surface className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-[0_32px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-md dark:border-white/10 dark:bg-slate-900/75">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="relative z-10 flex min-h-screen w-full flex-col gap-8 p-8 sm:p-12 lg:p-16">
+        <Surface className="rounded-[3rem] border-2 border-outline-variant/55 bg-surface-container-lowest/90 p-10 flex-shrink-0 shadow-tech backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/88">
+          <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">{roundTitle}</h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Chip color="warning" variant="flat" className="font-semibold">🏆 {team}</Chip>
-                <Chip color="primary" variant="bordered" className="font-semibold">Ronda {roundNumber}</Chip>
+              <h1 className="text-5xl font-black tracking-tight text-foreground sm:text-7xl">{roundTitle}</h1>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Chip color="warning" variant="flat" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
+                <Chip color="primary" variant="bordered" size="lg" className="text-2xl font-bold px-6 py-6">Ronda {roundNumber}</Chip>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
-                <Users className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-3 rounded-full border-2 border-outline-variant/60 bg-surface-container-lowest/85 px-8 py-4 text-2xl font-bold text-muted-foreground dark:border-outline-variant/65 dark:bg-surface-container-low/80">
+                <Users className="h-8 w-8 text-primary" />
                 {connectedCount} conectados
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-4 py-2 text-sm font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100">
-                <Clock3 className="h-4 w-4 text-slate-500 dark:text-slate-300" />
+              <div className="flex items-center gap-3 rounded-full border-2 border-outline-variant/60 bg-surface-container-lowest/85 px-8 py-4 text-3xl font-black text-foreground dark:border-outline-variant/65 dark:bg-surface-container-low/80">
+                <Clock3 className="h-8 w-8 text-primary" />
                 {formatTime(elapsedSeconds)}
               </div>
             </div>
           </div>
         </Surface>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="border-cyan-300/50 bg-white/85 dark:border-cyan-400/20 dark:bg-slate-900/75">
-            <CardHeader>
-              <CardTitle className="text-lg uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">
+        <div className="grid flex-1 gap-10 lg:grid-cols-[1.5fr_1fr]">
+          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/90 dark:border-outline-variant/65 dark:bg-surface-container-low/84 rounded-[3rem] flex flex-col justify-center p-10">
+            <CardHeader className="px-0 pt-0">
+              <CardTitle className="text-3xl uppercase tracking-[0.25em] text-muted-foreground text-center">
                 Votos recibidos
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 pb-0 flex flex-col items-center justify-center flex-1">
               <div
-                className={`text-center transition-all duration-300 ${
+                className={`text-center transition-all duration-300 w-full ${
                   lastVoteFlash ? "scale-105" : "scale-100"
                 }`}
               >
                 <Vote
-                  className={`mx-auto mb-2 h-12 w-12 transition-colors duration-300 ${
-                    lastVoteFlash ? "text-emerald-500" : "text-cyan-600 dark:text-cyan-300"
+                  className={`mx-auto mb-6 h-24 w-24 transition-colors duration-300 ${
+                    lastVoteFlash ? "text-emerald-500" : "text-primary"
                   }`}
                 />
-                <p className="text-7xl font-black tabular-nums leading-none text-slate-900 dark:text-white sm:text-8xl">
+                <p className="text-[12rem] font-black tabular-nums leading-none text-foreground">
                   {voteCount}
                 </p>
-                <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                <p className="mt-6 text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
                   de {maxVotantes} votos
                 </p>
               </div>
 
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Avance de votacion</span>
-                  <span className="text-slate-900 dark:text-white">{percentage.toFixed(0)}%</span>
+              <div className="mt-16 w-full space-y-6 max-w-4xl mx-auto">
+                <div className="flex items-center justify-between text-2xl font-bold text-muted-foreground">
+                  <span>Avance de votación</span>
+                  <span className="text-foreground text-3xl">{percentage.toFixed(0)}%</span>
                 </div>
                 <ProgressBar
                   aria-label="Avance"
                   value={percentage}
                   maxValue={100}
-                  className="w-full [&_[data-slot=progress-bar-track]]:h-4 [&_[data-slot=progress-bar-track]]:bg-slate-200 dark:[&_[data-slot=progress-bar-track]]:bg-slate-700"
+                  className="w-full [&_[data-slot=progress-bar-track]]:h-8 [&_[data-slot=progress-bar-track]]:bg-surface-container-high"
                 />
                 <Meter
                   aria-label="Votos emitidos"
                   value={voteCount}
                   minValue={0}
                   maxValue={Math.max(maxVotantes, 1)}
-                  className="w-full [&_[data-slot=meter-track]]:h-2 [&_[data-slot=meter-track]]:bg-slate-200 dark:[&_[data-slot=meter-track]]:bg-slate-700"
+                  className="w-full [&_[data-slot=meter-track]]:h-4 [&_[data-slot=meter-track]]:bg-surface-container-high"
                 />
               </div>
 
               {percentage >= 100 && (
-                <div className="mt-6 rounded-2xl border border-emerald-300/70 bg-emerald-500/15 px-4 py-3 text-center text-sm font-bold text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300">
+                <div className="mt-12 rounded-[2rem] border-2 border-emerald-300/70 bg-emerald-500/15 px-8 py-8 text-center text-3xl font-bold text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300 max-w-4xl mx-auto">
                   Todos los votos han sido emitidos.
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="grid gap-6">
-            <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
-              <CardContent className="flex items-center justify-between gap-4 pt-6">
+          <div className="grid gap-10">
+            <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col justify-center">
+              <CardContent className="flex items-center justify-between gap-8 pt-0 px-4 pb-0">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Participacion</p>
-                  <p className="text-3xl font-black text-slate-900 dark:text-white">{percentage.toFixed(0)}%</p>
+                  <p className="text-3xl font-bold uppercase tracking-[0.2em] text-muted-foreground">Participación</p>
+                  <p className="text-6xl font-black text-foreground mt-4">{percentage.toFixed(0)}%</p>
                 </div>
-                <div className="relative flex h-24 w-24 items-center justify-center">
-                  <ProgressCircle aria-label="Participacion" value={percentage} className="h-24 w-24 text-blue-600 dark:text-blue-300" />
-                  <BarChart3 className="absolute h-7 w-7 text-blue-700 dark:text-blue-200" />
+                <div className="relative flex h-48 w-48 items-center justify-center">
+                  <ProgressCircle aria-label="Participacion" value={percentage} strokeWidth={16} className="h-48 w-48 text-primary" />
+                  <BarChart3 className="absolute h-16 w-16 text-primary" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
-              <CardHeader>
-                <CardTitle className="text-base uppercase tracking-[0.18em] text-slate-600 dark:text-slate-300">
+            <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col justify-center">
+              <CardHeader className="px-4 py-0 pb-6 text-center">
+                <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
                   Estado de mesa
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3 pt-2">
-                <div className="rounded-2xl border border-slate-300/80 bg-slate-100/90 p-3 text-center dark:border-slate-700 dark:bg-slate-800/70">
-                  <p className="text-2xl font-black tabular-nums">{connectedCount}</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Conectados</p>
+              <CardContent className="grid grid-cols-2 gap-8 px-4 pb-0">
+                <div className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-low p-8 text-center dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-center items-center">
+                  <p className="text-7xl font-black tabular-nums">{connectedCount}</p>
+                  <p className="text-xl font-bold uppercase tracking-wider text-muted-foreground mt-4">Conectados</p>
                 </div>
-                <div className="rounded-2xl border border-slate-300/80 bg-slate-100/90 p-3 text-center dark:border-slate-700 dark:bg-slate-800/70">
-                  <p className="text-2xl font-black tabular-nums">{maxVotantes}</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Meta</p>
+                <div className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-low p-8 text-center dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-center items-center">
+                  <p className="text-7xl font-black tabular-nums">{maxVotantes}</p>
+                  <p className="text-xl font-bold uppercase tracking-wider text-muted-foreground mt-4">Meta</p>
                 </div>
               </CardContent>
             </Card>
@@ -178,34 +178,34 @@ export function ProjectionVoting({
         </div>
 
         {showBallotSummary && (
-          <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
-            <CardHeader>
-              <CardTitle className="text-lg uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">
+          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] mt-6 p-8">
+            <CardHeader className="px-4 pt-0">
+              <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground text-center">
                 Papeletas
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-8 px-4">
               {ballotSummaries.length === 0 ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-slate-600 dark:text-slate-300">Aun no hay papeletas validas registradas.</p>
-                  <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-6">
+                  <p className="text-2xl text-muted-foreground text-center">Aún no hay papeletas válidas registradas.</p>
+                  <div className="grid gap-6 md:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
-                      <Skeleton key={index} className="h-28 w-full rounded-2xl" />
+                      <Skeleton key={index} className="h-40 w-full rounded-[2rem]" />
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                   {ballotSummaries.map((ballot) => (
                     <div
                       key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`}
-                      className="rounded-2xl border border-slate-300/80 bg-white/90 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/80"
+                      className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-lowest/90 p-8 shadow-sm dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-between"
                     >
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{ballot.voteCode}</p>
-                        <Chip size="sm" color="primary" variant="flat">R{ballot.roundNumber}</Chip>
+                      <div className="mb-6 flex items-center justify-between">
+                        <p className="font-mono text-2xl font-bold text-foreground">{ballot.voteCode}</p>
+                        <Chip size="lg" color="primary" variant="flat" className="text-xl font-bold px-4 py-4">R{ballot.roundNumber}</Chip>
                       </div>
-                      <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                      <div className="space-y-3 text-2xl font-medium text-muted-foreground">
                         <p>1. {ballot.votes[0] || "-"}</p>
                         <p>2. {ballot.votes[1] || "-"}</p>
                         <p>3. {ballot.votes[2] || "-"}</p>

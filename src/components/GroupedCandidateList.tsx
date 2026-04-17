@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CandidateCard } from "@/components/CandidateCard";
 import { Button } from "@/components/ui/button";
 import { Accordion, Chip, Surface } from "@heroui/react";
-import { Users, MapPin } from "lucide-react";
+import { Users, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { VotingTutorial } from "@/components/VotingTutorial";
 
 interface Candidate {
   id: string;
@@ -23,6 +25,7 @@ interface GroupedCandidateListProps {
   selectedCandidates: string[];
   onToggleCandidate: (id: string) => void;
   disabled?: boolean;
+  tutorialRoundId?: string;
 }
 
 interface CandidateGroup {
@@ -110,6 +113,7 @@ export function GroupedCandidateList({
   selectedCandidates,
   onToggleCandidate,
   disabled = false,
+  tutorialRoundId,
 }: GroupedCandidateListProps) {
   const locationGroups = useMemo(
     () => groupCandidates(candidates),
@@ -117,7 +121,11 @@ export function GroupedCandidateList({
   );
 
   const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
-  const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(false);
+  const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 768px)").matches;
+  });
+  const mobileIndexRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const allKeys = locationGroups.map((locGroup) => `loc-${slugify(locGroup.location)}`);
@@ -127,6 +135,26 @@ export function GroupedCandidateList({
       return keepExisting.length > 0 ? keepExisting : allKeys;
     });
   }, [locationGroups]);
+
+  useEffect(() => {
+    if (!isMobileIndexOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (mobileIndexRef.current && !mobileIndexRef.current.contains(target)) {
+        setIsMobileIndexOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isMobileIndexOpen]);
 
   const scrollToLocation = (location: string) => {
     const target = document.getElementById(`loc-${slugify(location)}`);
@@ -148,13 +176,17 @@ export function GroupedCandidateList({
     }, 80);
   };
 
+  const toggleMobileIndex = () => {
+    setIsMobileIndexOpen((prev) => !prev);
+  };
+
   // If there's only one location and one group, don't show headers (flat layout)
   const isFlatLayout =
     locationGroups.length === 1 && locationGroups[0].groups.length === 1;
 
   if (isFlatLayout) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
         {locationGroups[0].groups[0].candidates.map((candidate) => (
           <CandidateCard
             key={candidate.id}
@@ -169,35 +201,59 @@ export function GroupedCandidateList({
   }
 
   return (
-    <div className="space-y-8">
-      <Surface className="sticky top-2 z-30 rounded-2xl border border-blue-300/60 bg-white/90 p-3 shadow-[0_24px_48px_-32px_rgba(37,99,235,0.9)] backdrop-blur-md dark:border-blue-500/25 dark:bg-slate-900/85 md:top-4">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Indice dinamico</p>
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground">{locationGroups.length} zonas</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-8 px-2 text-xs md:hidden"
-              onClick={() => setIsMobileIndexOpen((prev) => !prev)}
-            >
+    <div className="space-y-6">
+      <Surface
+        ref={mobileIndexRef}
+        className="sticky top-2 z-30 rounded-[1.6rem] border border-outline-variant/55 bg-surface-container-lowest/92 p-2.5 shadow-tech backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/90 md:top-4 md:rounded-[2rem] md:p-3"
+      >
+        <div className="grid grid-cols-5 items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="col-span-4 h-10 justify-between rounded-xl border border-outline-variant/55 bg-surface-container-low px-3 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
+            aria-expanded={isMobileIndexOpen}
+            aria-controls="dynamic-voting-index"
+            onClick={toggleMobileIndex}
+          >
+            <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground/90">
+              Indice
+              <span className="text-[11px] normal-case tracking-normal text-muted-foreground">
+                {locationGroups.length} zonas
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
               {isMobileIndexOpen ? "Ocultar" : "Mostrar"}
-            </Button>
+              {isMobileIndexOpen ? (
+                <ChevronUp className="h-4 w-4 text-primary" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-primary" />
+              )}
+            </span>
+          </Button>
+
+          <div className="col-span-1 flex justify-end gap-1">
+            <VotingTutorial compactTrigger roundId={tutorialRoundId} />
+            <ThemeToggle mode="inline" buttonClassName="h-9 w-9 rounded-xl shadow-none" />
           </div>
         </div>
-        <div className={`${isMobileIndexOpen ? "flex" : "hidden"} max-h-48 flex-wrap gap-2 overflow-y-auto pr-1 md:flex md:max-h-none md:overflow-visible`}>
+
+        <div
+          id="dynamic-voting-index"
+          className={`${isMobileIndexOpen ? "mt-2 flex" : "hidden"} max-h-56 flex-wrap gap-2 overflow-y-auto border-t border-outline-variant/45 pt-2 pr-1 pb-1 dark:border-outline-variant/60 md:mt-2 md:max-h-none md:overflow-visible`}
+        >
           {locationGroups.map((locGroup) => (
             <Button
               type="button"
               key={`index-${locGroup.location}`}
               size="sm"
-              variant="outline"
-              className="h-10 rounded-xl border-2 border-blue-300/80 bg-white px-3 text-slate-800 shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-50 hover:shadow-[0_14px_28px_-18px_rgba(37,99,235,0.95)] active:translate-y-0 active:scale-[0.98] dark:border-blue-500/35 dark:bg-slate-900/85 dark:text-slate-100 dark:hover:border-blue-400/55 dark:hover:bg-blue-950/35"
+              variant="secondary"
+              className="h-8 rounded-full px-2.5 text-xs md:h-9 md:px-3"
+              aria-label={`Ir a la zona ${locGroup.location}`}
               onClick={() => openAndScrollToLocation(locGroup.location)}
             >
               {locGroup.location}
-              <Chip size="sm" variant="soft" color="accent" className="ml-2 font-semibold">{locGroup.totalCount}</Chip>
+              <Chip size="sm" variant="soft" color="default" className="ml-2 font-semibold">{locGroup.totalCount}</Chip>
             </Button>
           ))}
         </div>
@@ -215,90 +271,103 @@ export function GroupedCandidateList({
       >
         {locationGroups.map((locGroup) => {
           const locationKey = `loc-${slugify(locGroup.location)}`;
+          const isLocationExpanded = expandedLocationKeys.includes(locationKey);
 
           return (
-            <div key={locationKey} id={locationKey} className="scroll-mt-28">
+            <div
+              key={locationKey}
+              id={locationKey}
+              className="scroll-mt-32 border border-slate-200 bg-white/50 p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 md:p-2 rounded-3xl"
+            >
               <Accordion.Item
                 id={locationKey}
-                className="rounded-2xl border border-blue-300/60 bg-white/80 px-1 dark:border-blue-500/25 dark:bg-slate-900/78"
+                className="rounded-[1.45rem] border-0 bg-transparent px-0 py-0 shadow-none md:rounded-[1.65rem]"
               >
                 <Accordion.Heading>
-                  <Accordion.Trigger className="px-3 py-3 hover:no-underline">
+                  <Accordion.Trigger className="px-2.5 py-2.5 hover:no-underline md:px-3 md:py-3">
                     <div className="flex w-full items-center gap-2 text-left">
                       <MapPin className="h-5 w-5 text-primary" />
-                      <span className="text-lg font-semibold">{locGroup.location}</span>
-                      <span className="ml-auto text-sm font-normal text-muted-foreground">
-                        {locGroup.totalCount} persona{locGroup.totalCount !== 1 ? "s" : ""}
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-headline text-lg font-bold text-slate-900 dark:text-slate-100">{locGroup.location}</span>
+                      </div>
+                      <span className="ml-auto inline-flex items-center gap-2 text-xs font-semibold text-primary">
+                        <span className="rounded-full border border-slate-300/80 bg-slate-100/90 px-2 py-0.5 text-slate-700 dark:border-slate-700/85 dark:bg-slate-800/80 dark:text-slate-200">
+                          {locGroup.totalCount} persona{locGroup.totalCount !== 1 ? "s" : ""}
+                        </span>
+                        <span>{isLocationExpanded ? "Ocultar" : "Mostrar"}</span>
+                        {isLocationExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
                       </span>
                     </div>
                   </Accordion.Trigger>
                 </Accordion.Heading>
 
                 <Accordion.Panel>
-                  <Accordion.Body className="px-3 pb-4">
+                  <Accordion.Body className="mt-2 px-2 pb-3.5 pt-1 md:px-3 md:pb-4">
                     {locGroup.groups.length > 1 ? (
-                      <Accordion.Root
-                        allowsMultipleExpanded
-                        defaultExpandedKeys={locGroup.groups.map((group) => `${locationKey}::${slugify(group.groupName)}`)}
-                        variant="default"
-                        className="space-y-2"
-                      >
+                      <div className="space-y-3">
                         {locGroup.groups.map((group) => {
                           const groupKey = `${locationKey}::${slugify(group.groupName)}`;
 
                           return (
-                            <Accordion.Item
+                            <section
                               key={groupKey}
-                              id={groupKey}
-                              className="rounded-xl border border-blue-200/70 bg-white/80 dark:border-blue-500/20 dark:bg-slate-900/65"
+                              className="mb-8 last:mb-0"
                             >
-                              <Accordion.Heading>
-                                <Accordion.Trigger className="px-3 py-2.5 hover:no-underline">
-                                  <div className="flex w-full items-center gap-2 text-left">
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm font-medium text-muted-foreground">{group.groupName}</span>
-                                    <Chip size="sm" variant="soft" color="default" className="font-semibold">
-                                      {group.candidates.length}
-                                    </Chip>
-                                    {group.avgAge !== Infinity && (
-                                      <span className="text-xs text-muted-foreground/70">
-                                        Edad media: {Math.round(group.avgAge)} anios
-                                      </span>
-                                    )}
-                                  </div>
-                                </Accordion.Trigger>
-                              </Accordion.Heading>
-
-                              <Accordion.Panel>
-                                <Accordion.Body className="px-2 pb-3">
-                                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {group.candidates.map((candidate) => (
-                                      <CandidateCard
-                                        key={candidate.id}
-                                        candidate={candidate}
-                                        isSelected={selectedCandidates.includes(candidate.id)}
-                                        onToggle={onToggleCandidate}
-                                        disabled={disabled}
-                                      />
-                                    ))}
-                                  </div>
-                                </Accordion.Body>
-                              </Accordion.Panel>
-                            </Accordion.Item>
+                              <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
+                                <Users className="h-4 w-4 text-slate-500" />
+                                <span className="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200">
+                                  {group.groupName}
+                                </span>
+                                <Chip size="sm" variant="soft" color="default" className="font-semibold px-2">
+                                  {group.candidates.length}
+                                </Chip>
+                                {group.avgAge !== Infinity && (
+                                  <span className="ml-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                                    Edad media: {Math.round(group.avgAge)} años
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {group.candidates.map((candidate) => (
+                                  <CandidateCard
+                                    key={candidate.id}
+                                    candidate={candidate}
+                                    isSelected={selectedCandidates.includes(candidate.id)}
+                                    onToggle={onToggleCandidate}
+                                    disabled={disabled}
+                                  />
+                                ))}
+                              </div>
+                            </section>
                           );
                         })}
-                      </Accordion.Root>
+                      </div>
                     ) : (
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {locGroup.groups[0].candidates.map((candidate) => (
-                          <CandidateCard
-                            key={candidate.id}
-                            candidate={candidate}
-                            isSelected={selectedCandidates.includes(candidate.id)}
-                            onToggle={onToggleCandidate}
-                            disabled={disabled}
-                          />
-                        ))}
+                      <div className="mb-4">
+                        <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
+                          <Users className="h-4 w-4 text-slate-500" />
+                          <span className="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200">
+                            {locGroup.groups[0].groupName}
+                          </span>
+                          <Chip size="sm" variant="soft" color="default" className="font-semibold px-2">
+                            {locGroup.groups[0].candidates.length}
+                          </Chip>
+                        </div>
+                        <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {locGroup.groups[0].candidates.map((candidate) => (
+                            <CandidateCard
+                              key={candidate.id}
+                              candidate={candidate}
+                              isSelected={selectedCandidates.includes(candidate.id)}
+                              onToggle={onToggleCandidate}
+                              disabled={disabled}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </Accordion.Body>

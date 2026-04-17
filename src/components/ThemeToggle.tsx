@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  mode?: "floating" | "inline";
+  className?: string;
+  buttonClassName?: string;
+}
+
+export function ThemeToggle({ mode = "floating", className, buttonClassName }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -19,18 +27,33 @@ export function ThemeToggle() {
 
   const isDark = activeTheme === "dark";
 
-  return (
-    <div className="fixed bottom-4 right-4 z-[60] md:bottom-6 md:right-6">
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={() => setTheme(isDark ? "light" : "dark")}
-        aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-        className="h-11 w-11 border-blue-300/65 bg-white/85 text-slate-700 shadow-[0_18px_40px_-26px_rgba(37,99,235,0.75)] backdrop-blur-md transition-all duration-200 hover:border-blue-400/70 hover:bg-white dark:border-blue-500/30 dark:bg-slate-900/80 dark:text-blue-100 dark:hover:border-blue-400/45 dark:hover:bg-slate-900"
-      >
-        {isDark ? <Sun className="h-5 w-5 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-5 w-5 transition-transform duration-200 group-hover:-rotate-6" />}
-      </Button>
-    </div>
+  const toggleButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      className={cn(
+        "group h-11 w-11 border-outline-variant/60 bg-surface-container-lowest/92 text-foreground shadow-tech backdrop-blur-md transition-all duration-200 hover:border-outline/70 hover:bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low/90 dark:hover:bg-surface-container",
+        buttonClassName,
+      )}
+    >
+      {isDark ? <Sun className="h-5 w-5 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-5 w-5 transition-transform duration-200 group-hover:-rotate-6" />}
+    </Button>
+  );
+
+  if (mode === "inline") {
+    return <div className={cn("pointer-events-auto", className)}>{toggleButton}</div>;
+  }
+
+  return createPortal(
+    <div 
+      className={cn("pointer-events-auto fixed right-4 z-[90] md:right-6", className)}
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+    >
+      {toggleButton}
+    </div>,
+    document.body,
   );
 }

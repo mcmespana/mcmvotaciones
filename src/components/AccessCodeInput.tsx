@@ -69,13 +69,13 @@ export function AccessCodeInput({
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+      <Card className="admin-shell w-full max-w-md overflow-hidden">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-primary-fixed rounded-full flex items-center justify-center">
             <KeyRound className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Código de Acceso</CardTitle>
+          <CardTitle className="font-headline text-4xl font-black tracking-tight">Codigo de Acceso</CardTitle>
           <CardDescription>
             {roundTitle
               ? `Introduce el código para acceder a "${roundTitle}"`
@@ -104,7 +104,7 @@ export function AccessCodeInput({
             </div>
 
             {error && (
-              <div className="text-center text-sm text-destructive bg-destructive/10 rounded-lg p-2">
+              <div className="rounded-xl bg-destructive/10 p-2 text-center text-sm text-destructive">
                 {error}
               </div>
             )}

@@ -243,9 +243,9 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                 key={deviceHash}
                 className={`transition-colors ${
                   allInvalidated
-                    ? "border-destructive/30 bg-destructive/5"
+                    ? "border-destructive/35 bg-destructive/8"
                     : isAnyInvalidated
-                    ? "border-yellow-500/30"
+                    ? "border-amber-500/40 bg-amber-500/10"
                     : ""
                 }`}
               >
@@ -301,6 +301,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="rounded-xl"
                         onClick={() => {
                           setDetailDevice(deviceHash);
                           setDetailDialogOpen(true);
@@ -312,7 +313,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-destructive hover:text-destructive"
+                          className="rounded-xl text-destructive hover:text-destructive"
                           onClick={() => {
                             // Invalidate all votes from this device
                             setSelectedVoteId(deviceVotes[0].id);
@@ -324,7 +325,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                       ) : (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-green-600">
+                            <Button variant="ghost" size="sm" className="rounded-xl text-emerald-600 dark:text-emerald-300">
                               Restaurar
                             </Button>
                           </AlertDialogTrigger>
@@ -366,7 +367,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
 
       {/* Invalidate Dialog */}
       <Dialog open={invalidateDialogOpen} onOpenChange={setInvalidateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
           <DialogHeader>
             <DialogTitle>Invalidar Papeleta</DialogTitle>
             <DialogDescription>
@@ -394,7 +395,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
 
       {/* Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
           <DialogHeader>
             <DialogTitle>Detalle de Papeleta</DialogTitle>
             <DialogDescription className="font-mono text-xs break-all">
@@ -403,7 +404,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
           </DialogHeader>
           <div className="space-y-3 py-4">
             {ballots.get(detailDevice)?.map((v) => (
-              <div key={v.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={v.id} className="flex items-center justify-between rounded-xl border border-outline-variant/45 bg-surface-container-low px-3 py-3 dark:border-outline-variant/60 dark:bg-surface-container">
                 <div>
                   <p className="font-medium">
                     {normalizeCandidate(v.candidate)

@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { GroupedCandidateList } from '@/components/GroupedCandidateList';
-import { VotingTutorial } from '@/components/VotingTutorial';
 import { VoteSubmitAnimation } from '@/components/VoteSubmitAnimation';
 import { AccessCodeInput, isAccessCodeVerified, markAccessCodeVerified } from '@/components/AccessCodeInput';
 
@@ -41,6 +40,7 @@ interface Round {
   access_code: string | null;
   is_voting_open: boolean;
   join_locked: boolean;
+  votes_current_round: number;
 }
 
 interface JoinSeatResponse {
@@ -108,6 +108,7 @@ export function VotingPage() {
   
   // Ref para evitar bucles infinitos en suscripciones
   const activeRoundRef = useRef<Round | null>(null);
+  const submitAnimationRoundRef = useRef<{ roundId: string; roundNumber: number } | null>(null);
 
   const getSeatStorageKey = (roundId: string) => `mcm_seat_id_${roundId}`;
   const getReceiptStorageKey = (roundId: string, roundNumber: number) =>
@@ -336,6 +337,8 @@ export function VotingPage() {
     setSelectedCandidates([]);
     setResults([]);
     setHasVoted(false);
+    setShowSubmitAnimation(false);
+    submitAnimationRoundRef.current = null;
   }
 
       if (hasVerifiedCode) {
@@ -544,6 +547,10 @@ export function VotingPage() {
 
     try {
       setVoting(true);
+      submitAnimationRoundRef.current = {
+        roundId: activeRound.id,
+        roundNumber: activeRound.current_round_number,
+      };
       setShowSubmitAnimation(true);
       
       const deviceHash = generateDeviceHash(activeRound.id);
@@ -681,12 +688,25 @@ export function VotingPage() {
 
   const handleSubmitAnimationComplete = useCallback(() => {
     setShowSubmitAnimation(false);
+
+    const animationRound = submitAnimationRoundRef.current;
+    if (
+      !activeRound ||
+      !animationRound ||
+      animationRound.roundId !== activeRound.id ||
+      animationRound.roundNumber !== activeRound.current_round_number
+    ) {
+      submitAnimationRoundRef.current = null;
+      return;
+    }
+
+    submitAnimationRoundRef.current = null;
     setHasVoted(true);
     toast({
       title: '¡Voto registrado!',
       description: `Has votado por ${selectedCandidates.length} candidato${selectedCandidates.length > 1 ? 's' : ''}`,
     });
-  }, [selectedCandidates.length, toast]);
+  }, [activeRound, selectedCandidates.length, toast]);
 
   // Handle access code submission
   const handleAccessCode = useCallback(async (code: string) => {
@@ -749,6 +769,62 @@ export function VotingPage() {
     setSelectedCandidates([]);
   };
 
+  const copyVerificationCode = useCallback(async () => {
+    if (!voteHashCode) {
+      toast({
+        title: 'Sin código',
+        description: 'No hay un código de verificación para copiar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(voteHashCode);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = voteHashCode;
+        // Evitar el zoom en iOS y hacer que el elemento no afecte el layout
+        textArea.style.fontSize = '16px'; 
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.setAttribute('readonly', 'true');
+        textArea.setAttribute('contenteditable', 'true'); // Forzar selección en algunos iOS
+        
+        document.body.appendChild(textArea);
+        
+        // Selección compatible con iOS
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, 999999);
+        
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (!copied) {
+          throw new Error('copy-failed');
+        }
+      }
+
+      toast({ title: 'Copiado', description: 'Código de verificación copiado.' });
+    } catch {
+      toast({
+        title: 'No se pudo copiar',
+        description: 'Copia manualmente el código de verificación.',
+        variant: 'destructive',
+      });
+    }
+  }, [toast, voteHashCode]);
+
   const openVoteConfirmation = () => {
     if (maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting) return;
     setConfirmVoteOpen(true);
@@ -756,8 +832,8 @@ export function VotingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Cargando votación...</p>
         </Card>
@@ -767,8 +843,8 @@ export function VotingPage() {
 
   if (!isVotingAvailable()) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <h1 className="text-xl font-bold mb-4">Navegador no compatible</h1>
           <p className="text-muted-foreground">
             Tu navegador no soporta las funciones necesarias para votar.
@@ -781,8 +857,8 @@ export function VotingPage() {
 
   if (!activeRound) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <Vote className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-xl font-bold mb-2">Sin votaciones activas</h1>
           <p className="text-muted-foreground mb-4">
@@ -807,8 +883,8 @@ export function VotingPage() {
 
   if (seatLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Validando tu asiento...</p>
         </Card>
@@ -818,11 +894,11 @@ export function VotingPage() {
 
   if (seatError && !hasVoted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <h1 className="text-xl font-bold mb-2">No se pudo acceder a la sala</h1>
           <p className="text-muted-foreground mb-4">{seatError}</p>
-          <Button onClick={loadActiveRound}>Reintentar</Button>
+          <Button onClick={() => { void loadActiveRound(); }}>Reintentar</Button>
         </Card>
       </div>
     );
@@ -832,10 +908,10 @@ export function VotingPage() {
 
   if (maxVotesThisRound === 0 && !hasVoted && !activeRound.round_finalized && !activeRound.is_closed) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-            <Vote className="w-8 h-8 text-green-600" />
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
+            <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-300" />
           </div>
           <h1 className="text-xl font-bold mb-2">Votación completada</h1>
           <p className="text-muted-foreground mb-3">
@@ -850,16 +926,30 @@ export function VotingPage() {
   if (activeRound.is_active && !activeRound.is_voting_open && !activeRound.round_finalized && !activeRound.is_closed && !hasVoted) {
     const isPaused = activeRound.join_locked;
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
-          <Vote className="w-16 h-16 mx-auto mb-4 text-primary" />
-          <h1 className="text-xl font-bold mb-2">{isPaused ? "Votacion en pausa" : "Sala abierta"}</h1>
-          <p className="text-muted-foreground mb-2">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-[10%] -right-[10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[100px] mix-blend-screen" />
+        <div className="pointer-events-none absolute -bottom-[10%] -left-[10%] w-[400px] h-[400px] rounded-full bg-secondary/10 blur-[100px] mix-blend-screen" />
+        
+        <Card className="relative w-full max-w-md p-10 text-center surface backdrop-blur-xl border-t-primary/30">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-transparent" />
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_40px_hsl(var(--primary)/0.2)]">
+            <Vote className="w-10 h-10 animate-pulse" />
+          </div>
+          <h1 className="text-3xl font-headline font-bold mb-3 tracking-tight">
+            {isPaused ? "Ronda en Pausa" : "Sala Abierta"}
+          </h1>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-6 font-medium">
             {isPaused
-              ? `Sigues conectado a la sala "${activeRound.title}". Espera a que el admin reanude la ronda.`
-              : `Conectado a la sala "${activeRound.title}". Espera a que el admin inicie la ronda para votar.`}
+              ? `Sigues conectado con éxito a la sala "${activeRound.title}". Por favor, espera a que la administración reanude la sesión.`
+              : `Has accedido a "${activeRound.title}". Todo está listo, solo espera a que el administrador dé luz verde para comenzar.`}
           </p>
-          <p className="text-sm text-muted-foreground">Asiento validado correctamente.</p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Asiento validado y seguro
+          </div>
         </Card>
       </div>
     );
@@ -869,26 +959,30 @@ export function VotingPage() {
   // EXCEPTO si los resultados están visibles para todos (entonces mostramos resultados)
   if ((activeRound.is_closed || !activeRound.is_active || activeRound.round_finalized) && !hasVoted && !(activeRound.show_results_to_voters && activeRound.round_finalized)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-            <Vote className="w-8 h-8 text-orange-600" />
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,theme(colors.amber.500/0.05),transparent_50%)]" />
+        
+        <Card className="relative w-full max-w-md p-10 text-center surface backdrop-blur-xl border-t-amber-500/50">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
+          
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-amber-500/20 to-amber-500/5 shadow-[0_0_30px_hsl(var(--warning)/0.2)]">
+            <Vote className="h-10 w-10 text-amber-500" />
           </div>
-          <h1 className="text-xl font-bold mb-2">
-            {activeRound.is_closed ? 'Votación cerrada' : activeRound.round_finalized ? 'Ronda finalizada' : 'Votación pausada'}
+          <h1 className="text-3xl font-headline font-bold mb-3 tracking-tight">
+            {activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada'}
           </h1>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground text-sm font-medium mb-6 leading-relaxed">
             {activeRound.is_closed 
-              ? `La votación "${activeRound.title}" ha finalizado y ya no se aceptan más votos.`
+              ? `La votación "${activeRound.title}" ha llegado a su fin y las urnas se han cerrado definitivamente.`
               : activeRound.round_finalized
-              ? `La ronda ${activeRound.current_round_number} de "${activeRound.title}" ha finalizado. Ya no se aceptan más votos para esta ronda.`
-              : `La votación "${activeRound.title}" está temporalmente pausada. Por favor, espera a que se reanude.`
+              ? `La ronda ${activeRound.current_round_number} de "${activeRound.title}" terminó. No es posible enviar más papeletas en este momento.`
+              : `La votación de "${activeRound.title}" se encuentra en pausa. Mantente a la espera de instrucciones.`
             }
           </p>
           {(activeRound.is_closed || activeRound.round_finalized) && (
-            <p className="text-sm text-muted-foreground">
-              Debes estar más atento la próxima vez. ⏰
-            </p>
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-center gap-2">
+              <span>⏳</span> Las urnas ya no aceptan respuestas.
+            </div>
           )}
         </Card>
       </div>
@@ -898,44 +992,51 @@ export function VotingPage() {
   // Mostrar resultados a todos si admin los habilitó y la ronda está finalizada
   if (activeRound?.show_results_to_voters && activeRound?.round_finalized && !hasVoted) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 p-4 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950">
-          <div className="max-w-4xl mx-auto">
-            <Card className="mb-6 p-6 text-center border-blue-300/60 bg-white/85 dark:border-blue-500/30 dark:bg-slate-900/80">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
-                <Vote className="w-8 h-8 text-blue-600 dark:text-blue-300" />
+        <div className="admin-canvas min-h-screen p-4 relative overflow-hidden">
+          <div className="pointer-events-none absolute top-[10%] left-[10%] w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] mix-blend-screen" />
+          <div className="pointer-events-none absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-secondary/10 blur-[100px] mix-blend-screen" />
+          
+          <div className="max-w-4xl mx-auto relative z-10">
+            <Card className="relative mb-8 p-10 text-center surface tech-glow border-t-primary/50 overflow-hidden backdrop-blur-2xl">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent shadow-glow relative">
+                 <div className="absolute inset-0 rounded-full bg-primary animate-pulse blur-xl opacity-50" />
+                 <Vote className="h-10 w-10 text-white relative z-10" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">¡Gracias por votar!</h1>
-              <p className="text-muted-foreground mb-4">
-                Tu voto ha sido registrado para la votación "{activeRound.title}".
+              <h1 className="text-3xl font-headline font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                Resumen de Votación
+              </h1>
+              <p className="text-muted-foreground text-sm font-medium mb-6">
+                Mostrando los resultados finales para "{activeRound.title}".
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <span className="rounded-full border border-blue-300/60 bg-blue-100/80 px-3 py-1 text-blue-800 dark:border-blue-400/30 dark:bg-blue-500/20 dark:text-blue-200">🏆 {activeRound.team}</span>
-                <span className="rounded-full border border-indigo-300/60 bg-indigo-100/80 px-3 py-1 text-indigo-800 dark:border-indigo-400/30 dark:bg-indigo-500/20 dark:text-indigo-200">🔄 Ronda {activeRound.current_round_number}</span>
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">
+                <span className="rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-primary shadow-sm backdrop-blur-md">🏆 Equipo: {activeRound.team}</span>
+                <span className="rounded-full border border-secondary/20 bg-secondary/10 px-4 py-1.5 text-secondary shadow-sm backdrop-blur-md">🔄 Ronda {activeRound.current_round_number}</span>
               </div>
             </Card>
 
             {/* Candidatos Seleccionados (con mayoría absoluta) */}
             {candidates.some(c => c.is_selected) && (
-              <Card className="mb-6 p-6 border-2 border-emerald-500/70 bg-emerald-50/90 dark:bg-emerald-950/40">
-                <h2 className="text-2xl font-bold mb-4 text-green-700 dark:text-green-300 flex items-center gap-2">
+              <Card className="mb-6 rounded-[1.9rem] border-2 border-emerald-500/60 bg-emerald-500/12 p-6 dark:bg-emerald-500/10">
+                <h2 className="flex items-center gap-2 text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-4">
                   <span className="text-3xl">🏆</span>
                   Candidatos Seleccionados
                 </h2>
-                <p className="text-sm text-green-600 dark:text-green-400 mb-4">
+                <p className="mb-4 text-sm text-emerald-700 dark:text-emerald-300">
                   Estos candidatos obtuvieron mayoría absoluta (&gt;50% de los votos)
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {candidates.filter(c => c.is_selected).map((candidate) => (
-                    <div key={candidate.id} className="p-4 rounded-lg border-2 border-green-600 bg-white dark:bg-green-900/50 flex items-center gap-3">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl">
+                    <div key={candidate.id} className="flex items-center gap-3 rounded-2xl border border-emerald-500/60 bg-surface-container-lowest/90 p-4 dark:bg-surface-container-low/80">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">
                         ✓
                       </div>
                       <div>
-                        <div className="font-bold text-lg text-green-700 dark:text-green-200">
+                        <div className="text-lg font-bold text-emerald-700 dark:text-emerald-200">
                           {candidate.name} {candidate.surname}
                         </div>
                         {candidate.location && (
-                          <div className="text-sm text-green-600 dark:text-green-400">
+                          <div className="text-sm text-emerald-700 dark:text-emerald-300">
                             📍 {candidate.location}
                           </div>
                         )}
@@ -947,7 +1048,7 @@ export function VotingPage() {
             )}
 
             {/* Resultados Completos de la Ronda */}
-            <Card className="p-6 border-blue-300/60 bg-white/85 dark:border-blue-500/30 dark:bg-slate-900/80">
+            <Card className="admin-shell p-6">
               <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                 <span className="text-3xl">📊</span>
                 Resultados de Ronda {activeRound.current_round_number}
@@ -970,23 +1071,24 @@ export function VotingPage() {
                     const candidate = candidates.find(c => c.id === result.candidate_id);
                     if (!candidate) return null;
 
+                    const displayPercentage = result.percentage;
                     const isSelected = candidate.is_selected;
-                    const hasMajority = result.percentage > 50;
+                    const hasMajority = displayPercentage > 50;
 
                     return (
                       <div 
                         key={result.candidate_id} 
                         className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
                           isSelected 
-                            ? 'border-green-500 bg-green-50 dark:bg-green-950/30' 
+                            ? 'border-emerald-500 bg-emerald-500/12' 
                             : hasMajority
-                            ? 'border-blue-400/60 bg-blue-50 dark:bg-blue-950/30'
-                            : 'border-border bg-card'
+                            ? 'border-primary/45 bg-primary-fixed/55'
+                            : 'border-outline-variant/45 bg-surface-container-lowest/88 dark:border-outline-variant/60 dark:bg-surface-container-low/75'
                         }`}
                       >
                         <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
                           isSelected
-                            ? 'bg-green-600 text-white'
+                            ? 'bg-emerald-600 text-white'
                             : 'bg-primary/10 text-primary'
                         }`}>
                           {isSelected ? '✓' : index + 1}
@@ -995,12 +1097,12 @@ export function VotingPage() {
                           <div className="font-bold text-lg flex items-center gap-2">
                             {candidate.name} {candidate.surname}
                             {isSelected && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-green-600 text-white font-normal">
+                              <span className="text-xs px-2 py-1 rounded-full bg-emerald-600 text-white font-normal">
                                 SELECCIONADO
                               </span>
                             )}
                             {hasMajority && !isSelected && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-blue-600 text-white font-normal">
+                              <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground font-normal">
                                 +50%
                               </span>
                             )}
@@ -1017,16 +1119,16 @@ export function VotingPage() {
                               <div 
                                 className={`h-3 rounded-full transition-all duration-1000 ${
                                   isSelected
-                                    ? 'bg-green-600'
+                                    ? 'bg-emerald-600'
                                     : hasMajority
-                                    ? 'bg-blue-500'
+                                    ? 'bg-primary'
                                     : 'bg-primary'
                                 }`}
-                                style={{ width: `${result.percentage}%` }}
+                                style={{ width: `${Math.min(Math.max(displayPercentage, 0), 100)}%` }}
                               />
                             </div>
                             <span className="text-base font-semibold min-w-[4.5rem] text-right">
-                              {result.percentage.toFixed(1)}%
+                              {displayPercentage.toFixed(1)}%
                             </span>
                           </div>
                         </div>
@@ -1048,42 +1150,64 @@ export function VotingPage() {
     // Si el usuario ha votado pero no están visibles para todos, mostrar gracias
     if (hasVoted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center border-blue-300/60 bg-white/90 shadow-[0_30px_70px_-40px_rgba(30,64,175,0.6)] dark:border-blue-500/30 dark:bg-slate-900/85">
-          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
-            <Vote className="w-8 h-8 text-blue-600 dark:text-blue-300" />
-          </div>
-          <h1 className="text-xl font-bold mb-2">¡Gracias por votar!</h1>
-          <p className="text-muted-foreground">
-            Tu voto ha sido registrado para la votación "{activeRound?.title}".
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="pointer-events-none absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-primary/20 blur-[120px] mix-blend-screen" />
+        <div className="pointer-events-none absolute -bottom-[20%] -left-[10%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[100px] mix-blend-screen" />
+
+        <Card className="relative w-full max-w-md px-8 pb-8 pt-10 text-center surface tech-glow border-t-primary/50 overflow-hidden backdrop-blur-2xl">
+          {/* Subtle gradient overlay top */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
+          
+          <h1 className="text-3xl font-headline font-bold mb-3 text-foreground">
+            ¡Voto Registrado!
+          </h1>
+          <p className="text-muted-foreground text-sm font-semibold mb-8">
+            Tu participación en <span className="text-foreground font-semibold">"{activeRound?.title}"</span> se ha procesado con éxito.
           </p>
+
           {voteHashCode && (
-            <div className="mt-4 p-4 bg-blue-50/90 dark:bg-blue-950/35 border border-blue-300/70 dark:border-blue-500/40 rounded-2xl">
-              <p className="text-xs uppercase tracking-wide text-blue-700 dark:text-blue-300 mb-1">Tu código de verificación:</p>
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-lg font-mono font-bold text-blue-800 dark:text-blue-200">{voteHashCode}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-blue-700 hover:bg-blue-200/70 dark:text-blue-200 dark:hover:bg-blue-700/40"
-                  onClick={() => {
-                    navigator.clipboard.writeText(voteHashCode);
-                    toast({ title: 'Copiado', description: 'Código copiado al portapapeles' });
-                  }}
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </Button>
+            <div className="ticket-card mt-6 rounded-2xl border-2 p-5 relative overflow-hidden group transition-colors duration-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="relative z-10">
+                <p className="ticket-kicker mb-2 text-[10px] uppercase font-bold tracking-widest">Código de Verificación</p>
+                <div className="flex items-center justify-center gap-3">
+                  <p className="ticket-code text-xl font-mono font-bold tracking-wider drop-shadow-sm">{voteHashCode}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ticket-code relative z-20 h-10 w-10 px-0 hover:bg-primary/20 transition-colors"
+                    onClick={() => {
+                      void copyVerificationCode();
+                    }}
+                    aria-label="Copiar código de verificación"
+                  >
+                    <Copy className="w-5 h-5 pointer-events-none" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 font-semibold">Conserva este código para auditar tu voto</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Guarda este código para verificar tu voto</p>
             </div>
           )}
+
           {voteReceipt && (
-            <div className="mt-4 p-4 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-300/70 dark:border-slate-700 rounded-2xl text-left">
-              <p className="text-xs text-muted-foreground mb-2">Tus 3 votos emitidos (papeleta):</p>
-              <div className="space-y-1 text-sm">
-                <p>1. {voteReceipt.votes[0] || '-'}</p>
-                <p>2. {voteReceipt.votes[1] || '-'}</p>
-                <p>3. {voteReceipt.votes[2] || '-'}</p>
+            <div className="mt-4 relative">
+              {/* "Ticket" zig-zag top edge */}
+              <div className="ticket-divider absolute -top-3 left-0 right-0 h-4 border-t-2 border-dashed" />
+              
+              <div className="ticket-card rounded-[1.2rem] border p-6 text-left mt-6 backdrop-blur-md shadow-sm">
+                <p className="ticket-kicker text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                  Tu Papeleta Emitida
+                </p>
+                <div className="space-y-3">
+                  {voteReceipt.votes.map((vote, idx) => (
+                    <div key={idx} className="flex gap-3 items-start pb-3 border-b border-border/60 last:border-0 last:pb-0">
+                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 pt-0.5">{idx + 1}.</span>
+                      <span className="text-sm font-semibold text-foreground">{vote || '---'}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1093,7 +1217,7 @@ export function VotingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-36">
+    <div className="min-h-screen bg-background px-2 pb-[9.5rem] pt-2 sm:px-4 sm:pt-2 md:pb-28">
       {/* Submit Animation Overlay */}
       <VoteSubmitAnimation
         isVisible={showSubmitAnimation}
@@ -1102,41 +1226,40 @@ export function VotingPage() {
       />
 
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8 rounded-3xl border border-blue-300/60 bg-white/70 px-5 py-6 text-center shadow-[0_28px_60px_-38px_rgba(37,99,235,0.8)] backdrop-blur-md dark:border-blue-500/25 dark:bg-slate-900/72">
-          <h1 className="bg-gradient-to-r from-blue-700 via-cyan-600 to-indigo-600 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl">{activeRound.title}</h1>
-          {activeRound.description && (
-            <p className="text-muted-foreground text-lg mb-4">{activeRound.description}</p>
-          )}
-          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-            <span>🏆 {activeRound.team}</span>
-            <span>🔄 Ronda {activeRound.current_round_number}</span>
-            <span>📊 Máximo {`${maxVotesThisRound} voto${maxVotesThisRound > 1 ? 's' : ''}`}</span>
+        <div className="mb-6 pt-2 text-center sm:mb-8 space-y-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold text-slate-600 sm:text-xs dark:text-slate-300">
+            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">🏆 {activeRound.team}</span>
+            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">🔄 Ronda {activeRound.current_round_number}</span>
+            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">📊 Máximo {`${maxVotesThisRound} voto${maxVotesThisRound > 1 ? 's' : ''}`}</span>
           </div>
-          {/* Tutorial button */}
-          <div className="mt-3">
-            <VotingTutorial />
+
+          <div className="space-y-2">
+            <h1 className="font-headline text-3xl font-black tracking-tight text-slate-900 sm:text-5xl dark:text-white pb-1">
+              {activeRound.title}
+            </h1>
+            {activeRound.description && (
+              <p className="mx-auto max-w-2xl text-sm text-slate-500 sm:text-lg dark:text-slate-400">
+                {activeRound.description}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <GroupedCandidateList
             candidates={candidates}
             selectedCandidates={selectedCandidates}
             onToggleCandidate={toggleCandidateSelection}
+            tutorialRoundId={activeRound.id}
           />
         </div>
 
       </div>
 
       {/* Floating action bar: vote/clear without scrolling to the page bottom */}
-      <div className="sticky inset-x-0 bottom-4 z-40 px-4 pb-3">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-2xl border border-blue-300/60 bg-white px-4 py-3 shadow-[0_28px_60px_-34px_rgba(37,99,235,0.9)] dark:border-blue-500/25 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium">
-              {selectedCandidates.length > 0
-                ? `${selectedCandidates.length} de ${maxVotesThisRound} seleccionados`
-                : `Selecciona hasta ${maxVotesThisRound} candidato${maxVotesThisRound > 1 ? 's' : ''}`}
-            </p>
+      <div className="fixed inset-x-0 bottom-0 z-[60] px-2 pb-0 sm:sticky sm:inset-x-auto sm:bottom-0 sm:px-4 sm:pb-3">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-t-[2.6rem] border border-outline-variant/60 bg-surface-container-lowest/96 px-4 pb-[calc(1.2rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(0,74,198,0.08)] backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/95 sm:rounded-[2rem] sm:pb-4 sm:pt-3 sm:shadow-tech sm:backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-center sm:text-left">
             {selectedCandidates.length > 0 && (
               <p className="line-clamp-1 text-xs text-muted-foreground">
                 {selectedCandidateNames.join(', ')}
@@ -1147,21 +1270,24 @@ export function VotingPage() {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:w-auto">
             <Button
               type="button"
               variant="destructive"
               onClick={clearSelection}
               disabled={selectedCandidates.length === 0 || voting}
+              aria-label="Borrar seleccion"
+              className="h-11 w-11 flex-none px-0 sm:h-10 sm:w-auto sm:px-4"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Borrar seleccion
+              <Trash2 className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Borrar seleccion</span>
             </Button>
             <Button
               type="button"
               variant="success"
               onClick={openVoteConfirmation}
               disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting}
+              className="flex-1 sm:flex-none"
             >
               {voting ? (
                 <>
@@ -1180,17 +1306,17 @@ export function VotingPage() {
       </div>
 
       <AlertDialog open={confirmVoteOpen} onOpenChange={setConfirmVoteOpen}>
-        <AlertDialogContent className="overflow-hidden rounded-3xl border-blue-300/65 bg-white/95 p-0 shadow-[0_36px_80px_-45px_rgba(30,64,175,0.8)] dark:border-blue-500/25 dark:bg-slate-900/92">
-          <AlertDialogHeader className="bg-gradient-to-r from-blue-100/85 via-cyan-100/65 to-indigo-100/75 px-6 pb-4 pt-6 dark:from-blue-950/40 dark:via-cyan-950/30 dark:to-indigo-950/35">
-            <AlertDialogTitle className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Confirmar voto</AlertDialogTitle>
-            <AlertDialogDescription className="max-w-[52ch] text-base leading-relaxed text-slate-700 dark:text-slate-300">
+        <AlertDialogContent className="overflow-hidden rounded-3xl border border-outline-variant/60 bg-surface-container-lowest/96 p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low/94">
+          <AlertDialogHeader className="bg-gradient-to-r from-primary-fixed/75 via-surface-container-lowest to-primary-fixed/55 px-6 pb-4 pt-6 dark:from-primary-fixed/45 dark:via-surface-container-low dark:to-primary-fixed/35">
+            <AlertDialogTitle className="text-2xl font-bold tracking-tight text-foreground">Confirmar voto</AlertDialogTitle>
+            <AlertDialogDescription className="max-w-[52ch] text-base leading-relaxed text-muted-foreground">
               Estás a punto de votar por estos candidatos. Revisa la selección antes de confirmar.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="px-6 pb-2 pt-4">
-            <div className="rounded-2xl border border-blue-300/65 bg-blue-50/70 p-4 dark:border-blue-500/30 dark:bg-blue-950/25">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">Seleccion actual</p>
-              <div className="space-y-1 text-sm font-medium text-slate-800 dark:text-slate-200">
+            <div className="rounded-2xl border border-outline-variant/55 bg-surface-container-low p-4 dark:border-outline-variant/65 dark:bg-surface-container">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Seleccion actual</p>
+              <div className="space-y-1 text-sm font-medium text-foreground">
               {selectedCandidateNames.map((name, index) => (
                 <p key={`${name}-${index}`}>{index + 1}. {name}</p>
               ))}
@@ -1200,15 +1326,19 @@ export function VotingPage() {
           <AlertDialogFooter className="gap-2 px-6 pb-6 pt-2">
             <AlertDialogCancel
               disabled={voting}
-              className="mt-0 h-11 rounded-xl border-slate-300/80 bg-white/80 px-5 text-slate-800 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100"
+              className="mt-0 h-11 rounded-xl border-outline-variant/60 bg-surface-container-lowest/85 px-5 text-foreground hover:bg-surface-container-low dark:border-outline-variant/70 dark:bg-surface-container"
             >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               className="h-11 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-6 text-white shadow-[0_18px_34px_-18px_rgba(5,150,105,0.9)] hover:opacity-95"
-              onClick={(event) => {
+              onClick={async (event) => {
                 event.preventDefault();
+                event.stopPropagation();
+                // Fix Safari close animation cancellation
+                await new Promise(r => setTimeout(r, 50)); 
                 setConfirmVoteOpen(false);
+                await new Promise(r => setTimeout(r, 10)); 
                 submitVote();
               }}
               disabled={voting}

@@ -1,32 +1,28 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Button as HeroButton } from "@heroui/react"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-[15px] font-bold tracking-[0.02em] ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-transparent select-none",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[0_12px_24px_-14px_rgba(2,132,199,0.85)] hover:bg-primary/90",
-        success:
-          "bg-success text-success-foreground hover:bg-success/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-zinc-900 border-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:border-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md",
+        primary: "bg-indigo-600 border-indigo-700 text-white hover:bg-indigo-700 shadow-[0_4px_14px_0_rgba(79,70,229,0.39)]",
+        success: "bg-emerald-600 border-emerald-700 text-white shadow-[0_4px_14px_0_rgba(5,150,105,0.39)] hover:bg-emerald-700",
+        destructive: "bg-rose-600 border-rose-700 text-white shadow-[0_4px_14px_0_rgba(225,29,72,0.39)] hover:bg-rose-700",
+        outline: "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900 shadow-sm",
+        secondary: "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900",
+        ghost: "border-transparent bg-transparent hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 shadow-none",
+        link: "border-transparent bg-transparent text-indigo-600 underline-offset-4 hover:underline shadow-none",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-12 px-6 py-2.5",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-14 px-8 text-base",
+        icon: "h-12 w-12",
       },
     },
     defaultVariants: {
@@ -44,63 +40,11 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    if (asChild) {
-      const Comp = Slot
-      return (
-        <Comp
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        />
-      )
-    }
-
-    const heroVariantMap: Record<NonNullable<ButtonProps["variant"]>, "solid" | "bordered" | "flat" | "light"> = {
-      default: "solid",
-      success: "solid",
-      destructive: "solid",
-      outline: "bordered",
-      secondary: "flat",
-      ghost: "light",
-      link: "light",
-    }
-
-    const heroColorMap: Record<NonNullable<ButtonProps["variant"]>, "primary" | "danger" | "default"> = {
-      default: "primary",
-      success: "default",
-      destructive: "danger",
-      outline: "default",
-      secondary: "default",
-      ghost: "default",
-      link: "primary",
-    }
-
-    const heroSizeMap: Record<NonNullable<ButtonProps["size"]>, "sm" | "md" | "lg"> = {
-      sm: "sm",
-      default: "md",
-      lg: "lg",
-      icon: "md",
-    }
-
-    const mergedClassName = cn(
-      "group transition-all duration-200 motion-reduce:transition-none active:scale-[0.98]",
-      size === "icon" && "h-10 w-10 min-w-10 rounded-full px-0",
-      variant === "link" && "bg-transparent p-0 underline-offset-4 hover:underline",
-      variant === "default" && "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_14px_26px_-14px_rgba(14,116,144,0.9)] hover:from-cyan-400 hover:to-blue-500",
-      variant === "success" && "bg-emerald-600 text-white hover:bg-emerald-500",
-      variant === "destructive" && "bg-rose-600 text-white hover:bg-rose-500",
-      variant !== "link" && "font-semibold",
-      className,
-    )
-
+    const Comp = asChild ? Slot : "button"
     return (
-      <HeroButton
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        variant={heroVariantMap[variant ?? "default"]}
-        color={heroColorMap[variant ?? "default"]}
-        size={heroSizeMap[size ?? "default"]}
-        radius="full"
-        className={mergedClassName}
         {...props}
       />
     )

@@ -1485,17 +1485,17 @@ export function VotingManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Gestión de Votaciones</h2>
+    <div className="admin-shell space-y-6 p-4 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-headline text-3xl font-black tracking-tight md:text-4xl">Gestión de Votaciones</h2>
         <Dialog open={isNewRoundDialogOpen} onOpenChange={setIsNewRoundDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="h-11 rounded-xl px-4">
               <Plus className="w-4 h-4 mr-2" />
               Nueva Votación
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[460px] rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
             <DialogHeader>
               <DialogTitle>Crear Nueva Votación</DialogTitle>
               <DialogDescription>
@@ -1605,7 +1605,7 @@ export function VotingManagement() {
             }
           }}
         >
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[520px] rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
             <DialogHeader>
               <DialogTitle>Editar Configuración de Votación</DialogTitle>
               <DialogDescription>
@@ -1707,7 +1707,7 @@ export function VotingManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList>
+        <TabsList className="w-full justify-start rounded-2xl border border-outline-variant/55 bg-surface-container-low/70 p-1.5 md:w-auto">
           <TabsTrigger value="rounds">Votaciones</TabsTrigger>
           <TabsTrigger value="candidates" disabled={!selectedRound}>
             Candidatos {selectedRound && `(${selectedRound.candidates.length})`}
@@ -1718,7 +1718,7 @@ export function VotingManagement() {
         <TabsContent value="rounds" className="space-y-4">
           <div className="grid gap-4">
             {rounds.length === 0 ? (
-              <Card>
+              <Card className="admin-soft border-outline-variant/45">
                 <CardContent className="flex flex-col items-center justify-center py-8 text-center">
                   <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No hay votaciones</h3>
@@ -1731,7 +1731,7 @@ export function VotingManagement() {
               </Card>
             ) : (
               rounds.map((round) => (
-                <Card key={round.id} className={`transition-colors cursor-pointer ${selectedRound?.id === round.id ? 'border-primary' : 'hover:border-primary/50'}`}>
+                <Card key={round.id} className={`cursor-pointer rounded-2xl border border-outline-variant/50 transition-colors ${selectedRound?.id === round.id ? 'border-primary shadow-tech' : 'hover:border-outline/70'}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
@@ -1886,7 +1886,7 @@ export function VotingManagement() {
                         Cargar datos de prueba
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[560px]">
+                    <DialogContent className="sm:max-w-[560px] rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
                       <DialogHeader>
                         <DialogTitle>Cargar Datos de Prueba</DialogTitle>
                         <DialogDescription>
@@ -1910,7 +1910,7 @@ export function VotingManagement() {
                           </Select>
                         </div>
                         {selectedTestDatasetId && (
-                          <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-1">
+                                <div className="admin-soft rounded-xl p-3 text-sm space-y-1">
                             <p className="font-medium">
                               {testDatasets.find((dataset) => dataset.id === selectedTestDatasetId)?.title}
                             </p>
@@ -1923,7 +1923,7 @@ export function VotingManagement() {
                           </div>
                         )}
                       </div>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                         <Button variant="outline" onClick={() => setIsTestDatasetDialogOpen(false)} disabled={loadingTestDataset}>
                           Cancelar
                         </Button>
@@ -1949,7 +1949,7 @@ export function VotingManagement() {
                         Importar
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent className="sm:max-w-[520px] rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
                       <DialogHeader>
                         <DialogTitle>Importar Candidatos</DialogTitle>
                         <DialogDescription>
@@ -1958,7 +1958,7 @@ export function VotingManagement() {
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         {importingFile && (
-                          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+                          <div className="rounded-xl border border-primary/20 bg-primary/10 p-4 flex items-center gap-3">
                             <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
                             <div>
                               <p className="font-medium text-sm">Importando candidatos...</p>
@@ -2011,7 +2011,7 @@ export function VotingManagement() {
                           </div>
                         </div>
                         
-                        <div className="bg-muted p-3 rounded-lg text-sm">
+                        <div className="rounded-xl border border-outline-variant/45 bg-surface-container-low p-3 text-sm dark:border-outline-variant/60 dark:bg-surface-container">
                           <p className="font-medium mb-1">Campos del archivo:</p>
                           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                             <li><strong>name</strong> * (obligatorio): Nombre del candidato</li>
@@ -2024,7 +2024,7 @@ export function VotingManagement() {
                           </ul>
                         </div>
                       </div>
-                      <div className="flex justify-end">
+                      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                         <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
                           Cerrar
                         </Button>
@@ -2039,7 +2039,7 @@ export function VotingManagement() {
                         Agregar Candidato
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
                     <DialogHeader>
                       <DialogTitle>Agregar Candidato</DialogTitle>
                       <DialogDescription>
@@ -2149,7 +2149,7 @@ export function VotingManagement() {
                   });
                 }
               }}>
-                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
                   <DialogHeader>
                     <DialogTitle>Editar Candidato</DialogTitle>
                     <DialogDescription>
@@ -2308,7 +2308,7 @@ export function VotingManagement() {
                                   </div>
                                 )}
                                 {candidate.location && (
-                                  <p className="text-sm text-muted-foreground">📍 {candidate.location}</p>
+                                  <p className="text-sm text-muted-foreground">📍 {candidate.location}</p>
                                 )}
                                 {candidate.group_name && (
                                   <p className="text-sm text-muted-foreground">👥 {candidate.group_name}</p>
@@ -2331,7 +2331,7 @@ export function VotingManagement() {
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => openEditCandidate(candidate)}
-                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                className="h-8 w-8 rounded-lg"
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
@@ -2340,7 +2340,7 @@ export function VotingManagement() {
                                   <Button 
                                     variant="outline" 
                                     size="sm"
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    className="h-8 w-8 rounded-lg"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
@@ -2376,7 +2376,7 @@ export function VotingManagement() {
               </div>
             </div>
           ) : (
-            <Card>
+            <Card className="admin-soft border-outline-variant/45">
               <CardContent className="flex flex-col items-center justify-center py-8 text-center">
                 <Users className="w-12 h-12 text-muted-foreground mb-4" />
                 <h4 className="text-lg font-medium mb-2">Selecciona una votación</h4>
@@ -2387,14 +2387,14 @@ export function VotingManagement() {
         </TabsContent>
 
         <TabsContent value="monitoring" className="space-y-4">
-          <Card>
+          <Card className="admin-soft border-outline-variant/45">
             <CardHeader>
               <CardTitle>Monitoreo en Tiempo Real</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {rounds.filter(r => r.is_active).map((round) => (
-                  <div key={round.id} className="border rounded-lg p-4">
+                  <div key={round.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest/85 p-4 dark:border-outline-variant/65 dark:bg-surface-container-low/70">
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <h4 className="font-medium">{round.title}</h4>
@@ -2405,7 +2405,7 @@ export function VotingManagement() {
                       <Badge variant="default">Activa</Badge>
                     </div>
                     
-                    <div className="grid grid-cols-4 gap-4 text-sm mb-4">
+                    <div className="mb-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                       <div>
                         <span className="text-muted-foreground">Votantes ronda actual:</span>
                         <p className="text-2xl font-bold">{round.votes_current_round || 0}</p>
@@ -2431,15 +2431,15 @@ export function VotingManagement() {
                     
                     {/* Indicator if round is ready for results */}
                     {round.votes_current_round >= round.max_votantes && !showResults && (
-                      <div className="bg-primary/10 border border-primary rounded-lg p-3 mb-4">
+                      <div className="mb-4 rounded-xl border border-primary/40 bg-primary/10 p-3">
                         <p className="text-sm font-medium text-primary">
                           ⚡ Cupo de votantes alcanzado. La ronda puede finalizar.
                         </p>
                       </div>
                     )}
                     {round.census_mode === 'exact' && round.votes_current_round < round.max_votantes && !showResults && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-                        <p className="text-sm font-medium text-amber-700">
+                      <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+                        <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                           Censo exacto activo: faltan {round.max_votantes - (round.votes_current_round || 0)} votantes para finalizar la ronda.
                         </p>
                       </div>
@@ -2447,14 +2447,14 @@ export function VotingManagement() {
 
                     {/* Round Results Display */}
                     {showResults && roundResults.length > 0 && (
-                      <div className="bg-muted rounded-lg p-4 mb-4 border">
+                      <div className="mb-4 rounded-xl border border-outline-variant/50 bg-surface-container-low p-4 dark:border-outline-variant/65 dark:bg-surface-container">
                         <h5 className="font-medium mb-3 text-foreground">Resultados Ronda {round.current_round_number}</h5>
                         <div className="space-y-2">
                           {roundResults
                             .filter(result => result.vote_count > 0)
                             .sort((a, b) => b.vote_count - a.vote_count)
                             .map((result) => (
-                            <div key={result.candidate_id} className="flex items-center justify-between p-2 bg-background rounded border">
+                            <div key={result.candidate_id} className="flex items-center justify-between rounded-xl border border-outline-variant/45 bg-surface-container-lowest/90 p-2.5 dark:border-outline-variant/60 dark:bg-surface-container-low/85">
                               <div>
                                 <span className="font-medium text-foreground">
                                   {result.candidate?.name} {result.candidate?.surname}
@@ -2493,7 +2493,7 @@ export function VotingManagement() {
                           </>
                         ) : (
                           <>
-                            <div className="flex items-center gap-3 px-3 py-2 bg-muted rounded-md border">
+                            <div className="flex items-center gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-low px-3 py-2 dark:border-outline-variant/65 dark:bg-surface-container">
                               <Label htmlFor={`results-visible-${round.id}`} className="text-sm font-medium cursor-pointer">
                                 {round.show_results_to_voters ? (
                                   <>

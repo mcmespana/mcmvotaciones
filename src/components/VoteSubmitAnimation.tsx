@@ -17,24 +17,24 @@ const STEPS = [
     text: "Encriptando tu voto...",
     subtext: "Protegiendo tu selección con cifrado",
     duration: 1200,
-    color: "text-blue-400",
-    glowColor: "shadow-blue-500/30",
+    color: "text-primary",
+    glowColor: "shadow-[0_0_46px_-16px_rgba(0,74,198,0.6)]",
   },
   {
     icon: Send,
     text: "Enviando al servidor seguro...",
     subtext: "Transmisión segura en curso",
     duration: 1500,
-    color: "text-cyan-400",
-    glowColor: "shadow-cyan-500/30",
+    color: "text-sky-500 dark:text-sky-300",
+    glowColor: "shadow-[0_0_46px_-16px_rgba(14,165,233,0.55)]",
   },
   {
     icon: CheckCircle2,
     text: "¡Voto registrado!",
     subtext: "",
     duration: 2000,
-    color: "text-green-400",
-    glowColor: "shadow-green-500/30",
+    color: "text-emerald-600 dark:text-emerald-300",
+    glowColor: "shadow-[0_0_46px_-16px_rgba(16,185,129,0.55)]",
   },
 ];
 
@@ -110,7 +110,7 @@ export function VoteSubmitAnimation({
   return (
     <Dialog open={isVisible} modal>
       <DialogContent
-        className="sm:max-w-sm bg-background/95 backdrop-blur-xl border-border/50"
+        className="sm:max-w-sm rounded-[1.75rem] border border-outline-variant/60 bg-surface-container-lowest/96 backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/94"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         // Hide the close button
@@ -139,7 +139,7 @@ export function VoteSubmitAnimation({
           {/* Text */}
           <h3
             className={`text-xl font-bold mb-2 transition-all duration-300 ${
-              showConfetti ? "text-green-400" : ""
+              showConfetti ? "text-emerald-600 dark:text-emerald-300" : ""
             }`}
           >
             {step.text}
@@ -154,10 +154,10 @@ export function VoteSubmitAnimation({
               <div
                 className={`h-full rounded-full transition-all duration-100 ${
                   currentStep === 0
-                    ? "bg-blue-500"
+                    ? "bg-primary"
                     : currentStep === 1
-                    ? "bg-cyan-500"
-                    : "bg-green-500"
+                    ? "bg-sky-500"
+                    : "bg-emerald-500"
                 }`}
                 style={{ width: `${progress}%` }}
               />
@@ -166,11 +166,11 @@ export function VoteSubmitAnimation({
 
           {/* Vote hash display */}
           {showConfetti && voteHash && (
-            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
               <p className="text-xs text-muted-foreground mb-1">
                 Tu código de verificación:
               </p>
-              <p className="text-lg font-mono font-bold text-green-400">
+              <p className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-300">
                 {voteHash}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
