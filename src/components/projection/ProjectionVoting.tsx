@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Vote, Clock, Users } from "lucide-react";
+import { BarChart3, Clock3, Users, Vote } from "lucide-react";
+import { Chip, Meter, ProgressBar, ProgressCircle, Skeleton, Surface } from "@heroui/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 
 interface ProjectionVotingProps {
@@ -40,159 +42,186 @@ export function ProjectionVoting({
 
   // Flash animation when a new vote comes in
   useEffect(() => {
+    let timeoutId: number | null = null;
+
     if (voteCount > prevVoteCount) {
       setLastVoteFlash(true);
-      setTimeout(() => setLastVoteFlash(false), 800);
+      timeoutId = window.setTimeout(() => setLastVoteFlash(false), 800);
     }
+
     setPrevVoteCount(voteCount);
+
+    return () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, [voteCount, prevVoteCount]);
 
-  // Seat grid visualization (up to 100 seats)
-  const visibleSeats = Math.min(maxVotantes, 100);
-  const seatSize = visibleSeats <= 25 ? "w-6 h-6" : visibleSeats <= 50 ? "w-4 h-4" : "w-3 h-3";
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex flex-col relative overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-12 py-8 border-b border-white/10">
-        <div>
-          <h1 className="text-4xl font-bold">{roundTitle}</h1>
-          <p className="text-white/50 text-lg mt-1">
-            🏆 {team} · Ronda {roundNumber}
-          </p>
-        </div>
-        <div className="flex items-center gap-8">
-          {/* Connected count */}
-          <div className="flex items-center gap-2 text-white/50">
-            <Users className="w-5 h-5" />
-            <span className="text-lg tabular-nums">{connectedCount}</span>
-          </div>
-          {/* Timer */}
-          <div className="flex items-center gap-2 bg-white/5 px-6 py-3 rounded-xl border border-white/10">
-            <Clock className="w-5 h-5 text-white/50" />
-            <span className="text-3xl font-mono font-bold tabular-nums">
-              {formatTime(elapsedSeconds)}
-            </span>
-          </div>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 text-slate-900 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 dark:text-slate-100">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-6%] top-[-5%] h-[360px] w-[360px] rounded-full bg-blue-500/25 blur-3xl dark:bg-blue-500/15" />
+        <div className="absolute bottom-[-8%] right-[-10%] h-[360px] w-[360px] rounded-full bg-indigo-500/20 blur-3xl dark:bg-indigo-500/20" />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-12 py-8">
-        {/* Vote counter - huge */}
-        <div
-          className={`text-center mb-12 transition-all duration-300 ${
-            lastVoteFlash ? "scale-110" : "scale-100"
-          }`}
-        >
-          <Vote
-            className={`w-16 h-16 mx-auto mb-4 transition-colors duration-300 ${
-              lastVoteFlash ? "text-green-400" : "text-primary"
-            }`}
-          />
-          <div className="text-9xl font-bold tabular-nums leading-none">
-            {voteCount}
-          </div>
-          <div className="text-2xl text-white/50 mt-2">
-            de {maxVotantes} votos
-          </div>
-        </div>
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10">
+        <Surface className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-[0_32px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-md dark:border-white/10 dark:bg-slate-900/75">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">{roundTitle}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Chip color="warning" variant="flat" className="font-semibold">🏆 {team}</Chip>
+                <Chip color="primary" variant="bordered" className="font-semibold">Ronda {roundNumber}</Chip>
+              </div>
+            </div>
 
-        {/* Progress bar */}
-        <div className="w-full max-w-2xl mb-12">
-          <div className="flex justify-between text-sm text-white/50 mb-2">
-            <span>Progreso de votación</span>
-            <span className="tabular-nums font-bold text-white">
-              {percentage.toFixed(0)}%
-            </span>
-          </div>
-          <div className="w-full bg-white/10 rounded-full h-6 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-              style={{
-                width: `${percentage}%`,
-                background:
-                  percentage >= 100
-                    ? "linear-gradient(90deg, #10B981, #059669)"
-                    : "linear-gradient(90deg, #3B82F6, #6366F1)",
-              }}
-            >
-              {/* Shimmer effect */}
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                  animation: "shimmer 2s infinite",
-                }}
-              />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+                <Users className="h-4 w-4" />
+                {connectedCount} conectados
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-4 py-2 text-sm font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100">
+                <Clock3 className="h-4 w-4 text-slate-500 dark:text-slate-300" />
+                {formatTime(elapsedSeconds)}
+              </div>
             </div>
           </div>
-        </div>
+        </Surface>
 
-        {/* Seat grid */}
-        <div className="flex flex-wrap justify-center gap-1.5 max-w-xl">
-          {Array.from({ length: visibleSeats }).map((_, i) => (
-            <div
-              key={i}
-              className={`${seatSize} rounded-sm transition-all duration-500 ${
-                i < voteCount
-                  ? "bg-primary shadow-sm shadow-primary/30"
-                  : "bg-white/10"
-              }`}
-              style={{
-                transitionDelay: `${(i % 10) * 30}ms`,
-              }}
-            />
-          ))}
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <Card className="border-cyan-300/50 bg-white/85 dark:border-cyan-400/20 dark:bg-slate-900/75">
+            <CardHeader>
+              <CardTitle className="text-lg uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">
+                Votos recibidos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                className={`text-center transition-all duration-300 ${
+                  lastVoteFlash ? "scale-105" : "scale-100"
+                }`}
+              >
+                <Vote
+                  className={`mx-auto mb-2 h-12 w-12 transition-colors duration-300 ${
+                    lastVoteFlash ? "text-emerald-500" : "text-cyan-600 dark:text-cyan-300"
+                  }`}
+                />
+                <p className="text-7xl font-black tabular-nums leading-none text-slate-900 dark:text-white sm:text-8xl">
+                  {voteCount}
+                </p>
+                <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  de {maxVotantes} votos
+                </p>
+              </div>
+
+              <div className="mt-8 space-y-3">
+                <div className="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  <span>Avance de votacion</span>
+                  <span className="text-slate-900 dark:text-white">{percentage.toFixed(0)}%</span>
+                </div>
+                <ProgressBar
+                  aria-label="Avance"
+                  value={percentage}
+                  maxValue={100}
+                  className="w-full [&_[data-slot=progress-bar-track]]:h-4 [&_[data-slot=progress-bar-track]]:bg-slate-200 dark:[&_[data-slot=progress-bar-track]]:bg-slate-700"
+                />
+                <Meter
+                  aria-label="Votos emitidos"
+                  value={voteCount}
+                  minValue={0}
+                  maxValue={Math.max(maxVotantes, 1)}
+                  className="w-full [&_[data-slot=meter-track]]:h-2 [&_[data-slot=meter-track]]:bg-slate-200 dark:[&_[data-slot=meter-track]]:bg-slate-700"
+                />
+              </div>
+
+              {percentage >= 100 && (
+                <div className="mt-6 rounded-2xl border border-emerald-300/70 bg-emerald-500/15 px-4 py-3 text-center text-sm font-bold text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300">
+                  Todos los votos han sido emitidos.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6">
+            <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
+              <CardContent className="flex items-center justify-between gap-4 pt-6">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Participacion</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white">{percentage.toFixed(0)}%</p>
+                </div>
+                <div className="relative flex h-24 w-24 items-center justify-center">
+                  <ProgressCircle aria-label="Participacion" value={percentage} className="h-24 w-24 text-blue-600 dark:text-blue-300" />
+                  <BarChart3 className="absolute h-7 w-7 text-blue-700 dark:text-blue-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
+              <CardHeader>
+                <CardTitle className="text-base uppercase tracking-[0.18em] text-slate-600 dark:text-slate-300">
+                  Estado de mesa
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-3 pt-2">
+                <div className="rounded-2xl border border-slate-300/80 bg-slate-100/90 p-3 text-center dark:border-slate-700 dark:bg-slate-800/70">
+                  <p className="text-2xl font-black tabular-nums">{connectedCount}</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Conectados</p>
+                </div>
+                <div className="rounded-2xl border border-slate-300/80 bg-slate-100/90 p-3 text-center dark:border-slate-700 dark:bg-slate-800/70">
+                  <p className="text-2xl font-black tabular-nums">{maxVotantes}</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Meta</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {showBallotSummary && (
-          <div className="w-full max-w-5xl mt-8 rounded-xl border border-white/15 bg-white/5 p-4">
-            <p className="text-sm uppercase tracking-wide text-white/70 mb-3">Resumen de papeletas (ronda actual)</p>
-            {ballotSummaries.length === 0 ? (
-              <p className="text-sm text-white/50">Aun no hay papeletas validas registradas.</p>
-            ) : (
-              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                {ballotSummaries.map((ballot) => (
-                  <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} className="rounded-lg border border-white/10 bg-black/20 p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-mono text-sm font-bold">{ballot.voteCode}</p>
-                      <p className="text-xs text-white/50">R{ballot.roundNumber}</p>
-                    </div>
-                    <div className="space-y-1 text-sm">
-                      <p>1. {ballot.votes[0] || "-"}</p>
-                      <p>2. {ballot.votes[1] || "-"}</p>
-                      <p>3. {ballot.votes[2] || "-"}</p>
-                    </div>
+          <Card className="border-slate-300/70 bg-white/80 dark:border-slate-700 dark:bg-slate-900/75">
+            <CardHeader>
+              <CardTitle className="text-lg uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">
+                Papeletas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {ballotSummaries.length === 0 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-600 dark:text-slate-300">Aun no hay papeletas validas registradas.</p>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <Skeleton key={index} className="h-28 w-full rounded-2xl" />
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {ballotSummaries.map((ballot) => (
+                    <div
+                      key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`}
+                      className="rounded-2xl border border-slate-300/80 bg-white/90 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/80"
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{ballot.voteCode}</p>
+                        <Chip size="sm" color="primary" variant="flat">R{ballot.roundNumber}</Chip>
+                      </div>
+                      <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                        <p>1. {ballot.votes[0] || "-"}</p>
+                        <p>2. {ballot.votes[1] || "-"}</p>
+                        <p>3. {ballot.votes[2] || "-"}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
-        {/* Full indicator */}
-        {percentage >= 100 && (
-          <div className="mt-8 bg-green-500/20 border border-green-500/30 rounded-xl px-8 py-4 text-center animate-pulse">
-            <p className="text-xl font-bold text-green-400">
-              ✅ Todos los votos emitidos
-            </p>
-          </div>
+        {lastVoteFlash && (
+          <div className="pointer-events-none absolute inset-0 bg-emerald-500/10 transition-opacity duration-500" />
         )}
       </div>
-
-      {/* Flash overlay on new vote */}
-      {lastVoteFlash && (
-        <div className="absolute inset-0 bg-green-500/5 pointer-events-none transition-opacity duration-500" />
-      )}
-
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-      `}</style>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Vote, Copy, Trash2 } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateDeviceHash, generateBrowserInstanceId, hasVotedLocally, markAsVoted, isVotingAvailable } from '@/lib/device';
 import { getMaxVotesAllowed } from '@/lib/votingRules';
@@ -105,7 +105,6 @@ export function VotingPage() {
   const [confirmVoteOpen, setConfirmVoteOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   
   // Ref para evitar bucles infinitos en suscripciones
   const activeRoundRef = useRef<Round | null>(null);
@@ -274,9 +273,13 @@ export function VotingPage() {
     }
   }, []);
 
-  const loadActiveRound = useCallback(async () => {
+  const loadActiveRound = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       
       // Get active round (puede estar abierta o cerrada)
       const { data: rounds, error: roundError } = await supabase
@@ -389,13 +392,15 @@ export function VotingPage() {
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [toast, loadResults, ensureSeat, loadStoredReceipt]);
 
   useEffect(() => {
     // Handle backward compatibility for ?admin=true parameter
-    const adminParam = searchParams.get('admin');
+    const adminParam = new URLSearchParams(window.location.search).get('admin');
     if (adminParam === 'true') {
       navigate('/admin', { replace: true });
       return;
@@ -425,7 +430,7 @@ export function VotingPage() {
           });
           
           // Recargar inmediatamente cuando hay una nueva ronda activa
-          loadActiveRound();
+          loadActiveRound({ silent: true });
         }
       )
       // Escuchar UPDATE: cuando se modifica una ronda existente
@@ -475,7 +480,7 @@ export function VotingPage() {
                   description: 'La votación ha sido cerrada',
                 });
               }
-              loadActiveRound();
+              loadActiveRound({ silent: true });
             }
           }
           // Si se activó una ronda diferente o cuando no había ninguna activa
@@ -488,7 +493,7 @@ export function VotingPage() {
               title: '🎉 Nueva votación disponible',
               description: 'Una nueva votación está disponible',
             });
-            loadActiveRound();
+            loadActiveRound({ silent: true });
           }
         }
       )
@@ -504,7 +509,7 @@ export function VotingPage() {
       debugLog('🔌 Unsubscribing from rounds updates');
       supabase.removeChannel(roundsChannel);
     };
-  }, [navigate, loadActiveRound, searchParams, toast]);
+  }, [navigate, loadActiveRound, toast]);
 
   const submitVote = async () => {
     if (selectedCandidates.length === 0 || !activeRound) return;
@@ -893,25 +898,25 @@ export function VotingPage() {
   // Mostrar resultados a todos si admin los habilitó y la ronda está finalizada
   if (activeRound?.show_results_to_voters && activeRound?.round_finalized && !hasVoted) {
       return (
-        <div className="min-h-screen bg-background p-4">
+        <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 p-4 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950">
           <div className="max-w-4xl mx-auto">
-            <Card className="mb-6 p-6 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Vote className="w-8 h-8 text-green-600" />
+            <Card className="mb-6 p-6 text-center border-blue-300/60 bg-white/85 dark:border-blue-500/30 dark:bg-slate-900/80">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
+                <Vote className="w-8 h-8 text-blue-600 dark:text-blue-300" />
               </div>
               <h1 className="text-2xl font-bold mb-2">¡Gracias por votar!</h1>
               <p className="text-muted-foreground mb-4">
                 Tu voto ha sido registrado para la votación "{activeRound.title}".
               </p>
-              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                <span>🏆 {activeRound.team}</span>
-                <span>🔄 Ronda {activeRound.current_round_number}</span>
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="rounded-full border border-blue-300/60 bg-blue-100/80 px-3 py-1 text-blue-800 dark:border-blue-400/30 dark:bg-blue-500/20 dark:text-blue-200">🏆 {activeRound.team}</span>
+                <span className="rounded-full border border-indigo-300/60 bg-indigo-100/80 px-3 py-1 text-indigo-800 dark:border-indigo-400/30 dark:bg-indigo-500/20 dark:text-indigo-200">🔄 Ronda {activeRound.current_round_number}</span>
               </div>
             </Card>
 
             {/* Candidatos Seleccionados (con mayoría absoluta) */}
             {candidates.some(c => c.is_selected) && (
-              <Card className="mb-6 p-6 border-2 border-green-500 bg-green-50 dark:bg-green-950">
+              <Card className="mb-6 p-6 border-2 border-emerald-500/70 bg-emerald-50/90 dark:bg-emerald-950/40">
                 <h2 className="text-2xl font-bold mb-4 text-green-700 dark:text-green-300 flex items-center gap-2">
                   <span className="text-3xl">🏆</span>
                   Candidatos Seleccionados
@@ -942,7 +947,7 @@ export function VotingPage() {
             )}
 
             {/* Resultados Completos de la Ronda */}
-            <Card className="p-6">
+            <Card className="p-6 border-blue-300/60 bg-white/85 dark:border-blue-500/30 dark:bg-slate-900/80">
               <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                 <span className="text-3xl">📊</span>
                 Resultados de Ronda {activeRound.current_round_number}
@@ -975,7 +980,7 @@ export function VotingPage() {
                           isSelected 
                             ? 'border-green-500 bg-green-50 dark:bg-green-950/30' 
                             : hasMajority
-                            ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30'
+                            ? 'border-blue-400/60 bg-blue-50 dark:bg-blue-950/30'
                             : 'border-border bg-card'
                         }`}
                       >
@@ -995,7 +1000,7 @@ export function VotingPage() {
                               </span>
                             )}
                             {hasMajority && !isSelected && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-yellow-600 text-white font-normal">
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-600 text-white font-normal">
                                 +50%
                               </span>
                             )}
@@ -1014,7 +1019,7 @@ export function VotingPage() {
                                   isSelected
                                     ? 'bg-green-600'
                                     : hasMajority
-                                    ? 'bg-yellow-500'
+                                    ? 'bg-blue-500'
                                     : 'bg-primary'
                                 }`}
                                 style={{ width: `${result.percentage}%` }}
@@ -1043,24 +1048,24 @@ export function VotingPage() {
     // Si el usuario ha votado pero no están visibles para todos, mostrar gracias
     if (hasVoted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-            <Vote className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 text-center border-blue-300/60 bg-white/90 shadow-[0_30px_70px_-40px_rgba(30,64,175,0.6)] dark:border-blue-500/30 dark:bg-slate-900/85">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
+            <Vote className="w-8 h-8 text-blue-600 dark:text-blue-300" />
           </div>
           <h1 className="text-xl font-bold mb-2">¡Gracias por votar!</h1>
           <p className="text-muted-foreground">
             Tu voto ha sido registrado para la votación "{activeRound?.title}".
           </p>
           {voteHashCode && (
-            <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1">Tu código de verificación:</p>
+            <div className="mt-4 p-4 bg-blue-50/90 dark:bg-blue-950/35 border border-blue-300/70 dark:border-blue-500/40 rounded-2xl">
+              <p className="text-xs uppercase tracking-wide text-blue-700 dark:text-blue-300 mb-1">Tu código de verificación:</p>
               <div className="flex items-center justify-center gap-2">
-                <p className="text-lg font-mono font-bold text-green-700 dark:text-green-300">{voteHashCode}</p>
+                <p className="text-lg font-mono font-bold text-blue-800 dark:text-blue-200">{voteHashCode}</p>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0"
+                  className="h-7 w-7 p-0 text-blue-700 hover:bg-blue-200/70 dark:text-blue-200 dark:hover:bg-blue-700/40"
                   onClick={() => {
                     navigator.clipboard.writeText(voteHashCode);
                     toast({ title: 'Copiado', description: 'Código copiado al portapapeles' });
@@ -1073,7 +1078,7 @@ export function VotingPage() {
             </div>
           )}
           {voteReceipt && (
-            <div className="mt-4 p-3 bg-muted/40 border rounded-lg text-left">
+            <div className="mt-4 p-4 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-300/70 dark:border-slate-700 rounded-2xl text-left">
               <p className="text-xs text-muted-foreground mb-2">Tus 3 votos emitidos (papeleta):</p>
               <div className="space-y-1 text-sm">
                 <p>1. {voteReceipt.votes[0] || '-'}</p>
@@ -1097,8 +1102,8 @@ export function VotingPage() {
       />
 
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">{activeRound.title}</h1>
+        <div className="mb-8 rounded-3xl border border-blue-300/60 bg-white/70 px-5 py-6 text-center shadow-[0_28px_60px_-38px_rgba(37,99,235,0.8)] backdrop-blur-md dark:border-blue-500/25 dark:bg-slate-900/72">
+          <h1 className="bg-gradient-to-r from-blue-700 via-cyan-600 to-indigo-600 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl">{activeRound.title}</h1>
           {activeRound.description && (
             <p className="text-muted-foreground text-lg mb-4">{activeRound.description}</p>
           )}
@@ -1124,8 +1129,8 @@ export function VotingPage() {
       </div>
 
       {/* Floating action bar: vote/clear without scrolling to the page bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky inset-x-0 bottom-4 z-40 px-4 pb-3">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-2xl border border-blue-300/60 bg-white px-4 py-3 shadow-[0_28px_60px_-34px_rgba(37,99,235,0.9)] dark:border-blue-500/25 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium">
               {selectedCandidates.length > 0
@@ -1137,12 +1142,15 @@ export function VotingPage() {
                 {selectedCandidateNames.join(', ')}
               </p>
             )}
+            <p className="mt-1 text-xs text-muted-foreground">
+              🏆 {activeRound.team} • 🔄 Ronda {activeRound.current_round_number} • 📊 Máximo {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}
+            </p>
           </div>
 
           <div className="flex gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={clearSelection}
               disabled={selectedCandidates.length === 0 || voting}
             >
@@ -1151,6 +1159,7 @@ export function VotingPage() {
             </Button>
             <Button
               type="button"
+              variant="success"
               onClick={openVoteConfirmation}
               disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting}
             >
@@ -1171,24 +1180,32 @@ export function VotingPage() {
       </div>
 
       <AlertDialog open={confirmVoteOpen} onOpenChange={setConfirmVoteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar voto</AlertDialogTitle>
-            <AlertDialogDescription>
+        <AlertDialogContent className="overflow-hidden rounded-3xl border-blue-300/65 bg-white/95 p-0 shadow-[0_36px_80px_-45px_rgba(30,64,175,0.8)] dark:border-blue-500/25 dark:bg-slate-900/92">
+          <AlertDialogHeader className="bg-gradient-to-r from-blue-100/85 via-cyan-100/65 to-indigo-100/75 px-6 pb-4 pt-6 dark:from-blue-950/40 dark:via-cyan-950/30 dark:to-indigo-950/35">
+            <AlertDialogTitle className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Confirmar voto</AlertDialogTitle>
+            <AlertDialogDescription className="max-w-[52ch] text-base leading-relaxed text-slate-700 dark:text-slate-300">
               Estás a punto de votar por estos candidatos. Revisa la selección antes de confirmar.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="rounded-md border bg-muted/40 p-3">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Seleccion actual</p>
-            <div className="space-y-1 text-sm">
+          <div className="px-6 pb-2 pt-4">
+            <div className="rounded-2xl border border-blue-300/65 bg-blue-50/70 p-4 dark:border-blue-500/30 dark:bg-blue-950/25">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">Seleccion actual</p>
+              <div className="space-y-1 text-sm font-medium text-slate-800 dark:text-slate-200">
               {selectedCandidateNames.map((name, index) => (
                 <p key={`${name}-${index}`}>{index + 1}. {name}</p>
               ))}
+              </div>
             </div>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={voting}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2 px-6 pb-6 pt-2">
+            <AlertDialogCancel
+              disabled={voting}
+              className="mt-0 h-11 rounded-xl border-slate-300/80 bg-white/80 px-5 text-slate-800 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100"
+            >
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
+              className="h-11 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-6 text-white shadow-[0_18px_34px_-18px_rgba(5,150,105,0.9)] hover:opacity-95"
               onClick={(event) => {
                 event.preventDefault();
                 setConfirmVoteOpen(false);

@@ -100,9 +100,10 @@ export function CandidateCard({
         "cursor-pointer transition-all duration-200 relative group",
         "hover:shadow-md hover:border-primary/40",
         isSelected && [
-          "ring-[3px] ring-primary/60 border-primary",
-          "shadow-lg shadow-primary/10",
-          "scale-[1.02]",
+          "border-2 border-primary/80 dark:border-cyan-400/80",
+          "shadow-[inset_0_0_0_1px_rgba(14,165,233,0.2)]",
+          "shadow-lg shadow-primary/20",
+          // Removed scale-[1.02] so it doesn't get clipped by the accordion's hidden overflow
         ],
         disabled && "opacity-60 pointer-events-none"
       )}
@@ -113,16 +114,16 @@ export function CandidateCard({
         className={cn(
           "absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
           isSelected
-            ? "bg-primary text-primary-foreground scale-100 opacity-100"
+            ? "bg-primary text-primary-foreground opacity-100"
             : "bg-muted/80 text-muted-foreground scale-75 opacity-0 group-hover:opacity-60 group-hover:scale-90"
         )}
       >
         <Check className="w-5 h-5" strokeWidth={3} />
       </div>
 
-      <CardHeader className="pb-3">
+      <CardHeader className="p-4 pb-2">
         {/* Imagen o avatar fallback */}
-        <div className="aspect-square overflow-hidden rounded-lg mb-3">
+        <div className="aspect-square overflow-hidden rounded-lg mb-2">
           {candidate.image_url ? (
             <img
               src={candidate.image_url}
@@ -160,7 +161,7 @@ export function CandidateCard({
       </CardHeader>
 
       {candidate.description && (
-        <CardContent className="pt-0">
+        <CardContent className="px-4 pt-0 pb-4">
           <p className="text-sm text-muted-foreground line-clamp-3">
             {candidate.description}
           </p>

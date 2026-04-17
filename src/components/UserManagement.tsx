@@ -123,7 +123,7 @@ export function UserManagement() {
 
   if (!isSuperAdmin) {
     return (
-      <Card>
+      <Card className="admin-shell">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
@@ -141,7 +141,7 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="admin-shell">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -164,7 +164,7 @@ export function UserManagement() {
         </CardHeader>
         <CardContent>
           {showCreateForm && (
-            <Card className="mb-6">
+            <Card className="admin-soft mb-6">
               <CardHeader>
                 <CardTitle className="text-lg">Crear Nuevo Usuario Administrador</CardTitle>
               </CardHeader>
@@ -302,7 +302,7 @@ export function UserManagement() {
             ) : (
               <div className="grid gap-4">
                 {users.map((user) => (
-                  <Card key={user.id}>
+                  <Card key={user.id} className="admin-soft">
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">

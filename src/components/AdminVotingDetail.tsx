@@ -1135,7 +1135,7 @@ export function AdminVotingDetail() {
 
   if (!round) {
     return (
-      <Card>
+      <Card className="admin-shell mx-auto max-w-2xl">
         <CardContent className="py-8 text-center">
           No se encontro la votacion solicitada.
         </CardContent>
@@ -1144,74 +1144,95 @@ export function AdminVotingDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-6 md:py-8">
+    <div className="admin-canvas min-h-screen">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-6 md:py-8">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <Button variant="outline" size="sm" onClick={() => navigate("/admin/dashboard")}> 
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a votaciones
         </Button>
-        <div className="flex items-center gap-2 rounded-xl border bg-muted/40 px-3 py-2">
-          <Button size="sm" variant="outline" asChild>
-            <a href="/proyeccion" target="_blank" rel="noreferrer" className="font-medium">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            asChild
+            className="h-11 min-w-[178px] justify-between rounded-xl px-4 text-white shadow-[0_18px_34px_-18px_rgba(37,99,235,0.9)]"
+          >
+            <a href="/proyeccion" target="_blank" rel="noreferrer" className="font-semibold">
               Ir a proyeccion
               <ArrowUpRight className="w-4 h-4 ml-2" />
             </a>
           </Button>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2 rounded-xl border border-blue-300/60 bg-white/75 px-3 py-2 text-xs dark:border-blue-500/25 dark:bg-slate-900/70">
             <span
               className={`rounded-full border px-2.5 py-1 font-medium ${
                 roomIsOpen
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200"
                   : ""
               }`}
             >
               {roundStatusLabel}
             </span>
-            <span className="rounded-full border bg-background px-2.5 py-1 font-medium">Ronda {round.current_round_number}</span>
+            <span className="admin-chip">Ronda {round.current_round_number}</span>
           </div>
         </div>
       </div>
 
-      <section className="space-y-4 rounded-2xl border bg-card p-5 md:p-6">
+      <section className="admin-shell space-y-4 p-5 md:p-6">
         <h1 className="text-xl font-semibold">{round.title}</h1>
         {round.description && <p className="text-sm text-muted-foreground">{round.description}</p>}
 
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Equipo</p>
             <p className="text-sm font-semibold">{round.team}</p>
           </div>
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Cupo</p>
             <p className="text-sm font-semibold">{round.max_votantes}</p>
           </div>
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Conectados</p>
             <p className="text-sm font-semibold">{seatStatus?.occupied_seats ?? 0}</p>
           </div>
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Activos</p>
             <p className="text-sm font-semibold">{activeCandidatesCount}</p>
           </div>
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Codigo sala</p>
             <p className="font-mono text-sm font-semibold">{round.access_code || "----"}</p>
           </div>
-          <div className="rounded-xl border bg-muted/30 px-3 py-2">
+          <div className="admin-soft px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Censo</p>
             <p className="text-sm font-semibold">{round.census_mode === "exact" ? "exacto" : "maximo"}</p>
           </div>
         </div>
 
         <div className="space-y-3">
-          <div className="space-y-2 rounded-xl border px-3 py-3">
+          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Sala y ronda</p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={canPauseRound ? pauseRound : resumeRound} disabled={!canPauseRound && !canResumeRound}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={canPauseRound ? pauseRound : resumeRound}
+                disabled={!canPauseRound && !canResumeRound}
+              >
                 <Pause className="w-4 h-4 mr-2" />
                 {canPauseRound ? "Pausar ronda" : "Reanudar ronda"}
               </Button>
-              <Button size="sm" className="w-full justify-start" variant={workflowActionVariant} onClick={runProjectionWorkflowStep} disabled={workflowActionDisabled}>
+              <Button
+                size="sm"
+                className={`h-11 w-full justify-start rounded-xl px-3 ${
+                  workflowActionVariant === "default"
+                    ? "text-white shadow-[0_18px_34px_-18px_rgba(37,99,235,0.9)]"
+                    : "border border-blue-300/70 bg-white/90 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                }`}
+                variant={workflowActionVariant}
+                onClick={runProjectionWorkflowStep}
+                disabled={workflowActionDisabled}
+              >
                 {(workflowActionLabel === "Iniciar ronda" || workflowActionLabel === "Abrir sala") ? (
                   <Play className="w-4 h-4 mr-2" />
                 ) : (
@@ -1219,41 +1240,88 @@ export function AdminVotingDetail() {
                 )}
                 {workflowActionLabel}
               </Button>
-              <Button size="sm" className="w-full justify-start" variant="destructive" onClick={closeVoting} disabled={round.is_closed}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl px-3 text-white shadow-[0_18px_34px_-18px_rgba(225,29,72,0.9)]"
+                variant="destructive"
+                onClick={closeVoting}
+                disabled={round.is_closed}
+              >
                 Cerrar votacion
               </Button>
             </div>
           </div>
 
-          <div className="space-y-2 rounded-xl border px-3 py-3">
+          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Candidatos</p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={openAddCandidateDialog}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={openAddCandidateDialog}
+              >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Añadir
               </Button>
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={() => setIsImportOpen(true)}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={() => setIsImportOpen(true)}
+              >
                 <FileUp className="w-4 h-4 mr-2" />
                 Importar archivo
               </Button>
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={openComunicaImport}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={openComunicaImport}
+              >
+                <ArrowUpRight className="w-4 h-4 mr-2" />
                 Importar desde Comunica
               </Button>
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={() => setIsDatasetOpen(true)}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={() => setIsDatasetOpen(true)}
+              >
+                <Download className="w-4 h-4 mr-2" />
                 Cargar dataset ejemplo
               </Button>
             </div>
           </div>
 
-          <div className="space-y-2 rounded-xl border px-3 py-3">
+          <div className="space-y-2 rounded-xl border border-blue-300/50 bg-white/50 px-3 py-3 dark:border-blue-500/20 dark:bg-slate-900/45">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Publicacion en proyeccion</p>
               <Badge variant="outline">Proyeccion: {projectionStageLabel}</Badge>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={() => setIsAnalyticsOpen(true)}>Analisis</Button>
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={() => setIsBallotsOpen(true)}>Papeletas</Button>
-              <Button size="sm" className="w-full justify-start" variant="outline" onClick={() => setIsSettingsOpen(true)}>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={() => setIsAnalyticsOpen(true)}
+              >
+                Analisis
+              </Button>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={() => setIsBallotsOpen(true)}
+              >
+                Papeletas
+              </Button>
+              <Button
+                size="sm"
+                className="h-11 w-full justify-start rounded-xl border border-blue-300/70 bg-white/90 px-3 text-slate-800 shadow-sm hover:bg-blue-50 dark:border-blue-500/30 dark:bg-slate-900/75 dark:text-slate-100"
+                variant="outline"
+                onClick={() => setIsSettingsOpen(true)}
+              >
                 <Settings2 className="w-4 h-4 mr-2" />
                 Ajustes
               </Button>
@@ -1261,7 +1329,7 @@ export function AdminVotingDetail() {
             {selectionQuotaReached && round.round_finalized && (
               <Button
                 size="sm"
-                className="w-full justify-start bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-black hover:opacity-90 animate-pulse"
+                className="w-full justify-start bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 text-white hover:opacity-95 animate-pulse"
                 onClick={toggleFinalResults}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -1279,7 +1347,7 @@ export function AdminVotingDetail() {
             <span className="text-muted-foreground">Seleccionados: {selectedCandidatesCount} / Activos: {activeCandidatesCount}</span>
           </div>
 
-          <div className="overflow-hidden rounded-md border">
+          <div className="overflow-hidden rounded-2xl border border-blue-300/60 bg-white/80 dark:border-blue-500/25 dark:bg-slate-900/75">
             {candidates.length === 0 ? (
               <div className="px-3 py-5 text-sm text-muted-foreground">Todavia no hay candidatos. Usa Añadir o Importar archivo.</div>
             ) : (
@@ -1314,25 +1382,25 @@ export function AdminVotingDetail() {
           <p className="text-xs text-muted-foreground">Dispositivos conectados a la sala "{round.title}"</p>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="rounded-md border p-2">
+            <div className="admin-soft p-2">
               <p className="text-muted-foreground">Ocupados</p>
               <p className="font-medium">{seatStatus?.occupied_seats ?? 0}</p>
             </div>
-            <div className="rounded-md border p-2">
+            <div className="admin-soft p-2">
               <p className="text-muted-foreground">Disponibles</p>
               <p className="font-medium">{seatStatus?.available_seats ?? 0}</p>
             </div>
-            <div className="rounded-md border p-2">
+            <div className="admin-soft p-2">
               <p className="text-muted-foreground">Expirados</p>
               <p className="font-medium">{seatStatus?.expired_seats ?? 0}</p>
             </div>
-            <div className="rounded-md border p-2">
+            <div className="admin-soft p-2">
               <p className="text-muted-foreground">Entrada</p>
               <p className="font-medium">{round.join_locked ? "Bloqueada" : "Abierta"}</p>
             </div>
           </div>
 
-          <div className="max-h-72 overflow-auto rounded-md border">
+          <div className="max-h-72 overflow-auto rounded-2xl border border-blue-300/60 bg-white/80 dark:border-blue-500/25 dark:bg-slate-900/75">
             {seats.length === 0 ? (
               <p className="p-3 text-sm text-muted-foreground">Sin asientos registrados todavia.</p>
             ) : (
@@ -1351,7 +1419,7 @@ export function AdminVotingDetail() {
       </section>
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="admin-shell max-w-2xl">
           <DialogHeader>
             <DialogTitle>Configuracion de la votacion</DialogTitle>
             <DialogDescription>Actualiza codigo de acceso, censo y panel de papeletas en proyeccion.</DialogDescription>
@@ -1407,7 +1475,7 @@ export function AdminVotingDetail() {
 
       {isAnalyticsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setIsAnalyticsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-xl border bg-background shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl border border-blue-300/60 bg-white/90 shadow-2xl dark:border-blue-500/25 dark:bg-slate-950/90" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">Análisis de resultados</h3>
               <Button size="sm" variant="ghost" onClick={() => setIsAnalyticsOpen(false)}>Cerrar</Button>
@@ -1421,7 +1489,7 @@ export function AdminVotingDetail() {
 
       {isBallotsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setIsBallotsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-xl border bg-background shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl border border-blue-300/60 bg-white/90 shadow-2xl dark:border-blue-500/25 dark:bg-slate-950/90" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
               <h3 className="text-sm font-semibold">Revisión de papeletas</h3>
               <div className="flex items-center gap-2">
@@ -1440,7 +1508,7 @@ export function AdminVotingDetail() {
       )}
 
       <Dialog open={isAddCandidateOpen} onOpenChange={setIsAddCandidateOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="admin-shell max-w-xl">
           <DialogHeader>
             <DialogTitle>Añadir candidato</DialogTitle>
             <DialogDescription>Completa los datos principales del candidato.</DialogDescription>
@@ -1479,7 +1547,7 @@ export function AdminVotingDetail() {
       </Dialog>
 
       <Dialog open={isEditCandidateOpen} onOpenChange={setIsEditCandidateOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="admin-shell max-w-xl">
           <DialogHeader>
             <DialogTitle>Editar candidato</DialogTitle>
             <DialogDescription>Actualiza los datos del candidato seleccionado.</DialogDescription>
@@ -1518,7 +1586,7 @@ export function AdminVotingDetail() {
       </Dialog>
 
       <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="admin-shell max-w-xl">
           <DialogHeader>
             <DialogTitle>Importar candidatos</DialogTitle>
             <DialogDescription>Sube un archivo CSV, XML o JSON con los candidatos.</DialogDescription>
@@ -1535,7 +1603,7 @@ export function AdminVotingDetail() {
       </Dialog>
 
       <Dialog open={isDatasetOpen} onOpenChange={setIsDatasetOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="admin-shell max-w-xl">
           <DialogHeader>
             <DialogTitle>Cargar dataset de ejemplo</DialogTitle>
             <DialogDescription>Inserta un dataset predefinido para pruebas rapidas.</DialogDescription>
@@ -1562,6 +1630,7 @@ export function AdminVotingDetail() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

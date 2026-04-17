@@ -193,15 +193,15 @@ export function AdminVotingList() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="admin-shell">
         <CardContent className="pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
+              <span className="admin-chip inline-flex items-center gap-2">
                 <Vote className="w-4 h-4" />
                 {rounds.length} votaciones
               </span>
-              <span className="inline-flex items-center gap-2">
+              <span className="admin-chip inline-flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 {totalActive} activas
               </span>
@@ -214,7 +214,7 @@ export function AdminVotingList() {
                   Crear votacion
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[520px]">
+              <DialogContent className="sm:max-w-[520px] admin-shell">
                 <DialogHeader>
                   <DialogTitle>Nueva votacion</DialogTitle>
                   <DialogDescription>
@@ -319,7 +319,7 @@ export function AdminVotingList() {
                     </div>
                   </div>
 
-                  <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                  <p className="admin-soft rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
                     El codigo de sala se genera automaticamente con 4 caracteres alfanumericos.
                   </p>
                 </div>
@@ -339,14 +339,14 @@ export function AdminVotingList() {
       </Card>
 
       {rounds.length === 0 ? (
-        <Card>
+        <Card className="admin-shell">
           <CardContent className="py-8 text-center text-muted-foreground">
             No hay votaciones creadas todavia.
           </CardContent>
         </Card>
       ) : (
         rounds.map((round) => (
-          <Card key={round.id}>
+          <Card key={round.id} className="admin-shell">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
@@ -366,15 +366,15 @@ export function AdminVotingList() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-3 text-sm">
-                <div>
+                <div className="admin-soft p-3">
                   <p className="text-muted-foreground">Ronda actual</p>
                   <p className="font-medium">{round.current_round_number}</p>
                 </div>
-                <div>
+                <div className="admin-soft p-3">
                   <p className="text-muted-foreground">Conectados/votos ronda</p>
                   <p className="font-medium">{round.votes_current_round} / {round.max_votantes}</p>
                 </div>
-                <div>
+                <div className="admin-soft p-3">
                   <p className="text-muted-foreground">Entrada</p>
                   <p className="font-medium">{round.join_locked ? "Bloqueada" : "Abierta"}</p>
                 </div>

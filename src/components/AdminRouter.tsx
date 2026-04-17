@@ -40,8 +40,8 @@ export function AdminRouter() {
   // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Cargando...</p>
         </Card>
@@ -61,10 +61,10 @@ export function AdminRouter() {
   // User is authenticated but not an admin
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/15 flex items-center justify-center">
               <Shield className="w-8 h-8 text-destructive" />
             </div>
             <CardTitle className="text-2xl">Acceso Denegado</CardTitle>

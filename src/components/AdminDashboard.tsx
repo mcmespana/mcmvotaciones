@@ -201,8 +201,8 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
+        <Card className="admin-shell w-full max-w-md p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Cargando panel...</p>
         </Card>
@@ -211,17 +211,17 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-canvas min-h-screen">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 border-b border-blue-300/50 bg-white/70 backdrop-blur-md dark:border-blue-500/20 dark:bg-slate-900/65">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">Panel de Administración</h1>
             <p className="text-sm text-muted-foreground">
               Bienvenido, {adminUser?.name} ({adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'})
             </p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
+          <Button variant="outline" className="bg-white/80 dark:bg-slate-800/80" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />
             Cerrar sesión
           </Button>
@@ -230,7 +230,7 @@ export function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <TabsList className={`admin-shell grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Dashboard
@@ -250,61 +250,61 @@ export function AdminDashboard() {
           <TabsContent value="dashboard" className="space-y-6">
             {/* Stats Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
+              <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Votaciones Totales
                   </CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalRounds}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="admin-chip mt-2 inline-flex">
                     {stats.activeRounds} activas
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Votos Emitidos
                   </CardTitle>
-                  <Vote className="h-4 w-4 text-muted-foreground" />
+                  <Vote className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalVotes}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="admin-chip mt-2 inline-flex">
                     Total acumulado
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Candidatos
                   </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalCandidates}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="admin-chip mt-2 inline-flex">
                     En todas las rondas
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="admin-shell">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Estado del Sistema
                   </CardTitle>
-                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <Settings className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">●</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-2xl font-bold text-emerald-500">●</div>
+                  <p className="admin-chip mt-2 inline-flex">
                     Sistema operativo
                   </p>
                 </CardContent>
@@ -313,7 +313,7 @@ export function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Plus className="w-5 h-5" />
@@ -330,7 +330,7 @@ export function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
@@ -347,7 +347,7 @@ export function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="admin-shell hover:border-blue-500/60 transition-colors cursor-pointer">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Download className="w-5 h-5" />
@@ -366,7 +366,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Recent Activity */}
-            <Card>
+            <Card className="admin-shell">
               <CardHeader>
                 <CardTitle>Actividad Reciente</CardTitle>
               </CardHeader>

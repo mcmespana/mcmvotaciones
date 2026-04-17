@@ -1,4 +1,5 @@
 import * as React from "react"
+import { TextArea as HeroTextarea } from "@heroui/react"
 
 import { cn } from "@/lib/utils"
 
@@ -7,12 +8,15 @@ export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
     return (
-      <textarea
-        className={cn(
-          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
-        ref={ref}
+      <HeroTextarea
+        variant="bordered"
+        radius="lg"
+        minRows={3}
+        className={cn("w-full", className)}
+        classNames={{
+          inputWrapper: "rounded-3xl border-input bg-input/70 backdrop-blur-sm",
+        }}
+        ref={ref as React.Ref<HTMLTextAreaElement>}
         {...props}
       />
     )

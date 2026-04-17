@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Chip } from "@heroui/react"
 
 import { cn } from "@/lib/utils"
 
@@ -28,8 +29,28 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
+  const chipVariantMap: Record<NonNullable<BadgeProps["variant"]>, "solid" | "flat" | "bordered"> = {
+    default: "solid",
+    secondary: "flat",
+    destructive: "solid",
+    outline: "bordered",
+  }
+
+  const chipColorMap: Record<NonNullable<BadgeProps["variant"]>, "primary" | "default" | "danger"> = {
+    default: "primary",
+    secondary: "default",
+    destructive: "danger",
+    outline: "default",
+  }
+
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <Chip
+      variant={chipVariantMap[variant ?? "default"]}
+      color={chipColorMap[variant ?? "default"]}
+      radius="full"
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
   )
 }
 

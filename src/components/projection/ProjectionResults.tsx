@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { Trophy, Award, Medal } from "lucide-react";
+import { Award, Medal, Trophy } from "lucide-react";
+import { Chip, Meter, Skeleton, Surface, Tabs } from "@heroui/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 
 interface Candidate {
@@ -65,6 +67,16 @@ export function ProjectionResults({
     [results]
   );
 
+  const selectedIds = useMemo(
+    () => new Set(selectedCandidates.map((candidate) => candidate.id)),
+    [selectedCandidates]
+  );
+
+  const rankingIndexByCandidateId = useMemo(
+    () => new Map(displayResults.map((result, index) => [result.candidate_id, index])),
+    [displayResults]
+  );
+
   useEffect(() => {
     setRevealedCount(0);
     setShowSelected(false);
@@ -93,161 +105,193 @@ export function ProjectionResults({
   const maxVotes = displayResults.length > 0 ? displayResults[0].vote_count : 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 text-white flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="px-12 py-8 border-b border-white/10 text-center">
-        <h1 className="text-4xl font-bold mb-1">
-          📊 Resultados — Ronda {roundNumber}
-        </h1>
-        <p className="text-white/50 text-lg">
-          {roundTitle} · 🏆 {team}
-        </p>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 text-slate-900 dark:from-slate-950 dark:via-blue-950/40 dark:to-slate-950 dark:text-slate-100">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-8%] top-[-6%] h-[380px] w-[380px] rounded-full bg-cyan-500/25 blur-3xl dark:bg-cyan-500/15" />
+        <div className="absolute bottom-[-10%] right-[-12%] h-[380px] w-[380px] rounded-full bg-indigo-500/20 blur-3xl dark:bg-indigo-500/20" />
       </div>
 
-      <div className="flex-1 flex gap-8 px-12 py-8 overflow-hidden">
-        {/* Results list (left side - larger) */}
-        <div className="flex-1 overflow-y-auto pr-4 space-y-3">
-          {displayResults.map((result, index) => {
-            const candidate = candidates.find(
-              (c) => c.id === result.candidate_id
-            );
-            if (!candidate) return null;
-
-            const isRevealed = revealedIds.has(result.candidate_id);
-            const isTopCandidate = candidate.is_selected;
-            const medal = index < 3 ? MEDAL_ICONS[index] : null;
-            const MedalIcon = medal?.icon;
-            const barWidth = maxVotes > 0 ? (result.vote_count / maxVotes) * 100 : 0;
-
-            return (
-              <div
-                key={result.candidate_id}
-                className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-700 ${
-                  isRevealed
-                    ? isTopCandidate
-                      ? "bg-green-500/10 border-green-500/30 scale-100 opacity-100"
-                      : "bg-white/5 border-white/10 scale-100 opacity-100"
-                    : "bg-transparent border-transparent scale-95 opacity-0"
-                }`}
-              >
-                {/* Position */}
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xl ${
-                    medal
-                      ? `${medal.bg} ${medal.color}`
-                      : isTopCandidate
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-white/10 text-white/60"
-                  }`}
-                >
-                  {MedalIcon ? (
-                    <MedalIcon className="w-7 h-7" />
-                  ) : isTopCandidate ? (
-                    "✓"
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl font-bold truncate">
-                      {candidate.name} {candidate.surname}
-                    </span>
-                    {isTopCandidate && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-500 text-white font-medium flex-shrink-0">
-                        SELECCIONADO
-                      </span>
-                    )}
-                  </div>
-                  {/* Progress bar */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-white/10 rounded-full h-3 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                          isTopCandidate ? "bg-green-500" : "bg-primary"
-                        }`}
-                        style={{
-                          width: isRevealed ? `${barWidth}%` : "0%",
-                          transitionDelay: "300ms",
-                        }}
-                      />
-                    </div>
-                    <span className="text-lg font-bold tabular-nums w-20 text-right">
-                      {isRevealed ? `${result.percentage.toFixed(1)}%` : "—"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Vote count */}
-                <div className="text-right flex-shrink-0">
-                  <div className="text-3xl font-bold tabular-nums">
-                    {isRevealed ? result.vote_count : "?"}
-                  </div>
-                  <div className="text-xs text-white/40 uppercase">votos</div>
-                </div>
+      <div className="relative z-10 flex min-h-screen w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <Surface className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-[0_32px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-md dark:border-white/10 dark:bg-slate-900/75">
+          <div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                Resultados - Ronda {roundNumber}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Chip color="warning" variant="flat" className="font-semibold">🏆 {team}</Chip>
+                <Chip color="primary" variant="bordered" className="font-semibold">{roundTitle}</Chip>
+                <Chip color="default" variant="bordered" className="font-semibold">{displayResults.length} evaluadas</Chip>
+                <Chip color="success" variant="flat" className="font-semibold">{selectedCandidates.length} seleccionados</Chip>
+                <Chip color="primary" variant="flat" className="font-semibold">Ronda {roundNumber}</Chip>
               </div>
-            );
-          })}
-        </div>
-
-        {/* Selected candidates panel (right side) */}
-        {showSelected && selectedCandidates.length > 0 && (
-          <div
-            className="w-80 flex-shrink-0 border-l border-white/10 pl-8 transition-all duration-1000 animate-in slide-in-from-right"
-          >
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Trophy className="w-7 h-7 text-yellow-400" />
-              Seleccionados
-            </h2>
-            <div className="space-y-4">
-              {selectedCandidates.map((candidate) => (
-                <div
-                  key={candidate.id}
-                  className="p-4 rounded-xl bg-green-500/10 border-2 border-green-500/30"
-                >
-                  <div className="font-bold text-lg text-green-300">
-                    {candidate.name} {candidate.surname}
-                  </div>
-                  {candidate.location && (
-                    <div className="text-sm text-green-400/60 mt-1">
-                      📍 {candidate.location}
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
-        )}
-      </div>
+        </Surface>
 
-      {showBallotSummary && (
-        <div className="px-12 pb-8">
-          <div className="w-full rounded-xl border border-white/15 bg-white/5 p-4">
-            <p className="text-sm uppercase tracking-wide text-white/70 mb-3">Papeletas publicadas</p>
-            {ballotSummaries.length === 0 ? (
-              <p className="text-sm text-white/50">Aun no hay papeletas validas registradas.</p>
-            ) : (
-              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                {ballotSummaries.map((ballot) => (
-                  <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} className="rounded-lg border border-white/10 bg-black/20 p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-mono text-sm font-bold">{ballot.voteCode}</p>
-                      <p className="text-xs text-white/50">R{ballot.roundNumber}</p>
+        <Card className="border-0 bg-transparent shadow-none">
+          <CardContent className="px-0 pt-2">
+            <Tabs.Root
+              key={showBallotSummary ? "ballots" : "results"}
+              defaultSelectedKey={showBallotSummary ? "ballots" : "results"}
+              className="w-full"
+            >
+
+              <Tabs.Panel id="results" className="pt-2">
+                <div
+                  className={`grid gap-6 ${
+                    showSelected && selectedCandidates.length > 0
+                      ? "items-stretch lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)]"
+                      : "grid-cols-1"
+                  }`}
+                >
+                  <section className="h-full rounded-2xl bg-white/60 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:bg-slate-900/55">
+                    <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Resultados</h3>
+                    {displayResults.length === 0 && (
+                      <p className="text-sm text-slate-600 dark:text-slate-300">No hay resultados para mostrar.</p>
+                    )}
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {displayResults.map((result) => {
+                        const candidate = candidates.find((c) => c.id === result.candidate_id);
+                        if (!candidate) {
+                          return null;
+                        }
+
+                        const isRevealed = revealedIds.has(result.candidate_id);
+                        const isTopCandidate = selectedIds.has(result.candidate_id);
+                        const rankingIndex = rankingIndexByCandidateId.get(result.candidate_id) ?? 0;
+                        const medal = rankingIndex < 3 ? MEDAL_ICONS[rankingIndex] : null;
+                        const MedalIcon = medal?.icon;
+
+                        if (!isRevealed) {
+                          return <Skeleton key={result.candidate_id} className="h-28 w-full rounded-2xl" />;
+                        }
+
+                        return (
+                          <div
+                            key={result.candidate_id}
+                            className={`h-full rounded-2xl border-2 p-4 transition-all duration-700 ${
+                              isTopCandidate
+                                ? "border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/35"
+                                : "border-slate-300/75 bg-white/90 dark:border-slate-700 dark:bg-slate-900/75"
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div
+                                className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-black ${
+                                  medal
+                                    ? `${medal.bg} ${medal.color}`
+                                    : isTopCandidate
+                                      ? "bg-emerald-600 text-white"
+                                      : "bg-blue-500/15 text-blue-700 dark:bg-blue-500/25 dark:text-blue-200"
+                                }`}
+                              >
+                                {MedalIcon ? <MedalIcon className="h-6 w-6" /> : rankingIndex + 1}
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className="truncate text-lg font-bold text-slate-900 dark:text-slate-100">
+                                    {candidate.name} {candidate.surname}
+                                  </p>
+                                  {isTopCandidate && (
+                                    <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                      SELECCIONADO
+                                    </span>
+                                  )}
+                                </div>
+                                {candidate.location && (
+                                  <p className="text-sm text-slate-500 dark:text-slate-400">{candidate.location}</p>
+                                )}
+                              </div>
+
+                              <div className="text-right">
+                                <p className="text-3xl font-black tabular-nums text-slate-900 dark:text-white">
+                                  {result.vote_count}
+                                </p>
+                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">votos</p>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex items-center gap-3">
+                              <Meter
+                                aria-label={`Porcentaje ${candidate.name} ${candidate.surname}`}
+                                value={result.vote_count}
+                                minValue={0}
+                                maxValue={Math.max(maxVotes, 1)}
+                                className="w-full [&_[data-slot=meter-track]]:h-2.5 [&_[data-slot=meter-track]]:bg-slate-200 dark:[&_[data-slot=meter-track]]:bg-slate-700"
+                              />
+                              <span className="w-20 text-right text-lg font-black tabular-nums text-slate-900 dark:text-slate-100">
+                                {result.percentage.toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="space-y-1 text-sm">
-                      <p>1. {ballot.votes[0] || "-"}</p>
-                      <p>2. {ballot.votes[1] || "-"}</p>
-                      <p>3. {ballot.votes[2] || "-"}</p>
+                  </section>
+
+                  {showSelected && selectedCandidates.length > 0 && (
+                    <aside className="h-full rounded-2xl bg-white/60 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:bg-slate-900/55">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Trophy className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+                        <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-200">Seleccionados</h3>
+                      </div>
+
+                      <div className="divide-y divide-slate-300/70 dark:divide-slate-700/80">
+                        {selectedCandidates.map((candidate) => (
+                          <div key={candidate.id} className="py-3 first:pt-1">
+                            <p className="font-bold text-emerald-800 dark:text-emerald-100">
+                              {candidate.name} {candidate.surname}
+                            </p>
+                            {candidate.location && (
+                              <p className="text-sm text-emerald-700/85 dark:text-emerald-300/85">{candidate.location}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </aside>
+                  )}
+                </div>
+              </Tabs.Panel>
+
+              {showBallotSummary && (
+                <Tabs.Panel id="ballots" className="pt-2">
+                  {ballotSummaries.length === 0 ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-slate-600 dark:text-slate-300">Aun no hay papeletas validas registradas.</p>
+                      <div className="grid gap-3 md:grid-cols-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                          <Skeleton key={index} className="h-28 w-full rounded-2xl" />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+                  ) : (
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      {ballotSummaries.map((ballot) => (
+                        <div
+                          key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`}
+                          className="rounded-2xl border border-slate-300/80 bg-white/90 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/80"
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <p className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{ballot.voteCode}</p>
+                            <Chip size="sm" color="primary" variant="flat">R{ballot.roundNumber}</Chip>
+                          </div>
+                          <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                            <p>1. {ballot.votes[0] || "-"}</p>
+                            <p>2. {ballot.votes[1] || "-"}</p>
+                            <p>3. {ballot.votes[2] || "-"}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Tabs.Panel>
+              )}
+            </Tabs.Root>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

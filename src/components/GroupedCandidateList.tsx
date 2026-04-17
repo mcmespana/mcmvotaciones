@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { CandidateCard } from "@/components/CandidateCard";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Users, MapPin, ChevronDown, ChevronRight } from "lucide-react";
+import { Accordion, Chip, Surface } from "@heroui/react";
+import { Users, MapPin } from "lucide-react";
 
 interface Candidate {
   id: string;
@@ -115,46 +115,37 @@ export function GroupedCandidateList({
     () => groupCandidates(candidates),
     [candidates]
   );
-  const [collapsedLocations, setCollapsedLocations] = useState<Record<string, boolean>>({});
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
+  const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(false);
 
   useEffect(() => {
-    setCollapsedLocations((prev) => {
-      const next = { ...prev };
-      for (const loc of locationGroups) {
-        if (!(loc.location in next)) {
-          next[loc.location] = false;
-        }
-      }
-      return next;
-    });
+    const allKeys = locationGroups.map((locGroup) => `loc-${slugify(locGroup.location)}`);
 
-    setCollapsedGroups((prev) => {
-      const next = { ...prev };
-      for (const loc of locationGroups) {
-        for (const group of loc.groups) {
-          const key = `${loc.location}::${group.groupName}`;
-          if (!(key in next)) {
-            next[key] = false;
-          }
-        }
-      }
-      return next;
+    setExpandedLocationKeys((prev) => {
+      const keepExisting = prev.filter((key) => allKeys.includes(key));
+      return keepExisting.length > 0 ? keepExisting : allKeys;
     });
   }, [locationGroups]);
 
-  const toggleLocation = (location: string) => {
-    setCollapsedLocations((prev) => ({ ...prev, [location]: !prev[location] }));
-  };
-
-  const toggleGroup = (location: string, groupName: string) => {
-    const key = `${location}::${groupName}`;
-    setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const scrollToLocation = (location: string) => {
     const target = document.getElementById(`loc-${slugify(location)}`);
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const openAndScrollToLocation = (location: string) => {
+    const key = `loc-${slugify(location)}`;
+
+    setExpandedLocationKeys((prev) =>
+      prev.includes(key) ? prev : [...prev, key]
+    );
+
+    setIsMobileIndexOpen(false);
+
+    window.setTimeout(() => {
+      scrollToLocation(location);
+    }, 80);
   };
 
   // If there's only one location and one group, don't show headers (flat layout)
@@ -179,101 +170,144 @@ export function GroupedCandidateList({
 
   return (
     <div className="space-y-8">
-      {/* Dynamic index for quick navigation between location blocks */}
-      <div className="sticky top-0 z-20 rounded-xl border bg-background/95 p-3 backdrop-blur-sm">
+      <Surface className="sticky top-2 z-30 rounded-2xl border border-blue-300/60 bg-white/90 p-3 shadow-[0_24px_48px_-32px_rgba(37,99,235,0.9)] backdrop-blur-md dark:border-blue-500/25 dark:bg-slate-900/85 md:top-4">
         <div className="mb-2 flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Indice dinamico</p>
-          <p className="text-xs text-muted-foreground">{locationGroups.length} zonas</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-muted-foreground">{locationGroups.length} zonas</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2 text-xs md:hidden"
+              onClick={() => setIsMobileIndexOpen((prev) => !prev)}
+            >
+              {isMobileIndexOpen ? "Ocultar" : "Mostrar"}
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className={`${isMobileIndexOpen ? "flex" : "hidden"} max-h-48 flex-wrap gap-2 overflow-y-auto pr-1 md:flex md:max-h-none md:overflow-visible`}>
           {locationGroups.map((locGroup) => (
             <Button
+              type="button"
               key={`index-${locGroup.location}`}
               size="sm"
               variant="outline"
-              className="h-8"
-              onClick={() => scrollToLocation(locGroup.location)}
+              className="h-10 rounded-xl border-2 border-blue-300/80 bg-white px-3 text-slate-800 shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-50 hover:shadow-[0_14px_28px_-18px_rgba(37,99,235,0.95)] active:translate-y-0 active:scale-[0.98] dark:border-blue-500/35 dark:bg-slate-900/85 dark:text-slate-100 dark:hover:border-blue-400/55 dark:hover:bg-blue-950/35"
+              onClick={() => openAndScrollToLocation(locGroup.location)}
             >
               {locGroup.location}
-              <Badge variant="secondary" className="ml-2 text-xs">{locGroup.totalCount}</Badge>
+              <Chip size="sm" variant="soft" color="accent" className="ml-2 font-semibold">{locGroup.totalCount}</Chip>
             </Button>
           ))}
         </div>
-      </div>
+      </Surface>
 
-      {locationGroups.map((locGroup) => (
-        <div key={locGroup.location} id={`loc-${slugify(locGroup.location)}`}>
-          {/* Location Header */}
-          <div className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm border-b border-border pb-2 mb-4">
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 text-left text-lg font-semibold"
-              onClick={() => toggleLocation(locGroup.location)}
-            >
-              {collapsedLocations[locGroup.location] ? (
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-              )}
-              <MapPin className="w-5 h-5 text-primary" />
-              <span>{locGroup.location}</span>
-              <span className="text-sm font-normal text-muted-foreground ml-auto">
-                {locGroup.totalCount} persona
-                {locGroup.totalCount !== 1 ? "s" : ""}
-              </span>
-            </button>
-          </div>
+      <Accordion.Root
+        allowsMultipleExpanded
+        expandedKeys={expandedLocationKeys}
+        onExpandedChange={(keys) => {
+          const normalized = Array.from(keys as Iterable<string | number>).map((value) => String(value));
+          setExpandedLocationKeys(normalized);
+        }}
+        variant="surface"
+        className="space-y-3"
+      >
+        {locationGroups.map((locGroup) => {
+          const locationKey = `loc-${slugify(locGroup.location)}`;
 
-          {!collapsedLocations[locGroup.location] && (
-            <div className="space-y-6">
-            {locGroup.groups.map((group) => (
-              <div key={`${locGroup.location}-${group.groupName}`}>
-                {/* Group Sub-Header (only if there are multiple groups) */}
-                {locGroup.groups.length > 1 && (
-                  <button
-                    type="button"
-                    className="mb-3 flex w-full items-center gap-2 pl-1 text-left text-sm font-medium text-muted-foreground"
-                    onClick={() => toggleGroup(locGroup.location, group.groupName)}
-                  >
-                    {collapsedGroups[`${locGroup.location}::${group.groupName}`] ? (
-                      <ChevronRight className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                    <Users className="w-4 h-4" />
-                    <span>{group.groupName}</span>
-                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
-                      {group.candidates.length}
-                    </span>
-                    {group.avgAge !== Infinity && (
-                      <span className="text-xs text-muted-foreground/70">
-                        · Edad media:{" "}
-                        {Math.round(group.avgAge)} años
+          return (
+            <div key={locationKey} id={locationKey} className="scroll-mt-28">
+              <Accordion.Item
+                id={locationKey}
+                className="rounded-2xl border border-blue-300/60 bg-white/80 px-1 dark:border-blue-500/25 dark:bg-slate-900/78"
+              >
+                <Accordion.Heading>
+                  <Accordion.Trigger className="px-3 py-3 hover:no-underline">
+                    <div className="flex w-full items-center gap-2 text-left">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <span className="text-lg font-semibold">{locGroup.location}</span>
+                      <span className="ml-auto text-sm font-normal text-muted-foreground">
+                        {locGroup.totalCount} persona{locGroup.totalCount !== 1 ? "s" : ""}
                       </span>
-                    )}
-                  </button>
-                )}
+                    </div>
+                  </Accordion.Trigger>
+                </Accordion.Heading>
 
-                {/* Candidate Grid */}
-                {!collapsedGroups[`${locGroup.location}::${group.groupName}`] && (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {group.candidates.map((candidate) => (
-                      <CandidateCard
-                        key={candidate.id}
-                        candidate={candidate}
-                        isSelected={selectedCandidates.includes(candidate.id)}
-                        onToggle={onToggleCandidate}
-                        disabled={disabled}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                <Accordion.Panel>
+                  <Accordion.Body className="px-3 pb-4">
+                    {locGroup.groups.length > 1 ? (
+                      <Accordion.Root
+                        allowsMultipleExpanded
+                        defaultExpandedKeys={locGroup.groups.map((group) => `${locationKey}::${slugify(group.groupName)}`)}
+                        variant="default"
+                        className="space-y-2"
+                      >
+                        {locGroup.groups.map((group) => {
+                          const groupKey = `${locationKey}::${slugify(group.groupName)}`;
+
+                          return (
+                            <Accordion.Item
+                              key={groupKey}
+                              id={groupKey}
+                              className="rounded-xl border border-blue-200/70 bg-white/80 dark:border-blue-500/20 dark:bg-slate-900/65"
+                            >
+                              <Accordion.Heading>
+                                <Accordion.Trigger className="px-3 py-2.5 hover:no-underline">
+                                  <div className="flex w-full items-center gap-2 text-left">
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium text-muted-foreground">{group.groupName}</span>
+                                    <Chip size="sm" variant="soft" color="default" className="font-semibold">
+                                      {group.candidates.length}
+                                    </Chip>
+                                    {group.avgAge !== Infinity && (
+                                      <span className="text-xs text-muted-foreground/70">
+                                        Edad media: {Math.round(group.avgAge)} anios
+                                      </span>
+                                    )}
+                                  </div>
+                                </Accordion.Trigger>
+                              </Accordion.Heading>
+
+                              <Accordion.Panel>
+                                <Accordion.Body className="px-2 pb-3">
+                                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {group.candidates.map((candidate) => (
+                                      <CandidateCard
+                                        key={candidate.id}
+                                        candidate={candidate}
+                                        isSelected={selectedCandidates.includes(candidate.id)}
+                                        onToggle={onToggleCandidate}
+                                        disabled={disabled}
+                                      />
+                                    ))}
+                                  </div>
+                                </Accordion.Body>
+                              </Accordion.Panel>
+                            </Accordion.Item>
+                          );
+                        })}
+                      </Accordion.Root>
+                    ) : (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {locGroup.groups[0].candidates.map((candidate) => (
+                          <CandidateCard
+                            key={candidate.id}
+                            candidate={candidate}
+                            isSelected={selectedCandidates.includes(candidate.id)}
+                            onToggle={onToggleCandidate}
+                            disabled={disabled}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </Accordion.Body>
+                </Accordion.Panel>
+              </Accordion.Item>
             </div>
-          )}
-        </div>
-      ))}
+          );
+        })}
+      </Accordion.Root>
     </div>
   );
 }

@@ -9,6 +9,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    cssMinify: "lightningcss",
+  },
   plugins: [
     react(),
     mode === 'development' &&
