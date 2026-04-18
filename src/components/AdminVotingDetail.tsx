@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
-import { ArrowLeft, ArrowUpRight, Download, FileUp, Pause, Pencil, Play, RefreshCw, Settings2, Sparkles, StepForward, Trash2, UserPlus, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Download, FileUp, Pause, Pencil, Play, RefreshCw, Settings2, Sparkles, StepForward, Trash2, UserPlus, XCircle, MonitorOff } from "lucide-react";
 import { ResultsAnalytics } from "@/components/ResultsAnalytics";
 import { BallotReview } from "@/components/BallotReview";
 
@@ -33,6 +34,7 @@ interface RoundDetail {
   round_finalized: boolean;
   show_results_to_voters: boolean;
   show_ballot_summary_projection: boolean;
+  show_final_gallery_projection: boolean;
   current_round_number: number;
   votes_current_round: number;
 }
@@ -202,7 +204,7 @@ export function AdminVotingDetail() {
       const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
         supabase
           .from("rounds")
-          .select("id,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,current_round_number,votes_current_round")
+          .select("id,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,current_round_number,votes_current_round")
           .eq("id", roundId)
           .single(),
         supabase
@@ -333,9 +335,17 @@ export function AdminVotingDetail() {
       ? "Proyectando votacion en curso"
       : !round.show_results_to_voters
         ? "Proyectando sala de espera"
-        : round.show_ballot_summary_projection
-          ? "Proyectando papeletas"
-          : "Proyectando resumen";
+        : round.show_final_gallery_projection
+          ? "Proyectando ganadores"
+          : round.show_ballot_summary_projection
+            ? "Proyectando papeletas"
+            : "Proyectando resumen";
+  const isVotingFinishedAndReviewed = Boolean(
+    round &&
+    round.round_finalized &&
+    (selectionQuotaReached || round.is_closed)
+  );
+
   const workflowActionLabel = !round
     ? "Accion"
     : canOpenRoom
@@ -346,18 +356,21 @@ export function AdminVotingDetail() {
           : canStartRound
             ? "Iniciar ronda"
             : "Finalizar ronda"
-        : !round.show_results_to_voters
-          ? "Paso 1: Resultados"
-          : !round.show_ballot_summary_projection
-            ? "Paso 2: Papeletas"
-            : selectionQuotaReached
-              ? "Votacion completada"
+        : (selectionQuotaReached || round.is_closed)
+          ? "Votacion completada"
+          : !round.show_results_to_voters
+            ? "Paso 1: Resultados"
+            : !round.show_ballot_summary_projection
+              ? "Paso 2: Papeletas"
               : "Siguiente ronda";
   const workflowActionDisabled = Boolean(
     !round ||
-    round.is_closed ||
+    (round.is_closed && !round.round_finalized) ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-    (round.round_finalized && round.show_results_to_voters && round.show_ballot_summary_projection && (selectionQuotaReached || !canStartNextRound))
+    (round.round_finalized && (
+      (selectionQuotaReached || round.is_closed) ||
+      (round.show_results_to_voters && round.show_ballot_summary_projection && !canStartNextRound)
+    ))
   );
   const workflowActionVariant = !round || workflowActionDisabled || (!round.round_finalized && !canFinalizeRound && !canStartRound && !canOpenRoom)
     ? "secondary"
@@ -526,6 +539,7 @@ export function AdminVotingDetail() {
       .update({
         show_results_to_voters: true,
         show_ballot_summary_projection: true,
+        show_final_gallery_projection: false,
         updated_at: new Date().toISOString(),
       })
       .eq("id", roundId);
@@ -536,6 +550,28 @@ export function AdminVotingDetail() {
     }
 
     toast({ title: "Papeletas publicadas", description: "Paso 2 activado en proyeccion" });
+    await loadRound();
+  };
+
+  const publishFinalGallery = async () => {
+    if (!roundId || !round) return;
+
+    const { error } = await supabase
+      .from("rounds")
+      .update({
+        show_results_to_voters: true,
+        show_ballot_summary_projection: true,
+        show_final_gallery_projection: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", roundId);
+
+    if (error) {
+      toast({ title: "Error", description: "No se pudo publicar la galeria", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Ganadores proyectados", description: "Paso 3 activado en proyeccion" });
     await loadRound();
   };
 
@@ -571,30 +607,57 @@ export function AdminVotingDetail() {
       return;
     }
 
+    if (selectionQuotaReached && !round.show_final_gallery_projection) {
+      await publishFinalGallery();
+      return;
+    }
+
     await startNextRound();
   };
 
-  const toggleFinalResults = async () => {
-    if (!roundId || !round || !selectionQuotaReached || !round.round_finalized) return;
-
-    const nextShowResults = !round.show_results_to_voters;
+  const hideAllResults = async () => {
+    if (!roundId || !round) return;
     const { error } = await supabase
       .from("rounds")
       .update({
-        show_results_to_voters: nextShowResults,
+        show_results_to_voters: false,
         show_ballot_summary_projection: false,
+        show_final_gallery_projection: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", roundId);
+    
+    if (error) {
+      toast({ title: "Error", description: "No se pudo ocultar la proyección", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Proyección ocultada", description: "La pantalla de proyección ahora está en modo espera." });
+    await loadRound();
+  };
+
+  const toggleFinalResults = async () => {
+    if (!roundId || !round || !round.round_finalized) return;
+
+    // Toggle specifically the final gallery projection
+    const nextShowGallery = !round.show_final_gallery_projection;
+    const { error } = await supabase
+      .from("rounds")
+      .update({
+        show_results_to_voters: true,
+        show_ballot_summary_projection: true,
+        show_final_gallery_projection: nextShowGallery,
         updated_at: new Date().toISOString(),
       })
       .eq("id", roundId);
 
     if (error) {
-      toast({ title: "Error", description: "No se pudo actualizar resultados finales", variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo actualizar la galería final", variant: "destructive" });
       return;
     }
 
     toast({
-      title: nextShowResults ? "Resultados finales publicados" : "Resultados finales ocultados",
-      description: nextShowResults ? "🎉🎉🎉 Modo final activado" : "Se ocultaron los resultados finales",
+      title: nextShowGallery ? "Resultados finales publicados" : "Resultados finales ocultados",
+      description: nextShowGallery ? "🎉🎉🎉 Proyectando ganadores" : "Se ocultaron los resultados finales",
     });
     await loadRound();
   };
@@ -1294,17 +1357,34 @@ export function AdminVotingDetail() {
                     Cerrar
                   </Button>
                 </div>
-                
-                {selectionQuotaReached && round.round_finalized && (
-                  <Button
-                    size="sm"
-                    className="w-full mt-2 h-9 rounded-xl bg-gradient-to-r from-primary/90 to-primary text-primary-foreground hover:opacity-95 shadow-sm font-medium animate-pulse"
-                    onClick={toggleFinalResults}
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {round.show_results_to_voters ? "Ocultar resultados" : "Mostrar resultados finales"}
-                  </Button>
+
+                {isVotingFinishedAndReviewed && (
+                  <div className="mt-4 pt-5 border-t border-outline-variant/30 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor="gallery-projection" className="text-sm font-semibold flex items-center">
+                          <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
+                          Pantalla de Resultados
+                        </Label>
+                        <span className="text-[11px] text-muted-foreground">Proyectar estado final en pantalla</span>
+                      </div>
+                      <Switch
+                        id="gallery-projection"
+                        checked={Boolean(round.show_final_gallery_projection)}
+                        onCheckedChange={toggleFinalResults}
+                        className="data-[state=checked]:bg-emerald-500"
+                      />
+                    </div>
+                  </div>
                 )}
+                
+                {/* Reset Projection */}
+                <div className="mt-4 pt-4 border-t border-outline-variant/30 flex justify-end">
+                  <Button variant="outline" size="sm" onClick={hideAllResults} className="w-full text-xs hover:bg-destructive/10 hover:text-destructive">
+                    <MonitorOff className="w-4 h-4 mr-1.5" />
+                    Apagar Proyección (Volver a Espera)
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

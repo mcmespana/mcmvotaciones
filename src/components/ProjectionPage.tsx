@@ -2,6 +2,7 @@ import { useProjectionData } from "@/hooks/useProjectionData";
 import { ProjectionWaiting } from "@/components/projection/ProjectionWaiting";
 import { ProjectionVoting } from "@/components/projection/ProjectionVoting";
 import { ProjectionResults } from "@/components/projection/ProjectionResults";
+import { ProjectionFinalResults } from "@/components/projection/ProjectionFinalResults";
 
 export function ProjectionPage() {
   const data = useProjectionData();
@@ -35,6 +36,17 @@ export function ProjectionPage() {
     );
   }
 
+  if (data.state === "final-gallery" && data.round) {
+    return (
+      <ProjectionFinalResults
+        roundTitle={data.round.title}
+        roundNumber={data.round.current_round_number}
+        team={data.round.team}
+        selectedCandidates={data.selectedCandidates}
+      />
+    );
+  }
+
   if (data.state === "voting" && data.round) {
     return (
       <ProjectionVoting
@@ -47,7 +59,6 @@ export function ProjectionPage() {
         connectedCount={data.connectedCount}
         showBallotSummary={Boolean(data.round.show_ballot_summary_projection)}
         ballotSummaries={data.ballotSummaries}
-        votingUrl={votingUrl}
       />
     );
   }

@@ -19,6 +19,7 @@ interface Round {
   show_results_to_voters: boolean;
   access_code: string | null;
   show_ballot_summary_projection: boolean;
+  show_final_gallery_projection: boolean;
   is_voting_open: boolean;
   join_locked: boolean;
   updated_at: string;
@@ -49,7 +50,7 @@ export interface BallotSummary {
   votes: string[];
 }
 
-export type ProjectionState = "waiting" | "voting" | "results";
+export type ProjectionState = "waiting" | "voting" | "results" | "final-gallery";
 export type ProjectionWaitingMode = "idle" | "room-open" | "paused" | "finalized";
 
 export interface ProjectionData {
@@ -82,15 +83,20 @@ export function useProjectionData(): ProjectionData {
 
   // Determine the projection state
   const state: ProjectionState = (() => {
-    if (!round || !round.is_active) return "waiting";
+    if (!round) return "waiting";
+    // Si la ronda está proyectando ganadores, se muestra aunque no esté activa o esté cerrada
+    if (round.show_final_gallery_projection) return "final-gallery";
+    // Si la ronda está proyectando resultados o papeletas, se muestra aunque no esté activa o esté cerrada
     if (round.round_finalized && round.show_results_to_voters) return "results";
-    if (round.is_closed) return "waiting";
+    
+    // De lo contrario, usamos logica normal
+    if (!round.is_active || round.is_closed) return "waiting";
     if (round.is_voting_open) return "voting";
     return "waiting";
   })();
 
   const showConnectedInWaiting = Boolean(
-    round && round.is_active && !round.is_voting_open && !round.is_closed && !round.round_finalized
+    round && round.is_active && !round.is_voting_open && !round.is_closed && !round.round_finalized && !round.show_final_gallery_projection
   );
 
   const showAccessCodeInWaiting = Boolean(
@@ -104,7 +110,7 @@ export function useProjectionData(): ProjectionData {
   );
 
   const waitingMode: ProjectionWaitingMode = (() => {
-    if (!round || !round.is_active || round.is_closed) return "idle";
+    if (!round || !round.is_active || round.is_closed || round.show_final_gallery_projection) return "idle";
     if (round.round_finalized && !round.show_results_to_voters) return "finalized";
     if (!round.is_voting_open && round.join_locked && !round.round_finalized) return "paused";
     if (!round.is_voting_open && !round.round_finalized) return "room-open";
@@ -117,13 +123,29 @@ export function useProjectionData(): ProjectionData {
   // Load the active round and its data
   const loadActiveRound = useCallback(async () => {
     try {
-      const { data: rounds, error } = await supabase
+      let targetRound = null;
+
+      const { data: activeRounds } = await supabase
         .from("rounds")
         .select("*")
         .eq("is_active", true)
         .limit(1);
 
-      if (error || !rounds || rounds.length === 0) {
+      if (activeRounds && activeRounds.length > 0) {
+        targetRound = activeRounds[0];
+      } else {
+        // If no active round, fetch the most recently updated one (e.g. just closed)
+        const { data: latestRounds } = await supabase
+          .from("rounds")
+          .select("*")
+          .order("updated_at", { ascending: false })
+          .limit(1);
+        if (latestRounds && latestRounds.length > 0) {
+          targetRound = latestRounds[0];
+        }
+      }
+
+      if (!targetRound) {
         setRound(null);
         setCandidates([]);
         setResults([]);
@@ -132,7 +154,7 @@ export function useProjectionData(): ProjectionData {
         return;
       }
 
-      const activeRound = rounds[0] as Round;
+      const activeRound = targetRound as Round;
       setRound(activeRound);
       setVoteCount(activeRound.votes_current_round || 0);
 
@@ -164,8 +186,11 @@ export function useProjectionData(): ProjectionData {
           const hash = (row.vote_hash || "").toString();
           if (!hash) continue;
 
-          const voteName = row.candidate
-            ? `${row.candidate.name} ${row.candidate.surname}`.trim()
+          // Supabase returns a single object for foreign keys if correctly configured, but TypeScript thinks it might be an array
+          const candidateData = Array.isArray(row.candidate) ? row.candidate[0] : row.candidate;
+
+          const voteName = candidateData
+            ? `${candidateData.name} ${candidateData.surname}`.trim()
             : "-";
 
           if (!grouped.has(hash)) {

@@ -230,13 +230,11 @@ export function ProjectionResults({
                                 className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${
                                   isTopCandidate
                                     ? "bg-emerald-500"
-                                    : "bg-yellow-400 dark:bg-yellow-500 shadow-[0_0_22px_rgba(250,204,21,0.35)]"
+                                    : "bg-yellow-300 dark:bg-yellow-400 shadow-[0_0_22px_rgba(250,204,21,0.35)]"
                                 }`}
                                 style={{
-                                  width:
-                                    boundedPercentage > 0
-                                      ? `max(${boundedPercentage}%, 0.5rem)`
-                                      : "0%",
+                                  width: boundedPercentage > 0 ? `${boundedPercentage}%` : "0%",
+                                  minWidth: boundedPercentage > 0 ? "0.5rem" : "0",
                                 }}
                               />
                               {/* 50% Threshold Mark */}
