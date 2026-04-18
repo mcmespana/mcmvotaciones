@@ -230,7 +230,7 @@ export function ProjectionResults({
                                 className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${
                                   isTopCandidate
                                     ? "bg-emerald-500"
-                                    : "bg-gradient-to-r from-primary to-accent shadow-[0_0_22px_rgba(56,189,248,0.35)]"
+                                    : "bg-yellow-400 dark:bg-yellow-500 shadow-[0_0_22px_rgba(250,204,21,0.35)]"
                                 }`}
                                 style={{
                                   width:
