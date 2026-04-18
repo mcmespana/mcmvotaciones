@@ -140,13 +140,13 @@ export function ProjectionResults({
             Resultados - Ronda {roundNumber}
           </h1>
           <div className="flex items-center gap-4 shrink-0 overflow-hidden">
-            <Chip color="warning" variant="flat" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
-            <Chip color="primary" variant="bordered" size="lg" className="text-2xl font-bold px-6 py-6">{roundTitle}</Chip>
-            <Chip color="default" variant="bordered" size="lg" className="text-2xl font-bold px-6 py-6">
+            <Chip color="warning" variant="soft" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
+            <Chip color="accent" variant="tertiary" size="lg" className="text-2xl font-bold px-6 py-6">{roundTitle}</Chip>
+            <Chip color="default" variant="tertiary" size="lg" className="text-2xl font-bold px-6 py-6">
               <Users className="inline h-6 w-6 mr-2" />
-              {displayResults.length} evaluadas
+              {displayResults.length} votadas
             </Chip>
-            <Chip color="success" variant="flat" size="lg" className="text-2xl font-bold px-6 py-6">
+            <Chip color="success" variant="soft" size="lg" className="text-2xl font-bold px-6 py-6">
               <Check className="inline h-6 w-6 mr-2" strokeWidth={3} />
               {selectedCandidates.length} seleccionados
             </Chip>
@@ -224,13 +224,20 @@ export function ProjectionResults({
                           </div>
 
                           {/* CUSTOM PROGRESS BAR 0-100% WITH 50% MARK */}
-                          <div className="mt-8 flex items-center gap-6 relative">
-                            <div className="relative h-6 w-full rounded-full bg-surface-container-high overflow-hidden">
+                          <div className="relative mt-8 flex items-center gap-6">
+                            <div className="relative h-6 w-full overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-high/80">
                               <div
                                 className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${
-                                  isTopCandidate ? "bg-emerald-500" : "bg-primary"
+                                  isTopCandidate
+                                    ? "bg-emerald-500"
+                                    : "bg-gradient-to-r from-primary to-accent shadow-[0_0_22px_rgba(56,189,248,0.35)]"
                                 }`}
-                                style={{ width: `${boundedPercentage}%` }}
+                                style={{
+                                  width:
+                                    boundedPercentage > 0
+                                      ? `max(${boundedPercentage}%, 0.5rem)`
+                                      : "0%",
+                                }}
                               />
                               {/* 50% Threshold Mark */}
                               <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-red-500/80 z-10" />

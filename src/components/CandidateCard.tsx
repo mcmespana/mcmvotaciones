@@ -109,18 +109,18 @@ export function CandidateCard({
       {/* Checkmark overlay */}
       <div
         className={cn(
-          "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+          "absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 md:right-3 md:top-3 md:h-10 md:w-10",
           isSelected
             ? "border-transparent bg-indigo-600 text-white opacity-100 scale-110 shadow-lg shadow-indigo-600/40"
             : "border-zinc-300 bg-white/80 dark:border-zinc-700 dark:bg-zinc-800/80 text-zinc-400 opacity-0 group-hover:opacity-100"
         )}
       >
-        <Check className="w-5 h-5" strokeWidth={3} />
+        <Check className="h-4 w-4 md:h-5 md:w-5" strokeWidth={3} />
       </div>
 
-      <CardHeader className="flex-row items-center gap-3 space-y-0 p-4 pr-14 pb-3">
+      <CardHeader className="flex-row items-center gap-4 space-y-0 p-3 pr-11 pb-2.5 md:gap-3 md:p-4 md:pr-14 md:pb-3">
         {/* Imagen o avatar fallback */}
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-low">
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-low md:h-20 md:w-20">
           {candidate.image_url ? (
             <>
               <img
@@ -156,12 +156,12 @@ export function CandidateCard({
           )}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <CardTitle className="font-headline text-2xl leading-tight">
+        <div className="min-w-0 flex-1 pl-0.5 md:pl-0">
+          <CardTitle className="font-headline text-[1.65rem] leading-tight md:text-2xl">
             {candidate.name} {candidate.surname}
           </CardTitle>
 
-          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-medium text-muted-foreground">
+          <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px] font-medium text-muted-foreground md:mt-2">
             {candidate.age && <span className="rounded-full bg-surface-container-low px-2 py-0.5">Edad {candidate.age}</span>}
             {candidate.location && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.location}</span>}
             {candidate.group_name && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.group_name}</span>}
@@ -170,7 +170,7 @@ export function CandidateCard({
       </CardHeader>
 
       {candidate.description && (
-        <CardContent className="px-4 pt-0 pb-4">
+        <CardContent className="px-3 pt-0 pb-3 md:px-4 md:pb-4">
           <p className="line-clamp-2 text-sm text-muted-foreground">
             {candidate.description}
           </p>

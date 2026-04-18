@@ -29,15 +29,15 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  const chipVariantMap: Record<NonNullable<BadgeProps["variant"]>, "solid" | "flat" | "bordered"> = {
-    default: "solid",
-    secondary: "flat",
-    destructive: "solid",
-    outline: "bordered",
+  const chipVariantMap: Record<NonNullable<BadgeProps["variant"]>, "primary" | "secondary" | "soft" | "tertiary"> = {
+    default: "primary",
+    secondary: "soft",
+    destructive: "primary",
+    outline: "tertiary",
   }
 
-  const chipColorMap: Record<NonNullable<BadgeProps["variant"]>, "primary" | "default" | "danger"> = {
-    default: "primary",
+  const chipColorMap: Record<NonNullable<BadgeProps["variant"]>, "accent" | "default" | "danger"> = {
+    default: "accent",
     secondary: "default",
     destructive: "danger",
     outline: "default",

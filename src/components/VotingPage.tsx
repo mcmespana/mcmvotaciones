@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GroupedCandidateList } from '@/components/GroupedCandidateList';
 import { VoteSubmitAnimation } from '@/components/VoteSubmitAnimation';
 import { AccessCodeInput, isAccessCodeVerified, markAccessCodeVerified } from '@/components/AccessCodeInput';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Round {
   id: string;
@@ -109,6 +110,7 @@ export function VotingPage() {
   // Ref para evitar bucles infinitos en suscripciones
   const activeRoundRef = useRef<Round | null>(null);
   const submitAnimationRoundRef = useRef<{ roundId: string; roundNumber: number } | null>(null);
+  const submitTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getSeatStorageKey = (roundId: string) => `mcm_seat_id_${roundId}`;
   const getReceiptStorageKey = (roundId: string, roundNumber: number) =>
@@ -176,6 +178,29 @@ export function VotingPage() {
     setVoteReceipt(receipt);
     setVoteHashCode(receipt.voteCode);
   }, []);
+
+  const finalizeVoteTransition = useCallback((withToast: boolean) => {
+    if (submitTransitionTimeoutRef.current) {
+      clearTimeout(submitTransitionTimeoutRef.current);
+      submitTransitionTimeoutRef.current = null;
+    }
+
+    setShowSubmitAnimation(false);
+
+    if (!submitAnimationRoundRef.current) {
+      return;
+    }
+
+    submitAnimationRoundRef.current = null;
+    setHasVoted(true);
+
+    if (withToast) {
+      toast({
+        title: '¡Voto registrado!',
+        description: `Has votado por ${selectedCandidates.length} candidato${selectedCandidates.length > 1 ? 's' : ''}`,
+      });
+    }
+  }, [selectedCandidates.length, toast]);
 
   const ensureSeat = useCallback(async (round: Round) => {
     if (round.is_closed) {
@@ -334,6 +359,10 @@ export function VotingPage() {
       }
 
   if (!sameRoundSameNumber) {
+    if (submitTransitionTimeoutRef.current) {
+      clearTimeout(submitTransitionTimeoutRef.current);
+      submitTransitionTimeoutRef.current = null;
+    }
     setSelectedCandidates([]);
     setResults([]);
     setHasVoted(false);
@@ -511,6 +540,11 @@ export function VotingPage() {
     return () => {
       debugLog('🔌 Unsubscribing from rounds updates');
       supabase.removeChannel(roundsChannel);
+
+      if (submitTransitionTimeoutRef.current) {
+        clearTimeout(submitTransitionTimeoutRef.current);
+        submitTransitionTimeoutRef.current = null;
+      }
     };
   }, [navigate, loadActiveRound, toast]);
 
@@ -546,6 +580,11 @@ export function VotingPage() {
     }
 
     try {
+      if (submitTransitionTimeoutRef.current) {
+        clearTimeout(submitTransitionTimeoutRef.current);
+        submitTransitionTimeoutRef.current = null;
+      }
+
       setVoting(true);
       submitAnimationRoundRef.current = {
         roundId: activeRound.id,
@@ -668,6 +707,11 @@ export function VotingPage() {
       markAsVoted(activeRound.id, activeRound.current_round_number);
       // Don't set hasVoted yet - the animation onComplete will handle it
 
+      // Fallback for mobile devices where animation completion callback may not fire reliably.
+      submitTransitionTimeoutRef.current = window.setTimeout(() => {
+        finalizeVoteTransition(false);
+      }, 9000);
+
       // Load results if round is finalized and results should be visible
       if (activeRound.round_finalized && activeRound.show_results_to_voters) {
         await loadResults(activeRound.id, activeRound.current_round_number);
@@ -687,26 +731,8 @@ export function VotingPage() {
   };
 
   const handleSubmitAnimationComplete = useCallback(() => {
-    setShowSubmitAnimation(false);
-
-    const animationRound = submitAnimationRoundRef.current;
-    if (
-      !activeRound ||
-      !animationRound ||
-      animationRound.roundId !== activeRound.id ||
-      animationRound.roundNumber !== activeRound.current_round_number
-    ) {
-      submitAnimationRoundRef.current = null;
-      return;
-    }
-
-    submitAnimationRoundRef.current = null;
-    setHasVoted(true);
-    toast({
-      title: '¡Voto registrado!',
-      description: `Has votado por ${selectedCandidates.length} candidato${selectedCandidates.length > 1 ? 's' : ''}`,
-    });
-  }, [activeRound, selectedCandidates.length, toast]);
+    finalizeVoteTransition(true);
+  }, [finalizeVoteTransition]);
 
   // Handle access code submission
   const handleAccessCode = useCallback(async (code: string) => {
@@ -1151,6 +1177,8 @@ export function VotingPage() {
     if (hasVoted) {
     return (
       <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <ThemeToggle mode="floating" />
+
         {/* Decorative background elements */}
         <div className="pointer-events-none absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-primary/20 blur-[120px] mix-blend-screen" />
         <div className="pointer-events-none absolute -bottom-[20%] -left-[10%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[100px] mix-blend-screen" />
@@ -1176,7 +1204,7 @@ export function VotingPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ticket-code relative z-20 h-10 w-10 px-0 hover:bg-primary/20 transition-colors"
+                    className="ticket-code relative z-20 h-10 w-10 rounded-full border border-outline-variant/60 bg-surface-container-lowest/80 px-0 shadow-sm transition-colors hover:border-primary/55 hover:bg-primary/15"
                     onClick={() => {
                       void copyVerificationCode();
                     }}

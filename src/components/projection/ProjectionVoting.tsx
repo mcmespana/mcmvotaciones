@@ -71,8 +71,8 @@ export function ProjectionVoting({
             <div>
               <h1 className="text-5xl font-black tracking-tight text-foreground sm:text-7xl">{roundTitle}</h1>
               <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Chip color="warning" variant="flat" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
-                <Chip color="primary" variant="bordered" size="lg" className="text-2xl font-bold px-6 py-6">Ronda {roundNumber}</Chip>
+                <Chip color="warning" variant="soft" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
+                <Chip color="accent" variant="tertiary" size="lg" className="text-2xl font-bold px-6 py-6">Ronda {roundNumber}</Chip>
               </div>
             </div>
 
@@ -151,7 +151,7 @@ export function ProjectionVoting({
                   <p className="text-6xl font-black text-foreground mt-4">{percentage.toFixed(0)}%</p>
                 </div>
                 <div className="relative flex h-48 w-48 items-center justify-center">
-                  <ProgressCircle aria-label="Participacion" value={percentage} strokeWidth={16} className="h-48 w-48 text-primary" />
+                  <ProgressCircle aria-label="Participacion" value={percentage} className="h-48 w-48 text-primary" />
                   <BarChart3 className="absolute h-16 w-16 text-primary" />
                 </div>
               </CardContent>
@@ -203,7 +203,7 @@ export function ProjectionVoting({
                     >
                       <div className="mb-6 flex items-center justify-between">
                         <p className="font-mono text-2xl font-bold text-foreground">{ballot.voteCode}</p>
-                        <Chip size="lg" color="primary" variant="flat" className="text-xl font-bold px-4 py-4">R{ballot.roundNumber}</Chip>
+                        <Chip size="lg" color="accent" variant="soft" className="text-xl font-bold px-4 py-4">R{ballot.roundNumber}</Chip>
                       </div>
                       <div className="space-y-3 text-2xl font-medium text-muted-foreground">
                         <p>1. {ballot.votes[0] || "-"}</p>

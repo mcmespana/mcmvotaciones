@@ -41,7 +41,6 @@ const STEPS = [
 export function VoteSubmitAnimation({
   isVisible,
   onComplete,
-  voteHash,
 }: VoteSubmitAnimationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -161,21 +160,6 @@ export function VoteSubmitAnimation({
                 }`}
                 style={{ width: `${progress}%` }}
               />
-            </div>
-          )}
-
-          {/* Vote hash display */}
-          {showConfetti && voteHash && (
-            <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
-              <p className="text-xs text-muted-foreground mb-1">
-                Tu código de verificación:
-              </p>
-              <p className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-300">
-                {voteHash}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Guarda este código para verificar tu voto
-              </p>
             </div>
           )}
 

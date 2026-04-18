@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Clock, QrCode, Users } from "lucide-react";
-import { Chip, InputOTP, Surface } from "@heroui/react";
+import { Clock, Users } from "lucide-react";
+import { Chip, Surface } from "@heroui/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { QRCodeSVG } from "qrcode.react";
 import type { ProjectionWaitingMode } from "@/hooks/useProjectionData";
 
 interface ProjectionWaitingProps {
@@ -49,10 +50,18 @@ export function ProjectionWaiting({
     : waitingMode === "finalized"
       ? "success"
       : waitingMode === "room-open"
-        ? "primary"
+        ? "accent"
         : "default";
 
   const connectionProgress = Math.min(connectedCount, 100);
+  const shouldShowJoinQr =
+    waitingMode === "paused" ||
+    waitingMode === "room-open" ||
+    waitingMode === "finalized";
+  const normalizedAccessCode = accessCode?.toUpperCase() ?? null;
+  const hasAmbiguousAccessCodeChars =
+    Boolean(normalizedAccessCode?.includes("0")) ||
+    Boolean(normalizedAccessCode?.includes("O"));
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary-fixed/65 via-surface-container-lowest to-surface-container-low text-foreground dark:from-background dark:via-surface-container-low dark:to-background">
@@ -71,7 +80,7 @@ export function ProjectionWaiting({
         <div className="grid w-full gap-12 lg:grid-cols-[1.2fr_1fr] items-center">
           <Surface className="rounded-[3rem] border-2 border-outline-variant/55 bg-surface-container-lowest/90 p-10 shadow-tech backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/88 sm:p-14">
             <div className="flex flex-wrap items-center gap-4">
-              <Chip color={modeColor} variant="flat" size="lg" className="text-xl font-bold uppercase tracking-wider px-6 py-6">
+              <Chip color={modeColor} variant="soft" size="lg" className="text-xl font-bold uppercase tracking-wider px-6 py-6">
                 {modeLabel}
               </Chip>
             </div>
@@ -83,35 +92,79 @@ export function ProjectionWaiting({
               {subtitle}
             </p>
 
-            {accessCode && (
+            {normalizedAccessCode && (
               <div className="mt-12">
                 <p className="mb-6 text-2xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
                   Código de acceso
                 </p>
-                <InputOTP.Root
-                  value={accessCode}
-                  readOnly
-                  maxLength={accessCode.length}
-                  className="w-fit"
-                  inputClassName="opacity-0"
-                >
-                  <InputOTP.Group>
-                    {accessCode.split("").map((char, index) => (
-                      <InputOTP.Slot
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  {normalizedAccessCode.split("").map((char, index) => {
+                    const isDigit = /[0-9]/.test(char);
+                    const isZero = char === "0";
+
+                    return (
+                      <div
                         key={`${char}-${index}`}
-                        index={index}
-                        className="h-24 w-20 rounded-3xl border-2 border-outline-variant/60 bg-surface-container-lowest/92 text-6xl font-black text-primary shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88 sm:h-32 sm:w-28 sm:text-7xl"
-                      />
-                    ))}
-                  </InputOTP.Group>
-                </InputOTP.Root>
+                        className="flex h-24 w-20 items-center justify-center rounded-3xl border-2 border-outline-variant/60 bg-surface-container-lowest/92 shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88 sm:h-32 sm:w-28"
+                        aria-label={`Caracter ${index + 1}: ${isZero ? "numero cero" : char}`}
+                      >
+                        {isZero ? (
+                          <span className="relative inline-flex items-center justify-center font-mono text-6xl font-black text-primary sm:text-7xl">
+                            0
+                            <span
+                              aria-hidden
+                              className="pointer-events-none absolute h-[3px] w-8 rotate-[-34deg] rounded-full bg-primary/75 sm:w-10"
+                            />
+                          </span>
+                        ) : (
+                          <span
+                            className={`font-mono text-6xl font-black sm:text-7xl ${
+                              isDigit ? "text-primary" : "text-foreground"
+                            }`}
+                          >
+                            {char}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {hasAmbiguousAccessCodeChars && (
+                  <p className="mt-5 text-base font-semibold text-muted-foreground">
+                    Nota: el <span className="font-mono text-primary">0</span> (numero) se muestra con barra diagonal.
+                  </p>
+                )}
               </div>
             )}
 
-            <div className="mt-12 flex items-center gap-6 rounded-3xl border-2 border-outline-variant/55 bg-surface-container-low px-8 py-6 text-2xl text-muted-foreground dark:border-outline-variant/65 dark:bg-surface-container/80">
-              <QrCode className="h-10 w-10 flex-shrink-0" />
-              <span className="truncate font-mono font-bold tracking-tight">{votingUrl}</span>
-            </div>
+            {shouldShowJoinQr && (
+              <div className="mt-12 grid gap-6 rounded-3xl border-2 border-outline-variant/55 bg-surface-container-low px-6 py-6 text-muted-foreground dark:border-outline-variant/65 dark:bg-surface-container/80 sm:px-8 sm:py-8 lg:grid-cols-[auto_1fr] lg:items-center">
+                <div className="mx-auto rounded-[1.6rem] border-2 border-outline-variant/60 bg-white p-3 shadow-md dark:border-outline-variant/65">
+                  <QRCodeSVG
+                    value={votingUrl}
+                    size={180}
+                    bgColor="#ffffff"
+                    fgColor="#0f172a"
+                    level="M"
+                    includeMargin
+                    title="QR de ingreso a votaciones"
+                  />
+                </div>
+
+                <div className="min-w-0 space-y-3 text-center lg:text-left">
+                  <p className="text-xl font-bold uppercase tracking-[0.2em] text-foreground sm:text-2xl">
+                    Escanea para ingresar
+                  </p>
+                  <p className="text-lg sm:text-xl">
+                    Apunta la camara de tu movil para abrir la web de votacion.
+                  </p>
+                  <p className="truncate rounded-2xl border border-outline-variant/55 bg-surface-container-lowest/85 px-4 py-3 font-mono text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                    {votingUrl}
+                  </p>
+                </div>
+              </div>
+            )}
           </Surface>
 
           <div className="grid gap-10">

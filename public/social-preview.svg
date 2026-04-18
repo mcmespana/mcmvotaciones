@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">MCM Panel - Gestion Avanzada</title>
+  <desc id="desc">Tarjeta social personalizada para compartir el panel de votaciones MCM.</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f2f8f"/>
+      <stop offset="0.5" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(950 120) rotate(20) scale(340 220)">
+      <stop offset="0" stop-color="#67e8f9" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#67e8f9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(220 560) rotate(-12) scale(420 240)">
+      <stop offset="0" stop-color="#bfdbfe" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="114" y1="120" x2="326" y2="332" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cffafe"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#canvas)"/>
+  <rect width="1200" height="630" fill="url(#glowA)"/>
+  <rect width="1200" height="630" fill="url(#glowB)"/>
+
+  <rect x="80" y="88" width="1040" height="454" rx="36" fill="rgba(255,255,255,0.08)" stroke="rgba(224,242,254,0.4)" stroke-width="2"/>
+
+  <rect x="118" y="126" width="206" height="206" rx="48" fill="rgba(255,255,255,0.13)"/>
+  <path d="M158 278V168h30l24 34 24-34h30v110h-30v-63l-24 35-24-35v63z" fill="url(#mark)"/>
+
+  <text x="360" y="220" fill="#e0f2fe" font-family="Plus Jakarta Sans, Inter, Segoe UI, sans-serif" font-size="58" font-weight="700" letter-spacing="-0.02em">MCM Panel</text>
+  <text x="360" y="286" fill="#f8fafc" font-family="Inter, Segoe UI, sans-serif" font-size="38" font-weight="600">Gestion avanzada de votaciones</text>
+  <text x="360" y="352" fill="#bae6fd" font-family="Inter, Segoe UI, sans-serif" font-size="30" font-weight="500">Control de ronda, usuarios, candidatos y resultados en vivo</text>
+
+  <rect x="360" y="404" width="292" height="68" rx="34" fill="rgba(6,182,212,0.25)" stroke="rgba(165,243,252,0.6)" stroke-width="2"/>
+  <text x="401" y="448" fill="#ecfeff" font-family="Inter, Segoe UI, sans-serif" font-size="30" font-weight="700">/admin</text>
+
+  <circle cx="1036" cy="486" r="16" fill="#a5f3fc" opacity="0.92"/>
+  <circle cx="1076" cy="486" r="16" fill="#bfdbfe" opacity="0.82"/>
+  <circle cx="1116" cy="486" r="16" fill="#e0f2fe" opacity="0.72"/>
+</svg>
