@@ -278,10 +278,8 @@ export function useProjectionData(): ProjectionData {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      if (state !== "voting") {
-        roundStartRef.current = null;
-        setElapsedSeconds(0);
-      }
+      roundStartRef.current = null;
+      setElapsedSeconds(0);
     }
 
     return () => {

@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
-import { ArrowLeft, ArrowUpRight, Download, FileUp, Pause, Pencil, Play, RefreshCw, Settings2, Sparkles, StepForward, Trash2, UserPlus, XCircle, MonitorOff } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Download, FileUp, Pause, Pencil, Play, RefreshCw, Search, Settings2, Sparkles, StepForward, Trash2, Undo2, UserPlus, XCircle, MonitorOff } from "lucide-react";
 import { ResultsAnalytics } from "@/components/ResultsAnalytics";
 import { BallotReview } from "@/components/BallotReview";
 
@@ -116,6 +116,7 @@ export function AdminVotingDetail() {
 
   const [round, setRound] = useState<RoundDetail | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidateSearch, setCandidateSearch] = useState("");
   const [seats, setSeats] = useState<SeatRow[]>([]);
   const [seatStatus, setSeatStatus] = useState<SeatStatus | null>(null);
   const [currentRoundVotes, setCurrentRoundVotes] = useState(0);
@@ -306,12 +307,26 @@ export function AdminVotingDetail() {
   const maxSelectedCandidates = round?.max_selected_candidates || 6;
   const selectionQuotaReached = selectedCandidatesCount >= maxSelectedCandidates;
 
+  const isVotingStarted = Boolean(
+    round &&
+    (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0)
+  );
+
   const roomIsOpen = Boolean(round && round.is_active && !round.is_voting_open && !round.is_closed);
   const canOpenRoom = Boolean(round && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
   const canCloseRoom = Boolean(round && roomIsOpen);
   const canStartRound = Boolean(round && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
   const canPauseRound = Boolean(round && round.is_active && round.is_voting_open && !round.round_finalized && !round.is_closed);
   const canResumeRound = Boolean(round && round.is_active && !round.is_voting_open && round.join_locked && !round.round_finalized && !round.is_closed);
+  
+  const isProjectingSomething = Boolean(
+    round && (
+      round.show_final_gallery_projection || 
+      round.show_results_to_voters || 
+      round.show_ballot_summary_projection
+    )
+  );
+
   const canFinalizeRound = Boolean(
     round &&
     round.is_active &&
@@ -343,6 +358,8 @@ export function AdminVotingDetail() {
   const isVotingFinishedAndReviewed = Boolean(
     round &&
     round.round_finalized &&
+    round.show_results_to_voters &&
+    round.show_ballot_summary_projection &&
     (selectionQuotaReached || round.is_closed)
   );
 
@@ -356,21 +373,19 @@ export function AdminVotingDetail() {
           : canStartRound
             ? "Iniciar ronda"
             : "Finalizar ronda"
-        : (selectionQuotaReached || round.is_closed)
-          ? "Votacion completada"
-          : !round.show_results_to_voters
-            ? "Paso 1: Resultados"
-            : !round.show_ballot_summary_projection
-              ? "Paso 2: Papeletas"
+        : !round.show_results_to_voters
+          ? "Paso 1: Resultados"
+          : !round.show_ballot_summary_projection
+            ? "Paso 2: Papeletas"
+            : (selectionQuotaReached || round.is_closed)
+              ? "Votacion completada"
               : "Siguiente ronda";
+  
   const workflowActionDisabled = Boolean(
     !round ||
     (round.is_closed && !round.round_finalized) ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-    (round.round_finalized && (
-      (selectionQuotaReached || round.is_closed) ||
-      (round.show_results_to_voters && round.show_ballot_summary_projection && !canStartNextRound)
-    ))
+    (round.round_finalized && round.show_results_to_voters && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed || !canStartNextRound))
   );
   const workflowActionVariant = !round || workflowActionDisabled || (!round.round_finalized && !canFinalizeRound && !canStartRound && !canOpenRoom)
     ? "secondary"
@@ -472,6 +487,9 @@ export function AdminVotingDetail() {
 
   const closeVoting = async () => {
     if (!roundId) return;
+
+    if (!window.confirm("¿Seguro que quieres cerrar definitivamente esta ronda? Se bloqueará y los asistentes no podrán participar.")) return;
+
     const { error } = await supabase
       .from("rounds")
       .update({
@@ -993,6 +1011,24 @@ export function AdminVotingDetail() {
     await loadRound();
   };
 
+  const unselectCandidate = async (candidateId: string) => {
+    const confirmed = window.confirm("¿Seguro que quieres quitar la selección a este candidato? Esta acción no se puede deshacer.");
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("candidates")
+      .update({ is_selected: false })
+      .eq("id", candidateId);
+
+    if (error) {
+      toast({ title: "Error", description: "No se pudo desmarcar al candidato", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Candidato desmarcado", description: "El candidato ya no está seleccionado." });
+    await loadRound();
+  };
+
   const deleteCandidate = async (candidateId: string) => {
     const confirmed = window.confirm("¿Seguro que quieres eliminar este candidato?");
     if (!confirmed) return;
@@ -1335,55 +1371,72 @@ export function AdminVotingDetail() {
                   {workflowActionLabel}
                 </Button>
                 
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1 rounded-xl h-9 border-outline-variant/60 text-xs font-medium"
-                    variant="outline"
-                    onClick={canPauseRound ? pauseRound : resumeRound}
-                    disabled={!canPauseRound && !canResumeRound}
-                  >
-                    <Pause className="w-3.5 h-3.5 mr-1.5" />
-                    {canPauseRound ? "Pausar" : "Reanudar"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1 rounded-xl h-9 text-xs font-medium hover:bg-destructive/90 hover:text-white"
-                    variant="ghost"
-                    onClick={closeVoting}
-                    disabled={round.is_closed}
-                  >
-                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                    Cerrar
-                  </Button>
-                </div>
+                <div className="mt-4 pt-4 border-t border-outline-variant/30 flex flex-col gap-3">
+                  {!round.round_finalized && !round.is_closed && round.is_active && (
+                    <Button
+                      size="sm"
+                      className="rounded-xl h-9 text-xs font-medium border-outline-variant/60"
+                      variant="outline"
+                      onClick={canPauseRound ? pauseRound : resumeRound}
+                      disabled={!canPauseRound && !canResumeRound}
+                    >
+                      {canPauseRound ? (
+                        <>
+                          <Pause className="w-3.5 h-3.5 mr-1.5" />
+                          Pausar Participación
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5 mr-1.5" />
+                          Reanudar Participación
+                        </>
+                      )}
+                    </Button>
+                  )}
 
-                {isVotingFinishedAndReviewed && (
-                  <div className="mt-4 pt-5 border-t border-outline-variant/30 flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <Label htmlFor="gallery-projection" className="text-sm font-semibold flex items-center">
-                          <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
-                          Pantalla de Resultados
-                        </Label>
-                        <span className="text-[11px] text-muted-foreground">Proyectar estado final en pantalla</span>
+                  {isProjectingSomething && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={hideAllResults} 
+                      className="rounded-xl w-full text-xs bg-muted/40 hover:bg-destructive/10 hover:text-destructive border-outline-variant/60 shadow-sm"
+                    >
+                      <MonitorOff className="w-4 h-4 mr-1.5" />
+                      Apagar Proyección Especial
+                    </Button>
+                  )}
+
+                  {isVotingFinishedAndReviewed && (
+                    <div className="flex flex-col gap-4 bg-muted/20 p-3 rounded-xl border border-outline-variant/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
+                          <Label htmlFor="gallery-projection" className="text-sm font-semibold flex items-center">
+                            <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
+                            Pantalla de Resultados
+                          </Label>
+                          <span className="text-[11px] text-muted-foreground">Proyectar estado final en pantalla</span>
+                        </div>
+                        <Switch
+                          id="gallery-projection"
+                          checked={Boolean(round.show_final_gallery_projection)}
+                          onCheckedChange={toggleFinalResults}
+                          className="data-[state=checked]:bg-emerald-500"
+                        />
                       </div>
-                      <Switch
-                        id="gallery-projection"
-                        checked={Boolean(round.show_final_gallery_projection)}
-                        onCheckedChange={toggleFinalResults}
-                        className="data-[state=checked]:bg-emerald-500"
-                      />
                     </div>
-                  </div>
-                )}
-                
-                {/* Reset Projection */}
-                <div className="mt-4 pt-4 border-t border-outline-variant/30 flex justify-end">
-                  <Button variant="outline" size="sm" onClick={hideAllResults} className="w-full text-xs hover:bg-destructive/10 hover:text-destructive">
-                    <MonitorOff className="w-4 h-4 mr-1.5" />
-                    Apagar Proyección (Volver a Espera)
-                  </Button>
+                  )}
+
+                  {!round.is_closed && (
+                    <Button
+                      size="sm"
+                      className="rounded-xl h-9 text-xs font-semibold bg-destructive/10 text-destructive hover:bg-destructive hover:text-white border border-destructive/20 mt-2"
+                      variant="ghost"
+                      onClick={closeVoting}
+                    >
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                      Cerrar Ronda Definitivamente
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1399,23 +1452,36 @@ export function AdminVotingDetail() {
                 <h2 className="text-xl font-semibold tracking-tight text-foreground">Candidatos</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">Seleccionados: <span className="font-medium">{selectedCandidatesCount}</span> / Activos: <span className="font-medium">{activeCandidatesCount}</span></p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" variant="secondary" onClick={openAddCandidateDialog} className="rounded-xl h-9 shadow-sm">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Añadir
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => setIsImportOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                  <FileUp className="w-4 h-4 mr-2 text-muted-foreground" />
-                  Importar
-                </Button>
-                <Button size="sm" variant="secondary" onClick={openComunicaImport} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                  <ArrowUpRight className="w-4 h-4 mr-2 text-muted-foreground" />
-                  Comunica
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => setIsDatasetOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                  <Download className="w-4 h-4 mr-2 text-muted-foreground" />
-                  Dataset
-                </Button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar candidato..."
+                    value={candidateSearch}
+                    onChange={(e) => setCandidateSearch(e.target.value)}
+                    className="pl-9 h-9 w-full sm:w-[200px] rounded-xl text-xs bg-surface-container-lowest/50"
+                  />
+                </div>
+                {!isVotingStarted && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={openAddCandidateDialog} className="rounded-xl h-9 shadow-sm">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Añadir
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setIsImportOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                      <FileUp className="w-4 h-4 mr-2 text-muted-foreground" />
+                      Importar
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={openComunicaImport} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                      <ArrowUpRight className="w-4 h-4 mr-2 text-muted-foreground" />
+                      Comunica
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setIsDatasetOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
+                      <Download className="w-4 h-4 mr-2 text-muted-foreground" />
+                      Dataset
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1428,7 +1494,15 @@ export function AdminVotingDetail() {
                 </div>
               ) : (
                 <div className="divide-y divide-outline-variant/20 dark:divide-outline-variant/30">
-                  {candidates.map((candidate) => (
+                  {candidates
+                    .filter((c) => {
+                       const query = candidateSearch.toLowerCase();
+                       return c.name.toLowerCase().includes(query) || 
+                              c.surname?.toLowerCase().includes(query) || 
+                              c.location?.toLowerCase().includes(query) ||
+                              c.email?.toLowerCase().includes(query);
+                    })
+                    .map((candidate) => (
                     <div key={candidate.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-muted/30 transition-colors">
                       <div className="flex-1">
                         <p className="font-semibold text-foreground">{candidate.name} {candidate.surname}</p>
@@ -1443,9 +1517,16 @@ export function AdminVotingDetail() {
                           <Button size="icon" variant="ghost" onClick={() => openEditCandidateDialog(candidate)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" onClick={() => deleteCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {candidate.is_selected && (
+                            <Button size="icon" variant="ghost" onClick={() => unselectCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-warning" title="Desmarcar como seleccionado">
+                              <Undo2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {!isVotingStarted && (
+                            <Button size="icon" variant="ghost" onClick={() => deleteCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive" title="Eliminar candidato">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
