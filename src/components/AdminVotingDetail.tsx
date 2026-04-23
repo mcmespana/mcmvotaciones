@@ -2,7 +2,6 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +12,8 @@ import { supabase } from "@/lib/supabase";
 import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
-import { ArrowLeft, ArrowUpRight, Download, FileUp, Pause, Pencil, Play, RefreshCw, Search, Settings2, Sparkles, StepForward, Trash2, Undo2, UserPlus, XCircle, MonitorOff } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Copy, Download, FileUp, Globe, Pause, Pencil, Play, RefreshCw, Search, Settings2, Sparkles, StepForward, Trash2, Undo2, UserPlus, XCircle, MonitorOff } from "lucide-react";
+import { formatCandidateName } from "@/lib/candidateFormat";
 import { ResultsAnalytics } from "@/components/ResultsAnalytics";
 import { BallotReview } from "@/components/BallotReview";
 
@@ -35,6 +35,7 @@ interface RoundDetail {
   show_results_to_voters: boolean;
   show_ballot_summary_projection: boolean;
   show_final_gallery_projection: boolean;
+  public_candidates_enabled: boolean;
   current_round_number: number;
   votes_current_round: number;
 }
@@ -205,7 +206,7 @@ export function AdminVotingDetail() {
       const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
         supabase
           .from("rounds")
-          .select("id,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,current_round_number,votes_current_round")
+          .select("id,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round")
           .eq("id", roundId)
           .single(),
         supabase
@@ -304,8 +305,11 @@ export function AdminVotingDetail() {
     () => candidates.filter((candidate) => candidate.is_selected).length,
     [candidates]
   );
+  const hasCandidates = activeCandidatesCount > 0;
   const maxSelectedCandidates = round?.max_selected_candidates || 6;
   const selectionQuotaReached = selectedCandidatesCount >= maxSelectedCandidates;
+  const publicCandidatesPath = roundId ? `/candidatos/${roundId}` : "";
+  const publicCandidatesUrl = publicCandidatesPath ? `${window.location.origin}${publicCandidatesPath}` : "";
 
   const isVotingStarted = Boolean(
     round &&
@@ -313,9 +317,9 @@ export function AdminVotingDetail() {
   );
 
   const roomIsOpen = Boolean(round && round.is_active && !round.is_voting_open && !round.is_closed);
-  const canOpenRoom = Boolean(round && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
+  const canOpenRoom = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
   const canCloseRoom = Boolean(round && roomIsOpen);
-  const canStartRound = Boolean(round && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
+  const canStartRound = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
   const canPauseRound = Boolean(round && round.is_active && round.is_voting_open && !round.round_finalized && !round.is_closed);
   const canResumeRound = Boolean(round && round.is_active && !round.is_voting_open && round.join_locked && !round.round_finalized && !round.is_closed);
   
@@ -394,6 +398,15 @@ export function AdminVotingDetail() {
   const callOpenRoom = async () => {
     if (!roundId || !round) return;
 
+    if (!hasCandidates) {
+      toast({
+        title: "No se puede abrir sala",
+        description: "Debes anadir al menos un candidato antes de abrir la sala.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!canOpenRoom) {
       if (roomIsOpen) {
         toast({
@@ -426,7 +439,26 @@ export function AdminVotingDetail() {
   };
 
   const callStartRound = async () => {
-    if (!roundId) return;
+    if (!roundId || !round) return;
+
+    if (!hasCandidates) {
+      toast({
+        title: "No se puede iniciar",
+        description: "Debes anadir al menos un candidato antes de iniciar la ronda.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!canStartRound) {
+      toast({
+        title: "No se puede iniciar",
+        description: "La ronda no esta en un estado valido para iniciar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data, error } = await supabase.rpc("start_voting_round", { p_round_id: roundId });
     if (error) {
       toast({ title: "Error", description: "No se pudo iniciar la ronda", variant: "destructive" });
@@ -679,6 +711,91 @@ export function AdminVotingDetail() {
     });
     await loadRound();
   };
+
+  const togglePublicCandidates = async () => {
+    if (!roundId || !round) return;
+    const next = !round.public_candidates_enabled;
+    const { error } = await supabase
+      .from("rounds")
+      .update({ public_candidates_enabled: next, updated_at: new Date().toISOString() })
+      .eq("id", roundId);
+    if (error) {
+      toast({ title: "Error", description: "No se pudo actualizar la visibilidad", variant: "destructive" });
+      return;
+    }
+    toast({
+      title: next ? "Lista pública activada" : "Lista pública desactivada",
+      description: next
+        ? `Accesible en ${publicCandidatesPath}`
+        : "La lista ya no es visible públicamente",
+    });
+    await loadRound();
+  };
+
+  const copyText = useCallback(async (text: string, successDescription: string) => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.width = "2em";
+        textArea.style.height = "2em";
+        textArea.style.padding = "0";
+        textArea.style.border = "none";
+        textArea.style.outline = "none";
+        textArea.style.boxShadow = "none";
+        textArea.style.background = "transparent";
+        textArea.setAttribute("readonly", "true");
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, 999999);
+        const copied = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        if (!copied) {
+          throw new Error("copy-failed");
+        }
+      }
+
+      toast({ title: "Copiado", description: successDescription });
+    } catch {
+      toast({
+        title: "No se pudo copiar",
+        description: "Copia manualmente el contenido mostrado.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
+  const copyPublicCandidatesLink = useCallback(async () => {
+    if (!publicCandidatesUrl) return;
+    await copyText(publicCandidatesUrl, "Enlace publico copiado.");
+  }, [copyText, publicCandidatesUrl]);
+
+  const copyPublicCandidatesList = useCallback(async () => {
+    if (!round) return;
+    if (candidates.length === 0) {
+      toast({
+        title: "Sin candidatos",
+        description: "No hay candidatos para copiar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const listText = [
+      `Lista publica de candidatos - ${round.title}`,
+      `Accesible en: ${publicCandidatesUrl || publicCandidatesPath}`,
+      "",
+      ...candidates.map((candidate, index) => `${index + 1}. ${formatCandidateName(candidate)}`),
+    ].join("\n");
+
+    await copyText(listText, "Lista publica de candidatos copiada.");
+  }, [candidates, copyText, publicCandidatesPath, publicCandidatesUrl, round, toast]);
 
   const pauseRound = async () => {
     if (!roundId || !canPauseRound) return;
@@ -1015,10 +1132,7 @@ export function AdminVotingDetail() {
     const confirmed = window.confirm("¿Seguro que quieres quitar la selección a este candidato? Esta acción no se puede deshacer.");
     if (!confirmed) return;
 
-    const { error } = await supabase
-      .from("candidates")
-      .update({ is_selected: false })
-      .eq("id", candidateId);
+    const { error } = await supabase.rpc("unselect_candidate", { p_candidate_id: candidateId });
 
     if (error) {
       toast({ title: "Error", description: "No se pudo desmarcar al candidato", variant: "destructive" });
@@ -1246,196 +1360,475 @@ export function AdminVotingDetail() {
     );
   }
 
+  const occupiedPct = seatStatus ? Math.round((seatStatus.occupied_seats / (seatStatus.max_votantes || 1)) * 100) : 0;
+  const votesPct = round.max_votantes > 0 ? Math.round((currentRoundVotes / round.max_votantes) * 100) : 0;
+
   return (
     <div className="admin-canvas min-h-screen bg-slate-50/30 dark:bg-background">
-      <div className="container mx-auto max-w-screen-2xl space-y-6 px-4 py-6 md:px-8 md:py-8">
-        
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-outline-variant/30 pb-6 dark:border-border">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin/dashboard")} className="h-8 rounded-full"> 
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver a votaciones
-              </Button>
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span
-                  className={`rounded-full border px-2.5 py-1 font-medium ${
-                    roomIsOpen
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200"
-                      : "border-outline-variant/60 bg-surface-container-lowest/90 dark:border-outline-variant/70 dark:bg-surface-container-low/90 text-foreground"
-                  }`}
+      <div className="container mx-auto max-w-screen-2xl px-4 py-6 md:px-8 md:py-8 space-y-0">
+
+        {/* ── Header ── */}
+        <header className="pb-5 mb-6 border-b border-outline-variant/30 dark:border-border">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/dashboard?tab=votaciones")}
+                  className="h-8 px-3 rounded-lg border-outline-variant/60 bg-background hover:bg-muted/60 text-foreground text-xs font-medium shadow-sm"
                 >
-                  {roundStatusLabel}
-                </span>
-                <span className="admin-chip">Ronda {round.current_round_number}</span>
-                <Badge variant="outline" className="font-normal border-outline-variant/40 opacity-80 rounded-full px-2 py-0.5">
-                  Proyeccion: {projectionStageLabel}
-                </Badge>
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                  Votaciones
+                </Button>
+                <span className="text-muted-foreground/40 text-xs">/</span>
+                <div className="flex items-center gap-1.5">
+                  {round.is_voting_open && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                  )}
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                      round.is_closed
+                        ? "border-muted-foreground/30 bg-muted/50 text-muted-foreground"
+                        : round.is_voting_open
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-300"
+                          : round.is_active
+                            ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-400/35 dark:bg-blue-500/15 dark:text-blue-300"
+                            : "border-outline-variant/50 bg-surface-container-lowest/80 text-foreground"
+                    }`}
+                  >
+                    {roundStatusLabel}
+                  </span>
+                  <span className="text-xs text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50 font-medium">
+                    Ronda {round.current_round_number}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-tight">{round.title}</h1>
+                {round.description && (
+                  <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{round.description}</p>
+                )}
               </div>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{round.title}</h1>
-              {round.description && <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">{round.description}</p>}
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsAnalyticsOpen(true)}
+                className="h-8 rounded-lg border-outline-variant/50 bg-background/80 hover:bg-muted/50 text-xs"
+              >
+                Análisis
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsBallotsOpen(true)}
+                className="h-8 rounded-lg border-outline-variant/50 bg-background/80 hover:bg-muted/50 text-xs"
+              >
+                Papeletas
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsSettingsOpen(true)}
+                className="h-8 rounded-lg border-outline-variant/50 bg-background/80 hover:bg-muted/50 text-xs"
+              >
+                <Settings2 className="w-3.5 h-3.5 mr-1.5" />
+                Ajustes
+              </Button>
+              <Button
+                size="sm"
+                asChild
+                className="h-8 rounded-lg text-xs font-semibold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.65)]"
+              >
+                <a href="/proyeccion" target="_blank" rel="noreferrer">
+                  Proyección
+                  <ArrowUpRight className="w-3.5 h-3.5 ml-1.5" />
+                </a>
+              </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button size="sm" variant="outline" onClick={() => setIsAnalyticsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
-              Analisis
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setIsBallotsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
-              Papeletas
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setIsSettingsOpen(true)} className="rounded-xl border-outline-variant/60 bg-surface-container-lowest/90 hover:bg-muted/50">
-              <Settings2 className="w-4 h-4 mr-2" />
-              Ajustes
-            </Button>
-            <Button
-              size="sm"
-              asChild
-              className="h-9 justify-between rounded-xl px-4 text-white shadow-[0_12px_24px_-12px_rgba(37,99,235,0.7)]"
-            >
-              <a href="/proyeccion" target="_blank" rel="noreferrer" className="font-semibold">
-                Ir a proyeccion
-                <ArrowUpRight className="w-4 h-4 ml-2" />
-              </a>
-            </Button>
+          {/* ── Stat chips ── */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/40 bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+              <span className="text-muted-foreground text-[10px] uppercase tracking-wide font-semibold">Equipo</span>
+              <span className="font-bold">{round.team}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/40 bg-muted/40 px-3 py-1 text-xs font-medium">
+              <span className="text-muted-foreground text-[10px] uppercase tracking-wide font-semibold">Código</span>
+              <span className="font-mono font-bold tracking-widest text-foreground">{round.access_code || "––––"}</span>
+            </span>
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${
+              (seatStatus?.occupied_seats ?? 0) > 0
+                ? "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                : "border-outline-variant/40 bg-muted/40 text-muted-foreground"
+            }`}>
+              <span className="text-[10px] uppercase tracking-wide font-semibold opacity-70">Conectados</span>
+              <span className="font-bold">{seatStatus?.occupied_seats ?? 0}<span className="font-normal opacity-60">/{round.max_votantes}</span></span>
+            </span>
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${
+              currentRoundVotes > 0
+                ? "border-primary/30 bg-primary/8 text-primary dark:bg-primary/15"
+                : "border-outline-variant/40 bg-muted/40 text-muted-foreground"
+            }`}>
+              <span className="text-[10px] uppercase tracking-wide font-semibold opacity-70">Votos</span>
+              <span className="font-bold">{currentRoundVotes}<span className="font-normal opacity-60">/{round.max_votantes}</span></span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/40 bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+              <span className="text-muted-foreground text-[10px] uppercase tracking-wide font-semibold">Candidatos</span>
+              <span className="font-bold">{activeCandidatesCount}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/40 bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+              <span className="text-muted-foreground text-[10px] uppercase tracking-wide font-semibold">Censo</span>
+              <span className="font-bold capitalize">{round.census_mode === "exact" ? "Exacto" : "Máximo"}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200/60 bg-violet-50/60 dark:border-violet-500/20 dark:bg-violet-500/8 px-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300">
+              <span className="text-[10px] uppercase tracking-wide font-semibold opacity-70">Proyección</span>
+              <span className="font-semibold">{projectionStageLabel}</span>
+            </span>
           </div>
         </header>
 
-        {/* Dashboard Upper Section: KPIs and Controls */}
+        {/* ── Main grid ── */}
         <div className="grid gap-6 lg:grid-cols-12 items-start">
-          <div className="lg:col-span-8 xl:col-span-9 grid gap-4 grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Equipo</p>
-                <p className="text-xl font-bold text-foreground">{round.team}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Cupo</p>
-                <p className="text-xl font-bold text-foreground">{round.max_votantes}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Conectados</p>
-                <p className="text-xl font-bold text-foreground">{seatStatus?.occupied_seats ?? 0}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Activos</p>
-                <p className="text-xl font-bold text-foreground">{activeCandidatesCount}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Codigo sala</p>
-                <p className="text-xl font-mono font-bold text-foreground">{round.access_code || "----"}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl shadow-sm border-outline-variant/40 bg-surface-container-lowest/50 dark:bg-surface-container-low/20">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Censo</p>
-                <p className="text-xl font-bold text-foreground capitalize">{round.census_mode === "exact" ? "Exacto" : "Maximo"}</p>
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className="lg:col-span-4 xl:col-span-3">
-            <Card className="rounded-2xl shadow-md border-outline-variant/60 bg-surface-container-lowest/90 dark:bg-surface-container-low/60 overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-              <CardContent className="p-5 space-y-3 relative z-10">
-                <div className="flex items-center justify-between mb-1 text-sm">
-                  <h3 className="font-semibold text-foreground">Control de Votacion</h3>
+          {/* ── Left: Candidates ── */}
+          <section className="lg:col-span-8 xl:col-span-9 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
+                  Candidatos
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    {selectedCandidatesCount} seleccionados · {activeCandidatesCount} activos
+                  </span>
+                </h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar..."
+                    value={candidateSearch}
+                    onChange={(e) => setCandidateSearch(e.target.value)}
+                    className="pl-8 h-8 w-[160px] rounded-lg text-xs bg-background/80"
+                  />
                 </div>
+                {!isVotingStarted && (
+                  <>
+                    <Button size="sm" variant="secondary" onClick={openAddCandidateDialog} className="h-8 rounded-lg text-xs">
+                      <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                      Añadir
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setIsImportOpen(true)} className="h-8 rounded-lg text-xs border-outline-variant/50">
+                      <FileUp className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                      Importar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={openComunicaImport} className="h-8 rounded-lg text-xs border-outline-variant/50">
+                      <ArrowUpRight className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                      Comunica
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setIsDatasetOpen(true)} className="h-8 rounded-lg text-xs border-outline-variant/50">
+                      <Download className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                      Dataset
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-outline-variant/40 bg-background/70 dark:bg-surface-container-low/30 shadow-sm">
+              {candidates.length === 0 ? (
+                <div className="py-12 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+                  <UserPlus className="w-7 h-7 opacity-20" />
+                  <p className="font-medium">Sin candidatos</p>
+                  <p className="text-xs">Usa Añadir o Importar para comenzar.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-outline-variant/15 dark:divide-outline-variant/25">
+                  {candidates
+                    .filter((c) => {
+                      const query = candidateSearch.toLowerCase();
+                      return (
+                        c.name.toLowerCase().includes(query) ||
+                        c.surname?.toLowerCase().includes(query) ||
+                        c.location?.toLowerCase().includes(query)
+                      );
+                    })
+                    .map((candidate) => {
+                      const initials = `${candidate.name[0] ?? ""}${candidate.surname?.[0] ?? ""}`.toUpperCase();
+                      return (
+                        <div
+                          key={candidate.id}
+                          className={`flex items-center gap-3 px-4 py-2.5 hover:bg-muted/25 transition-colors text-sm ${
+                            candidate.is_eliminated ? "opacity-50" : ""
+                          }`}
+                        >
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                              candidate.is_selected
+                                ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-400/40"
+                                : candidate.is_eliminated
+                                  ? "bg-muted text-muted-foreground"
+                                  : "bg-muted/60 text-foreground/70"
+                            }`}
+                          >
+                            {initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate leading-snug">{formatCandidateName(candidate)}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {candidate.location || "Sin ubicación"}
+                              {candidate.group_name ? ` · ${candidate.group_name}` : ""}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {candidate.is_selected && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-400/40">
+                                Seleccionado
+                              </span>
+                            )}
+                            {candidate.is_eliminated && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
+                                Eliminado
+                              </span>
+                            )}
+                            <div className="flex items-center border-l border-outline-variant/25 pl-1.5 ml-0.5">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => openEditCandidateDialog(candidate)}
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </Button>
+                              {candidate.is_selected && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => unselectCandidate(candidate.id)}
+                                  className="h-7 w-7 text-muted-foreground hover:text-amber-500"
+                                  title="Desmarcar como seleccionado"
+                                >
+                                  <Undo2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              {!isVotingStarted && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => deleteCandidate(candidate.id)}
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  title="Eliminar candidato"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ── Right: Controls + Connections ── */}
+          <div className="lg:col-span-4 xl:col-span-3 space-y-4">
+
+            {/* Control card */}
+            <Card className="rounded-xl border-outline-variant/50 bg-background/90 dark:bg-surface-container-low/50 shadow-sm overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-outline-variant/20">
+                <h3 className="text-sm font-semibold text-foreground">Control</h3>
+              </div>
+              <CardContent className="p-4 space-y-2.5">
                 <Button
                   size="default"
-                  className={`h-11 w-full justify-center rounded-xl px-4 text-sm font-semibold transition-all ${
+                  className={`h-10 w-full justify-center rounded-lg text-sm font-semibold ${
                     workflowActionVariant === "default"
-                      ? "text-white shadow-[0_8px_16px_-8px_rgba(37,99,235,0.6)]"
-                      : "border border-outline-variant/60 bg-surface-container-lowest/90 text-foreground hover:bg-muted/50"
+                      ? "text-white shadow-[0_6px_14px_-6px_rgba(37,99,235,0.55)]"
+                      : "border border-outline-variant/50 bg-muted/30 text-foreground hover:bg-muted/60"
                   }`}
                   variant={workflowActionVariant}
                   onClick={runProjectionWorkflowStep}
                   disabled={workflowActionDisabled}
                 >
-                  {(workflowActionLabel === "Iniciar ronda" || workflowActionLabel === "Abrir sala") ? (
+                  {workflowActionLabel === "Iniciar ronda" || workflowActionLabel === "Abrir sala" ? (
                     <Play className="w-4 h-4 mr-2" />
                   ) : (
                     <StepForward className="w-4 h-4 mr-2" />
                   )}
                   {workflowActionLabel}
                 </Button>
-                
-                <div className="mt-4 pt-4 border-t border-outline-variant/30 flex flex-col gap-3">
-                  {!round.round_finalized && !round.is_closed && round.is_active && (
-                    <Button
-                      size="sm"
-                      className="rounded-xl h-9 text-xs font-medium border-outline-variant/60"
-                      variant="outline"
-                      onClick={canPauseRound ? pauseRound : resumeRound}
-                      disabled={!canPauseRound && !canResumeRound}
-                    >
-                      {canPauseRound ? (
-                        <>
-                          <Pause className="w-3.5 h-3.5 mr-1.5" />
-                          Pausar Participación
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 mr-1.5" />
-                          Reanudar Participación
-                        </>
-                      )}
-                    </Button>
-                  )}
 
-                  {isProjectingSomething && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={hideAllResults} 
-                      className="rounded-xl w-full text-xs bg-muted/40 hover:bg-destructive/10 hover:text-destructive border-outline-variant/60 shadow-sm"
-                    >
-                      <MonitorOff className="w-4 h-4 mr-1.5" />
-                      Apagar Proyección Especial
-                    </Button>
-                  )}
+                {!round.round_finalized && !round.is_closed && round.is_active && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-full rounded-lg text-xs border-outline-variant/50"
+                    onClick={canPauseRound ? pauseRound : resumeRound}
+                    disabled={!canPauseRound && !canResumeRound}
+                  >
+                    {canPauseRound ? (
+                      <><Pause className="w-3.5 h-3.5 mr-1.5" />Pausar participación</>
+                    ) : (
+                      <><Play className="w-3.5 h-3.5 mr-1.5" />Reanudar participación</>
+                    )}
+                  </Button>
+                )}
 
+                {isProjectingSomething && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={hideAllResults}
+                    className="h-8 w-full rounded-lg text-xs border-outline-variant/50 hover:bg-destructive/8 hover:text-destructive"
+                  >
+                    <MonitorOff className="w-3.5 h-3.5 mr-1.5" />
+                    Apagar proyección especial
+                  </Button>
+                )}
+
+                <div className="pt-1 space-y-2">
                   {isVotingFinishedAndReviewed && (
-                    <div className="flex flex-col gap-4 bg-muted/20 p-3 rounded-xl border border-outline-variant/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                          <Label htmlFor="gallery-projection" className="text-sm font-semibold flex items-center">
-                            <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
-                            Pantalla de Resultados
-                          </Label>
-                          <span className="text-[11px] text-muted-foreground">Proyectar estado final en pantalla</span>
-                        </div>
-                        <Switch
-                          id="gallery-projection"
-                          checked={Boolean(round.show_final_gallery_projection)}
-                          onCheckedChange={toggleFinalResults}
-                          className="data-[state=checked]:bg-emerald-500"
-                        />
-                      </div>
+                    <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-muted/30 border border-outline-variant/25">
+                      <Label htmlFor="gallery-projection" className="text-xs font-medium flex items-center gap-1.5 cursor-pointer">
+                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                        Pantalla de resultados
+                      </Label>
+                      <Switch
+                        id="gallery-projection"
+                        checked={Boolean(round.show_final_gallery_projection)}
+                        onCheckedChange={toggleFinalResults}
+                        className="data-[state=checked]:bg-emerald-500 scale-90"
+                      />
                     </div>
                   )}
 
-                  {!round.is_closed && (
-                    <Button
-                      size="sm"
-                      className="rounded-xl h-9 text-xs font-semibold bg-destructive/10 text-destructive hover:bg-destructive hover:text-white border border-destructive/20 mt-2"
-                      variant="ghost"
-                      onClick={closeVoting}
-                    >
-                      <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                      Cerrar Ronda Definitivamente
-                    </Button>
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-muted/30 border border-outline-variant/25">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Label htmlFor="public-candidates" className="text-xs font-medium flex items-center gap-1.5 cursor-pointer">
+                        <Globe className="w-3.5 h-3.5 text-primary" />
+                        Lista pública
+                      </Label>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={copyPublicCandidatesLink}
+                        disabled={!publicCandidatesUrl}
+                        aria-label="Copiar enlace"
+                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Switch
+                      id="public-candidates"
+                      checked={Boolean(round.public_candidates_enabled)}
+                      onCheckedChange={togglePublicCandidates}
+                      className="data-[state=checked]:bg-blue-500 scale-90"
+                    />
+                  </div>
+                </div>
+
+                {!round.is_closed && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={closeVoting}
+                    className="h-8 w-full rounded-lg text-xs font-medium bg-destructive/8 text-destructive hover:bg-destructive hover:text-white border border-destructive/15 mt-1"
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                    Cerrar ronda definitivamente
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Connections card */}
+            <Card className="rounded-xl border-outline-variant/50 bg-background/90 dark:bg-surface-container-low/50 shadow-sm overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-outline-variant/20">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Conexiones</h3>
+                  <span className="text-xs text-muted-foreground">{round.join_locked ? "Entrada bloqueada" : "Entrada abierta"}</span>
+                </div>
+              </div>
+              <CardContent className="p-4 space-y-3">
+                {/* Capacity bar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Ocupación sala</span>
+                    <span className="font-semibold text-foreground">{seatStatus?.occupied_seats ?? 0} / {round.max_votantes}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                      style={{ width: `${Math.min(occupiedPct, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Vote progress bar */}
+                {round.is_active && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Votos ronda {round.current_round_number}</span>
+                      <span className="font-semibold text-foreground">{currentRoundVotes} / {round.max_votantes}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        style={{ width: `${Math.min(votesPct, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-2 pt-0.5">
+                  {[
+                    { label: "Ocupados", value: seatStatus?.occupied_seats ?? 0, color: "text-emerald-600 dark:text-emerald-400" },
+                    { label: "Expirados", value: seatStatus?.expired_seats ?? 0, color: "text-muted-foreground" },
+                    { label: "Libres", value: seatStatus?.available_seats ?? 0, color: "text-foreground" },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="text-center p-2 rounded-lg bg-muted/30 border border-outline-variant/20">
+                      <p className={`text-base font-bold ${color}`}>{value}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="max-h-52 overflow-y-auto rounded-lg border border-outline-variant/25 bg-muted/10 scrollbar-thin">
+                  {seats.length === 0 ? (
+                    <p className="p-4 text-center text-xs text-muted-foreground">Sin conexiones.</p>
+                  ) : (
+                    <div className="divide-y divide-outline-variant/15">
+                      {seats.map((seat) => (
+                        <div key={seat.id} className="flex items-center justify-between gap-2 px-3 py-2 text-[11px] hover:bg-muted/30 transition-colors">
+                          <span className="font-mono text-muted-foreground truncate">{seat.browser_instance_id.slice(0, 8)}</span>
+                          <span
+                            className={`shrink-0 font-medium ${
+                              seat.estado === "ocupado"
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : seat.estado === "expirado"
+                                  ? "text-muted-foreground"
+                                  : "text-primary"
+                            }`}
+                          >
+                            {seat.estado}
+                          </span>
+                          <span className="text-muted-foreground/60 shrink-0">
+                            {new Date(seat.last_seen_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -1443,363 +1836,218 @@ export function AdminVotingDetail() {
           </div>
         </div>
 
-        {/* Lists Section: Candidates & Seats */}
-        <section className="grid gap-8 lg:grid-cols-12 pt-4">
-          
-          <div className="lg:col-span-8 xl:col-span-9 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 dark:border-border pb-4">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight text-foreground">Candidatos</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Seleccionados: <span className="font-medium">{selectedCandidatesCount}</span> / Activos: <span className="font-medium">{activeCandidatesCount}</span></p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar candidato..."
-                    value={candidateSearch}
-                    onChange={(e) => setCandidateSearch(e.target.value)}
-                    className="pl-9 h-9 w-full sm:w-[200px] rounded-xl text-xs bg-surface-container-lowest/50"
-                  />
-                </div>
-                {!isVotingStarted && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button size="sm" variant="secondary" onClick={openAddCandidateDialog} className="rounded-xl h-9 shadow-sm">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Añadir
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => setIsImportOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                      <FileUp className="w-4 h-4 mr-2 text-muted-foreground" />
-                      Importar
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={openComunicaImport} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                      <ArrowUpRight className="w-4 h-4 mr-2 text-muted-foreground" />
-                      Comunica
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => setIsDatasetOpen(true)} className="rounded-xl h-9 shadow-sm bg-surface-container-lowest border border-outline-variant/30 hover:bg-muted/50">
-                      <Download className="w-4 h-4 mr-2 text-muted-foreground" />
-                      Dataset
+        {/* ── Dialogs ── */}
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <DialogContent className="admin-shell max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Configuracion de la votacion</DialogTitle>
+              <DialogDescription>Actualiza codigo de acceso, censo y panel de papeletas en proyeccion.</DialogDescription>
+            </DialogHeader>
+            <section className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="access_code_detail">Codigo de acceso</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="access_code_detail"
+                      value={configAccessCode}
+                      maxLength={4}
+                      placeholder="A1B2"
+                      className="font-mono"
+                      readOnly
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setConfigAccessCode(generateAccessCode())}
+                      className="shrink-0"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Generar
                     </Button>
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Modo de censo</Label>
+                  <Select value={configCensusMode} onValueChange={(value: "maximum" | "exact") => setConfigCensusMode(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="maximum">Maximum (inicio manual)</SelectItem>
+                      <SelectItem value="exact">Exact (conectados == cupo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button size="sm" onClick={saveConfig} disabled={savingConfig}>
+                  {savingConfig ? "Guardando..." : "Guardar configuracion"}
+                </Button>
+              </div>
+            </section>
+          </DialogContent>
+        </Dialog>
+
+        {isAnalyticsOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm" onClick={() => setIsAnalyticsOpen(false)}>
+            <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-background shadow-xl dark:border-outline-variant/65 dark:bg-background" onClick={(event) => event.stopPropagation()}>
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <h3 className="text-sm font-semibold">Análisis de resultados</h3>
+                <Button size="sm" variant="ghost" onClick={() => setIsAnalyticsOpen(false)}>Cerrar</Button>
+              </div>
+              <div className="h-[calc(90vh-57px)] overflow-auto p-4">
+                <ResultsAnalytics lockedRoundId={round.id} />
               </div>
             </div>
-
-            <div className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest/80 dark:border-outline-variant/50 dark:bg-surface-container-low/40 shadow-sm">
-              {candidates.length === 0 ? (
-                <div className="px-6 py-10 text-center text-sm text-muted-foreground flex flex-col items-center">
-                  <UserPlus className="w-8 h-8 mb-3 opacity-20" />
-                  <p>Todavía no hay candidatos.</p>
-                  <p className="text-xs mt-1">Usa Añadir o Importar para comenzar.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-outline-variant/20 dark:divide-outline-variant/30">
-                  {candidates
-                    .filter((c) => {
-                       const query = candidateSearch.toLowerCase();
-                       return c.name.toLowerCase().includes(query) || 
-                              c.surname?.toLowerCase().includes(query) || 
-                              c.location?.toLowerCase().includes(query) ||
-                              c.email?.toLowerCase().includes(query);
-                    })
-                    .map((candidate) => (
-                    <div key={candidate.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-muted/30 transition-colors">
-                      <div className="flex-1">
-                        <p className="font-semibold text-foreground">{candidate.name} {candidate.surname}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {candidate.location || "Sin ubicacion"} {candidate.group_name ? `• ${candidate.group_name}` : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                        {candidate.is_selected && <Badge className="bg-primary/10 text-primary hover:bg-primary/20">Seleccionado</Badge>}
-                        {candidate.is_eliminated && <Badge variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-transparent">Eliminado</Badge>}
-                        <div className="flex items-center ml-2 border-l border-outline-variant/30 pl-2">
-                          <Button size="icon" variant="ghost" onClick={() => openEditCandidateDialog(candidate)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          {candidate.is_selected && (
-                            <Button size="icon" variant="ghost" onClick={() => unselectCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-warning" title="Desmarcar como seleccionado">
-                              <Undo2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                          {!isVotingStarted && (
-                            <Button size="icon" variant="ghost" onClick={() => deleteCandidate(candidate.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive" title="Eliminar candidato">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
+        )}
 
-          <div className="lg:col-span-4 xl:col-span-3 space-y-5">
-            <div className="border-b border-outline-variant/30 dark:border-border pb-4">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">Conexiones</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">Estado de la sala</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Ocupados</p>
-                <p className="font-bold text-base mt-0.5">{seatStatus?.occupied_seats ?? 0}</p>
-              </Card>
-              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Disponibles</p>
-                <p className="font-bold text-base mt-0.5">{seatStatus?.available_seats ?? 0}</p>
-              </Card>
-              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Expirados</p>
-                <p className="font-bold text-base mt-0.5">{seatStatus?.expired_seats ?? 0}</p>
-              </Card>
-              <Card className="rounded-xl shadow-sm border-outline-variant/30 bg-surface-container-lowest/50 text-center py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Entrada</p>
-                <p className="font-bold text-base mt-0.5">{round.join_locked ? "Bloqueada" : "Abierta"}</p>
-              </Card>
-            </div>
-
-            <div className="max-h-72 overflow-y-auto rounded-2xl border border-outline-variant/40 bg-surface-container-lowest/80 dark:border-outline-variant/50 dark:bg-surface-container-low/40 shadow-sm scrollbar-thin">
-              {seats.length === 0 ? (
-                <p className="p-5 text-center text-sm text-muted-foreground">Sin conexiones registradas.</p>
-              ) : (
-                <div className="divide-y divide-outline-variant/20 dark:divide-outline-variant/30">
-                  {seats.map((seat) => (
-                    <div key={seat.id} className="flex items-center justify-between gap-2 px-4 py-2.5 text-xs hover:bg-muted/30 transition-colors">
-                      <span className="font-mono text-muted-foreground">{seat.browser_instance_id.slice(0, 8)}...</span>
-                      <Badge 
-                        variant="outline" 
-                        className={`px-1.5 py-0 text-[10px] font-medium border-transparent ${
-                          seat.estado === "ocupado" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : 
-                          seat.estado === "expirado" ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
-                        }`}
-                      >
-                        {seat.estado}
-                      </Badge>
-                      <span className="text-muted-foreground/70">{new Date(seat.last_seen_at).toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Dialogs and Modals */}
-        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="admin-shell max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Configuracion de la votacion</DialogTitle>
-            <DialogDescription>Actualiza codigo de acceso, censo y panel de papeletas en proyeccion.</DialogDescription>
-          </DialogHeader>
-          <section className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="access_code_detail">Codigo de acceso</Label>
+        {isBallotsOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm" onClick={() => setIsBallotsOpen(false)}>
+            <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-background shadow-xl dark:border-outline-variant/65 dark:bg-background" onClick={(event) => event.stopPropagation()}>
+              <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+                <h3 className="text-sm font-semibold">Revisión de papeletas</h3>
                 <div className="flex items-center gap-2">
-                  <Input
-                    id="access_code_detail"
-                    value={configAccessCode}
-                    maxLength={4}
-                    placeholder="A1B2"
-                    className="font-mono"
-                    readOnly
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setConfigAccessCode(generateAccessCode())}
-                    className="shrink-0"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Generar
+                  <Button size="sm" variant="secondary" onClick={exportBallotsCsv} disabled={!round.is_closed}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar CSV
                   </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsBallotsOpen(false)}>Cerrar</Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Siempre aleatorio: 4 caracteres alfanumericos.</p>
               </div>
+              <div className="h-[calc(90vh-57px)] overflow-auto p-4">
+                <BallotReview lockedRoundId={round.id} showHeader={false} />
+              </div>
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-2">
-                <Label>Modo de censo</Label>
-                <Select value={configCensusMode} onValueChange={(value: "maximum" | "exact") => setConfigCensusMode(value)}>
+        <Dialog open={isAddCandidateOpen} onOpenChange={setIsAddCandidateOpen}>
+          <DialogContent className="admin-shell max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Añadir candidato</DialogTitle>
+              <DialogDescription>Completa los datos principales del candidato.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Nombre</Label>
+                  <Input value={candidateForm.name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, name: event.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Apellido</Label>
+                  <Input value={candidateForm.surname} onChange={(event) => setCandidateForm((prev) => ({ ...prev, surname: event.target.value }))} />
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Ubicacion</Label>
+                  <Input value={candidateForm.location} onChange={(event) => setCandidateForm((prev) => ({ ...prev, location: event.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Grupo</Label>
+                  <Input value={candidateForm.group_name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, group_name: event.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Descripcion</Label>
+                <Textarea value={candidateForm.description} onChange={(event) => setCandidateForm((prev) => ({ ...prev, description: event.target.value }))} />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsAddCandidateOpen(false)}>Cancelar</Button>
+                <Button onClick={addCandidate}>Guardar candidato</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isEditCandidateOpen} onOpenChange={setIsEditCandidateOpen}>
+          <DialogContent className="admin-shell max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Editar candidato</DialogTitle>
+              <DialogDescription>Actualiza los datos del candidato seleccionado.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Nombre</Label>
+                  <Input value={candidateForm.name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, name: event.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Apellido</Label>
+                  <Input value={candidateForm.surname} onChange={(event) => setCandidateForm((prev) => ({ ...prev, surname: event.target.value }))} />
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Ubicacion</Label>
+                  <Input value={candidateForm.location} onChange={(event) => setCandidateForm((prev) => ({ ...prev, location: event.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Grupo</Label>
+                  <Input value={candidateForm.group_name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, group_name: event.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Descripcion</Label>
+                <Textarea value={candidateForm.description} onChange={(event) => setCandidateForm((prev) => ({ ...prev, description: event.target.value }))} />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditCandidateOpen(false)}>Cancelar</Button>
+                <Button onClick={updateCandidate}>Guardar cambios</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+          <DialogContent className="admin-shell max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Importar candidatos</DialogTitle>
+              <DialogDescription>Sube un archivo CSV, XML o JSON con los candidatos.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              {importingFile && <p className="text-sm text-muted-foreground">Importando candidatos...</p>}
+              <Input type="file" accept=".csv,.xml,.json" onChange={handleFileImport} disabled={importingFile} />
+              <p className="text-xs text-muted-foreground">Usa los ejemplos del proyecto (Mundial de desayunos) para el formato.</p>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setIsImportOpen(false)}>Cerrar</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isDatasetOpen} onOpenChange={setIsDatasetOpen}>
+          <DialogContent className="admin-shell max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Cargar dataset de ejemplo</DialogTitle>
+              <DialogDescription>Inserta un dataset predefinido para pruebas rapidas.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Select value={selectedDatasetId} onValueChange={setSelectedDatasetId}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona un dataset" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="maximum">Maximum (inicio manual)</SelectItem>
-                    <SelectItem value="exact">Exact (conectados == cupo)</SelectItem>
+                    {testDatasets.map((dataset) => (
+                      <SelectItem key={dataset.id} value={dataset.id}>
+                        {dataset.emoji} {dataset.title}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button size="sm" onClick={saveConfig} disabled={savingConfig}>
-                {savingConfig ? "Guardando..." : "Guardar configuracion"}
-              </Button>
-            </div>
-          </section>
-        </DialogContent>
-      </Dialog>
-
-      {isAnalyticsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--backdrop)/0.6)] p-4 backdrop-blur-sm" onClick={() => setIsAnalyticsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest/92 shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">Análisis de resultados</h3>
-              <Button size="sm" variant="ghost" onClick={() => setIsAnalyticsOpen(false)}>Cerrar</Button>
-            </div>
-            <div className="h-[calc(90vh-57px)] overflow-auto p-4">
-              <ResultsAnalytics lockedRoundId={round.id} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isBallotsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--backdrop)/0.6)] p-4 backdrop-blur-sm" onClick={() => setIsBallotsOpen(false)}>
-          <div className="h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest/92 shadow-tech dark:border-outline-variant/65 dark:bg-surface-container-low/88" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">Revisión de papeletas</h3>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="secondary" onClick={exportBallotsCsv} disabled={!round.is_closed}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar CSV
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setIsBallotsOpen(false)}>Cerrar</Button>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDatasetOpen(false)} disabled={loadingDataset}>Cancelar</Button>
+                <Button onClick={loadDataset} disabled={loadingDataset}>{loadingDataset ? "Cargando..." : "Insertar dataset"}</Button>
               </div>
             </div>
-            <div className="h-[calc(90vh-57px)] overflow-auto p-4">
-              <BallotReview lockedRoundId={round.id} showHeader={false} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Dialog open={isAddCandidateOpen} onOpenChange={setIsAddCandidateOpen}>
-        <DialogContent className="admin-shell max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Añadir candidato</DialogTitle>
-            <DialogDescription>Completa los datos principales del candidato.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3">
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Nombre</Label>
-                <Input value={candidateForm.name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, name: event.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Apellido</Label>
-                <Input value={candidateForm.surname} onChange={(event) => setCandidateForm((prev) => ({ ...prev, surname: event.target.value }))} />
-              </div>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Ubicacion</Label>
-                <Input value={candidateForm.location} onChange={(event) => setCandidateForm((prev) => ({ ...prev, location: event.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Grupo</Label>
-                <Input value={candidateForm.group_name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, group_name: event.target.value }))} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Descripcion</Label>
-              <Textarea value={candidateForm.description} onChange={(event) => setCandidateForm((prev) => ({ ...prev, description: event.target.value }))} />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddCandidateOpen(false)}>Cancelar</Button>
-              <Button onClick={addCandidate}>Guardar candidato</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isEditCandidateOpen} onOpenChange={setIsEditCandidateOpen}>
-        <DialogContent className="admin-shell max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Editar candidato</DialogTitle>
-            <DialogDescription>Actualiza los datos del candidato seleccionado.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3">
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Nombre</Label>
-                <Input value={candidateForm.name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, name: event.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Apellido</Label>
-                <Input value={candidateForm.surname} onChange={(event) => setCandidateForm((prev) => ({ ...prev, surname: event.target.value }))} />
-              </div>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Ubicacion</Label>
-                <Input value={candidateForm.location} onChange={(event) => setCandidateForm((prev) => ({ ...prev, location: event.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Grupo</Label>
-                <Input value={candidateForm.group_name} onChange={(event) => setCandidateForm((prev) => ({ ...prev, group_name: event.target.value }))} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Descripcion</Label>
-              <Textarea value={candidateForm.description} onChange={(event) => setCandidateForm((prev) => ({ ...prev, description: event.target.value }))} />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditCandidateOpen(false)}>Cancelar</Button>
-              <Button onClick={updateCandidate}>Guardar cambios</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
-        <DialogContent className="admin-shell max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Importar candidatos</DialogTitle>
-            <DialogDescription>Sube un archivo CSV, XML o JSON con los candidatos.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            {importingFile && <p className="text-sm text-muted-foreground">Importando candidatos...</p>}
-            <Input type="file" accept=".csv,.xml,.json" onChange={handleFileImport} disabled={importingFile} />
-            <p className="text-xs text-muted-foreground">Usa los ejemplos del proyecto (Mundial de desayunos) para el formato.</p>
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={() => setIsImportOpen(false)}>Cerrar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isDatasetOpen} onOpenChange={setIsDatasetOpen}>
-        <DialogContent className="admin-shell max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Cargar dataset de ejemplo</DialogTitle>
-            <DialogDescription>Inserta un dataset predefinido para pruebas rapidas.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Select value={selectedDatasetId} onValueChange={setSelectedDatasetId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un dataset" />
-                </SelectTrigger>
-                <SelectContent>
-                  {testDatasets.map((dataset) => (
-                    <SelectItem key={dataset.id} value={dataset.id}>
-                      {dataset.emoji} {dataset.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsDatasetOpen(false)} disabled={loadingDataset}>Cancelar</Button>
-              <Button onClick={loadDataset} disabled={loadingDataset}>{loadingDataset ? "Cargando..." : "Insertar dataset"}</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

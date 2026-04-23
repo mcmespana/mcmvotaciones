@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Lock, Send, CheckCircle2 } from "lucide-react";
+import confetti from "canvas-confetti";
 
 interface VoteSubmitAnimationProps {
   /** Whether the animation should be shown */
@@ -38,6 +39,42 @@ const STEPS = [
   },
 ];
 
+function fireCannonConfetti() {
+  const duration = 1400;
+  const end = Date.now() + duration;
+
+  const colors = ["#10B981", "#34D399", "#6EE7B7", "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#ffffff"];
+
+  const frame = () => {
+    confetti({
+      particleCount: 2,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.65 },
+      colors,
+      gravity: 0.9,
+      scalar: 1.1,
+      drift: 0.1,
+    });
+    confetti({
+      particleCount: 2,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.65 },
+      colors,
+      gravity: 0.9,
+      scalar: 1.1,
+      drift: -0.1,
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  };
+
+  frame();
+}
+
 export function VoteSubmitAnimation({
   isVisible,
   onComplete,
@@ -45,11 +82,13 @@ export function VoteSubmitAnimation({
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const confettiFired = useRef(false);
 
   const reset = useCallback(() => {
     setCurrentStep(0);
     setProgress(0);
     setShowConfetti(false);
+    confettiFired.current = false;
   }, []);
 
   useEffect(() => {
@@ -83,7 +122,6 @@ export function VoteSubmitAnimation({
           if (stepIndex < STEPS.length) {
             setTimeout(() => advanceStep(), 200);
           } else {
-            // Final step done
             setShowConfetti(true);
             setTimeout(() => onComplete(), 2000);
           }
@@ -92,7 +130,6 @@ export function VoteSubmitAnimation({
       }, 30);
     };
 
-    // Start after a tiny delay for the dialog to render
     const startTimeout = setTimeout(() => advanceStep(), 200);
 
     return () => {
@@ -100,6 +137,13 @@ export function VoteSubmitAnimation({
       clearInterval(progressInterval);
     };
   }, [isVisible, onComplete, reset]);
+
+  useEffect(() => {
+    if (showConfetti && !confettiFired.current) {
+      confettiFired.current = true;
+      fireCannonConfetti();
+    }
+  }, [showConfetti]);
 
   if (!isVisible) return null;
 
@@ -109,21 +153,18 @@ export function VoteSubmitAnimation({
   return (
     <Dialog open={isVisible} modal>
       <DialogContent
-        className="sm:max-w-sm rounded-[1.75rem] border border-outline-variant/60 bg-surface-container-lowest/96 backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/94"
+        className="sm:max-w-sm rounded-[1.75rem] border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        // Hide the close button
         onInteractOutside={(e) => e.preventDefault()}
       >
         <div className="py-6 text-center">
           {/* Animated icon */}
           <div className="relative mx-auto mb-6 w-24 h-24">
-            {/* Glow ring */}
             <div
               className={`absolute inset-0 rounded-full opacity-30 animate-ping ${step.glowColor}`}
               style={{ animationDuration: "1.5s" }}
             />
-            {/* Icon container */}
             <div
               className={`relative w-24 h-24 rounded-full bg-muted flex items-center justify-center transition-all duration-500 ${
                 showConfetti ? "scale-110" : "scale-100"
@@ -160,33 +201,6 @@ export function VoteSubmitAnimation({
                 }`}
                 style={{ width: `${progress}%` }}
               />
-            </div>
-          )}
-
-          {/* Confetti particles (CSS-only) */}
-          {showConfetti && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full animate-bounce"
-                  style={{
-                    left: `${10 + Math.random() * 80}%`,
-                    top: `${Math.random() * 60}%`,
-                    backgroundColor: [
-                      "#10B981",
-                      "#3B82F6",
-                      "#F59E0B",
-                      "#EF4444",
-                      "#8B5CF6",
-                      "#EC4899",
-                    ][i % 6],
-                    animationDelay: `${Math.random() * 0.5}s`,
-                    animationDuration: `${0.5 + Math.random() * 1}s`,
-                    opacity: 0.7,
-                  }}
-                />
-              ))}
             </div>
           )}
         </div>

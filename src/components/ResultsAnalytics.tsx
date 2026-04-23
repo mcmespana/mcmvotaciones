@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { formatSurname } from "@/lib/candidateFormat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -140,7 +141,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
   // Chart data
   const barData = results.map((r) => ({
     name: normalizeCandidate(r.candidate)
-      ? `${normalizeCandidate(r.candidate)!.name} ${normalizeCandidate(r.candidate)!.surname.charAt(0)}.`
+      ? `${normalizeCandidate(r.candidate)!.name} ${formatSurname(normalizeCandidate(r.candidate)!.surname)}`
       : "?",
     votos: r.vote_count,
     porcentaje: r.percentage,
@@ -151,7 +152,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
     .filter((r) => r.vote_count > 0)
     .map((r) => ({
       name: normalizeCandidate(r.candidate)
-        ? `${normalizeCandidate(r.candidate)!.name} ${normalizeCandidate(r.candidate)!.surname}`
+        ? `${normalizeCandidate(r.candidate)!.name} ${formatSurname(normalizeCandidate(r.candidate)!.surname)}`
         : "?",
       value: r.vote_count,
     }));
@@ -262,7 +263,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
           <CardContent>
             <div className="text-lg font-bold truncate">
               {topCandidateInfo
-                ? `${topCandidateInfo.name} ${topCandidateInfo.surname}`
+                ? `${topCandidateInfo.name} ${formatSurname(topCandidateInfo.surname)}`
                 : "—"}
             </div>
           </CardContent>
@@ -382,7 +383,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                     <td className="py-2 px-3 font-medium">{i + 1}</td>
                     <td className="py-2 px-3 font-medium">
                       {normalizeCandidate(r.candidate)
-                        ? `${normalizeCandidate(r.candidate)!.name} ${normalizeCandidate(r.candidate)!.surname}`
+                        ? `${normalizeCandidate(r.candidate)!.name} ${formatSurname(normalizeCandidate(r.candidate)!.surname)}`
                         : "—"}
                     </td>
                     <td className="py-2 px-3 text-muted-foreground">

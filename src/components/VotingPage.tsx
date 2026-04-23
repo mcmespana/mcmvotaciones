@@ -1,4 +1,5 @@
-import { Vote, Copy, Trash2 } from 'lucide-react';
+import { Vote, Copy, Trash2, CheckCircle2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { formatSurname } from '@/lib/candidateFormat';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -85,6 +86,90 @@ interface VoteReceipt {
   createdAt: string;
 }
 
+function VoteReceiptReveal({
+  voteHashCode,
+  voteReceipt,
+  onCopy,
+}: {
+  voteHashCode: string;
+  voteReceipt: VoteReceipt | null;
+  onCopy: () => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setRevealed(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div>
+      <button
+        onClick={() => setRevealed((v) => !v)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-sm text-emerald-200/80 hover:text-emerald-100 hover:bg-emerald-800/30 transition-colors"
+      >
+        <span className="flex items-center gap-2 font-medium">
+          {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {revealed ? "Ocultar mi papeleta" : "Ver código y papeleta"}
+        </span>
+        <span className="text-emerald-400/60 text-xs">{revealed ? "▲" : "▼"}</span>
+      </button>
+
+      {revealed && (
+        <div className="px-4 pb-4 space-y-3">
+          {voteHashCode && (
+            <div className="overflow-hidden rounded-2xl border border-emerald-400/30 bg-emerald-900/80">
+              <div className="px-5 pt-4 pb-2 text-center">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-emerald-400/70 mb-3">
+                  Código de verificación
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="font-mono text-2xl font-black tracking-[0.15em] text-emerald-300">
+                    {voteHashCode}
+                  </span>
+                  <button
+                    onClick={onCopy}
+                    aria-label="Copiar código"
+                    className="h-8 w-8 flex items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-800 text-emerald-300 hover:bg-emerald-700 transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="px-5 pb-4 text-center">
+                <p className="text-[10px] text-emerald-400/60 font-medium">
+                  Conserva este código para auditar tu voto
+                </p>
+              </div>
+            </div>
+          )}
+
+          {voteReceipt && (
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-900/70 overflow-hidden">
+              <div className="px-4 py-3 border-b border-emerald-400/15 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-400/70">
+                  Tu papeleta emitida
+                </p>
+              </div>
+              <div className="px-4 py-3 space-y-2">
+                {voteReceipt.votes.map((vote, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm font-semibold text-emerald-100">{vote || "—"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function VotingPage() {
   const [activeRound, setActiveRound] = useState<Round | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -155,7 +240,7 @@ export function VotingPage() {
     const selectedNames = candidateIds
       .map((candidateId) => {
         const candidate = candidates.find((item) => item.id === candidateId);
-        return candidate ? `${candidate.name} ${candidate.surname}`.trim() : '-';
+        return candidate ? `${candidate.name} ${formatSurname(candidate.surname)}`.trim() : '-';
       })
       .slice(0, 3);
 
@@ -788,7 +873,7 @@ export function VotingPage() {
 
   const selectedCandidateNames = selectedCandidates.map((id) => {
     const candidate = candidates.find((c) => c.id === id);
-    return candidate ? `${candidate.name} ${candidate.surname}` : id;
+    return candidate ? `${candidate.name} ${formatSurname(candidate.surname)}` : id;
   });
 
   const clearSelection = () => {
@@ -969,11 +1054,8 @@ export function VotingPage() {
               ? `Sigues conectado con éxito a la sala "${activeRound.title}". Por favor, espera a que la administración reanude la sesión.`
               : `Has accedido a "${activeRound.title}". Todo está listo, solo espera a que el administrador dé luz verde para comenzar.`}
           </p>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 cursor-default select-none">
+            <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
             Asiento validado y seguro
           </div>
         </Card>
@@ -1176,70 +1258,54 @@ export function VotingPage() {
     // Si el usuario ha votado pero no están visibles para todos, mostrar gracias
     if (hasVoted) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-emerald-950 dark:bg-emerald-950">
         <ThemeToggle mode="floating" />
 
-        {/* Decorative background elements */}
-        <div className="pointer-events-none absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-primary/20 blur-[120px] mix-blend-screen" />
-        <div className="pointer-events-none absolute -bottom-[20%] -left-[10%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[100px] mix-blend-screen" />
+        {/* Background atmosphere */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-[15%] left-[10%] w-[500px] h-[500px] rounded-full bg-emerald-500/20 blur-[130px]" />
+          <div className="absolute -bottom-[15%] right-[5%] w-[400px] h-[400px] rounded-full bg-emerald-600/15 blur-[100px]" />
+          <div className="absolute top-[30%] right-[20%] w-[200px] h-[200px] rounded-full bg-teal-400/10 blur-[80px]" />
+        </div>
 
-        <Card className="relative w-full max-w-md px-8 pb-8 pt-10 text-center surface tech-glow border-t-primary/50 overflow-hidden backdrop-blur-2xl">
-          {/* Subtle gradient overlay top */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
-          
-          <h1 className="text-3xl font-headline font-bold mb-3 text-foreground">
-            ¡Voto Registrado!
-          </h1>
-          <p className="text-muted-foreground text-sm font-semibold mb-8">
-            Tu participación en <span className="text-foreground font-semibold">"{activeRound?.title}"</span> se ha procesado con éxito.
-          </p>
+        <div className="relative w-full max-w-sm space-y-4">
+          {/* Main status card */}
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-400/25 bg-emerald-900/60 backdrop-blur-xl shadow-[0_32px_64px_-20px_rgba(16,185,129,0.4)]">
+            {/* Top accent stripe */}
+            <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400" />
 
-          {voteHashCode && (
-            <div className="ticket-card mt-6 rounded-2xl border-2 p-5 relative overflow-hidden group transition-colors duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-              <div className="relative z-10">
-                <p className="ticket-kicker mb-2 text-[10px] uppercase font-bold tracking-widest">Código de Verificación</p>
-                <div className="flex items-center justify-center gap-3">
-                  <p className="ticket-code text-xl font-mono font-bold tracking-wider drop-shadow-sm">{voteHashCode}</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ticket-code relative z-20 h-10 w-10 rounded-full border border-outline-variant/60 bg-surface-container-lowest/80 px-0 shadow-sm transition-colors hover:border-primary/55 hover:bg-primary/15"
-                    onClick={() => {
-                      void copyVerificationCode();
-                    }}
-                    aria-label="Copiar código de verificación"
-                  >
-                    <Copy className="w-5 h-5 pointer-events-none" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2 font-semibold">Conserva este código para auditar tu voto</p>
+            <div className="px-8 py-10 text-center">
+              {/* Icon */}
+              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500/25 shadow-[0_0_60px_rgba(52,211,153,0.4)] ring-1 ring-emerald-400/30">
+                <CheckCircle2 className="w-14 h-14 text-emerald-300" strokeWidth={1.5} />
               </div>
+
+              <h1 className="text-3xl font-headline font-black mb-2 text-white tracking-tight">
+                ¡Voto registrado!
+              </h1>
+              <p className="text-emerald-200/80 text-sm mb-1">
+                Tu participación en
+              </p>
+              <p className="text-emerald-100 font-bold text-base mb-2">
+                "{activeRound?.title}"
+              </p>
+              <p className="text-emerald-300/70 text-xs">
+                Se ha procesado con éxito.
+              </p>
+            </div>
+          </div>
+
+          {/* Receipt card (expandable) */}
+          {(voteHashCode || voteReceipt) && (
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-900/40 backdrop-blur-md overflow-hidden">
+              <VoteReceiptReveal
+                voteHashCode={voteHashCode}
+                voteReceipt={voteReceipt}
+                onCopy={copyVerificationCode}
+              />
             </div>
           )}
-
-          {voteReceipt && (
-            <div className="mt-4 relative">
-              {/* "Ticket" zig-zag top edge */}
-              <div className="ticket-divider absolute -top-3 left-0 right-0 h-4 border-t-2 border-dashed" />
-              
-              <div className="ticket-card rounded-[1.2rem] border p-6 text-left mt-6 backdrop-blur-md shadow-sm">
-                <p className="ticket-kicker text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                  Tu Papeleta Emitida
-                </p>
-                <div className="space-y-3">
-                  {voteReceipt.votes.map((vote, idx) => (
-                    <div key={idx} className="flex gap-3 items-start pb-3 border-b border-border/60 last:border-0 last:pb-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 pt-0.5">{idx + 1}.</span>
-                      <span className="text-sm font-semibold text-foreground">{vote || '---'}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
+        </div>
       </div>
     );
   }
@@ -1286,7 +1352,7 @@ export function VotingPage() {
 
       {/* Floating action bar: vote/clear without scrolling to the page bottom */}
       <div className="fixed inset-x-0 bottom-0 z-[60] px-2 pb-0 sm:sticky sm:inset-x-auto sm:bottom-0 sm:px-4 sm:pb-3">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-t-[2.6rem] border border-outline-variant/60 bg-surface-container-lowest/96 px-4 pb-[calc(1.2rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(0,74,198,0.08)] backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/95 sm:rounded-[2rem] sm:pb-4 sm:pt-3 sm:shadow-tech sm:backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-t-[2.6rem] border border-outline-variant/60 bg-surface-container-lowest px-4 pb-[calc(1.2rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(0,74,198,0.08)] dark:border-outline-variant/70 dark:bg-surface-container-low sm:rounded-[2rem] sm:pb-4 sm:pt-3 sm:shadow-tech sm:flex-row sm:items-center sm:justify-between">
           <div className="text-center sm:text-left">
             {selectedCandidates.length > 0 && (
               <p className="line-clamp-1 text-xs text-muted-foreground">
@@ -1334,7 +1400,7 @@ export function VotingPage() {
       </div>
 
       <AlertDialog open={confirmVoteOpen} onOpenChange={setConfirmVoteOpen}>
-        <AlertDialogContent className="overflow-hidden rounded-3xl border border-outline-variant/60 bg-surface-container-lowest/96 p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low/94">
+        <AlertDialogContent className="overflow-hidden rounded-3xl border border-outline-variant/60 bg-surface-container-lowest p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low">
           <AlertDialogHeader className="bg-gradient-to-r from-primary-fixed/75 via-surface-container-lowest to-primary-fixed/55 px-6 pb-4 pt-6 dark:from-primary-fixed/45 dark:via-surface-container-low dark:to-primary-fixed/35">
             <AlertDialogTitle className="text-2xl font-bold tracking-tight text-foreground">Confirmar voto</AlertDialogTitle>
             <AlertDialogDescription className="max-w-[52ch] text-base leading-relaxed text-muted-foreground">

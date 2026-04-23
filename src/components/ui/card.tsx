@@ -15,7 +15,7 @@ const Card = React.forwardRef<
   <HeroCard
     ref={ref}
     className={cn(
-      "rounded-[2rem] border border-outline-variant/55 bg-surface-container-lowest/95 text-card-foreground shadow-tech backdrop-blur-md transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow dark:border-outline-variant/65 dark:bg-surface-container-low/85",
+      "rounded-[2rem] border border-outline-variant/55 bg-surface-container-lowest text-card-foreground shadow-tech transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow dark:border-outline-variant/65 dark:bg-surface-container-low",
       className
     )}
     radius="lg"

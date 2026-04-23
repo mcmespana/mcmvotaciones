@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { fetchAllCRMContacts, groupByLocation, CRMContact, CRMContactGroup } from '@/lib/sinergiaCRM';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +61,7 @@ const DEFAULT_RELATIONSHIP_TYPES = ['grupo', 'monitor'];
 
 export function ComunicaImport() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   // — Wizard state —
@@ -771,8 +772,8 @@ export function ComunicaImport() {
                 <Button variant="outline" onClick={resetWizard} className="h-11 flex-1 rounded-xl">
                   Importar a otra votación
                 </Button>
-                <Button onClick={() => { window.location.href = '/admin'; }} className="h-11 flex-1 rounded-xl">
-                  Ir al panel de administración
+                <Button onClick={() => navigate(selectedRoundId ? `/admin/votaciones/${selectedRoundId}` : '/admin/dashboard?tab=votaciones')} className="h-11 flex-1 rounded-xl">
+                  Volver a la votación
                 </Button>
               </div>
             </CardContent>
@@ -783,7 +784,7 @@ export function ComunicaImport() {
             Diálogo de confirmación antes de importar
         ================================================================ */}
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <AlertDialogContent className="overflow-hidden rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest/96 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low/94">
+          <AlertDialogContent className="overflow-hidden rounded-[1.7rem] border border-outline-variant/60 bg-surface-container-lowest shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low">
             <AlertDialogHeader>
               <AlertDialogTitle>¿Confirmar importación?</AlertDialogTitle>
               <AlertDialogDescription>

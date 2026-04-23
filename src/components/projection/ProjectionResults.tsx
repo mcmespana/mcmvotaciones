@@ -3,6 +3,7 @@ import { Check, Users } from "lucide-react";
 import { Chip, Skeleton, Surface } from "@heroui/react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { BallotSummary } from "@/hooks/useProjectionData";
+import { formatCandidateName } from "@/lib/candidateFormat";
 
 interface Candidate {
   id: string;
@@ -33,7 +34,77 @@ interface ProjectionResultsProps {
   ballotSummaries: BallotSummary[];
 }
 
-const REVEAL_INTERVAL_MS = 1500; // Time per candidate reveal
+function ResultCard({
+  candidate,
+  result,
+  rank,
+  isTopCandidate,
+  boundedPercentage,
+  animated,
+}: {
+  candidate: { id: string; name: string; surname: string; location: string | null };
+  result: RoundResult;
+  rank: number;
+  isTopCandidate: boolean;
+  boundedPercentage: number;
+  animated: boolean;
+}) {
+  return (
+    <div
+      className={`relative h-full overflow-hidden rounded-[2rem] border-[3px] p-6 transition-all duration-700 ${
+        animated ? "animate-in fade-in zoom-in-95" : ""
+      } ${
+        isTopCandidate
+          ? "border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/35"
+          : "border-outline-variant/70 bg-surface-container-lowest/90 dark:border-outline-variant/65 dark:bg-surface-container-low/82"
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-6">
+        <div
+          className={`flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full text-3xl font-black ${
+            isTopCandidate ? "bg-emerald-600 text-white" : "bg-primary-fixed text-primary"
+          }`}
+        >
+          {isTopCandidate ? <Check className="h-12 w-12" strokeWidth={4} /> : rank}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-4xl font-bold text-foreground">
+            {formatCandidateName(candidate)}
+          </p>
+          {candidate.location && (
+            <p className="text-2xl mt-1 text-muted-foreground">{candidate.location}</p>
+          )}
+        </div>
+        <div className="text-right">
+          <p className="text-6xl font-black tabular-nums text-foreground">{result.vote_count}</p>
+          <p className="text-xl uppercase tracking-widest text-muted-foreground mt-1">votos</p>
+        </div>
+      </div>
+      <div className="relative mt-8 flex items-center gap-6">
+        <div className="relative h-6 w-full overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-high/80">
+          <div
+            className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${
+              isTopCandidate
+                ? "bg-emerald-500"
+                : "bg-yellow-300 dark:bg-yellow-400 shadow-[0_0_22px_rgba(250,204,21,0.35)]"
+            }`}
+            style={{
+              width: boundedPercentage > 0 ? `${boundedPercentage}%` : "0%",
+              minWidth: boundedPercentage > 0 ? "0.5rem" : "0",
+            }}
+          />
+          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-red-500/80 z-10" />
+        </div>
+        <span className="w-32 text-right text-4xl font-black tabular-nums text-foreground">
+          {result.percentage.toFixed(1)}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const TOP_N = 5;
+const REVEAL_INTERVAL_MS = 700; // faster animation for Top 5
 
 export function ProjectionResults({
   roundTitle,
@@ -45,15 +116,8 @@ export function ProjectionResults({
   showBallotSummary,
   ballotSummaries,
 }: ProjectionResultsProps) {
-  // Reveal candidates one by one from bottom to top
   const [revealedCount, setRevealedCount] = useState(0);
   const [showSelected, setShowSelected] = useState(false);
-
-  // Results sorted by votes ascending (reveal bottom-up)
-  const sortedResults = useMemo(
-    () => [...results].sort((a, b) => a.vote_count - b.vote_count),
-    [results]
-  );
 
   // For display: top-down (highest first)
   const displayResults = useMemo(
@@ -61,38 +125,55 @@ export function ProjectionResults({
     [results]
   );
 
+  // Top N candidates to animate (bottom-up reveal = ascending order of rank)
+  const top5Sorted = useMemo(
+    () => displayResults.slice(0, TOP_N).reverse(), // rank 5→1
+    [displayResults]
+  );
+  const restResults = useMemo(
+    () => displayResults.slice(TOP_N), // shown static at bottom
+    [displayResults]
+  );
+
   const selectedIds = useMemo(
     () => new Set(selectedCandidates.map((candidate) => candidate.id)),
     [selectedCandidates]
   );
 
-  const rankingIndexByCandidateId = useMemo(
-    () => new Map(displayResults.map((result, index) => [result.candidate_id, index])),
-    [displayResults]
-  );
+  // Rank with ties: same vote_count → same rank number
+  const rankByCandidateId = useMemo(() => {
+    const map = new Map<string, number>();
+    let rank = 1;
+    for (let i = 0; i < displayResults.length; i++) {
+      if (i > 0 && displayResults[i].vote_count < displayResults[i - 1].vote_count) {
+        rank = i + 1;
+      }
+      map.set(displayResults[i].candidate_id, rank);
+    }
+    return map;
+  }, [displayResults]);
 
   useEffect(() => {
     setRevealedCount(0);
     setShowSelected(false);
 
-    // Reveal results one by one
-    const totalToReveal = sortedResults.length;
+    const totalToReveal = top5Sorted.length;
     let count = 0;
     const interval = setInterval(() => {
       count++;
       setRevealedCount(count);
       if (count >= totalToReveal) {
         clearInterval(interval);
-        setTimeout(() => setShowSelected(true), 1000);
+        setTimeout(() => setShowSelected(true), 800);
       }
     }, REVEAL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [sortedResults.length]);
+  }, [top5Sorted.length]);
 
-  // Set of revealed candidate IDs
+  // Set of revealed candidate IDs (only top 5 animate)
   const revealedIds = new Set(
-    sortedResults.slice(0, revealedCount).map((r) => r.candidate_id)
+    top5Sorted.slice(0, revealedCount).map((r) => r.candidate_id)
   );
 
   // Render the Selected Candidates Sidebar (used in both views if needed, or primarily in ballot view)
@@ -112,7 +193,7 @@ export function ProjectionResults({
           {selectedCandidates.map((candidate) => (
             <div key={candidate.id} className="py-6 first:pt-4">
               <p className="text-3xl font-black text-emerald-800 dark:text-emerald-100">
-                {candidate.name} {candidate.surname}
+                {formatCandidateName(candidate)}
               </p>
               {candidate.location && (
                 <p className="text-xl mt-2 font-bold text-emerald-700/85 dark:text-emerald-300/85">
@@ -164,87 +245,59 @@ export function ProjectionResults({
                     : "grid-cols-1"
                 }`}
               >
-                <section className="h-full w-full rounded-[3rem] border-2 border-outline-variant/45 bg-surface-container-lowest/82 p-10 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-outline-variant/60 dark:bg-surface-container-low/75 flex flex-col">
+                <section className="h-full w-full rounded-[3rem] border-2 border-outline-variant/45 bg-surface-container-lowest/82 p-10 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-outline-variant/60 dark:bg-surface-container-low/75 flex flex-col gap-4">
                   {displayResults.length === 0 && (
                     <p className="text-2xl text-muted-foreground text-center">No hay resultados para mostrar.</p>
                   )}
+
+                  {/* Rest (position 6+): static, shown at bottom first */}
+                  {restResults.length > 0 && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {restResults.map((result) => {
+                        const candidate = candidates.find((c) => c.id === result.candidate_id);
+                        if (!candidate) return null;
+                        const rank = rankByCandidateId.get(result.candidate_id) ?? 0;
+                        const isTopCandidate = selectedIds.has(result.candidate_id);
+                        const boundedPercentage = Math.min(Math.max(result.percentage, 0), 100);
+                        return (
+                          <ResultCard
+                            key={result.candidate_id}
+                            candidate={candidate}
+                            result={result}
+                            rank={rank}
+                            isTopCandidate={isTopCandidate}
+                            boundedPercentage={boundedPercentage}
+                            animated={false}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Top 5: animated bottom-up */}
                   <div className="grid gap-6 md:grid-cols-2 flex-1 items-start content-start">
-                    {displayResults.map((result) => {
+                    {top5Sorted.map((result) => {
                       const candidate = candidates.find((c) => c.id === result.candidate_id);
                       if (!candidate) return null;
-
                       const isRevealed = revealedIds.has(result.candidate_id);
                       const isTopCandidate = selectedIds.has(result.candidate_id);
-                      const rankingIndex = rankingIndexByCandidateId.get(result.candidate_id) ?? 0;
+                      const rank = rankByCandidateId.get(result.candidate_id) ?? 0;
+                      const boundedPercentage = Math.min(Math.max(result.percentage, 0), 100);
 
                       if (!isRevealed) {
                         return <Skeleton key={result.candidate_id} className="h-40 w-full rounded-[2rem]" />;
                       }
 
-                      const displayPercentage = result.percentage;
-                      const boundedPercentage = Math.min(Math.max(displayPercentage, 0), 100);
-
                       return (
-                        <div
+                        <ResultCard
                           key={result.candidate_id}
-                          className={`relative h-full overflow-hidden rounded-[2rem] border-[3px] p-6 transition-all duration-700 ${
-                            isTopCandidate
-                              ? "border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/35"
-                              : "border-outline-variant/70 bg-surface-container-lowest/90 dark:border-outline-variant/65 dark:bg-surface-container-low/82"
-                          }`}
-                        >
-                          <div className="flex flex-wrap items-center gap-6">
-                            <div
-                              className={`flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full text-3xl font-black ${
-                                isTopCandidate
-                                  ? "bg-emerald-600 text-white"
-                                  : "bg-primary-fixed text-primary"
-                              }`}
-                            >
-                              {isTopCandidate ? <Check className="h-12 w-12" strokeWidth={4} /> : rankingIndex + 1}
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex flex-wrap items-center gap-4">
-                                <p className="truncate text-4xl font-bold text-foreground">
-                                  {candidate.name} {candidate.surname}
-                                </p>
-                              </div>
-                              {candidate.location && (
-                                <p className="text-2xl mt-1 text-muted-foreground">{candidate.location}</p>
-                              )}
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-6xl font-black tabular-nums text-foreground">
-                                {result.vote_count}
-                              </p>
-                              <p className="text-xl uppercase tracking-widest text-muted-foreground mt-1">votos</p>
-                            </div>
-                          </div>
-
-                          {/* CUSTOM PROGRESS BAR 0-100% WITH 50% MARK */}
-                          <div className="relative mt-8 flex items-center gap-6">
-                            <div className="relative h-6 w-full overflow-hidden rounded-full border border-outline-variant/60 bg-surface-container-high/80">
-                              <div
-                                className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${
-                                  isTopCandidate
-                                    ? "bg-emerald-500"
-                                    : "bg-yellow-300 dark:bg-yellow-400 shadow-[0_0_22px_rgba(250,204,21,0.35)]"
-                                }`}
-                                style={{
-                                  width: boundedPercentage > 0 ? `${boundedPercentage}%` : "0%",
-                                  minWidth: boundedPercentage > 0 ? "0.5rem" : "0",
-                                }}
-                              />
-                              {/* 50% Threshold Mark */}
-                              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-red-500/80 z-10" />
-                            </div>
-                            <span className="w-32 text-right text-4xl font-black tabular-nums text-foreground">
-                              {displayPercentage.toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
+                          candidate={candidate}
+                          result={result}
+                          rank={rank}
+                          isTopCandidate={isTopCandidate}
+                          boundedPercentage={boundedPercentage}
+                          animated
+                        />
                       );
                     })}
                   </div>

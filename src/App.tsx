@@ -9,6 +9,7 @@ import { VotingPage } from "@/components/VotingPage";
 import { AdminRouter } from "@/components/AdminRouter";
 import { ComunicaRouter } from "@/components/ComunicaRouter";
 import { ProjectionPage } from "@/components/ProjectionPage";
+import { PublicCandidates } from "@/components/PublicCandidates";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<VotingPage />} />
         <Route path="/proyeccion" element={<ProjectionPage />} />
+        <Route path="/candidatos/:votingId" element={<PublicCandidates />} />
         <Route path="/admin/*" element={<AdminRouter />} />
         <Route path="/comunica/*" element={<ComunicaRouter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

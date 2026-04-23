@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, XCircle, Eye, AlertTriangle } from "lucide-react";
+import { FileText, XCircle, Eye, AlertTriangle, Users } from "lucide-react";
+import { formatSurname } from "@/lib/candidateFormat";
 
 interface BallotReviewProps {
   lockedRoundId?: string;
@@ -171,6 +172,11 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
 
   const totalBallots = filteredBallots.size;
   const invalidatedCount = votes.filter((v) => v.is_invalidated).length;
+  // "Votos efectuados" = distinct vote_hash (one per ballot submitted)
+  const votosEfectuados = useMemo(
+    () => new Set(votes.filter((v) => !v.is_invalidated && v.vote_hash).map((v) => v.vote_hash)).size,
+    [votes]
+  );
 
   const selectedRound = rounds.find((r) => r.id === selectedRoundId);
 
@@ -183,6 +189,10 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
               <FileText className="w-6 h-6" />
               Revisión de Papeletas
             </h2>
+            <Badge variant="outline">
+              <Users className="w-3 h-3 mr-1" />
+              {votosEfectuados} votos efectuados
+            </Badge>
             <Badge variant="outline">{totalBallots} papeletas</Badge>
             <Badge variant="outline">{votes.length} votos individuales</Badge>
             {invalidatedCount > 0 && (
@@ -191,6 +201,10 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
           </div>
         ) : (
           <div className="flex items-center gap-3 text-sm">
+            <Badge variant="outline">
+              <Users className="w-3 h-3 mr-1" />
+              {votosEfectuados} votos efectuados
+            </Badge>
             <Badge variant="outline">{totalBallots} papeletas</Badge>
             <Badge variant="outline">{votes.length} votos individuales</Badge>
             {invalidatedCount > 0 && (
@@ -281,7 +295,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                             className="text-xs"
                           >
                             {normalizeCandidate(v.candidate)
-                              ? `${normalizeCandidate(v.candidate)!.name} ${normalizeCandidate(v.candidate)!.surname}`
+                              ? `${normalizeCandidate(v.candidate)!.name} ${formatSurname(normalizeCandidate(v.candidate)!.surname)}`
                               : v.candidate_id.slice(0, 8)}
                             {v.is_invalidated && " ✗"}
                           </Badge>
@@ -367,7 +381,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
 
       {/* Invalidate Dialog */}
       <Dialog open={invalidateDialogOpen} onOpenChange={setInvalidateDialogOpen}>
-        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
+        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low">
           <DialogHeader>
             <DialogTitle>Invalidar Papeleta</DialogTitle>
             <DialogDescription>
@@ -395,7 +409,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
 
       {/* Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest/96 dark:border-outline-variant/70 dark:bg-surface-container-low/94">
+        <DialogContent className="rounded-[1.65rem] border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low">
           <DialogHeader>
             <DialogTitle>Detalle de Papeleta</DialogTitle>
             <DialogDescription className="font-mono text-xs break-all">
@@ -408,7 +422,7 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
                 <div>
                   <p className="font-medium">
                     {normalizeCandidate(v.candidate)
-                      ? `${normalizeCandidate(v.candidate)!.name} ${normalizeCandidate(v.candidate)!.surname}`
+                      ? `${normalizeCandidate(v.candidate)!.name} ${formatSurname(normalizeCandidate(v.candidate)!.surname)}`
                       : v.candidate_id}
                   </p>
                   {normalizeCandidate(v.candidate)?.location && (

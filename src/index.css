@@ -196,15 +196,14 @@
 
   .surface {
     border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--surface-container-lowest) / 0.9);
+    background: hsl(var(--surface-container-lowest));
     border-radius: 2rem;
     box-shadow: var(--shadow-card);
-    backdrop-filter: blur(18px);
   }
 
   .dark .surface {
     border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--surface-container-lowest) / 0.86);
+    background: hsl(var(--surface-container-lowest));
   }
 
   .tech-glow {
@@ -244,27 +243,26 @@
 
   .admin-shell {
     border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--surface-container-lowest) / 0.92);
+    background: hsl(var(--surface-container-lowest));
     border-radius: 2rem;
     box-shadow: var(--shadow-card);
-    backdrop-filter: blur(18px);
   }
 
   .dark .admin-shell {
     border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--surface-container-lowest) / 0.88);
+    background: hsl(var(--surface-container-lowest));
     box-shadow: var(--shadow-card);
   }
 
   .admin-soft {
     border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--primary-fixed) / 0.72);
+    background: hsl(var(--primary-fixed) / 0.9);
     border-radius: 1.5rem;
   }
 
   .dark .admin-soft {
     border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--primary-fixed) / 0.52);
+    background: hsl(var(--primary-fixed) / 0.75);
   }
 
   .admin-chip {

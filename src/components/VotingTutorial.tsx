@@ -47,30 +47,21 @@ interface VotingTutorialProps {
   compactTrigger?: boolean;
 }
 
-function getTutorialSeenKey(roundId?: string): string {
-  return roundId ? `mcm_voting_tutorial_seen_${roundId}` : "mcm_voting_tutorial_seen";
-}
+const TUTORIAL_KEY = "mcm_voting_tutorial_seen";
 
-function hasSeenTutorial(roundId?: string): boolean {
+function hasSeenTutorial(): boolean {
   try {
-    const key = getTutorialSeenKey(roundId);
-    return document.cookie
-      .split(";")
-      .map((part) => part.trim())
-      .some((part) => part.startsWith(`${key}=`));
+    return localStorage.getItem(TUTORIAL_KEY) === "1";
   } catch {
     return false;
   }
 }
 
-function markTutorialSeen(roundId?: string): void {
+function markTutorialSeen(): void {
   try {
-    const key = getTutorialSeenKey(roundId);
-    const expires = new Date();
-    expires.setFullYear(expires.getFullYear() + 1);
-    document.cookie = `${key}=1; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+    localStorage.setItem(TUTORIAL_KEY, "1");
   } catch {
-    // Ignore cookie storage issues.
+    // Ignore storage issues.
   }
 }
 
@@ -84,17 +75,16 @@ export function VotingTutorial({ forceOpen, roundId, compactTrigger = false }: V
       setStep(0);
       return;
     }
-    // Show tutorial on first visit
-    const seen = hasSeenTutorial(roundId);
-    if (!seen) {
+    // Show tutorial on first visit (once per device)
+    if (!hasSeenTutorial()) {
       setOpen(true);
     }
-  }, [forceOpen, roundId]);
+  }, [forceOpen]);
 
   const handleClose = () => {
     setOpen(false);
     setStep(0);
-    markTutorialSeen(roundId);
+    markTutorialSeen();
   };
 
   const handleNext = () => {
@@ -117,9 +107,10 @@ export function VotingTutorial({ forceOpen, roundId, compactTrigger = false }: V
       {/* "¿Cómo votar?" button — always visible */}
       {compactTrigger ? (
         <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9 rounded-xl"
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-9 w-9 shrink-0 rounded-xl border border-outline-variant/55 bg-surface-container-low px-0 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
           onClick={() => {
             setStep(0);
             setOpen(true);
@@ -144,7 +135,7 @@ export function VotingTutorial({ forceOpen, roundId, compactTrigger = false }: V
       )}
 
       <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-        <DialogContent className="w-[calc(100%-1.5rem)] max-w-md overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest/95 p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low/92">
+        <DialogContent className="w-[calc(100%-1.5rem)] max-w-md overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low">
           <div className="relative overflow-hidden bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-primary-fixed/70 px-6 pb-5 pt-6 dark:from-primary-fixed/60 dark:via-surface-container-low dark:to-primary-fixed/45">
             <div className="absolute -left-10 -top-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl" />
             <div className="absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-primary-container/20 blur-2xl" />

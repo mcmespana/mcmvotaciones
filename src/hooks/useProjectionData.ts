@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { debugLog } from "@/lib/logger";
+import { formatSurname } from "@/lib/candidateFormat";
 
 interface Round {
   id: string;
@@ -35,6 +36,8 @@ interface Candidate {
   image_url: string | null;
   is_eliminated: boolean;
   is_selected: boolean;
+  selected_in_round: number | null;
+  selected_vote_count: number | null;
 }
 
 interface RoundResult {
@@ -190,7 +193,7 @@ export function useProjectionData(): ProjectionData {
           const candidateData = Array.isArray(row.candidate) ? row.candidate[0] : row.candidate;
 
           const voteName = candidateData
-            ? `${candidateData.name} ${candidateData.surname}`.trim()
+            ? `${candidateData.name} ${formatSurname(candidateData.surname)}`.trim()
             : "-";
 
           if (!grouped.has(hash)) {
@@ -359,6 +362,11 @@ export function useProjectionData(): ProjectionData {
     showConnectedInWaiting,
     showAccessCodeInWaiting,
     waitingMode,
-    previouslySelected: selectedCandidates, // for now, same as selected
+    previouslySelected: [...selectedCandidates].sort((a, b) => {
+      const ra = a.selected_in_round ?? 999;
+      const rb = b.selected_in_round ?? 999;
+      if (ra !== rb) return ra - rb;
+      return (b.selected_vote_count ?? 0) - (a.selected_vote_count ?? 0);
+    }),
   };
 }

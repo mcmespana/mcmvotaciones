@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CandidateCard } from "@/components/CandidateCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Accordion, Chip, Surface } from "@heroui/react";
-import { Users, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, MapPin, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VotingTutorial } from "@/components/VotingTutorial";
 
@@ -108,6 +109,13 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
   });
 }
 
+function normalizeForSearch(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 export function GroupedCandidateList({
   candidates,
   selectedCandidates,
@@ -115,9 +123,20 @@ export function GroupedCandidateList({
   disabled = false,
   tutorialRoundId,
 }: GroupedCandidateListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCandidates = useMemo(() => {
+    const q = normalizeForSearch(searchQuery.trim());
+    if (!q) return candidates;
+    return candidates.filter((c) => {
+      const full = normalizeForSearch(`${c.name} ${c.surname}`);
+      return full.includes(q);
+    });
+  }, [candidates, searchQuery]);
+
   const locationGroups = useMemo(
-    () => groupCandidates(candidates),
-    [candidates]
+    () => groupCandidates(filteredCandidates),
+    [filteredCandidates]
   );
 
   const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
@@ -184,18 +203,46 @@ export function GroupedCandidateList({
   const isFlatLayout =
     locationGroups.length === 1 && locationGroups[0].groups.length === 1;
 
+  const searchBar = (
+    <div className="relative flex-1">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      <Input
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Buscar candidato..."
+        className="h-9 pl-8 pr-8 rounded-xl border-outline-variant/55 bg-surface-container-low text-xs dark:border-outline-variant/65 dark:bg-surface-container"
+      />
+      {searchQuery && (
+        <button
+          type="button"
+          onClick={() => setSearchQuery("")}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+
   if (isFlatLayout) {
     return (
-      <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {locationGroups[0].groups[0].candidates.map((candidate) => (
-          <CandidateCard
-            key={candidate.id}
-            candidate={candidate}
-            isSelected={selectedCandidates.includes(candidate.id)}
-            onToggle={onToggleCandidate}
-            disabled={disabled}
-          />
-        ))}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">{searchBar}</div>
+        {locationGroups.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">Sin resultados para "{searchQuery}"</p>
+        ) : (
+          <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {locationGroups[0].groups[0].candidates.map((candidate) => (
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                isSelected={selectedCandidates.includes(candidate.id)}
+                onToggle={onToggleCandidate}
+                disabled={disabled}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -204,38 +251,24 @@ export function GroupedCandidateList({
     <div className="space-y-6">
       <Surface
         ref={mobileIndexRef}
-        className="sticky top-2 z-30 rounded-[1.6rem] border border-outline-variant/55 bg-surface-container-lowest/92 p-2.5 shadow-tech backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/90 md:top-4 md:rounded-[2rem] md:p-3"
+        className="sticky top-2 z-30 rounded-[1.6rem] border border-outline-variant/55 bg-surface-container-lowest p-2.5 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low md:top-4 md:rounded-[2rem] md:p-3"
       >
-        <div className="grid grid-cols-5 items-center gap-2">
+        <div className="flex items-center gap-2">
+          {searchBar}
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="col-span-4 h-10 justify-between rounded-xl border border-outline-variant/55 bg-surface-container-low px-3 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
+            className="h-9 w-9 shrink-0 rounded-xl border border-outline-variant/55 bg-surface-container-low px-0 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
             aria-expanded={isMobileIndexOpen}
             aria-controls="dynamic-voting-index"
+            aria-label={isMobileIndexOpen ? "Ocultar índice" : "Mostrar índice"}
             onClick={toggleMobileIndex}
           >
-            <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground/90">
-              Indice
-              <span className="text-[11px] normal-case tracking-normal text-muted-foreground">
-                {locationGroups.length} zonas
-              </span>
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-              {isMobileIndexOpen ? "Ocultar" : "Mostrar"}
-              {isMobileIndexOpen ? (
-                <ChevronUp className="h-4 w-4 text-primary" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-primary" />
-              )}
-            </span>
+            {isMobileIndexOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
-
-          <div className="col-span-1 flex justify-end gap-1">
-            <VotingTutorial compactTrigger roundId={tutorialRoundId} />
-            <ThemeToggle mode="inline" buttonClassName="h-9 w-9 rounded-xl shadow-none" />
-          </div>
+          <VotingTutorial compactTrigger roundId={tutorialRoundId} />
+          <ThemeToggle mode="inline" buttonClassName="h-9 w-9 rounded-xl shadow-none" />
         </div>
 
         <div

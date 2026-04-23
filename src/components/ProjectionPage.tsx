@@ -59,6 +59,7 @@ export function ProjectionPage() {
         connectedCount={data.connectedCount}
         showBallotSummary={Boolean(data.round.show_ballot_summary_projection)}
         ballotSummaries={data.ballotSummaries}
+        previouslySelected={data.previouslySelected}
       />
     );
   }

@@ -414,10 +414,6 @@ export function AdminVotingList() {
                       </Select>
                     </div>
                   </div>
-
-                  <p className="admin-soft rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
-                    El codigo de sala se genera automaticamente con 4 caracteres alfanumericos.
-                  </p>
                 </div>
 
                 <div className="flex justify-end gap-2">

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { Check, Trophy, MapPin, Cake, Users, Tag } from "lucide-react";
+import { Check, Trophy, MapPin, Cake, Tag } from "lucide-react";
 import { Chip, Surface } from "@heroui/react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
+import { CandidateAvatar } from "@/components/CandidateAvatar";
+import { formatCandidateName } from "@/lib/candidateFormat";
 
 interface Candidate {
   id: string;
@@ -97,28 +99,19 @@ export function ProjectionFinalResults({
                   >
                     <div className="absolute top-0 left-0 w-full h-32 md:h-40 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
 
-                    {candidate.image_url ? (
-                      <div className={`relative z-10 ${isCompact ? 'h-28 w-28 md:h-36 md:w-36' : 'h-48 w-48 md:h-56 md:w-56'} rounded-full overflow-hidden border-4 border-surface shadow-md bg-surface flex-shrink-0 group-hover:border-emerald-500/50 transition-colors duration-500`}>
-                        <img
-                          src={candidate.image_url}
-                          alt={`${candidate.name} ${candidate.surname}`}
-                          className="h-full w-full object-cover object-top"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null; // Prevent infinite loop
-                            target.src = "https://placehold.co/400x400/e2e8f0/64748b?text=Foto"; // Fallback image
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className={`relative z-10 ${isCompact ? 'h-28 w-28 md:h-36 md:w-36' : 'h-48 w-48 md:h-56 md:w-56'} rounded-full bg-emerald-100 flex items-center justify-center border-4 border-surface shadow-md flex-shrink-0 dark:bg-emerald-900/50 group-hover:border-emerald-500/50 transition-colors duration-500`}>
-                        <Users className={`${isCompact ? 'w-12 h-12' : 'w-20 h-20'} text-emerald-400 dark:text-emerald-600`} />
-                      </div>
-                    )}
+                    <div className={`relative z-10 border-4 border-surface shadow-md flex-shrink-0 group-hover:border-emerald-500/50 transition-colors duration-500 rounded-full overflow-hidden ${isCompact ? 'h-28 w-28 md:h-36 md:w-36' : 'h-48 w-48 md:h-56 md:w-56'}`}>
+                      <CandidateAvatar
+                        name={candidate.name}
+                        surname={candidate.surname}
+                        imageUrl={candidate.image_url}
+                        size={isCompact ? "lg" : "xl"}
+                        className="w-full h-full rounded-none"
+                      />
+                    </div>
 
                     <div className={`flex flex-col flex-1 w-full mt-4 md:mt-6 text-center items-center justify-start z-10`}>
                       <h2 className={`${isCompact ? 'text-xl md:text-2xl' : 'text-3xl md:text-4xl'} font-extrabold text-foreground tracking-tight leading-tight mb-3`}>
-                        {candidate.name} {candidate.surname}
+                        {formatCandidateName(candidate)}
                       </h2>
 
                       <div className={`flex flex-wrap items-center justify-center gap-2 md:gap-3 w-full`}>

@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Clock3, Users, Vote } from "lucide-react";
-import { Chip, Meter, ProgressBar, ProgressCircle, Skeleton, Surface } from "@heroui/react";
+import { Check, Clock3, Users, Vote } from "lucide-react";
+import { Chip, Meter, ProgressBar, Skeleton, Surface } from "@heroui/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BallotSummary } from "@/hooks/useProjectionData";
+import { formatCandidateName } from "@/lib/candidateFormat";
+
+interface SelectedCandidate {
+  id: string;
+  name: string;
+  surname: string;
+  location: string | null;
+  selected_in_round: number | null;
+  selected_vote_count: number | null;
+}
 
 interface ProjectionVotingProps {
   roundTitle: string;
@@ -14,6 +24,7 @@ interface ProjectionVotingProps {
   connectedCount: number;
   showBallotSummary: boolean;
   ballotSummaries: BallotSummary[];
+  previouslySelected: SelectedCandidate[];
 }
 
 function formatTime(totalSeconds: number): string {
@@ -34,6 +45,7 @@ export function ProjectionVoting({
   connectedCount,
   showBallotSummary,
   ballotSummaries,
+  previouslySelected,
 }: ProjectionVotingProps) {
   const percentage =
     maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
@@ -143,38 +155,46 @@ export function ProjectionVoting({
             </CardContent>
           </Card>
 
-          <div className="grid gap-10">
-            <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col justify-center">
-              <CardContent className="flex items-center justify-between gap-8 pt-0 px-4 pb-0">
-                <div>
-                  <p className="text-3xl font-bold uppercase tracking-[0.2em] text-muted-foreground">Participación</p>
-                  <p className="text-6xl font-black text-foreground mt-4">{percentage.toFixed(0)}%</p>
-                </div>
-                <div className="relative flex h-48 w-48 items-center justify-center">
-                  <ProgressCircle aria-label="Participacion" value={percentage} className="h-48 w-48 text-primary" />
-                  <BarChart3 className="absolute h-16 w-16 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col justify-center">
-              <CardHeader className="px-4 py-0 pb-6 text-center">
-                <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
-                  Estado de mesa
+          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col">
+              <CardHeader className="px-4 py-0 pb-6">
+                <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground flex items-center gap-3">
+                  <Check className="h-8 w-8 text-emerald-500" strokeWidth={3} />
+                  Seleccionados
+                  {previouslySelected.length > 0 && (
+                    <span className="ml-auto text-5xl font-black text-emerald-600 dark:text-emerald-400 tracking-normal">
+                      {previouslySelected.length}
+                    </span>
+                  )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-8 px-4 pb-0">
-                <div className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-low p-8 text-center dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-center items-center">
-                  <p className="text-7xl font-black tabular-nums">{connectedCount}</p>
-                  <p className="text-xl font-bold uppercase tracking-wider text-muted-foreground mt-4">Conectados</p>
-                </div>
-                <div className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-low p-8 text-center dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-center items-center">
-                  <p className="text-7xl font-black tabular-nums">{maxVotantes}</p>
-                  <p className="text-xl font-bold uppercase tracking-wider text-muted-foreground mt-4">Meta</p>
-                </div>
+              <CardContent className="px-4 pb-0 flex-1 overflow-auto">
+                {previouslySelected.length === 0 ? (
+                  <p className="text-2xl text-muted-foreground text-center py-8">
+                    Ningún candidato seleccionado aún
+                  </p>
+                ) : (
+                  <div className="divide-y-2 divide-outline-variant/50">
+                    {previouslySelected.map((c) => (
+                      <div key={c.id} className="py-5 first:pt-2 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-2xl font-black text-emerald-800 dark:text-emerald-100 truncate">
+                            {formatCandidateName(c)}
+                          </p>
+                          {c.location && (
+                            <p className="text-lg font-semibold text-muted-foreground">{c.location}</p>
+                          )}
+                        </div>
+                        {c.selected_in_round && (
+                          <span className="flex-shrink-0 rounded-full bg-emerald-500/15 px-3 py-1 text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                            R{c.selected_in_round}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
-          </div>
         </div>
 
         {showBallotSummary && (
