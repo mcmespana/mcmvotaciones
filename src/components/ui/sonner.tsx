@@ -11,24 +11,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="bottom-right"
-      offset={{
-        bottom: "calc(4.5rem + env(safe-area-inset-bottom))",
-        right: "1rem",
-      }}
-      mobileOffset={{
-        bottom: "calc(4.5rem + env(safe-area-inset-bottom))",
-        right: "1rem",
-        left: "1rem",
-      }}
+      offset={{ bottom: "1rem", right: "1rem" }}
       toastOptions={{
+        style: {
+          background: "var(--avd-bg-elev)",
+          border: "1px solid var(--avd-border)",
+          color: "var(--avd-fg)",
+          fontFamily: "var(--avd-font-sans)",
+          borderRadius: "var(--avd-radius-lg)",
+          boxShadow: "var(--avd-shadow-lg)",
+        },
         classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          description: "group-[.toast]:opacity-70",
+          actionButton: "group-[.toast]:bg-[var(--avd-brand-500)] group-[.toast]:text-white",
+          cancelButton: "group-[.toast]:bg-[var(--avd-bg-sunken)] group-[.toast]:text-[var(--avd-fg-muted)]",
         },
       }}
       {...props}

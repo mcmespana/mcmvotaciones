@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VotacionesMCM · Prototipo completo</title>
+  <link rel="stylesheet" href="styles.css?v=6" />
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("mcm-theme");
+        var sys = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = saved || sys;
+      } catch (e) {}
+    })();
+  </script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    html, body, #root { height: 100%; margin: 0; padding: 0; }
+
+    /* ── Dev nav switcher ── */
+    .dev-nav {
+      position: fixed;
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 9000;
+      display: flex;
+      gap: 4px;
+      padding: 5px 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+    }
+    .dev-nav button {
+      height: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--fg-muted);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .dev-nav button:hover { background: var(--bg-hover); color: var(--fg); }
+    .dev-nav button.active {
+      background: var(--brand-600);
+      color: white;
+    }
+    :root[data-theme="dark"] .dev-nav button.active { background: var(--brand-500); }
+    .dev-nav .sep { width: 1px; background: var(--border); margin: 4px 2px; align-self: stretch; }
+
+    /* Theme toggle in nav */
+    .dev-nav .theme-btn {
+      width: 28px; padding: 0;
+      display: grid; place-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Shared data + icons -->
+  <script src="data.js"></script>
+
+  <!-- Screens (in dependency order) -->
+  <script type="text/babel" data-presets="react" src="dialogs.jsx"></script>
+  <script type="text/babel" data-presets="react" src="screens.jsx"></script>
+  <script type="text/babel" data-presets="react" src="dashboard.jsx"></script>
+
+  <!-- Main app shell -->
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useCallback } = React;
+
+    // ── Theme hook (shared) ──────────────────────────────────────────────
+    function useTheme() {
+      const [theme, setTheme] = useState(() => {
+        const saved = localStorage.getItem("mcm-theme");
+        if (saved) return saved;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      });
+      useEffect(() => {
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem("mcm-theme", theme);
+      }, [theme]);
+      return [theme, (t) => { localStorage.setItem("mcm-theme-manual","1"); setTheme(t); }];
+    }
+
+    // ── Toast stack ──────────────────────────────────────────────────────
+    function ToastStack({ items }) {
+      const icons = {
+        ok:   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ok)"   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>,
+        warn: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+        bad:  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bad)"  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
+        info: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      };
+      return (
+        <div className="toast-stack">
+          {items.map(t => (
+            <div key={t.id} className={`toast ${t.kind||"info"}`}>
+              {icons[t.kind||"info"]}
+              <div className="t-body">
+                <div className="t-title">{t.title}</div>
+                {t.desc && <div className="t-desc">{t.desc}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ── Topbar (shared across dashboard + detail) ──────────────────────
+    function Topbar({ screen, onNavigate, theme, setTheme, userName }) {
+      const pages = [
+        { id:"loading",  label:"Cargando…" },
+        { id:"denied",   label:"Sin acceso" },
+        { id:"login",    label:"Login" },
+        { id:"dashboard",label:"Dashboard" },
+        { id:"detail",   label:"Gestión de ronda" },
+      ];
+      const isDash = screen === "dashboard" || screen === "detail";
+      return (
+        <>
+          {isDash && (
+            <header className="topbar">
+              <div className="topbar-brand">
+                <div className="brand-mark">C</div>
+                <span>VotacionesMCM</span>
+              </div>
+              <div className="topbar-crumbs">
+                <span className="sep">/</span>
+                <span style={{cursor:"pointer", color: screen==="dashboard" ? "var(--fg)" : "var(--fg-muted)"}} onClick={()=>onNavigate("dashboard")}>
+                  Admin
+                </span>
+                {screen === "detail" && (
+                  <>
+                    <span className="sep">/</span>
+                    <span style={{cursor:"pointer"}} onClick={()=>onNavigate("dashboard")}>Votaciones</span>
+                    <span className="sep">/</span>
+                    <span className="current">Capítulo Provincial ECE</span>
+                  </>
+                )}
+              </div>
+              <div className="topbar-spacer" />
+              <span className="chip chip-muted" style={{fontFamily:"var(--font-mono)", fontSize:11}}>
+                {new Date().toLocaleTimeString("es-ES", {hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+              </span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setTheme(theme==="dark"?"light":"dark")} title="Cambiar tema">
+                {theme === "dark"
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                }
+              </button>
+            </header>
+          )}
+
+          {/* Dev nav pill */}
+          <div className="dev-nav">
+            {pages.map((p, i) => (
+              <React.Fragment key={p.id}>
+                {i > 0 && i % 5 === 0 && <div className="sep" />}
+                <button className={screen === p.id ? "active" : ""} onClick={() => onNavigate(p.id)}>{p.label}</button>
+              </React.Fragment>
+            ))}
+            <div className="sep" />
+            <button className="theme-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Tema">
+              {theme === "dark"
+                ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>
+                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              }
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    // ── AdminVotingDetail (inlined from existing app.jsx logic) ─────────
+    // We re-use all the existing components from app.jsx by importing its
+    // React tree via a wrapper that accepts navigation props.
+    function DetailWrapper({ onBack, pushToast }) {
+      // Inline the full detail view state here (mirrors app.jsx)
+      const [round, setRound] = React.useState(window.MOCK.round);
+      const [candidates, setCandidates] = React.useState(window.MOCK.candidates);
+      const [seatStatus] = React.useState(window.MOCK.seatStatus);
+      const [seats] = React.useState(window.MOCK.seats);
+      const [currentRoundVotes, setVotes] = React.useState(28);
+      const [search, setSearch] = React.useState("");
+      const [view, setView] = React.useState("list");
+      const [now, setNow] = React.useState(Date.now());
+      const [dSettings, setDSettings] = React.useState(false);
+      const [dAdd, setDAdd] = React.useState(false);
+      const [dEdit, setDEdit] = React.useState(null);
+      const [dImport, setDImport] = React.useState(false);
+      const [dDataset, setDDataset] = React.useState(false);
+      const [dAnalytics, setDAnalytics] = React.useState(false);
+      const [dBallots, setDBallots] = React.useState(false);
+
+      React.useEffect(() => { const t = setInterval(()=>setNow(Date.now()),1000); return ()=>clearInterval(t); }, []);
+      React.useEffect(() => {
+        if (!round.is_voting_open) return;
+        const t = setInterval(()=>setVotes(v=>Math.min(v+(Math.random()<0.35?1:0),round.max_votantes)),2800);
+        return ()=>clearInterval(t);
+      }, [round.is_voting_open, round.max_votantes]);
+
+      const stage = (() => {
+        if (!round.is_active && !round.is_closed) return 0;
+        if (round.is_active && !round.is_voting_open && !round.round_finalized) return 1;
+        if (round.is_voting_open) return 2;
+        if (round.round_finalized && !round.show_results_to_voters) return 3;
+        if (round.round_finalized && round.show_results_to_voters && !round.show_ballot_summary_projection) return 4;
+        return 5;
+      })();
+
+      const activeCount = candidates.filter(c=>!c.is_eliminated).length;
+      const selectedCount = candidates.filter(c=>c.is_selected).length;
+      const isVotingStarted = round.is_active || round.is_closed;
+      const occupiedPct = Math.round((seatStatus.occupied_seats/seatStatus.max_votantes)*100);
+      const votesPct = Math.round((currentRoundVotes/round.max_votantes)*100);
+      const isProjectingSomething = round.show_results_to_voters||round.show_ballot_summary_projection||round.show_final_gallery_projection;
+
+      const statusChip = round.is_closed ? {cls:"chip-bad",txt:"Cerrada"} : round.is_voting_open ? {cls:"chip-ok",txt:"Votación abierta"} : round.round_finalized ? {cls:"chip-warn",txt:"Ronda finalizada"} : round.is_active ? {cls:"chip-brand",txt:"Sala abierta"} : {cls:"",txt:"Sin iniciar"};
+
+      const workflow = [
+        {label:"Abrir sala",icon:Icon.Play,run:()=>{setRound(r=>({...r,is_active:true}));pushToast({kind:"ok",title:"Sala abierta",desc:"El código A7K2 está activo."});}},
+        {label:"Iniciar ronda",icon:Icon.Play,run:()=>{setRound(r=>({...r,is_voting_open:true}));pushToast({kind:"ok",title:"Ronda iniciada"});}},
+        {label:"Finalizar ronda",icon:Icon.Step,run:()=>{setRound(r=>({...r,is_voting_open:false,round_finalized:true}));pushToast({kind:"warn",title:"Ronda finalizada"});}},
+        {label:"Proyectar resultados",icon:Icon.Monitor,run:()=>{setRound(r=>({...r,show_results_to_voters:true}));pushToast({title:"Proyectando resultados"});}},
+        {label:"Proyectar papeletas",icon:Icon.Monitor,run:()=>{setRound(r=>({...r,show_ballot_summary_projection:true}));pushToast({title:"Proyectando papeletas"});}},
+        {label:"Siguiente ronda",icon:Icon.Step,run:()=>{setRound(r=>({...r,current_round_number:r.current_round_number+1,round_finalized:false,show_results_to_voters:false,show_ballot_summary_projection:false,is_voting_open:false}));setVotes(0);pushToast({kind:"ok",title:`Ronda ${round.current_round_number+1} preparada`});}},
+      ];
+      const current = workflow[stage];
+
+      const initials = c=>`${(c.name||"")[0]||""}${(c.surname||"")[0]||""}`.toUpperCase();
+      const fullName = c=>`${c.name} ${c.surname}`;
+      const filtered = React.useMemo(()=>{const q=search.toLowerCase();return candidates.filter(c=>!q||c.name.toLowerCase().includes(q)||c.surname.toLowerCase().includes(q)||(c.location||"").toLowerCase().includes(q));},[candidates,search]);
+      const deleteCand = id=>{setCandidates(xs=>xs.filter(c=>c.id!==id));pushToast({kind:"warn",title:"Candidata eliminada"});};
+      const unselectCand = id=>{setCandidates(xs=>xs.map(c=>c.id===id?{...c,is_selected:false}:c));pushToast({title:"Selección deshecha"});};
+      const saveNew = form=>{setCandidates(xs=>[...xs,{id:"c"+Date.now(),...form,age:+form.age||null,order_index:xs.length,is_selected:false,is_eliminated:false,image_url:null}]);pushToast({kind:"ok",title:"Candidata añadida",desc:`${form.name} ${form.surname}`});};
+      const saveEdit = form=>{if(!dEdit)return;setCandidates(xs=>xs.map(c=>c.id===dEdit.id?{...c,...form}:c));pushToast({kind:"ok",title:"Cambios guardados"});};
+      const copyCode = ()=>{navigator.clipboard?.writeText(round.access_code);pushToast({title:"Código copiado"});};
+      const copyPublicUrl = ()=>{navigator.clipboard?.writeText(`https://mcm.votaciones.app/publico/${round.access_code}`);pushToast({title:"Enlace copiado"});};
+
+      return (
+        <div className="app" style={{height:"100%", display:"flex", flexDirection:"column"}}>
+          <section className="page-header">
+            <div className="page-header-top">
+              <div className="page-title-block">
+                <div className="page-meta">
+                  <button className="btn btn-sm" onClick={onBack}><Icon.ArrowLeft />Votaciones</button>
+                  <span className={`chip ${statusChip.cls}`} style={{height:24,fontSize:12,display:"flex",alignItems:"center",gap:5}}>
+                    {round.is_voting_open && <span className="pulse-dot" />}{statusChip.txt}
+                  </span>
+                  <span className="chip chip-muted">Ronda {round.current_round_number}</span>
+                  <span className="chip chip-muted">{round.team}</span>
+                  <span className="chip chip-mono" style={{display:"flex",alignItems:"center",gap:5}}>
+                    <Icon.Dot style={{color:"var(--brand)"}} width={10} height={10} /> {round.access_code}
+                    <button style={{marginLeft:2,width:16,height:16,background:"none",border:"none",cursor:"pointer",color:"var(--fg-faint)",display:"flex"}} onClick={copyCode}><Icon.Copy /></button>
+                  </span>
+                </div>
+                <h1>{round.title}</h1>
+                <p className="desc">{round.description}</p>
+              </div>
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                <button className="btn btn-sm" onClick={()=>setDAnalytics(true)}><Icon.Chart />Análisis</button>
+                <button className="btn btn-sm" onClick={()=>setDBallots(true)}><Icon.Ballot />Papeletas</button>
+                <button className="btn btn-sm" onClick={()=>setDSettings(true)}><Icon.Settings />Ajustes</button>
+                <button className="btn btn-sm btn-primary" onClick={()=>pushToast({title:"Abriendo proyección…"})}>Proyección<Icon.ArrowUpRight /></button>
+              </div>
+            </div>
+
+            {/* KPI strip */}
+            <div className="kpi-strip">
+              <div className="kpi" data-accent="ok"><div className="kpi-label"><Icon.Users width={11} height={11}/>Conectados</div><div className="kpi-value tabular">{seatStatus.occupied_seats}<span className="unit">/{seatStatus.max_votantes}</span></div><div className="kpi-bar"><div className="kpi-bar-fill ok" style={{width:`${occupiedPct}%`}}/></div></div>
+              <div className="kpi" data-accent="brand"><div className="kpi-label"><Icon.Ballot width={11} height={11}/>Votos R{round.current_round_number}</div><div className="kpi-value tabular">{currentRoundVotes}<span className="unit">/{round.max_votantes}</span></div><div className="kpi-bar"><div className="kpi-bar-fill" style={{width:`${votesPct}%`}}/></div></div>
+              <div className="kpi" data-accent="brand"><div className="kpi-label">Participación</div><div className="kpi-value tabular">{votesPct}<span className="unit">%</span></div><div className="kpi-meta">Obj. {round.max_selected_candidates} selecciones</div></div>
+              <div className="kpi"><div className="kpi-label">Candidatas</div><div className="kpi-value tabular">{activeCount}</div><div className="kpi-meta">{selectedCount} seleccionadas</div></div>
+              <div className="kpi" data-accent={round.census_mode==="exact"?"warn":""}><div className="kpi-label">Censo</div><div className="kpi-value" style={{fontSize:16}}>{round.census_mode==="exact"?"Exacto":"Máximo"}</div><div className="kpi-meta">{round.census_mode==="exact"?"Arranca al llenar":"Inicio manual"}</div></div>
+              <div className="kpi" data-accent={isProjectingSomething?"violet":""}><div className="kpi-label"><Icon.Monitor width={11} height={11}/>Proyección</div><div className="kpi-value" style={{fontSize:16}}>{round.show_ballot_summary_projection?"Papeletas":round.show_results_to_voters?"Resultados":"Esperando"}</div><div className="kpi-meta">{isProjectingSomething?"En pantalla":"Sin difundir"}</div></div>
+            </div>
+
+            {/* Workflow rail */}
+            <div className="wf-rail">
+              <div className="wf-steps">
+                {window.WORKFLOW_STEPS.map((s,i)=>{const status=i<stage?"done":i===stage?"current":"pending";return(<div key={s.id} className={`wf-step ${status}`}><div className="wf-bullet">{status==="done"?<Icon.Check width={12} height={12}/>:i+1}</div><div className="wf-text"><div className="wf-label">{s.label}</div><div className="wf-sub">{status==="done"?"Hecho":status==="current"?"Siguiente paso":s.sub}</div></div></div>);})}
+              </div>
+              <div className="wf-cta">
+                <button className="btn btn-primary" onClick={current?.run} disabled={!current}>
+                  {current?.icon && React.createElement(current.icon)}{current?.label||"Completado"}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <div className="page-main">
+            {/* Candidatas */}
+            <main className="col col-main">
+              <div className="col-inner">
+                <div className="candidates-head">
+                  <div className="candidates-head-left"><h2>Candidatas</h2><span className="counts">{selectedCount} seleccionadas · {activeCount} activas</span></div>
+                  <div className="candidates-head-right">
+                    <div className="segmented"><button className={view==="list"?"active":""} onClick={()=>setView("list")}><Icon.List/>Lista</button><button className={view==="grid"?"active":""} onClick={()=>setView("grid")}><Icon.Grid/>Tarjetas</button></div>
+                    <div className="search-wrap" style={{width:180}}><Icon.Search/><input className="input" placeholder="Buscar candidata..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+                    {!isVotingStarted&&<><button className="btn btn-sm" onClick={()=>setDAdd(true)}><Icon.UserPlus/>Añadir</button><button className="btn btn-sm" onClick={()=>setDImport(true)}><Icon.Upload/>Importar</button><button className="btn btn-sm" onClick={()=>setDDataset(true)}><Icon.Download/>Dataset</button></>}
+                  </div>
+                </div>
+                <div className="candidates-shell">
+                  {filtered.length===0?(<div className="empty"><Icon.UserPlus/><p className="empty-title">Sin candidatas</p><p className="empty-sub">Añade o importa candidatas.</p></div>):view==="list"?(filtered.map(c=>(
+                    <div key={c.id} className={`cand-row ${c.is_selected?"is-selected":""} ${c.is_eliminated?"is-eliminated":""}`}>
+                      <div className="cand-avatar">{initials(c)}</div>
+                      <div className="cand-info"><div className="cand-name">{fullName(c)}</div><div className="cand-meta">{c.location||"Sin ubicación"}{c.group_name&&<><span className="dot">·</span>{c.group_name}</>}</div></div>
+                      <div className="cand-badges">{c.is_selected&&<span className="chip chip-ok">Seleccionada</span>}{c.is_eliminated&&<span className="chip chip-bad">Eliminada</span>}</div>
+                      <div className="cand-actions"><button className="btn-icon-sm btn" onClick={()=>setDEdit(c)} style={{border:"none"}}><Icon.Pencil/></button>{c.is_selected&&<button className="btn-icon-sm btn" onClick={()=>unselectCand(c.id)} style={{border:"none"}}><Icon.Undo/></button>}{!isVotingStarted&&<button className="btn-icon-sm btn danger-hover" onClick={()=>deleteCand(c.id)} style={{border:"none"}}><Icon.Trash/></button>}</div>
+                    </div>
+                  ))):(
+                    <div className="cand-grid">{filtered.map(c=>(
+                      <div key={c.id} className={`cand-card ${c.is_selected?"is-selected":""} ${c.is_eliminated?"is-eliminated":""}`}>
+                        <div className="cand-card-head"><div className="cand-card-avatar">{initials(c)}</div><div className="cand-card-title"><div className="cand-card-name">{fullName(c)}</div><div className="cand-card-meta">{c.location}{c.age&&` · ${c.age}a`}</div></div></div>
+                        <div style={{fontSize:11.5,color:"var(--fg-muted)"}}>{c.group_name}</div>
+                        <div className="cand-card-foot"><div>{c.is_selected&&<span className="chip chip-ok">Seleccionada</span>}{c.is_eliminated&&<span className="chip chip-bad">Eliminada</span>}</div><div style={{display:"flex",gap:2}}><button className="btn-icon-sm btn-ghost" onClick={()=>setDEdit(c)}><Icon.Pencil/></button>{!isVotingStarted&&<button className="btn-icon-sm btn-ghost" onClick={()=>deleteCand(c.id)}><Icon.Trash/></button>}</div></div>
+                      </div>
+                    ))}</div>
+                  )}
+                </div>
+              </div>
+            </main>
+
+            {/* Right column */}
+            <aside className="col col-right">
+              <div className="col-inner">
+                <div>
+                  <h3 className="section-title">Conexiones <span className="hint" style={{display:"flex",alignItems:"center",gap:5}}><span className="pulse-dot"/>Tiempo real</span></h3>
+                  <div className="live-card">
+                    <div><div className="meter-label"><span>Ocupación sala</span><span className="val tabular">{seatStatus.occupied_seats}/{seatStatus.max_votantes}</span></div><div className="meter"><div className="meter-fill ok" style={{width:`${occupiedPct}%`}}/></div></div>
+                    {round.is_voting_open&&<div><div className="meter-label"><span>Votos R{round.current_round_number}</span><span className="val tabular">{currentRoundVotes}/{round.max_votantes}</span></div><div className="meter"><div className="meter-fill" style={{width:`${votesPct}%`}}/></div></div>}
+                    <div className="seat-grid"><div className="seat-stat"><div className="n ok tabular">{seatStatus.occupied_seats}</div><div className="l">Ocupados</div></div><div className="seat-stat"><div className="n warn tabular">{seatStatus.expired_seats}</div><div className="l">Expirados</div></div><div className="seat-stat"><div className="n tabular">{seatStatus.available_seats}</div><div className="l">Libres</div></div></div>
+                    <div className="seats-list scroll-thin">{seats.slice(0,10).map(s=><div key={s.id} className="seat-row"><span className="id">{s.browser_instance_id.slice(0,10)}</span><span className={`status ${s.estado==="ocupado"?"ok":s.estado==="expirado"?"exp":"free"}`}>{s.estado}</span><span className="time">{new Date(s.last_seen_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</span></div>)}</div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="section-title">Control operativo</h3>
+                  <div className="live-card">
+                    {round.is_voting_open&&<button className="btn btn-block" onClick={()=>{setRound(r=>({...r,join_locked:!r.join_locked}));pushToast({kind:"warn",title:round.join_locked?"Participación reanudada":"Participación pausada"});}}>{round.join_locked?<><Icon.Play/>Reanudar</>:<><Icon.Pause/>Pausar participación</>}</button>}
+                    {isProjectingSomething&&<button className="btn btn-block btn-danger" onClick={()=>{setRound(r=>({...r,show_results_to_voters:false,show_ballot_summary_projection:false,show_final_gallery_projection:false}));pushToast({title:"Proyección apagada"});}}><Icon.MonitorOff/>Apagar proyección</button>}
+                    <div className="proj-toggle"><div className="label-row"><Icon.Globe/><div><div>Lista pública</div><div className="sub">/publico/{round.access_code}</div></div></div><div style={{display:"flex",alignItems:"center",gap:6}}><button className="btn-icon-sm btn-ghost" onClick={copyPublicUrl} style={{width:22,height:22}}><Icon.Copy/></button><button className={`switch ${round.public_candidates_enabled?"on":""}`} onClick={()=>setRound(r=>({...r,public_candidates_enabled:!r.public_candidates_enabled}))}/></div></div>
+                    {!round.is_closed&&<button className="btn btn-block btn-danger" onClick={()=>{setRound(r=>({...r,is_closed:true,is_voting_open:false}));pushToast({kind:"bad",title:"Ronda cerrada",desc:"Ya no se pueden emitir votos."});}}><Icon.XCircle/>Cerrar definitivamente</button>}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="section-title">Atajos</h3>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    <button className="btn btn-block" style={{justifyContent:"flex-start"}} onClick={()=>setDAnalytics(true)}><Icon.Chart/>Análisis de resultados</button>
+                    <button className="btn btn-block" style={{justifyContent:"flex-start"}} onClick={()=>setDBallots(true)}><Icon.Ballot/>Revisar papeletas</button>
+                    <button className="btn btn-block" style={{justifyContent:"flex-start"}}><Icon.Download/>Exportar CSV</button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <SettingsDialog open={dSettings} onClose={()=>setDSettings(false)} round={round} onSave={x=>{setRound(r=>({...r,...x}));pushToast({kind:"ok",title:"Ajustes guardados"});}}/>
+          <CandidateDialog open={dAdd} onClose={()=>setDAdd(false)} mode="add" onSave={saveNew}/>
+          <CandidateDialog open={!!dEdit} onClose={()=>setDEdit(null)} mode="edit" initial={dEdit} onSave={saveEdit}/>
+          <ImportDialog open={dImport} onClose={()=>setDImport(false)} onImport={()=>pushToast({kind:"ok",title:"Importación iniciada"})}/>
+          <DatasetDialog open={dDataset} onClose={()=>setDDataset(false)} onLoad={()=>pushToast({kind:"ok",title:"Dataset cargado"})}/>
+          <AnalyticsDialog open={dAnalytics} onClose={()=>setDAnalytics(false)} currentRound={round.current_round_number}/>
+          <BallotsDialog open={dBallots} onClose={()=>setDBallots(false)} canExport={round.is_closed}/>
+        </div>
+      );
+    }
+
+    // ── Root app ─────────────────────────────────────────────────────────
+    function Root() {
+      const [theme, setTheme] = useTheme();
+      const [screen, setScreen] = React.useState(()=>localStorage.getItem("mcm-screen")||"login");
+      const [toasts, setToasts] = React.useState([]);
+      const [now, setNow] = React.useState(Date.now());
+
+      React.useEffect(()=>{ const t=setInterval(()=>setNow(Date.now()),1000); return ()=>clearInterval(t); },[]);
+
+      const navigate = (s) => { setScreen(s); localStorage.setItem("mcm-screen",s); };
+
+      const pushToast = React.useCallback((t) => {
+        const id = Math.random().toString(36).slice(2);
+        setToasts(xs=>[...xs,{...t,id}]);
+        setTimeout(()=>setToasts(xs=>xs.filter(x=>x.id!==id)),3200);
+      },[]);
+
+      return (
+        <div style={{height:"100%", display:"flex", flexDirection:"column", background:"var(--bg)"}}>
+          <Topbar screen={screen} onNavigate={navigate} theme={theme} setTheme={setTheme} now={now} />
+
+          <div style={{flex:1, overflow:"hidden", display:"flex", flexDirection:"column"}}>
+            {screen === "loading"  && <LoadingState />}
+            {screen === "denied"   && <AccessDenied onBack={()=>navigate("login")} />}
+            {screen === "login"    && <LoginPage onLogin={()=>navigate("dashboard")} />}
+            {screen === "dashboard"&& <AdminDashboard onOpenRound={()=>navigate("detail")} pushToast={pushToast} isSuperAdmin={true} />}
+            {screen === "detail"   && <DetailWrapper onBack={()=>navigate("dashboard")} pushToast={pushToast} />}
+          </div>
+
+          <ToastStack items={toasts} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+  </script>
+</head>
+<body></body>
+</html>

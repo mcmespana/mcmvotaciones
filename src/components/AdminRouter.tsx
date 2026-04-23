@@ -4,52 +4,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminVotingDetail } from './AdminVotingDetail';
-import { DemoPage } from './DemoPage';
-import { DemoAdminDashboard } from './DemoAdminDashboard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { Shield } from 'lucide-react';
 
 export function AdminRouter() {
   const { adminUser, loading, isAdmin } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
-    // Set admin mode in localStorage when accessing admin routes
     localStorage.setItem('adminMode', 'true');
-    
-    // Clean up when component unmounts
     return () => {
-      // Only remove if we're actually leaving admin routes
       if (!location.pathname.startsWith('/admin')) {
         localStorage.removeItem('adminMode');
       }
     };
   }, [location.pathname]);
 
-  // Show demo page if Supabase is not configured
-  if (!isSupabaseConfigured) {
-    return (
-      <Routes>
-        <Route path="/demo" element={<DemoAdminDashboard />} />
-        <Route path="/*" element={<DemoPage />} />
-      </Routes>
-    );
-  }
-
-  // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando...</p>
-        </Card>
+      <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--avd-bg)", fontFamily:"var(--avd-font-sans)"}}>
+        <div style={{textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center", gap:16}}>
+          <div style={{width:40, height:40, border:"2.5px solid var(--avd-border)", borderTopColor:"var(--avd-brand)", borderRadius:"50%", animation:"spin 0.7s linear infinite"}} />
+          <div style={{fontSize:14, color:"var(--avd-fg-muted)", fontWeight:500}}>Verificando credenciales…</div>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
-  // User is not authenticated
   if (!adminUser) {
     return (
       <Routes>
@@ -57,41 +38,37 @@ export function AdminRouter() {
       </Routes>
     );
   }
-  
-  // User is authenticated but not an admin
+
   if (!isAdmin) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/15 flex items-center justify-center">
-              <Shield className="w-8 h-8 text-destructive" />
+      <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:24, background:"var(--avd-bg)", fontFamily:"var(--avd-font-sans)"}}>
+        <div style={{width:"100%", maxWidth:420, textAlign:"center"}}>
+          <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-lg)", overflow:"hidden", boxShadow:"var(--avd-shadow-md)"}}>
+            <div style={{height:3, background:"linear-gradient(90deg, var(--avd-bad-500), oklch(0.66 0.22 28))"}} />
+            <div style={{padding:"32px 28px 28px", display:"flex", flexDirection:"column", alignItems:"center", gap:18}}>
+              <div style={{width:64, height:64, borderRadius:"50%", background:"var(--avd-bad-bg)", border:"1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", display:"grid", placeItems:"center"}}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--avd-bad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+              </div>
+              <div>
+                <div style={{fontSize:20, fontWeight:700, letterSpacing:"-0.015em", color:"var(--avd-fg)", marginBottom:6}}>Acceso Denegado</div>
+                <div style={{fontSize:13.5, color:"var(--avd-fg-muted)", lineHeight:1.55, maxWidth:"30ch", margin:"0 auto"}}>No tienes permisos para acceder al panel de administración. Solo los administradores pueden entrar.</div>
+              </div>
+              <span className="avd-chip avd-chip-bad" style={{height:26, fontSize:12, fontWeight:700}}>Sin permisos de administración</span>
+              <button
+                className="avd-btn"
+                onClick={() => { localStorage.removeItem('adminMode'); window.location.href = '/'; }}
+                style={{marginTop:4, gap:6}}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                Volver a la página principal
+              </button>
             </div>
-            <CardTitle className="text-2xl">Acceso Denegado</CardTitle>
-            <CardDescription>
-              No tienes permisos para acceder al panel de administración
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">
-              Solo los administradores pueden acceder a esta sección.
-            </p>
-            <button
-              onClick={() => {
-                localStorage.removeItem('adminMode');
-                window.location.href = '/';
-              }}
-              className="text-primary hover:text-primary/80 text-sm underline"
-            >
-              Volver a la página principal
-            </button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
-  
-  // User is authenticated and is an admin
+
   return (
     <Routes>
       <Route path="/" element={<AdminDashboard />} />

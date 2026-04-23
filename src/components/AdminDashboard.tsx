@@ -1,24 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { UserManagement } from './UserManagement';
 import { AdminVotingList } from './AdminVotingList';
-import { 
-  Users, 
-  Vote, 
-  Calendar, 
-  Settings, 
-  LogOut, 
-  Plus,
-  BarChart3,
-  Download,
-  Shield
-} from 'lucide-react';
 
 interface DashboardStats {
   totalRounds: number;
@@ -27,80 +13,41 @@ interface DashboardStats {
   totalCandidates: number;
 }
 
+const RECENT_ACTIVITY = [
+  { id: 1, kind: "ok",    text: "Sistema de votaciones activo" },
+  { id: 2, kind: "brand", text: "Panel de administración cargado correctamente" },
+];
+
 export function AdminDashboard() {
   const { adminUser, isSuperAdmin, signOut } = useAuth();
   const { toast } = useToast();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalRounds: 0,
-    activeRounds: 0,
-    totalVotes: 0,
-    totalCandidates: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') ?? 'dashboard');
+  const [stats, setStats] = useState<DashboardStats>({ totalRounds: 0, activeRounds: 0, totalVotes: 0, totalCandidates: 0 });
+  const [loading, setLoading] = useState(true);
+  const roleLabel = adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin';
 
-  useEffect(() => {
-    loadDashboardStats();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadStats(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadDashboardStats = async () => {
+  const loadStats = async () => {
     try {
       setLoading(true);
-      
-      // Get rounds stats
-      const { data: rounds, error: roundsError } = await supabase
-        .from('rounds')
-        .select('id, is_active, is_closed');
-
-      if (roundsError) {
-        // Error loading rounds
-        // Continue with other stats even if this fails
-      }
-
-      // Get votes count
-      const { count: votesCount, error: votesError } = await supabase
-        .from('votes')
-        .select('*', { count: 'exact', head: true });
-
-      if (votesError) {
-        // Error loading votes
-      }
-
-      // Get candidates count
-      const { count: candidatesCount, error: candidatesError } = await supabase
-        .from('candidates')
-        .select('*', { count: 'exact', head: true });
-
-      if (candidatesError) {
-        // Error loading candidates
-      }
-
-      // Calculate stats
-      const totalRounds = rounds?.length || 0;
-      const activeRounds = rounds?.filter(r => r.is_active && !r.is_closed).length || 0;
-
+      const { data: rounds } = await supabase.from('rounds').select('id, is_active, is_closed');
+      const { count: votesCount } = await supabase.from('votes').select('*', { count: 'exact', head: true });
+      const { count: candidatesCount } = await supabase.from('candidates').select('*', { count: 'exact', head: true });
       setStats({
-        totalRounds,
-        activeRounds,
+        totalRounds: rounds?.length || 0,
+        activeRounds: rounds?.filter(r => r.is_active && !r.is_closed).length || 0,
         totalVotes: votesCount || 0,
         totalCandidates: candidatesCount || 0,
       });
-
     } catch (error: unknown) {
-      // Provide more specific error messages
-      let errorMessage = 'No se pudieron cargar las estadísticas';
-      if (error && typeof error === 'object' && 'code' in error && error.code === '42501') {
-        errorMessage = 'Error de permisos: Para desarrollo, ejecuta reset-database.sql en Supabase. Para producción, revisa las políticas RLS y permisos de usuario.';
-      } else if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-        errorMessage = `Error: ${error.message}`;
+      let msg = 'No se pudieron cargar las estadísticas';
+      if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+        msg = error.message;
       }
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -108,292 +55,233 @@ export function AdminDashboard() {
 
   const handleSignOut = async () => {
     const { error } = await signOut();
-    if (error) {
-      toast({
-        title: 'Error',
-        description: 'Error al cerrar sesión',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleNewVotation = () => {
-    setActiveTab('votaciones');
-    toast({
-      title: 'Nueva Votación',
-      description: 'Redirigiendo a la gestión de votaciones...',
-    });
+    if (error) toast({ title: 'Error', description: 'Error al cerrar sesión', variant: 'destructive' });
   };
 
   const handleExportData = async () => {
     try {
-      // Get all voting data
       const { data: rounds, error: roundsError } = await supabase
         .from('rounds')
-        .select(`
-          id, title, description, is_active, is_closed, created_at,
+        .select(`id, title, description, is_active, is_closed, created_at,
           candidates!candidates_round_id_fkey (
             id, name, description, order_index,
             votes!votes_candidate_id_fkey (id, device_hash, created_at)
-          )
-        `);
-
-      if (roundsError) {
-        toast({
-          title: 'Error',
-          description: 'No se pudieron exportar los datos',
-          variant: 'destructive',
-        });
+          )`);
+      if (roundsError || !rounds?.length) {
+        toast({ title: rounds?.length === 0 ? 'Sin datos' : 'Error', description: rounds?.length === 0 ? 'No hay datos para exportar' : 'No se pudieron exportar los datos', variant: roundsError ? 'destructive' : 'default' });
         return;
       }
-
-      if (!rounds || rounds.length === 0) {
-        toast({
-          title: 'Sin datos',
-          description: 'No hay datos para exportar',
-        });
-        return;
-      }
-
-      // Create export data
       const exportData = {
-        timestamp: new Date().toISOString(),
-        stats: stats,
+        timestamp: new Date().toISOString(), stats,
         rounds: rounds.map(round => ({
           ...round,
-          totalVotes: round.candidates.reduce((sum, c) => sum + (c.votes?.length || 0), 0),
-          candidates: round.candidates.map(candidate => ({
+          totalVotes: round.candidates.reduce((sum: number, c: { votes?: unknown[] }) => sum + (c.votes?.length || 0), 0),
+          candidates: round.candidates.map((candidate: { votes?: Array<{ id: string; created_at: string }> }) => ({
             ...candidate,
             voteCount: candidate.votes?.length || 0,
-            votes: candidate.votes?.map(vote => ({
-              id: vote.id,
-              timestamp: vote.created_at
-              // device_hash excluded for privacy
-            }))
-          }))
-        }))
+            votes: candidate.votes?.map(vote => ({ id: vote.id, timestamp: vote.created_at })),
+          })),
+        })),
       };
-
-      // Create and download JSON file
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: 'application/json'
-      });
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `votaciones-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
-      toast({
-        title: 'Exportación completada',
-        description: 'Los datos se han descargado correctamente',
-      });
-    } catch (error) {
-      // Error exporting data
-      toast({
-        title: 'Error',
-        description: 'Error al exportar los datos',
-        variant: 'destructive',
-      });
+      toast({ title: 'Exportación completada', description: 'Los datos se han descargado correctamente' });
+    } catch {
+      toast({ title: 'Error', description: 'Error al exportar los datos', variant: 'destructive' });
     }
   };
 
+  const TABS = [
+    {
+      id: "dashboard", label: "Dashboard",
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    },
+    {
+      id: "votaciones", label: "Votaciones",
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    },
+    ...(isSuperAdmin ? [{
+      id: "usuarios", label: "Usuarios",
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    }] : []),
+  ];
+
   if (loading) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando panel...</p>
-        </Card>
+      <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--avd-bg)", fontFamily:"var(--avd-font-sans)"}}>
+        <div style={{textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center", gap:16}}>
+          <div style={{width:36, height:36, border:"2.5px solid var(--avd-border)", borderTopColor:"var(--avd-brand)", borderRadius:"50%", animation:"spin 0.7s linear infinite"}} />
+          <div style={{fontSize:14, color:"var(--avd-fg-muted)", fontWeight:500}}>Cargando panel...</div>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="admin-canvas min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-outline-variant/55 bg-surface-container-lowest/85 backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/82">
-        <div className="mx-auto flex max-w-screen-2xl flex-col items-start justify-between gap-3 px-4 py-4 sm:flex-row sm:items-center sm:px-6 xl:px-8">
-          <div>
-            <h1 className="font-headline text-3xl font-black tracking-tight">Panel de Administracion</h1>
-            <p className="text-sm text-muted-foreground">
-              Bienvenido, {adminUser?.name} ({adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'})
-            </p>
-          </div>
-          <Button variant="outline" className="bg-surface-container-lowest/80" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Cerrar sesión
-          </Button>
+    <div className="adm-page">
+      {/* Topbar */}
+      <header className="adm-topbar">
+        <div className="adm-brand">
+          <div className="avd-brand-mark">C</div>
+          <span>VotacionesMCM</span>
         </div>
+        <nav className="adm-crumbs">
+          <span className="sep">/</span>
+          <span>Admin</span>
+        </nav>
+        <div className="adm-topbar-spacer" />
+        <span className="avd-chip avd-chip-ok" style={{display:"flex", alignItems:"center", gap:5}}>
+          <span className="avd-pulse-dot" style={{width:6, height:6}} />
+          Sistema operativo
+        </span>
+        <button className="avd-btn avd-btn-sm" onClick={handleSignOut} style={{gap:6}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </button>
       </header>
 
-      <div className="mx-auto max-w-screen-2xl space-y-6 p-4 sm:p-6 xl:px-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList
-            className={`grid h-12 w-full items-center rounded-2xl border border-outline-variant/55 bg-surface-container-lowest/88 p-1 dark:border-outline-variant/65 dark:bg-surface-container-low/86 ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}
-          >
-            <TabsTrigger value="dashboard" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
-              <BarChart3 className="w-4 h-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="votaciones" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
-              <Vote className="w-4 h-4" />
-              Votaciones
-            </TabsTrigger>
-            {isSuperAdmin && (
-              <TabsTrigger value="usuarios" className="flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
-                <Shield className="w-4 h-4" />
-                Usuarios
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="admin-shell">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Votaciones Totales
-                  </CardTitle>
-                  <Calendar className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalRounds}</div>
-                  <p className="admin-chip mt-2 inline-flex">
-                    {stats.activeRounds} activas
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="admin-shell">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Votos Emitidos
-                  </CardTitle>
-                  <Vote className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalVotes}</div>
-                  <p className="admin-chip mt-2 inline-flex">
-                    Total acumulado
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="admin-shell">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Candidatos
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-headline text-4xl font-black tracking-tight">{stats.totalCandidates}</div>
-                  <p className="admin-chip mt-2 inline-flex">
-                    En todas las rondas
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="admin-shell">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Estado del Sistema
-                  </CardTitle>
-                  <Settings className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-headline text-4xl font-black tracking-tight text-emerald-500">●</div>
-                  <p className="admin-chip mt-2 inline-flex">
-                    Sistema operativo
-                  </p>
-                </CardContent>
-              </Card>
+      {/* Page header */}
+      <div className="adm-page-header">
+        <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, marginBottom:14}}>
+          <div>
+            <div style={{fontSize:20, fontWeight:800, letterSpacing:"-0.02em", color:"var(--avd-fg)", lineHeight:1.1}}>Panel de Administración</div>
+            <div style={{fontSize:13, color:"var(--avd-fg-muted)", marginTop:3}}>
+              Bienvenida, {adminUser?.name} · <span style={{fontWeight:600, color:"var(--avd-brand)"}}>{roleLabel}</span>
             </div>
+          </div>
+        </div>
 
-            {/* Quick Actions */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="w-5 h-5" />
-                    Nueva Votación
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Crear una nueva ronda de votación con candidatos
-                  </p>
-                  <Button className="w-full" onClick={handleNewVotation}>
-                    Crear Votación
-                  </Button>
-                </CardContent>
-              </Card>
+        {/* Summary chips */}
+        <div style={{display:"flex", gap:6, flexWrap:"wrap", marginBottom:14}}>
+          {[
+            { l: "Rondas",     v: stats.totalRounds,    cls: "avd-chip-muted" },
+            { l: "Activas",    v: stats.activeRounds,   cls: "avd-chip-ok" },
+            { l: "Votos",      v: stats.totalVotes,     cls: "avd-chip-muted" },
+            { l: "Candidatos", v: stats.totalCandidates, cls: "avd-chip-muted" },
+          ].map(c => (
+            <span key={c.l} className={`avd-chip ${c.cls}`}>
+              <span style={{textTransform:"uppercase", fontSize:9.5, letterSpacing:"0.07em", fontWeight:700, opacity:0.7}}>{c.l}</span>
+              <span style={{fontWeight:800}}>{c.v}</span>
+            </span>
+          ))}
+        </div>
 
-              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Ver Resultados
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Consultar los resultados de las votaciones
-                  </p>
-                  <Button variant="outline" className="w-full" onClick={() => setActiveTab('votaciones')}>
-                    Ver Resultados
-                  </Button>
-                </CardContent>
-              </Card>
+        {/* Tabs */}
+        <div className="adm-tabs">
+          {TABS.map(t => (
+            <button key={t.id} className={`adm-tab${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
+              {t.icon}{t.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-              <Card className="admin-shell cursor-pointer transition-colors hover:border-primary/45">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Download className="w-5 h-5" />
-                    Exportar Datos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Descargar resultados en formato Excel o JSON
-                  </p>
-                  <Button variant="outline" className="w-full" onClick={handleExportData}>
-                    Exportar
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+      {/* Tab content */}
+      <div className="adm-body">
+        {activeTab === "dashboard" && (
+          <div className="adm-scroll" style={{padding:24}}>
+            <div style={{display:"flex", flexDirection:"column", gap:20}}>
+              {/* Stats grid */}
+              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(220px,1fr))", gap:12}}>
+                {[
+                  {
+                    label: "Votaciones totales", value: stats.totalRounds, sub: `${stats.activeRounds} activas ahora`, accent: "brand",
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  },
+                  {
+                    label: "Votos emitidos", value: stats.totalVotes, sub: "Total acumulado", accent: "ok",
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-ok)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  },
+                  {
+                    label: "Candidatos", value: stats.totalCandidates, sub: "En todas las rondas", accent: "brand",
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  },
+                  {
+                    label: "Estado del sistema", value: <span style={{color:"var(--avd-ok)"}}>●</span>, sub: "Todos los servicios operativos", accent: "ok",
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-ok)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                  },
+                ].map(({ label, value, sub, accent, icon }) => (
+                  <div key={label} className="adm-stat-card">
+                    <div style={{position:"absolute", top:0, left:0, right:0, height:2.5, background:`linear-gradient(90deg, var(--avd-${accent}-400, var(--avd-brand-400)), var(--avd-${accent}-600, var(--avd-brand-600)))`, opacity:0.85}} />
+                    <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+                      <div style={{fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--avd-fg-subtle)"}}>{label}</div>
+                      {icon}
+                    </div>
+                    <div style={{fontSize:38, fontWeight:800, letterSpacing:"-0.03em", fontVariantNumeric:"tabular-nums", lineHeight:1, color:"var(--avd-fg)"}}>{value}</div>
+                    <div style={{fontSize:12, color:"var(--avd-fg-muted)", fontWeight:500}}>{sub}</div>
+                  </div>
+                ))}
+              </div>
 
-            {/* Recent Activity */}
-            <Card className="admin-shell">
-              <CardHeader>
-                <CardTitle>Actividad Reciente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No hay actividad reciente</p>
-                  <p className="text-sm">Las acciones aparecerán aquí cuando se realicen</p>
+              {/* Action cards */}
+              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:12}}>
+                {[
+                  {
+                    title: "Nueva votación",
+                    desc: "Crea una nueva ronda de votación con candidatos y configura el censo.",
+                    btnLabel: "Crear votación", btnPrimary: true, onClick: () => setActiveTab("votaciones"),
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  },
+                  {
+                    title: "Ver resultados",
+                    desc: "Consulta el historial y análisis de las votaciones realizadas.",
+                    btnLabel: "Ver votaciones", btnPrimary: false, onClick: () => setActiveTab("votaciones"),
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  },
+                  {
+                    title: "Exportar datos",
+                    desc: "Descarga todos los resultados en formato JSON para análisis externo.",
+                    btnLabel: "Exportar JSON", btnPrimary: false, onClick: handleExportData,
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  },
+                ].map(({ title, desc, btnLabel, btnPrimary, onClick, icon }) => (
+                  <div key={title} className="adm-action-card">
+                    <div style={{display:"flex", alignItems:"center", gap:10}}>
+                      <div style={{width:34, height:34, borderRadius:"var(--avd-radius-sm)", background:"var(--avd-brand-bg)", border:"1px solid var(--avd-brand-border)", display:"grid", placeItems:"center", color:"var(--avd-brand)"}}>{icon}</div>
+                      <div style={{fontWeight:700, fontSize:14, letterSpacing:"-0.01em", color:"var(--avd-fg)"}}>{title}</div>
+                    </div>
+                    <div style={{fontSize:13, color:"var(--avd-fg-muted)", lineHeight:1.55}}>{desc}</div>
+                    <button className={`avd-btn avd-btn-block${btnPrimary ? " avd-btn-primary" : ""}`} style={{height:36, fontSize:13, justifyContent:"center"}} onClick={onClick}>{btnLabel}</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent activity */}
+              <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
+                <div style={{padding:"12px 16px", borderBottom:"1px solid var(--avd-border-soft)", display:"flex", alignItems:"center", gap:8}}>
+                  <span style={{fontSize:13, fontWeight:700, color:"var(--avd-fg)"}}>Actividad reciente</span>
+                  <span className="avd-chip avd-chip-muted">{RECENT_ACTIVITY.length} eventos</span>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                <div>
+                  {RECENT_ACTIVITY.map((a, i) => (
+                    <div key={a.id} className="adm-activity-row" style={{borderTop: i > 0 ? "1px solid var(--avd-border-soft)" : "none"}}>
+                      <div style={{width:8, height:8, borderRadius:"50%", background: a.kind === "ok" ? "var(--avd-ok)" : a.kind === "warn" ? "var(--avd-warn)" : a.kind === "bad" ? "var(--avd-bad)" : "var(--avd-brand)", flexShrink:0}} />
+                      <span style={{flex:1, color:"var(--avd-fg)"}}>{a.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="votaciones" className="space-y-6">
+        {activeTab === "votaciones" && (
+          <div className="adm-body" style={{overflow:"visible"}}>
             <AdminVotingList />
-          </TabsContent>
+          </div>
+        )}
 
-          {isSuperAdmin && (
-            <TabsContent value="usuarios" className="space-y-6">
-              <UserManagement />
-            </TabsContent>
-          )}
-        </Tabs>
+        {activeTab === "usuarios" && isSuperAdmin && (
+          <div className="adm-scroll" style={{padding:0}}>
+            <UserManagement />
+          </div>
+        )}
       </div>
     </div>
   );
