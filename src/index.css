@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@heroui/styles";
 @import url('https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 @layer base {
@@ -122,11 +121,12 @@
   }
 
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Inter', 'Segoe UI', sans-serif;
     background-image: var(--gradient-canvas);
     min-height: 100vh;
@@ -163,7 +163,7 @@
   }
 
   .font-code {
-    @apply font-mono;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 }
 
@@ -173,7 +173,15 @@
   }
 
   .button {
-    @apply font-semibold tracking-[0.005em] transition-all duration-200 motion-reduce:transition-none;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    transition-property: all;
+    transition-duration: 200ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .button {
+      transition: none;
+    }
   }
 
   .button:hover,
@@ -266,7 +274,11 @@
   }
 
   .admin-chip {
-    @apply rounded-full px-3 py-1 text-xs font-semibold;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
     border: 1px solid hsl(var(--outline-variant) / 0.45);
     background: hsl(var(--primary-fixed) / 0.88);
     color: hsl(var(--primary));

@@ -74,7 +74,15 @@ export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewP
         const target = rows.find((round) => round.id === lockedRoundId);
         if (target) {
           setSelectedRoundId(target.id);
-          setSelectedRoundNum(target.current_round_number || 1);
+          // Default to the most recent round that has votes, not current_round_number
+          // (avoids showing empty after advancing rounds)
+          const { data: lastVote } = await supabase
+            .from("votes")
+            .select("round_number")
+            .eq("round_id", target.id)
+            .order("round_number", { ascending: false })
+            .limit(1);
+          setSelectedRoundNum(lastVote?.[0]?.round_number ?? target.current_round_number ?? 1);
         }
       } else if (rows.length > 0 && !selectedRoundId) {
         setSelectedRoundId(rows[0].id);

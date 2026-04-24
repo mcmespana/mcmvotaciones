@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
@@ -28,19 +27,20 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
   const isDark = activeTheme === "dark";
 
   const toggleButton = (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      size="icon"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       className={cn(
-        "group h-11 w-11 border-outline-variant/60 bg-surface-container-lowest/92 text-foreground shadow-tech backdrop-blur-md transition-all duration-200 hover:border-outline/70 hover:bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low/90 dark:hover:bg-surface-container",
+        "group avd-btn p-0",
+        mode === "inline"
+          ? "avd-btn-icon h-8 w-8 rounded-md shadow-none"
+          : "h-11 w-11 rounded-xl shadow-[var(--avd-shadow-md)]",
         buttonClassName,
       )}
     >
-      {isDark ? <Sun className="h-5 w-5 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-5 w-5 transition-transform duration-200 group-hover:-rotate-6" />}
-    </Button>
+      {isDark ? <Sun className="h-4 w-4 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-6" />}
+    </button>
   );
 
   if (mode === "inline") {

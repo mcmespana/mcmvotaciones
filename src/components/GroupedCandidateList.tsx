@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CandidateCard } from "@/components/CandidateCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Accordion, Chip, Surface } from "@heroui/react";
-import { Users, MapPin, ChevronDown, ChevronUp, Search, X } from "lucide-react";
+import { CandidateListCard } from "@/components/CandidateListCard";
+import { Search, X, MapPin, Users, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VotingTutorial } from "@/components/VotingTutorial";
 
@@ -45,21 +42,14 @@ function slugify(value: string): string {
   return value
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
 
-/**
- * Groups candidates by location (alphabetically) then by group_name
- * (sorted by average age ascending). Candidates without location go
- * into "Sin lugar asignado" and those without group go into "Sin grupo".
- */
 function groupCandidates(candidates: Candidate[]): LocationGroup[] {
-  // Only show active (not eliminated, not selected) candidates
   const active = candidates.filter((c) => !c.is_eliminated && !c.is_selected);
 
-  // Group by location
   const locationMap = new Map<string, Candidate[]>();
   for (const c of active) {
     const loc = c.location?.trim() || "Sin lugar asignado";
@@ -67,7 +57,6 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
     locationMap.get(loc)!.push(c);
   }
 
-  // Sort locations alphabetically (with "Sin lugar" at the end)
   const sortedLocations = Array.from(locationMap.keys()).sort((a, b) => {
     if (a === "Sin lugar asignado") return 1;
     if (b === "Sin lugar asignado") return -1;
@@ -77,7 +66,6 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
   return sortedLocations.map((location) => {
     const locCandidates = locationMap.get(location)!;
 
-    // Group by group_name within this location
     const groupMap = new Map<string, Candidate[]>();
     for (const c of locCandidates) {
       const grp = c.group_name?.trim() || "Sin grupo";
@@ -85,7 +73,6 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
       groupMap.get(grp)!.push(c);
     }
 
-    // Calculate average age for each group and sort by it (ascending)
     const groups: CandidateGroup[] = Array.from(groupMap.entries())
       .map(([groupName, cands]) => {
         const ages = cands.filter((c) => c.age !== null).map((c) => c.age!);
@@ -101,11 +88,7 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
         return a.avgAge - b.avgAge;
       });
 
-    return {
-      location,
-      groups,
-      totalCount: locCandidates.length,
-    };
+    return { location, groups, totalCount: locCandidates.length };
   });
 }
 
@@ -113,7 +96,7 @@ function normalizeForSearch(str: string): string {
   return str
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[̀-ͯ]/g, "");
 }
 
 export function GroupedCandidateList({
@@ -124,14 +107,20 @@ export function GroupedCandidateList({
   tutorialRoundId,
 }: GroupedCandidateListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
+  const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 768px)").matches;
+  });
+  const mobileIndexRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const filteredCandidates = useMemo(() => {
     const q = normalizeForSearch(searchQuery.trim());
     if (!q) return candidates;
-    return candidates.filter((c) => {
-      const full = normalizeForSearch(`${c.name} ${c.surname}`);
-      return full.includes(q);
-    });
+    return candidates.filter((c) =>
+      normalizeForSearch(`${c.name} ${c.surname}`).includes(q)
+    );
   }, [candidates, searchQuery]);
 
   const locationGroups = useMemo(
@@ -139,277 +128,292 @@ export function GroupedCandidateList({
     [filteredCandidates]
   );
 
-  const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
-  const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(min-width: 768px)").matches;
-  });
-  const mobileIndexRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
-    const allKeys = locationGroups.map((locGroup) => `loc-${slugify(locGroup.location)}`);
-
+    const allKeys = locationGroups.map((g) => `loc-${slugify(g.location)}`);
     setExpandedLocationKeys((prev) => {
-      const keepExisting = prev.filter((key) => allKeys.includes(key));
-      return keepExisting.length > 0 ? keepExisting : allKeys;
+      const keep = prev.filter((k) => allKeys.includes(k));
+      return keep.length > 0 ? keep : allKeys;
     });
   }, [locationGroups]);
 
   useEffect(() => {
     if (!isMobileIndexOpen) return;
-
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (mobileIndexRef.current && !mobileIndexRef.current.contains(target)) {
+    const handleClick = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node | null;
+      if (t && mobileIndexRef.current && !mobileIndexRef.current.contains(t)) {
         setIsMobileIndexOpen(false);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("touchstart", handleClick);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("touchstart", handleClick);
     };
   }, [isMobileIndexOpen]);
 
-  const scrollToLocation = (location: string) => {
-    const target = document.getElementById(`loc-${slugify(location)}`);
-    if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   const openAndScrollToLocation = (location: string) => {
     const key = `loc-${slugify(location)}`;
-
-    setExpandedLocationKeys((prev) =>
-      prev.includes(key) ? prev : [...prev, key]
-    );
-
+    setExpandedLocationKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
     setIsMobileIndexOpen(false);
-
     window.setTimeout(() => {
-      scrollToLocation(location);
+      const el = document.getElementById(key);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
   };
 
-  const toggleMobileIndex = () => {
-    setIsMobileIndexOpen((prev) => !prev);
+  const toggleLocation = (key: string) => {
+    setExpandedLocationKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
-  // If there's only one location and one group, don't show headers (flat layout)
   const isFlatLayout =
     locationGroups.length === 1 && locationGroups[0].groups.length === 1;
 
-  const searchBar = (
-    <div className="relative flex-1">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-      <Input
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Buscar candidato..."
-        className="h-9 pl-8 pr-8 rounded-xl border-outline-variant/55 bg-surface-container-low text-xs dark:border-outline-variant/65 dark:bg-surface-container"
-      />
-      {searchQuery && (
-        <button
-          type="button"
-          onClick={() => setSearchQuery("")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
-  );
+  return (
+    <div>
+      {/* Sticky header */}
+      <div className="pub-sticky" ref={mobileIndexRef}>
+        <div className="pub-sticky-card" style={{ maxWidth: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            {/* Search */}
+            <div style={{ flex: 1, position: "relative" }}>
+              <Search
+                style={{
+                  position: "absolute", left: 10, top: "50%",
+                  transform: "translateY(-50%)", width: 14, height: 14,
+                  color: "var(--avd-fg-faint)", pointerEvents: "none",
+                }}
+              />
+              <input
+                className="avd-input"
+                style={{ paddingLeft: 32, paddingRight: searchQuery ? 32 : 10 }}
+                placeholder="Buscar candidato..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  style={{
+                    position: "absolute", right: 10, top: "50%",
+                    transform: "translateY(-50%)", background: "none",
+                    border: "none", cursor: "pointer", padding: 0,
+                    color: "var(--avd-fg-faint)", display: "flex",
+                  }}
+                >
+                  <X style={{ width: 13, height: 13 }} />
+                </button>
+              )}
+            </div>
 
-  if (isFlatLayout) {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">{searchBar}</div>
-        {locationGroups.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">Sin resultados para "{searchQuery}"</p>
-        ) : (
-          <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {locationGroups[0].groups[0].candidates.map((candidate) => (
-              <CandidateCard
-                key={candidate.id}
-                candidate={candidate}
-                isSelected={selectedCandidates.includes(candidate.id)}
-                onToggle={onToggleCandidate}
-                disabled={disabled}
+            {/* Index toggle */}
+            <button
+              type="button"
+              className="avd-btn avd-btn-icon"
+              onClick={() => setIsMobileIndexOpen((p) => !p)}
+              title={isMobileIndexOpen ? "Ocultar índice" : "Mostrar índice de lugares"}
+            >
+              <ChevronDown
+                style={{
+                  transition: "transform 0.2s",
+                  transform: isMobileIndexOpen ? "rotate(180deg)" : "none",
+                }}
+              />
+            </button>
+
+            <VotingTutorial compactTrigger roundId={tutorialRoundId} />
+            <ThemeToggle
+              mode="inline"
+              buttonClassName="h-8 w-8 rounded-md shadow-none"
+            />
+          </div>
+
+          {isMobileIndexOpen && locationGroups.length > 0 && (
+            <div className="pub-index">
+              {locationGroups.map((locGroup) => (
+                <button
+                  key={locGroup.location}
+                  type="button"
+                  className="pub-index-pill"
+                  onClick={() => openAndScrollToLocation(locGroup.location)}
+                >
+                  <MapPin style={{ width: 10, height: 10 }} />
+                  {locGroup.location}
+                  <span
+                    style={{
+                      background: "var(--avd-bg-sunken)",
+                      border: "1px solid var(--avd-border-soft)",
+                      borderRadius: 999, padding: "1px 6px",
+                      fontSize: 10, fontWeight: 700, color: "var(--avd-fg-muted)",
+                    }}
+                  >
+                    {locGroup.totalCount}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="pub-content" style={{ maxWidth: "100%", padding: "12px 0 0" }}>
+        {locationGroups.length === 0 && searchQuery && (
+          <p style={{ textAlign: "center", color: "var(--avd-fg-muted)", padding: "32px 0", fontFamily: "var(--avd-font-sans)" }}>
+            Sin resultados para «{searchQuery}»
+          </p>
+        )}
+
+        {isFlatLayout ? (
+          <div className="pub-cand-grid">
+            {locationGroups[0]?.groups[0]?.candidates.map((c) => (
+              <CandidateListCard
+                key={c.id}
+                candidate={c}
+                selected={selectedCandidates.includes(c.id)}
+                onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
               />
             ))}
           </div>
+        ) : (
+          locationGroups.map((locGroup) => {
+            const locationKey = `loc-${slugify(locGroup.location)}`;
+            const isExpanded = expandedLocationKeys.includes(locationKey);
+
+            return (
+              <div
+                key={locationKey}
+                id={locationKey}
+                className="pub-group"
+                ref={(el) => {
+                  if (el) sectionRefs.current.set(locationKey, el);
+                }}
+              >
+                <button
+                  type="button"
+                  className="pub-group-head"
+                  onClick={() => toggleLocation(locationKey)}
+                >
+                  <MapPin
+                    style={{ width: 14, height: 14, color: "var(--avd-brand)", flexShrink: 0 }}
+                  />
+                  <span
+                    style={{
+                      fontWeight: 700, fontSize: 14, color: "var(--avd-fg)",
+                      flex: 1, textAlign: "left", letterSpacing: "-0.005em",
+                    }}
+                  >
+                    {locGroup.location}
+                  </span>
+                  <span
+                    style={{
+                      background: "var(--avd-bg-sunken)",
+                      border: "1px solid var(--avd-border-soft)",
+                      borderRadius: 999, padding: "1px 8px",
+                      fontSize: 11, fontWeight: 700, color: "var(--avd-fg-muted)", flexShrink: 0,
+                    }}
+                  >
+                    {locGroup.totalCount}
+                  </span>
+                  <span
+                    style={{ fontSize: 12, color: "var(--avd-fg-muted)", fontWeight: 500, flexShrink: 0 }}
+                  >
+                    {isExpanded ? "Ocultar" : "Mostrar"} ∧
+                  </span>
+                  <ChevronDown
+                    style={{
+                      width: 13, height: 13, flexShrink: 0,
+                      color: "var(--avd-fg-muted)", transition: "transform 0.18s",
+                      transform: isExpanded ? "rotate(180deg)" : "none",
+                    }}
+                  />
+                </button>
+
+                {isExpanded && (
+                  <div className="pub-group-body">
+                    {locGroup.groups.length > 1
+                      ? locGroup.groups.map((group) => (
+                          <div
+                            key={`${locationKey}::${slugify(group.groupName)}`}
+                            style={{ marginBottom: 16 }}
+                          >
+                            <div
+                              style={{
+                                display: "flex", alignItems: "center", gap: 6,
+                                borderBottom: "1px solid var(--avd-border-soft)",
+                                paddingBottom: 8, marginTop: 10, marginBottom: 10,
+                              }}
+                            >
+                              <Users style={{ width: 13, height: 13, color: "var(--avd-fg-muted)" }} />
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--avd-fg-muted)" }}>
+                                {group.groupName}
+                              </span>
+                              <span
+                                style={{
+                                  background: "var(--avd-bg-sunken)",
+                                  border: "1px solid var(--avd-border-soft)",
+                                  borderRadius: 999, padding: "1px 6px",
+                                  fontSize: 11, fontWeight: 700, color: "var(--avd-fg-muted)",
+                                }}
+                              >
+                                {group.candidates.length}
+                              </span>
+                              {group.avgAge !== Infinity && (
+                                <span style={{ fontSize: 12, color: "var(--avd-fg-faint)", marginLeft: 4 }}>
+                                  Edad media: {Math.round(group.avgAge)} a
+                                </span>
+                              )}
+                            </div>
+                            <div className="pub-cand-grid">
+                              {group.candidates.map((c) => (
+                              <CandidateListCard
+                                key={c.id}
+                                candidate={c}
+                                selected={selectedCandidates.includes(c.id)}
+                                onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
+                              />
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      : (
+                          <div style={{ paddingTop: 6 }}>
+                            {locGroup.groups[0]?.groupName && locGroup.groups[0].groupName !== "Sin grupo" && (
+                              <div
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 6,
+                                  borderBottom: "1px solid var(--avd-border-soft)",
+                                  paddingBottom: 8, marginBottom: 10,
+                                }}
+                              >
+                                <Users style={{ width: 13, height: 13, color: "var(--avd-fg-muted)" }} />
+                                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--avd-fg-muted)" }}>
+                                  {locGroup.groups[0].groupName}
+                                </span>
+                              </div>
+                            )}
+                            <div className="pub-cand-grid">
+                              {locGroup.groups[0]?.candidates.map((c) => (
+                              <CandidateListCard
+                                key={c.id}
+                                candidate={c}
+                                selected={selectedCandidates.includes(c.id)}
+                                onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
+                              />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <Surface
-        ref={mobileIndexRef}
-        className="sticky top-2 z-30 rounded-[1.6rem] border border-outline-variant/55 bg-surface-container-lowest p-2.5 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low md:top-4 md:rounded-[2rem] md:p-3"
-      >
-        <div className="flex items-center gap-2">
-          {searchBar}
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-9 w-9 shrink-0 rounded-xl border border-outline-variant/55 bg-surface-container-low px-0 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
-            aria-expanded={isMobileIndexOpen}
-            aria-controls="dynamic-voting-index"
-            aria-label={isMobileIndexOpen ? "Ocultar índice" : "Mostrar índice"}
-            onClick={toggleMobileIndex}
-          >
-            {isMobileIndexOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-          <VotingTutorial compactTrigger roundId={tutorialRoundId} />
-          <ThemeToggle mode="inline" buttonClassName="h-9 w-9 rounded-xl shadow-none" />
-        </div>
-
-        <div
-          id="dynamic-voting-index"
-          className={`${isMobileIndexOpen ? "mt-2 flex" : "hidden"} max-h-56 flex-wrap gap-2 overflow-y-auto border-t border-outline-variant/45 pt-2 pr-1 pb-1 dark:border-outline-variant/60 md:mt-2 md:max-h-none md:overflow-visible`}
-        >
-          {locationGroups.map((locGroup) => (
-            <Button
-              type="button"
-              key={`index-${locGroup.location}`}
-              size="sm"
-              variant="secondary"
-              className="h-8 rounded-full px-2.5 text-xs md:h-9 md:px-3"
-              aria-label={`Ir a la zona ${locGroup.location}`}
-              onClick={() => openAndScrollToLocation(locGroup.location)}
-            >
-              {locGroup.location}
-              <Chip size="sm" variant="soft" color="default" className="ml-2 font-semibold">{locGroup.totalCount}</Chip>
-            </Button>
-          ))}
-        </div>
-      </Surface>
-
-      <Accordion.Root
-        allowsMultipleExpanded
-        expandedKeys={expandedLocationKeys}
-        onExpandedChange={(keys) => {
-          const normalized = Array.from(keys as Iterable<string | number>).map((value) => String(value));
-          setExpandedLocationKeys(normalized);
-        }}
-        variant="surface"
-        className="space-y-3"
-      >
-        {locationGroups.map((locGroup) => {
-          const locationKey = `loc-${slugify(locGroup.location)}`;
-          const isLocationExpanded = expandedLocationKeys.includes(locationKey);
-
-          return (
-            <div
-              key={locationKey}
-              id={locationKey}
-              className="scroll-mt-32 border border-slate-200 bg-white/50 p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 md:p-2 rounded-3xl"
-            >
-              <Accordion.Item
-                id={locationKey}
-                className="rounded-[1.45rem] border-0 bg-transparent px-0 py-0 shadow-none md:rounded-[1.65rem]"
-              >
-                <Accordion.Heading>
-                  <Accordion.Trigger className="px-2.5 py-2.5 hover:no-underline md:px-3 md:py-3">
-                    <div className="flex w-full items-center gap-2 text-left">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      <div className="flex flex-col leading-tight">
-                        <span className="font-headline text-lg font-bold text-slate-900 dark:text-slate-100">{locGroup.location}</span>
-                      </div>
-                      <span className="ml-auto inline-flex items-center gap-2 text-xs font-semibold text-primary">
-                        <span className="rounded-full border border-slate-300/80 bg-slate-100/90 px-2 py-0.5 text-slate-700 dark:border-slate-700/85 dark:bg-slate-800/80 dark:text-slate-200">
-                          {locGroup.totalCount} persona{locGroup.totalCount !== 1 ? "s" : ""}
-                        </span>
-                        <span>{isLocationExpanded ? "Ocultar" : "Mostrar"}</span>
-                        {isLocationExpanded ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </span>
-                    </div>
-                  </Accordion.Trigger>
-                </Accordion.Heading>
-
-                <Accordion.Panel>
-                  <Accordion.Body className="mt-2 px-2 pb-3.5 pt-1 md:px-3 md:pb-4">
-                    {locGroup.groups.length > 1 ? (
-                      <div className="space-y-3">
-                        {locGroup.groups.map((group) => {
-                          const groupKey = `${locationKey}::${slugify(group.groupName)}`;
-
-                          return (
-                            <section
-                              key={groupKey}
-                              className="mb-8 last:mb-0"
-                            >
-                              <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
-                                <Users className="h-4 w-4 text-slate-500" />
-                                <span className="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200">
-                                  {group.groupName}
-                                </span>
-                                <Chip size="sm" variant="soft" color="default" className="font-semibold px-2">
-                                  {group.candidates.length}
-                                </Chip>
-                                {group.avgAge !== Infinity && (
-                                  <span className="ml-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                    Edad media: {Math.round(group.avgAge)} años
-                                  </span>
-                                )}
-                              </div>
-                              <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {group.candidates.map((candidate) => (
-                                  <CandidateCard
-                                    key={candidate.id}
-                                    candidate={candidate}
-                                    isSelected={selectedCandidates.includes(candidate.id)}
-                                    onToggle={onToggleCandidate}
-                                    disabled={disabled}
-                                  />
-                                ))}
-                              </div>
-                            </section>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="mb-4">
-                        <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
-                          <Users className="h-4 w-4 text-slate-500" />
-                          <span className="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-200">
-                            {locGroup.groups[0].groupName}
-                          </span>
-                          <Chip size="sm" variant="soft" color="default" className="font-semibold px-2">
-                            {locGroup.groups[0].candidates.length}
-                          </Chip>
-                        </div>
-                        <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
-                          {locGroup.groups[0].candidates.map((candidate) => (
-                            <CandidateCard
-                              key={candidate.id}
-                              candidate={candidate}
-                              isSelected={selectedCandidates.includes(candidate.id)}
-                              onToggle={onToggleCandidate}
-                              disabled={disabled}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </Accordion.Body>
-                </Accordion.Panel>
-              </Accordion.Item>
-            </div>
-          );
-        })}
-      </Accordion.Root>
     </div>
   );
 }

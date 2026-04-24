@@ -97,10 +97,10 @@ export function CandidateCard({
   return (
     <Card
       className={cn(
-        "group relative cursor-pointer overflow-hidden border border-outline-variant/55 bg-surface-container-lowest/95 transition-all duration-200",
+        "group relative cursor-pointer overflow-hidden border border-outline-variant bg-surface-container-lowest transition-all duration-200",
         "hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-glow",
         isSelected && [
-          "border-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 dark:border-indigo-400 shadow-md shadow-indigo-600/30",
+          "border-2 border-primary bg-primary-fixed text-foreground shadow-md ring-2 ring-primary/25",
         ],
         disabled && "opacity-60 pointer-events-none"
       )}
@@ -111,8 +111,8 @@ export function CandidateCard({
         className={cn(
           "absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 md:right-3 md:top-3 md:h-10 md:w-10",
           isSelected
-            ? "border-transparent bg-indigo-600 text-white opacity-100 scale-110 shadow-lg shadow-indigo-600/40"
-            : "border-zinc-300 bg-white/80 dark:border-zinc-700 dark:bg-zinc-800/80 text-zinc-400 opacity-0 group-hover:opacity-100"
+            ? "border-transparent bg-emerald-600 text-white opacity-100 scale-110 shadow-lg shadow-emerald-600/35"
+            : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-800 text-zinc-400 opacity-0 group-hover:opacity-100"
         )}
       >
         <Check className="h-4 w-4 md:h-5 md:w-5" strokeWidth={3} />
@@ -162,9 +162,9 @@ export function CandidateCard({
           </CardTitle>
 
           <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px] font-medium text-muted-foreground md:mt-2">
-            {candidate.age && <span className="rounded-full bg-surface-container-low px-2 py-0.5">Edad {candidate.age}</span>}
-            {candidate.location && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.location}</span>}
-            {candidate.group_name && <span className="rounded-full bg-surface-container-low px-2 py-0.5">{candidate.group_name}</span>}
+            {candidate.age && <span className={cn("rounded-full bg-surface-container-low px-2 py-0.5", isSelected && "bg-white/70 dark:bg-surface-container")}>Edad {candidate.age}</span>}
+            {candidate.location && <span className={cn("rounded-full bg-surface-container-low px-2 py-0.5", isSelected && "bg-white/70 dark:bg-surface-container")}>{candidate.location}</span>}
+            {candidate.group_name && <span className={cn("rounded-full bg-surface-container-low px-2 py-0.5", isSelected && "bg-white/70 dark:bg-surface-container")}>{candidate.group_name}</span>}
           </div>
         </div>
       </CardHeader>
@@ -181,7 +181,7 @@ export function CandidateCard({
       <div
         className={cn(
           "absolute bottom-0 left-0 right-0 h-2 rounded-b-[1.9rem] transition-all duration-300",
-          isSelected ? "bg-indigo-600" : "bg-transparent"
+          isSelected ? "bg-emerald-600" : "bg-transparent"
         )}
       />
     </Card>

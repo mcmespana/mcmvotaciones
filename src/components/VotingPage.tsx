@@ -7,18 +7,6 @@ import { generateDeviceHash, generateBrowserInstanceId, hasVotedLocally, markAsV
 import { getMaxVotesAllowed } from '@/lib/votingRules';
 import { createVoteReceipt } from '@/lib/voteHash';
 import { debugLog } from '@/lib/logger';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { GroupedCandidateList } from '@/components/GroupedCandidateList';
 import { VoteSubmitAnimation } from '@/components/VoteSubmitAnimation';
@@ -98,46 +86,48 @@ function VoteReceiptReveal({
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), 5000);
+    if (!revealed) return;
+
+    const t = setTimeout(() => setRevealed(false), 3000);
     return () => clearTimeout(t);
-  }, []);
+  }, [revealed]);
 
   return (
     <div>
       <button
         onClick={() => setRevealed((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-sm text-emerald-200/80 hover:text-emerald-100 hover:bg-emerald-800/30 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors rounded-t-2xl"
       >
-        <span className="flex items-center gap-2 font-medium">
+        <span className="flex items-center gap-2 font-semibold">
           {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           {revealed ? "Ocultar mi papeleta" : "Ver código y papeleta"}
         </span>
-        <span className="text-emerald-400/60 text-xs">{revealed ? "▲" : "▼"}</span>
+        <span className="text-muted-foreground/50 text-xs">{revealed ? "▲" : "▼"}</span>
       </button>
 
       {revealed && (
-        <div className="px-4 pb-4 space-y-3">
+        <div className="px-4 pb-5 space-y-3">
           {voteHashCode && (
-            <div className="overflow-hidden rounded-2xl border border-emerald-400/30 bg-emerald-900/80">
+            <div className="overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low">
               <div className="px-5 pt-4 pb-2 text-center">
-                <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-emerald-400/70 mb-3">
+                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Código de verificación
                 </p>
                 <div className="flex items-center justify-center gap-3">
-                  <span className="font-mono text-2xl font-black tracking-[0.15em] text-emerald-300">
+                  <span className="font-mono text-2xl font-black tracking-[0.12em] text-foreground">
                     {voteHashCode}
                   </span>
                   <button
                     onClick={onCopy}
                     aria-label="Copiar código"
-                    className="h-8 w-8 flex items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-800 text-emerald-300 hover:bg-emerald-700 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-outline-variant/65 bg-surface-container-low text-foreground transition-colors hover:bg-surface-container"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
               <div className="px-5 pb-4 text-center">
-                <p className="text-[10px] text-emerald-400/60 font-medium">
+                <p className="text-[10px] font-medium text-muted-foreground">
                   Conserva este código para auditar tu voto
                 </p>
               </div>
@@ -145,20 +135,20 @@ function VoteReceiptReveal({
           )}
 
           {voteReceipt && (
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-900/70 overflow-hidden">
-              <div className="px-4 py-3 border-b border-emerald-400/15 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-400/70">
+            <div className="overflow-hidden rounded-2xl border-2 border-outline-variant bg-surface-container-lowest dark:border-outline-variant dark:bg-surface-container-low">
+              <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
                   Tu papeleta emitida
                 </p>
               </div>
               <div className="px-4 py-3 space-y-2">
                 {voteReceipt.votes.map((vote, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-[10px] font-bold text-primary">
                       {idx + 1}
                     </span>
-                    <span className="text-sm font-semibold text-emerald-100">{vote || "—"}</span>
+                    <span className="text-sm font-semibold text-foreground">{vote || "—"}</span>
                   </div>
                 ))}
               </div>
@@ -876,6 +866,13 @@ export function VotingPage() {
     return candidate ? `${candidate.name} ${formatSurname(candidate.surname)}` : id;
   });
 
+  const selectedCandidateShortNames = selectedCandidates.map((id) => {
+    const candidate = candidates.find((c) => c.id === id);
+    if (!candidate) return id;
+    const firstSurnameChar = candidate.surname.trim().charAt(0).toUpperCase();
+    return firstSurnameChar ? `${candidate.name} ${firstSurnameChar}.` : candidate.name;
+  });
+
   const clearSelection = () => {
     setSelectedCandidates([]);
   };
@@ -943,39 +940,39 @@ export function VotingPage() {
 
   if (loading) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando votación...</p>
-        </Card>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>Cargando votación...</p>
+        </div>
       </div>
     );
   }
 
   if (!isVotingAvailable()) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <h1 className="text-xl font-bold mb-4">Navegador no compatible</h1>
-          <p className="text-muted-foreground">
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12, color: 'var(--avd-fg)' }}>Navegador no compatible</h1>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>
             Tu navegador no soporta las funciones necesarias para votar.
             Por favor, usa un navegador más reciente.
           </p>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (!activeRound) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <Vote className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-xl font-bold mb-2">Sin votaciones activas</h1>
-          <p className="text-muted-foreground mb-4">
-            No hay votaciones disponibles en este momento.
-          </p>
-        </Card>
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
+            <Vote className="w-10 h-10 text-muted-foreground" />
+          </div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--avd-fg)' }}>Sin votaciones activas</h1>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>No hay votaciones disponibles en este momento.</p>
+        </div>
       </div>
     );
   }
@@ -994,23 +991,25 @@ export function VotingPage() {
 
   if (seatLoading) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Validando tu asiento...</p>
-        </Card>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>Validando tu asiento...</p>
+        </div>
       </div>
     );
   }
 
   if (seatError && !hasVoted) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <h1 className="text-xl font-bold mb-2">No se pudo acceder a la sala</h1>
-          <p className="text-muted-foreground mb-4">{seatError}</p>
-          <Button onClick={() => { void loadActiveRound(); }}>Reintentar</Button>
-        </Card>
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--avd-fg)' }}>No se pudo acceder a la sala</h1>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14, marginBottom: 24 }}>{seatError}</p>
+          <button className="avd-btn avd-btn-primary" onClick={() => { void loadActiveRound(); }} style={{ margin: '0 auto' }}>
+            Reintentar
+          </button>
+        </div>
       </div>
     );
   }
@@ -1019,17 +1018,19 @@ export function VotingPage() {
 
   if (maxVotesThisRound === 0 && !hasVoted && !activeRound.round_finalized && !activeRound.is_closed) {
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-        <Card className="admin-shell w-full max-w-md p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
-            <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-300" />
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-500/25">
+            <Vote className="h-10 w-10 text-emerald-600 dark:text-emerald-300" />
           </div>
-          <h1 className="text-xl font-bold mb-2">Votación completada</h1>
-          <p className="text-muted-foreground mb-3">
+          <span className="mb-5 inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-base font-bold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            Votacion completada
+          </span>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 13, marginBottom: 6 }}>
             Ya se han seleccionado los {activeRound.max_selected_candidates} candidatos requeridos.
           </p>
-          <p className="text-sm text-muted-foreground">No se admitirán más votos en esta votación.</p>
-        </Card>
+          <p style={{ fontSize: 13, color: 'var(--avd-fg-faint)' }}>No se admitirán más votos en esta votación.</p>
+        </div>
       </div>
     );
   }
@@ -1037,28 +1038,27 @@ export function VotingPage() {
   if (activeRound.is_active && !activeRound.is_voting_open && !activeRound.round_finalized && !activeRound.is_closed && !hasVoted) {
     const isPaused = activeRound.join_locked;
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-[10%] -right-[10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[100px] mix-blend-screen" />
-        <div className="pointer-events-none absolute -bottom-[10%] -left-[10%] w-[400px] h-[400px] rounded-full bg-secondary/10 blur-[100px] mix-blend-screen" />
-        
-        <Card className="relative w-full max-w-md p-10 text-center surface backdrop-blur-xl border-t-primary/30">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-transparent" />
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_40px_hsl(var(--primary)/0.2)]">
-            <Vote className="w-10 h-10 animate-pulse" />
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, overflow: 'hidden', textAlign: 'center' }}>
+          <div style={{ height: 4, background: 'linear-gradient(90deg, hsl(var(--primary) / 0.7), hsl(var(--primary) / 0.3), transparent)' }} />
+          <div style={{ padding: 40 }}>
+            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+              <Vote className="w-10 h-10 animate-pulse" />
+            </div>
+            <span className={`mb-5 inline-flex rounded-full border px-4 py-2 text-base font-bold ${isPaused ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300" : "border-primary/40 bg-primary/10 text-primary"}`}>
+              {isPaused ? "Ronda en Pausa" : "Sala Abierta"}
+            </span>
+            <p style={{ color: 'var(--avd-fg-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 24, fontWeight: 500 }}>
+              {isPaused
+                ? `Sigues conectado con éxito a la sala "${activeRound.title}". Por favor, espera a que la administración reanude la sesión.`
+                : `Has accedido a "${activeRound.title}". Todo está listo, solo espera a que el administrador dé luz verde para comenzar.`}
+            </p>
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 cursor-default select-none">
+              <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
+              Asiento validado y seguro
+            </div>
           </div>
-          <h1 className="text-3xl font-headline font-bold mb-3 tracking-tight">
-            {isPaused ? "Ronda en Pausa" : "Sala Abierta"}
-          </h1>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-6 font-medium">
-            {isPaused
-              ? `Sigues conectado con éxito a la sala "${activeRound.title}". Por favor, espera a que la administración reanude la sesión.`
-              : `Has accedido a "${activeRound.title}". Todo está listo, solo espera a que el administrador dé luz verde para comenzar.`}
-          </p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 cursor-default select-none">
-            <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
-            Asiento validado y seguro
-          </div>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -1066,238 +1066,222 @@ export function VotingPage() {
   // Si la ronda está cerrada, pausada O FINALIZADA y el usuario NO ha votado, mostrar mensaje
   // EXCEPTO si los resultados están visibles para todos (entonces mostramos resultados)
   if ((activeRound.is_closed || !activeRound.is_active || activeRound.round_finalized) && !hasVoted && !(activeRound.show_results_to_voters && activeRound.round_finalized)) {
+    const label = activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada';
     return (
-      <div className="admin-canvas min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,theme(colors.amber.500/0.05),transparent_50%)]" />
-        
-        <Card className="relative w-full max-w-md p-10 text-center surface backdrop-blur-xl border-t-amber-500/50">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
-          
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-amber-500/20 to-amber-500/5 shadow-[0_0_30px_hsl(var(--warning)/0.2)]">
-            <Vote className="h-10 w-10 text-amber-500" />
-          </div>
-          <h1 className="text-3xl font-headline font-bold mb-3 tracking-tight">
-            {activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada'}
-          </h1>
-          <p className="text-muted-foreground text-sm font-medium mb-6 leading-relaxed">
-            {activeRound.is_closed 
-              ? `La votación "${activeRound.title}" ha llegado a su fin y las urnas se han cerrado definitivamente.`
-              : activeRound.round_finalized
-              ? `La ronda ${activeRound.current_round_number} de "${activeRound.title}" terminó. No es posible enviar más papeletas en este momento.`
-              : `La votación de "${activeRound.title}" se encuentra en pausa. Mantente a la espera de instrucciones.`
-            }
-          </p>
-          {(activeRound.is_closed || activeRound.round_finalized) && (
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-center gap-2">
-              <span>⏳</span> Las urnas ya no aceptan respuestas.
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid #f59e0b', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, overflow: 'hidden', textAlign: 'center' }}>
+          <div style={{ height: 4, background: 'linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)' }} />
+          <div style={{ padding: 40 }}>
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/15 ring-1 ring-amber-500/25">
+              <Vote className="h-10 w-10 text-amber-500" />
             </div>
-          )}
-        </Card>
+            <span className="mb-5 inline-flex rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-base font-bold text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              {label}
+            </span>
+            <p style={{ color: 'var(--avd-fg-muted)', fontSize: 13, fontWeight: 500, marginBottom: 24, lineHeight: 1.6 }}>
+              {activeRound.is_closed
+                ? `La votación "${activeRound.title}" ha llegado a su fin y las urnas se han cerrado definitivamente.`
+                : activeRound.round_finalized
+                ? `La ronda ${activeRound.current_round_number} de "${activeRound.title}" terminó. No es posible enviar más papeletas en este momento.`
+                : `La votación de "${activeRound.title}" se encuentra en pausa. Mantente a la espera de instrucciones.`
+              }
+            </p>
+            {(activeRound.is_closed || activeRound.round_finalized) && (
+              <div style={{ background: 'rgb(245 158 11 / 0.1)', border: '1px solid rgb(245 158 11 / 0.3)', borderRadius: 'var(--avd-radius-sm)', padding: '12px 16px', fontSize: 13, color: '#b45309', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <span>⏳</span> Las urnas ya no aceptan respuestas.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
 
   // Mostrar resultados a todos si admin los habilitó y la ronda está finalizada
   if (activeRound?.show_results_to_voters && activeRound?.round_finalized && !hasVoted) {
-      return (
-        <div className="admin-canvas min-h-screen p-4 relative overflow-hidden">
-          <div className="pointer-events-none absolute top-[10%] left-[10%] w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] mix-blend-screen" />
-          <div className="pointer-events-none absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-secondary/10 blur-[100px] mix-blend-screen" />
-          
-          <div className="max-w-4xl mx-auto relative z-10">
-            <Card className="relative mb-8 p-10 text-center surface tech-glow border-t-primary/50 overflow-hidden backdrop-blur-2xl">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent shadow-glow relative">
-                 <div className="absolute inset-0 rounded-full bg-primary animate-pulse blur-xl opacity-50" />
-                 <Vote className="h-10 w-10 text-white relative z-10" />
+    return (
+      <div className="pub-page" style={{ padding: '16px 16px 64px' }}>
+        <div style={{ maxWidth: 768, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Header card */}
+          <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', overflow: 'hidden', textAlign: 'center' }}>
+            <div style={{ height: 4, background: 'linear-gradient(90deg,hsl(var(--primary)),hsl(var(--primary)/0.6),hsl(var(--primary)/0.3))' }} />
+            <div style={{ padding: '32px 32px 24px' }}>
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+                <Vote className="h-8 w-8" />
               </div>
-              <h1 className="text-3xl font-headline font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--avd-fg)', marginBottom: 8 }}>
                 Resumen de Votación
               </h1>
-              <p className="text-muted-foreground text-sm font-medium mb-6">
-                Mostrando los resultados finales para "{activeRound.title}".
+              <p style={{ color: 'var(--avd-fg-muted)', fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
+                Resultados finales — "{activeRound.title}"
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">
-                <span className="rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-primary shadow-sm backdrop-blur-md">🏆 Equipo: {activeRound.team}</span>
-                <span className="rounded-full border border-secondary/20 bg-secondary/10 px-4 py-1.5 text-secondary shadow-sm backdrop-blur-md">🔄 Ronda {activeRound.current_round_number}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <span className="inline-flex rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300">🏆 {activeRound.team}</span>
+                <span className="inline-flex rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">🔄 Ronda {activeRound.current_round_number}</span>
               </div>
-            </Card>
+            </div>
+          </div>
 
-            {/* Candidatos Seleccionados (con mayoría absoluta) */}
-            {candidates.some(c => c.is_selected) && (
-              <Card className="mb-6 rounded-[1.9rem] border-2 border-emerald-500/60 bg-emerald-500/12 p-6 dark:bg-emerald-500/10">
-                <h2 className="flex items-center gap-2 text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-4">
-                  <span className="text-3xl">🏆</span>
-                  Candidatos Seleccionados
-                </h2>
-                <p className="mb-4 text-sm text-emerald-700 dark:text-emerald-300">
-                  Estos candidatos obtuvieron mayoría absoluta (&gt;50% de los votos)
-                </p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {candidates.filter(c => c.is_selected).map((candidate) => (
-                    <div key={candidate.id} className="flex items-center gap-3 rounded-2xl border border-emerald-500/60 bg-surface-container-lowest/90 p-4 dark:bg-surface-container-low/80">
-                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">
-                        ✓
+          {candidates.some(c => c.is_selected) && (
+            <div style={{ background: 'var(--avd-surface)', border: '2px solid #10b981', borderRadius: 'var(--avd-radius-lg)', padding: 24 }}>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 700, color: '#059669', marginBottom: 8 }}>
+                <span style={{ fontSize: 22 }}>🏆</span>
+                Candidatos Seleccionados
+              </h2>
+              <p style={{ marginBottom: 16, fontSize: 13, color: '#059669', opacity: 0.8 }}>
+                Mayoría absoluta (&gt;50% de los votos)
+              </p>
+              <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+                {candidates.filter(c => c.is_selected).map((candidate) => (
+                  <div key={candidate.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--avd-bg-sunken)', border: '1px solid #10b981', borderRadius: 'var(--avd-radius-md)', padding: 16 }}>
+                    <div style={{ flexShrink: 0, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#059669', color: 'white', fontWeight: 700 }}>
+                      ✓
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#059669' }}>
+                        {candidate.name} {candidate.surname}
                       </div>
-                      <div>
-                        <div className="text-lg font-bold text-emerald-700 dark:text-emerald-200">
-                          {candidate.name} {candidate.surname}
+                      {candidate.location && (
+                        <div style={{ fontSize: 12, color: '#059669', opacity: 0.7 }}>
+                          📍 {candidate.location}
                         </div>
-                        {candidate.location && (
-                          <div className="text-sm text-emerald-700 dark:text-emerald-300">
-                            📍 {candidate.location}
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', padding: 24 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--avd-fg)' }}>
+              <span style={{ fontSize: 22 }}>📊</span>
+              Resultados de Ronda {activeRound.current_round_number}
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--avd-fg-muted)', marginBottom: 20 }}>
+              Votación finalizada
+            </p>
+
+            {loadingResults ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : results.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'var(--avd-fg-muted)', padding: '32px 0' }}>
+                Aún no hay resultados disponibles.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {results.map((result, index) => {
+                  const candidate = candidates.find(c => c.id === result.candidate_id);
+                  if (!candidate) return null;
+
+                  const displayPercentage = result.percentage;
+                  const isSelected = candidate.is_selected;
+                  const hasMajority = displayPercentage > 50;
+
+                  return (
+                    <div
+                      key={result.candidate_id}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12, padding: 16,
+                        borderRadius: 'var(--avd-radius-md)',
+                        border: isSelected ? '2px solid #10b981' : hasMajority ? '1px solid hsl(var(--primary)/0.4)' : '1px solid var(--avd-border)',
+                        background: isSelected ? 'rgb(16 185 129 / 0.08)' : hasMajority ? 'hsl(var(--primary)/0.06)' : 'var(--avd-bg-sunken)',
+                      }}
+                    >
+                      <div style={{
+                        flexShrink: 0, width: 40, height: 40, borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 16,
+                        background: isSelected ? '#059669' : 'hsl(var(--primary)/0.1)',
+                        color: isSelected ? 'white' : 'hsl(var(--primary))',
+                      }}>
+                        {isSelected ? '✓' : index + 1}
+                      </div>
+                      <div style={{ flexGrow: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: 'var(--avd-fg)' }}>
+                          {candidate.name} {candidate.surname}
+                          {isSelected && (
+                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999, background: '#059669', color: 'white', fontWeight: 600 }}>
+                              SELECCIONADO
+                            </span>
+                          )}
+                          {hasMajority && !isSelected && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-normal">
+                              +50%
+                            </span>
+                          )}
+                        </div>
+                        {(candidate.location || candidate.group_name) && (
+                          <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)', marginTop: 2 }}>
+                            {candidate.location && `📍 ${candidate.location}`}
+                            {candidate.location && candidate.group_name && ' • '}
+                            {candidate.group_name && `👥 ${candidate.group_name}`}
                           </div>
                         )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                          <div style={{ flexGrow: 1, background: 'var(--avd-border-soft)', borderRadius: 999, height: 10, overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                height: '100%', borderRadius: 999, transition: 'width 1s ease',
+                                background: isSelected ? '#059669' : 'hsl(var(--primary))',
+                                width: `${Math.min(Math.max(displayPercentage, 0), 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontSize: 14, fontWeight: 600, minWidth: 56, textAlign: 'right', color: 'var(--avd-fg)' }}>
+                            {displayPercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--avd-fg)' }}>{result.vote_count}</div>
+                        <div style={{ fontSize: 11, color: 'var(--avd-fg-muted)', textTransform: 'uppercase' }}>votos</div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </Card>
+                  );
+                })}
+              </div>
             )}
-
-            {/* Resultados Completos de la Ronda */}
-            <Card className="admin-shell p-6">
-              <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-                <span className="text-3xl">📊</span>
-                Resultados de Ronda {activeRound.current_round_number}
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Votación finalizada
-              </p>
-              
-              {loadingResults ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : results.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Aún no hay resultados disponibles.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {results.map((result, index) => {
-                    const candidate = candidates.find(c => c.id === result.candidate_id);
-                    if (!candidate) return null;
-
-                    const displayPercentage = result.percentage;
-                    const isSelected = candidate.is_selected;
-                    const hasMajority = displayPercentage > 50;
-
-                    return (
-                      <div 
-                        key={result.candidate_id} 
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                          isSelected 
-                            ? 'border-emerald-500 bg-emerald-500/12' 
-                            : hasMajority
-                            ? 'border-primary/45 bg-primary-fixed/55'
-                            : 'border-outline-variant/45 bg-surface-container-lowest/88 dark:border-outline-variant/60 dark:bg-surface-container-low/75'
-                        }`}
-                      >
-                        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                          isSelected
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-primary/10 text-primary'
-                        }`}>
-                          {isSelected ? '✓' : index + 1}
-                        </div>
-                        <div className="flex-grow">
-                          <div className="font-bold text-lg flex items-center gap-2">
-                            {candidate.name} {candidate.surname}
-                            {isSelected && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-emerald-600 text-white font-normal">
-                                SELECCIONADO
-                              </span>
-                            )}
-                            {hasMajority && !isSelected && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground font-normal">
-                                +50%
-                              </span>
-                            )}
-                          </div>
-                          {(candidate.location || candidate.group_name) && (
-                            <div className="text-sm text-muted-foreground mt-1">
-                              {candidate.location && `📍 ${candidate.location}`}
-                              {candidate.location && candidate.group_name && ' • '}
-                              {candidate.group_name && `👥 ${candidate.group_name}`}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 mt-2">
-                            <div className="flex-grow bg-secondary rounded-full h-3 overflow-hidden">
-                              <div 
-                                className={`h-3 rounded-full transition-all duration-1000 ${
-                                  isSelected
-                                    ? 'bg-emerald-600'
-                                    : hasMajority
-                                    ? 'bg-primary'
-                                    : 'bg-primary'
-                                }`}
-                                style={{ width: `${Math.min(Math.max(displayPercentage, 0), 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-base font-semibold min-w-[4.5rem] text-right">
-                              {displayPercentage.toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 text-right">
-                          <div className="text-2xl font-bold">{result.vote_count}</div>
-                          <div className="text-xs text-muted-foreground uppercase">votos</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
     // Si el usuario ha votado pero no están visibles para todos, mostrar gracias
     if (hasVoted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-emerald-950 dark:bg-emerald-950">
-        <ThemeToggle mode="floating" />
-
-        {/* Background atmosphere */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-[15%] left-[10%] w-[500px] h-[500px] rounded-full bg-emerald-500/20 blur-[130px]" />
-          <div className="absolute -bottom-[15%] right-[5%] w-[400px] h-[400px] rounded-full bg-emerald-600/15 blur-[100px]" />
-          <div className="absolute top-[30%] right-[20%] w-[200px] h-[200px] rounded-full bg-teal-400/10 blur-[80px]" />
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative' }}>
+        <div style={{ position: 'absolute', right: 16, top: 16, zIndex: 20 }}>
+          <ThemeToggle mode="inline" />
         </div>
 
-        <div className="relative w-full max-w-sm space-y-4">
+        <div style={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Main status card */}
-          <div className="relative overflow-hidden rounded-3xl border border-emerald-400/25 bg-emerald-900/60 backdrop-blur-xl shadow-[0_32px_64px_-20px_rgba(16,185,129,0.4)]">
-            {/* Top accent stripe */}
-            <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400" />
-
-            <div className="px-8 py-10 text-center">
-              {/* Icon */}
-              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500/25 shadow-[0_0_60px_rgba(52,211,153,0.4)] ring-1 ring-emerald-400/30">
-                <CheckCircle2 className="w-14 h-14 text-emerald-300" strokeWidth={1.5} />
+          <div style={{ overflow: 'hidden', borderRadius: 'var(--avd-radius-lg)', border: '2px solid #065f46', background: '#059669' }}>
+            <div style={{ height: 4, background: '#064e3b' }} />
+            <div style={{ padding: '40px 32px', textAlign: 'center' }}>
+              <div style={{ margin: '0 auto 24px', width: 96, height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: '#6ee7b7', border: '2px solid #a7f3d0' }}>
+                <CheckCircle2 style={{ width: 56, height: 56, color: '#065f46' }} strokeWidth={1.5} />
               </div>
-
-              <h1 className="text-3xl font-headline font-black mb-2 text-white tracking-tight">
-                ¡Voto registrado!
+              <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em', color: 'white' }}>
+                Voto registrado
               </h1>
-              <p className="text-emerald-200/80 text-sm mb-1">
-                Tu participación en
+              <p style={{ color: '#d1fae5', fontSize: 13, marginBottom: 4 }}>Nombre de la votación</p>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, color: 'white' }}>
+                {activeRound?.title} R{activeRound?.current_round_number}
               </p>
-              <p className="text-emerald-100 font-bold text-base mb-2">
-                "{activeRound?.title}"
-              </p>
-              <p className="text-emerald-300/70 text-xs">
-                Se ha procesado con éxito.
+              <p style={{ color: '#a7f3d0', fontSize: 12 }}>
+                Muestra esta pantalla para verificar que has votado correctamente.
               </p>
             </div>
           </div>
 
-          {/* Receipt card (expandable) */}
+          {/* Receipt card */}
           {(voteHashCode || voteReceipt) && (
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-900/40 backdrop-blur-md overflow-hidden">
+            <div style={{ overflow: 'hidden', borderRadius: 'var(--avd-radius-lg)', border: '1px solid var(--avd-border)', background: 'var(--avd-surface)' }}>
               <VoteReceiptReveal
                 voteHashCode={voteHashCode}
                 voteReceipt={voteReceipt}
@@ -1311,7 +1295,8 @@ export function VotingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-2 pb-[9.5rem] pt-2 sm:px-4 sm:pt-2 md:pb-28">
+    <div className="relative min-h-screen bg-background px-3 pb-36 pt-3 sm:px-4 sm:pt-4">
+
       {/* Submit Animation Overlay */}
       <VoteSubmitAnimation
         isVisible={showSubmitAnimation}
@@ -1320,23 +1305,15 @@ export function VotingPage() {
       />
 
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6 pt-2 text-center sm:mb-8 space-y-4">
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold text-slate-600 sm:text-xs dark:text-slate-300">
-            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">🏆 {activeRound.team}</span>
-            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">🔄 Ronda {activeRound.current_round_number}</span>
-            <span className="inline-flex items-center rounded-full bg-white/60 px-3 py-1 shadow-sm ring-1 ring-inset ring-slate-200 backdrop-blur-md dark:bg-slate-800/60 dark:ring-slate-700">📊 Máximo {`${maxVotesThisRound} voto${maxVotesThisRound > 1 ? 's' : ''}`}</span>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="font-headline text-3xl font-black tracking-tight text-slate-900 sm:text-5xl dark:text-white pb-1">
-              {activeRound.title}
-            </h1>
-            {activeRound.description && (
-              <p className="mx-auto max-w-2xl text-sm text-slate-500 sm:text-lg dark:text-slate-400">
-                {activeRound.description}
-              </p>
-            )}
-          </div>
+        <div className="mb-5 pt-1 text-center sm:mb-7 space-y-1.5">
+          <h1 className="font-headline text-3xl font-black tracking-tight sm:text-5xl pb-0.5">
+            {activeRound.title}
+          </h1>
+          {activeRound.description && (
+            <p className="mx-auto max-w-2xl text-sm text-muted-foreground sm:text-base">
+              {activeRound.description}
+            </p>
+          )}
         </div>
 
         <div className="mb-6 sm:mb-8">
@@ -1347,101 +1324,131 @@ export function VotingPage() {
             tutorialRoundId={activeRound.id}
           />
         </div>
-
       </div>
 
-      {/* Floating action bar: vote/clear without scrolling to the page bottom */}
-      <div className="fixed inset-x-0 bottom-0 z-[60] px-2 pb-0 sm:sticky sm:inset-x-auto sm:bottom-0 sm:px-4 sm:pb-3">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-t-[2.6rem] border border-outline-variant/60 bg-surface-container-lowest px-4 pb-[calc(1.2rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(0,74,198,0.08)] dark:border-outline-variant/70 dark:bg-surface-container-low sm:rounded-[2rem] sm:pb-4 sm:pt-3 sm:shadow-tech sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-center sm:text-left">
-            {selectedCandidates.length > 0 && (
-              <p className="line-clamp-1 text-xs text-muted-foreground">
-                {selectedCandidateNames.join(', ')}
+      {/* Sticky bottom action bar */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-[60] border-t-2 border-outline-variant bg-surface-container-lowest shadow-[0_-8px_24px_-12px_hsl(var(--outline-variant)/0.45)] dark:border-outline-variant dark:bg-surface-container-low px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]"
+        style={{ backgroundColor: "hsl(var(--surface-container-lowest))", opacity: 1 }}
+      >
+        <div className="mx-auto max-w-4xl space-y-2">
+          {/* Selected names row */}
+          <div className="min-w-0">
+            {selectedCandidates.length > 0 ? (
+              <p className="truncate text-sm font-semibold text-foreground">
+                {selectedCandidateShortNames.join(' · ')}
               </p>
+            ) : (
+              <p className="text-sm text-muted-foreground/55">Selecciona candidatos</p>
             )}
-            <p className="mt-1 text-xs text-muted-foreground">
-              🏆 {activeRound.team} • 🔄 Ronda {activeRound.current_round_number} • 📊 Máximo {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}
-            </p>
           </div>
 
-          <div className="flex gap-2 sm:w-auto">
-            <Button
+          {/* Meta + buttons row */}
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold text-muted-foreground">
+              Ronda {activeRound.current_round_number} - Máx. {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}
+            </p>
+
+            <div className="flex-1" />
+
+            <button
               type="button"
-              variant="destructive"
               onClick={clearSelection}
               disabled={selectedCandidates.length === 0 || voting}
-              aria-label="Borrar seleccion"
-              className="h-11 w-11 flex-none px-0 sm:h-10 sm:w-auto sm:px-4"
+              aria-label="Borrar selección"
+              className="avd-btn avd-btn-danger"
+              style={{ width: 36, height: 36, padding: 0 }}
             >
-              <Trash2 className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Borrar seleccion</span>
-            </Button>
-            <Button
+              <Trash2 style={{ width: 15, height: 15 }} />
+            </button>
+
+            <button
               type="button"
-              variant="success"
               onClick={openVoteConfirmation}
               disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting}
-              className="flex-1 sm:flex-none"
+              className="avd-btn"
+              style={{ height: 36, background: '#059669', color: 'white', borderColor: '#047857', fontWeight: 700, padding: '0 14px', flexShrink: 0 }}
             >
               {voting ? (
                 <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div style={{ width: 14, height: 14, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite', marginRight: 6 }} />
                   Votando...
                 </>
               ) : (
                 <>
-                  <Vote className="mr-2 h-4 w-4" />
+                  <Vote style={{ width: 14, height: 14, marginRight: 6 }} />
                   Votar ({selectedCandidates.length})
                 </>
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
-      <AlertDialog open={confirmVoteOpen} onOpenChange={setConfirmVoteOpen}>
-        <AlertDialogContent className="overflow-hidden rounded-3xl border border-outline-variant/60 bg-surface-container-lowest p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low">
-          <AlertDialogHeader className="bg-gradient-to-r from-primary-fixed/75 via-surface-container-lowest to-primary-fixed/55 px-6 pb-4 pt-6 dark:from-primary-fixed/45 dark:via-surface-container-low dark:to-primary-fixed/35">
-            <AlertDialogTitle className="text-2xl font-bold tracking-tight text-foreground">Confirmar voto</AlertDialogTitle>
-            <AlertDialogDescription className="max-w-[52ch] text-base leading-relaxed text-muted-foreground">
-              Estás a punto de votar por estos candidatos. Revisa la selección antes de confirmar.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="px-6 pb-2 pt-4">
-            <div className="rounded-2xl border border-outline-variant/55 bg-surface-container-low p-4 dark:border-outline-variant/65 dark:bg-surface-container">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Seleccion actual</p>
-              <div className="space-y-1 text-sm font-medium text-foreground">
-              {selectedCandidateNames.map((name, index) => (
-                <p key={`${name}-${index}`}>{index + 1}. {name}</p>
-              ))}
+      {confirmVoteOpen && (
+        <div className="avd-dialog-overlay" style={{ zIndex: 110 }} onClick={() => !voting && setConfirmVoteOpen(false)}>
+          <div className="avd-dialog" style={{ maxWidth: 420, padding: 0 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ height: 4, background: 'linear-gradient(90deg,#10b981,#2dd4bf,#10b981)' }} />
+
+            <div style={{ padding: '32px 32px 20px', textAlign: 'center' }}>
+              <div style={{ margin: '0 auto 20px', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: '#d1fae5', border: '1px solid #6ee7b7' }}>
+                <Vote style={{ width: 32, height: 32, color: '#059669' }} strokeWidth={1.7} />
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--avd-fg)', marginBottom: 8 }}>
+                Confirmar voto
+              </h2>
+              <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--avd-fg-muted)' }}>
+                Revisa tu selección. Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div style={{ padding: '0 24px 20px' }}>
+              <div style={{ overflow: 'hidden', borderRadius: 'var(--avd-radius-md)', border: '1px solid var(--avd-border)', background: 'var(--avd-bg-sunken)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--avd-border-soft)', padding: '10px 16px' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--avd-fg-muted)' }}>
+                    Tu selección
+                  </p>
+                </div>
+                <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {selectedCandidateNames.map((name, index) => (
+                    <div key={`${name}-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ flexShrink: 0, width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'hsl(var(--primary)/0.12)', fontSize: 10, fontWeight: 700, color: 'hsl(var(--primary))' }}>
+                        {index + 1}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--avd-fg)' }}>{name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
+            <div className="avd-dialog-foot" style={{ justifyContent: 'stretch', gap: 8 }}>
+              <button
+                disabled={voting}
+                onClick={() => setConfirmVoteOpen(false)}
+                className="avd-btn"
+                style={{ flex: 1, justifyContent: 'center', height: 44 }}
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={voting}
+                onClick={async () => {
+                  await new Promise(r => setTimeout(r, 50));
+                  setConfirmVoteOpen(false);
+                  await new Promise(r => setTimeout(r, 10));
+                  submitVote();
+                }}
+                className="avd-btn"
+                style={{ flex: 1, justifyContent: 'center', height: 44, background: '#059669', color: 'white', borderColor: '#047857', fontWeight: 700 }}
+              >
+                Confirmar voto
+              </button>
+            </div>
           </div>
-          <AlertDialogFooter className="gap-2 px-6 pb-6 pt-2">
-            <AlertDialogCancel
-              disabled={voting}
-              className="mt-0 h-11 rounded-xl border-outline-variant/60 bg-surface-container-lowest/85 px-5 text-foreground hover:bg-surface-container-low dark:border-outline-variant/70 dark:bg-surface-container"
-            >
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="h-11 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-6 text-white shadow-[0_18px_34px_-18px_rgba(5,150,105,0.9)] hover:opacity-95"
-              onClick={async (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                // Fix Safari close animation cancellation
-                await new Promise(r => setTimeout(r, 50)); 
-                setConfirmVoteOpen(false);
-                await new Promise(r => setTimeout(r, 10)); 
-                submitVote();
-              }}
-              disabled={voting}
-            >
-              Confirmar voto
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </div>
+      )}
     </div>
   );
 }

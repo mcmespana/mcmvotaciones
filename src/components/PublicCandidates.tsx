@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { CandidateListCard } from "@/components/CandidateListCard";
 import { useTheme } from "next-themes";
 
 /* ── Interfaces ── */
@@ -317,34 +317,8 @@ export function PublicCandidates() {
               {isOpen && (
                 <div className="pub-group-body">
                   <div className="pub-cand-grid">
-                    {group.candidates.map(c => (
-                      <div key={c.id} className="pub-cand-card">
-                        <PubAvatar name={c.name} surname={c.surname} imageUrl={c.image_url} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--avd-fg)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
-                            {formatCandidateName(c)}
-                          </div>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 }}>
-                            {c.location && (
-                              <span className="avd-chip" style={{ fontSize: 11, gap: 3 }}>
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                {c.location}
-                              </span>
-                            )}
-                            {c.group_name && (
-                              <span className="avd-chip" style={{ fontSize: 11 }}>{c.group_name}</span>
-                            )}
-                            {c.age != null && (
-                              <span className="avd-chip" style={{ fontSize: 11 }}>{c.age} a</span>
-                            )}
-                          </div>
-                          {c.description && (
-                            <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--avd-fg-muted)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                              {c.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                    {group.candidates.map((c) => (
+                      <CandidateListCard key={c.id} candidate={c} />
                     ))}
                   </div>
                 </div>

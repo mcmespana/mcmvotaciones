@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Clock3, Users, Vote } from "lucide-react";
-import { Chip, Meter, ProgressBar, Skeleton, Surface } from "@heroui/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { formatCandidateName } from "@/lib/candidateFormat";
 
@@ -28,11 +26,35 @@ interface ProjectionVotingProps {
 }
 
 function formatTime(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+type ChipKind = "ok" | "warn" | "brand" | "muted";
+function chip(kind: ChipKind, label: string, size: "md" | "lg" = "md"): React.ReactNode {
+  const h = size === "lg" ? 44 : 36;
+  const fs = size === "lg" ? 17 : 15;
+  const px = size === "lg" ? 22 : 16;
+  const base: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: h, padding: `0 ${px}px`, borderRadius: 9999, fontSize: fs, fontWeight: 700, letterSpacing: "-0.005em", whiteSpace: "nowrap", border: "1px solid", fontFamily: "var(--avd-font-sans)" };
+  let colors: React.CSSProperties;
+  if (kind === "ok")    colors = { background: "var(--avd-ok-bg)",    color: "var(--avd-ok-fg)",         borderColor: "color-mix(in oklch, var(--avd-ok) 30%, transparent)" };
+  else if (kind === "warn")  colors = { background: "var(--avd-warn-bg)",  color: "var(--avd-warn-fg)",       borderColor: "color-mix(in oklch, var(--avd-warn) 32%, transparent)" };
+  else if (kind === "brand") colors = { background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)",  borderColor: "var(--avd-brand-border)" };
+  else                       colors = { background: "var(--avd-bg-sunken)",color: "var(--avd-fg-muted)",     borderColor: "var(--avd-border-soft)" };
+  return <span style={{ ...base, ...colors }}>{label}</span>;
+}
+
+function card(extra?: React.CSSProperties): React.CSSProperties {
+  return { background: "var(--avd-surface)", border: "1px solid var(--avd-border)", borderRadius: 14, position: "relative", overflow: "hidden", ...extra };
+}
+
+function accentBar(color?: string): React.ReactNode {
+  return <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color || "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))", opacity: 0.9 }} />;
+}
+
+function label(text: string): React.ReactNode {
+  return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 6 }}>{text}</div>;
 }
 
 export function ProjectionVoting({
@@ -47,201 +69,140 @@ export function ProjectionVoting({
   ballotSummaries,
   previouslySelected,
 }: ProjectionVotingProps) {
-  const percentage =
-    maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
-  const [lastVoteFlash, setLastVoteFlash] = useState(false);
-  const [prevVoteCount, setPrevVoteCount] = useState(voteCount);
+  const percentage = maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
+  const [flash, setFlash] = useState(false);
+  const [prev, setPrev] = useState(voteCount);
 
-  // Flash animation when a new vote comes in
   useEffect(() => {
-    let timeoutId: number | null = null;
-
-    if (voteCount > prevVoteCount) {
-      setLastVoteFlash(true);
-      timeoutId = window.setTimeout(() => setLastVoteFlash(false), 800);
-    }
-
-    setPrevVoteCount(voteCount);
-
-    return () => {
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, [voteCount, prevVoteCount]);
+    let t: number | null = null;
+    if (voteCount > prev) { setFlash(true); t = window.setTimeout(() => setFlash(false), 700); }
+    setPrev(voteCount);
+    return () => { if (t !== null) window.clearTimeout(t); };
+  }, [voteCount, prev]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary-fixed/65 via-surface-container-lowest to-surface-container-low text-foreground dark:from-background dark:via-surface-container-low dark:to-background">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-6%] top-[-5%] h-[360px] w-[360px] rounded-full bg-primary/22 blur-3xl dark:bg-primary/16" />
-        <div className="absolute bottom-[-8%] right-[-10%] h-[360px] w-[360px] rounded-full bg-primary-container/20 blur-3xl dark:bg-primary-container/22" />
+    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, flexWrap: "wrap" }}>
+        <div>
+          <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--avd-fg)" }}>{roundTitle}</h1>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8 }}>
+          {chip("warn", `🏆 ${team}`, "md")}
+          {chip("brand", `Ronda ${roundNumber}`, "md")}
+        </div>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--avd-fg-muted)", fontSize: 16, fontWeight: 600 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            {connectedCount} conectados
+          </div>
+          <div style={{ fontFamily: "var(--avd-font-mono)", fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--avd-fg)" }}>
+            {formatTime(elapsedSeconds)}
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 flex min-h-screen w-full flex-col gap-8 p-8 sm:p-12 lg:p-16">
-        <Surface className="rounded-[3rem] border-2 border-outline-variant/55 bg-surface-container-lowest/90 p-10 flex-shrink-0 shadow-tech backdrop-blur-xl dark:border-outline-variant/65 dark:bg-surface-container-low/88">
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <h1 className="text-5xl font-black tracking-tight text-foreground sm:text-7xl">{roundTitle}</h1>
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Chip color="warning" variant="soft" size="lg" className="text-2xl font-bold px-6 py-6">🏆 {team}</Chip>
-                <Chip color="accent" variant="tertiary" size="lg" className="text-2xl font-bold px-6 py-6">Ronda {roundNumber}</Chip>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-3 rounded-full border-2 border-outline-variant/60 bg-surface-container-lowest/85 px-8 py-4 text-2xl font-bold text-muted-foreground dark:border-outline-variant/65 dark:bg-surface-container-low/80">
-                <Users className="h-8 w-8 text-primary" />
-                {connectedCount} conectados
-              </div>
-              <div className="flex items-center gap-3 rounded-full border-2 border-outline-variant/60 bg-surface-container-lowest/85 px-8 py-4 text-3xl font-black text-foreground dark:border-outline-variant/65 dark:bg-surface-container-low/80">
-                <Clock3 className="h-8 w-8 text-primary" />
-                {formatTime(elapsedSeconds)}
-              </div>
-            </div>
-          </div>
-        </Surface>
-
-        <div className="grid flex-1 gap-10 lg:grid-cols-[1.5fr_1fr]">
-          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/90 dark:border-outline-variant/65 dark:bg-surface-container-low/84 rounded-[3rem] flex flex-col justify-center p-10">
-            <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-3xl uppercase tracking-[0.25em] text-muted-foreground text-center">
-                Votos recibidos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-0 pb-0 flex flex-col items-center justify-center flex-1">
-              <div
-                className={`text-center transition-all duration-300 w-full ${
-                  lastVoteFlash ? "scale-105" : "scale-100"
-                }`}
-              >
-                <Vote
-                  className={`mx-auto mb-6 h-24 w-24 transition-colors duration-300 ${
-                    lastVoteFlash ? "text-emerald-500" : "text-primary"
-                  }`}
-                />
-                <p className="text-[12rem] font-black tabular-nums leading-none text-foreground">
+      {/* Body */}
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: showBallotSummary ? "1fr" : "1.6fr 1fr", gap: 0, minHeight: 0 }}>
+        {!showBallotSummary ? (
+          <>
+            {/* Left: vote count */}
+            <div style={{ padding: "40px 48px", borderRight: "1px solid var(--avd-border)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 32 }}>
+              {label("Votos recibidos")}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 16, transition: "transform 0.2s", transform: flash ? "scale(1.04)" : "scale(1)" }}>
+                <span style={{ fontSize: 160, fontWeight: 800, letterSpacing: "-0.05em", fontVariantNumeric: "tabular-nums", lineHeight: 1, color: flash ? "var(--avd-ok)" : "var(--avd-fg)", transition: "color 0.3s", fontFamily: "var(--avd-font-sans)" }}>
                   {voteCount}
-                </p>
-                <p className="mt-6 text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground">
-                  de {maxVotantes} votos
-                </p>
+                </span>
+                <span style={{ fontSize: 28, fontWeight: 600, color: "var(--avd-fg-muted)" }}>/ {maxVotantes}</span>
               </div>
 
-              <div className="mt-16 w-full space-y-6 max-w-4xl mx-auto">
-                <div className="flex items-center justify-between text-2xl font-bold text-muted-foreground">
-                  <span>Avance de votación</span>
-                  <span className="text-foreground text-3xl">{percentage.toFixed(0)}%</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: "var(--avd-fg-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Avance</span>
+                  <span style={{ fontSize: 28, fontWeight: 800, fontVariantNumeric: "tabular-nums", color: "var(--avd-fg)" }}>{percentage.toFixed(0)}%</span>
                 </div>
-                <ProgressBar
-                  aria-label="Avance"
-                  value={percentage}
-                  maxValue={100}
-                  className="w-full [&_[data-slot=progress-bar-track]]:h-8 [&_[data-slot=progress-bar-track]]:bg-surface-container-high"
-                />
-                <Meter
-                  aria-label="Votos emitidos"
-                  value={voteCount}
-                  minValue={0}
-                  maxValue={Math.max(maxVotantes, 1)}
-                  className="w-full [&_[data-slot=meter-track]]:h-4 [&_[data-slot=meter-track]]:bg-surface-container-high"
-                />
+                <div style={{ height: 14, borderRadius: 8, background: "var(--avd-border-soft)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${percentage}%`, background: "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))", borderRadius: 8, transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)" }} />
+                </div>
               </div>
 
               {percentage >= 100 && (
-                <div className="mt-12 rounded-[2rem] border-2 border-emerald-300/70 bg-emerald-500/15 px-8 py-8 text-center text-3xl font-bold text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300 max-w-4xl mx-auto">
+                <div style={{ background: "var(--avd-ok-bg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 10, padding: "16px 20px", fontSize: 20, fontWeight: 700, color: "var(--avd-ok-fg)" }}>
                   Todos los votos han sido emitidos.
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] p-8 flex flex-col">
-              <CardHeader className="px-4 py-0 pb-6">
-                <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground flex items-center gap-3">
-                  <Check className="h-8 w-8 text-emerald-500" strokeWidth={3} />
-                  Seleccionados
-                  {previouslySelected.length > 0 && (
-                    <span className="ml-auto text-5xl font-black text-emerald-600 dark:text-emerald-400 tracking-normal">
-                      {previouslySelected.length}
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-0 flex-1 overflow-auto">
+            {/* Right: selected */}
+            <div style={{ display: "flex", flexDirection: "column", borderLeft: "1px solid var(--avd-border)" }}>
+              <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--avd-border)", display: "flex", alignItems: "center", gap: 10 }}>
+                <Check size={18} color="var(--avd-ok)" strokeWidth={3} />
+                <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", flex: 1 }}>Seleccionados</span>
+                {previouslySelected.length > 0 && (
+                  <span style={{ fontSize: 36, fontWeight: 800, color: "var(--avd-ok)", fontVariantNumeric: "tabular-nums" }}>{previouslySelected.length}</span>
+                )}
+              </div>
+              <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
                 {previouslySelected.length === 0 ? (
-                  <p className="text-2xl text-muted-foreground text-center py-8">
+                  <div style={{ padding: "32px 24px", fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500, textAlign: "center" }}>
                     Ningún candidato seleccionado aún
-                  </p>
+                  </div>
                 ) : (
-                  <div className="divide-y-2 divide-outline-variant/50">
-                    {previouslySelected.map((c) => (
-                      <div key={c.id} className="py-5 first:pt-2 flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="text-2xl font-black text-emerald-800 dark:text-emerald-100 truncate">
-                            {formatCandidateName(c)}
-                          </p>
-                          {c.location && (
-                            <p className="text-lg font-semibold text-muted-foreground">{c.location}</p>
-                          )}
+                  previouslySelected.map((c) => (
+                    <div key={c.id} style={{ padding: "16px 24px", borderBottom: "1px solid var(--avd-border-soft)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok-fg)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {formatCandidateName(c)}
                         </div>
-                        {c.selected_in_round && (
-                          <span className="flex-shrink-0 rounded-full bg-emerald-500/15 px-3 py-1 text-lg font-bold text-emerald-700 dark:text-emerald-300">
-                            R{c.selected_in_round}
-                          </span>
+                        {c.location && (
+                          <div style={{ fontSize: 14, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 2 }}>{c.location}</div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-        </div>
-
-        {showBallotSummary && (
-          <Card className="border-2 border-outline-variant/55 bg-surface-container-lowest/88 dark:border-outline-variant/65 dark:bg-surface-container-low/82 rounded-[3rem] mt-6 p-8">
-            <CardHeader className="px-4 pt-0">
-              <CardTitle className="text-3xl font-bold uppercase tracking-[0.25em] text-muted-foreground text-center">
-                Papeletas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-8 px-4">
-              {ballotSummaries.length === 0 ? (
-                <div className="space-y-6">
-                  <p className="text-2xl text-muted-foreground text-center">Aún no hay papeletas válidas registradas.</p>
-                  <div className="grid gap-6 md:grid-cols-3">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <Skeleton key={index} className="h-40 w-full rounded-[2rem]" />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {ballotSummaries.map((ballot) => (
-                    <div
-                      key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`}
-                      className="rounded-[2rem] border-2 border-outline-variant/60 bg-surface-container-lowest/90 p-8 shadow-sm dark:border-outline-variant/65 dark:bg-surface-container/80 flex flex-col justify-between"
-                    >
-                      <div className="mb-6 flex items-center justify-between">
-                        <p className="font-mono text-2xl font-bold text-foreground">{ballot.voteCode}</p>
-                        <Chip size="lg" color="accent" variant="soft" className="text-xl font-bold px-4 py-4">R{ballot.roundNumber}</Chip>
-                      </div>
-                      <div className="space-y-3 text-2xl font-medium text-muted-foreground">
-                        <p>1. {ballot.votes[0] || "-"}</p>
-                        <p>2. {ballot.votes[1] || "-"}</p>
-                        <p>3. {ballot.votes[2] || "-"}</p>
-                      </div>
+                      {c.selected_in_round && (
+                        <span style={{ flexShrink: 0, background: "var(--avd-ok-bg)", color: "var(--avd-ok-fg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 9999, padding: "2px 12px", fontSize: 14, fontWeight: 700 }}>
+                          R{c.selected_in_round}
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {lastVoteFlash && (
-          <div className="pointer-events-none absolute inset-0 bg-emerald-500/10 transition-opacity duration-500" />
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Ballot summary view */
+          <div style={{ padding: "32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
+            {label("Papeletas registradas")}
+            {ballotSummaries.length === 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} style={{ height: 140, borderRadius: 12, background: "var(--avd-bg-sunken)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+                {ballotSummaries.map((ballot) => (
+                  <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ ...card({ padding: "24px 28px" }) }}>
+                    {accentBar()}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 18, fontWeight: 700, color: "var(--avd-fg)" }}>{ballot.voteCode}</span>
+                      <span style={{ background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", border: "1px solid var(--avd-brand-border)", borderRadius: 9999, padding: "2px 12px", fontSize: 13, fontWeight: 700 }}>R{ballot.roundNumber}</span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500 }}>
+                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>1.</span>{ballot.votes[0] || "—"}</span>
+                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>2.</span>{ballot.votes[1] || "—"}</span>
+                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>3.</span>{ballot.votes[2] || "—"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {flash && <div style={{ position: "fixed", inset: 0, background: "color-mix(in oklch, var(--avd-ok) 8%, transparent)", pointerEvents: "none", transition: "opacity 0.3s" }} />}
     </div>
   );
 }

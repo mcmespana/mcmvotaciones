@@ -1,10 +1,4 @@
 import * as React from "react"
-import {
-  Card as HeroCard,
-  CardContent as HeroCardContent,
-  CardFooter as HeroCardFooter,
-  CardHeader as HeroCardHeader,
-} from "@heroui/react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,14 +6,12 @@ const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <HeroCard
+  <div
     ref={ref}
     className={cn(
-      "rounded-[2rem] border border-outline-variant/55 bg-surface-container-lowest text-card-foreground shadow-tech transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow dark:border-outline-variant/65 dark:bg-surface-container-low",
+      "rounded-[2rem] border border-outline-variant bg-surface-container-lowest text-card-foreground shadow-tech transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow dark:border-outline-variant dark:bg-surface-container-low",
       className
     )}
-    radius="lg"
-    shadow="none"
     {...props}
   />
 ))
@@ -29,7 +21,7 @@ const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <HeroCardHeader
+  <div
     ref={ref}
     className={cn("flex flex-col space-y-1.5 p-6", className)}
     {...props}
@@ -68,7 +60,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <HeroCardContent ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -76,7 +68,7 @@ const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <HeroCardFooter
+  <div
     ref={ref}
     className={cn("flex items-center p-6 pt-0", className)}
     {...props}

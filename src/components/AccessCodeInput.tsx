@@ -1,23 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { KeyRound, ArrowRight } from "lucide-react";
 
 interface AccessCodeInputProps {
-  /** Called with the entered code when submitted */
   onSubmit: (code: string) => void;
-  /** Whether the code is being verified */
   loading?: boolean;
-  /** Error message to display */
   error?: string;
-  /** Round title for display context */
   roundTitle?: string;
 }
 
 const ACCESS_CODE_SESSION_KEY = "mcm_access_code_verified";
 
-/** Check if the user has already verified the code for this round */
 export function isAccessCodeVerified(roundId: string): boolean {
   try {
     const data = sessionStorage.getItem(ACCESS_CODE_SESSION_KEY);
@@ -29,7 +21,6 @@ export function isAccessCodeVerified(roundId: string): boolean {
   }
 }
 
-/** Mark the access code as verified for this round */
 export function markAccessCodeVerified(roundId: string): void {
   sessionStorage.setItem(
     ACCESS_CODE_SESSION_KEY,
@@ -47,7 +38,6 @@ export function AccessCodeInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Auto-focus the input on mount
     inputRef.current?.focus();
   }, []);
 
@@ -60,7 +50,6 @@ export function AccessCodeInput({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow alphanumeric, max 5 chars
     const value = e.target.value
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, "")
@@ -69,71 +58,145 @@ export function AccessCodeInput({
   };
 
   return (
-    <div className="admin-canvas min-h-screen flex items-center justify-center p-4">
-      <Card className="admin-shell w-full max-w-md overflow-hidden">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-primary-fixed rounded-full flex items-center justify-center">
-            <KeyRound className="w-8 h-8 text-primary" />
+    <div
+      className="pub-page"
+      style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    >
+      <div
+        style={{
+          background: "var(--avd-surface)",
+          border: "1px solid var(--avd-border)",
+          borderRadius: "var(--avd-radius-lg)",
+          boxShadow: "var(--avd-shadow-lg)",
+          width: "100%",
+          maxWidth: 420,
+          overflow: "hidden",
+        }}
+      >
+        {/* Top accent bar */}
+        <div
+          style={{
+            height: 4,
+            background: "linear-gradient(90deg, var(--avd-brand-600), var(--avd-brand-400))",
+          }}
+        />
+
+        <div style={{ padding: "40px 40px 32px" }}>
+          {/* Icon */}
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: "var(--avd-brand-50, hsl(var(--primary) / 0.1))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+              }}
+            >
+              <KeyRound style={{ width: 28, height: 28, color: "var(--avd-brand-600)" }} />
+            </div>
+            <h1
+              style={{
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--avd-fg)",
+                marginBottom: 8,
+                fontFamily: "var(--avd-font-sans)",
+              }}
+            >
+              Código de Acceso
+            </h1>
+            <p style={{ fontSize: 13, color: "var(--avd-fg-muted)", lineHeight: 1.5 }}>
+              {roundTitle
+                ? `Introduce el código para acceder a "${roundTitle}"`
+                : "Introduce el código proporcionado para acceder a la votación"}
+            </p>
           </div>
-          <CardTitle className="font-headline text-4xl font-black tracking-tight">Codigo de Acceso</CardTitle>
-          <CardDescription>
-            {roundTitle
-              ? `Introduce el código para acceder a "${roundTitle}"`
-              : "Introduce el código proporcionado para acceder a la votación"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Input
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <input
                 ref={inputRef}
                 type="text"
                 value={code}
                 onChange={handleChange}
                 placeholder="ABC"
-                className="text-center text-3xl font-mono tracking-[0.5em] h-16 uppercase"
+                className="avd-input"
                 disabled={loading}
                 maxLength={5}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
+                style={{
+                  textAlign: "center",
+                  fontSize: 30,
+                  fontFamily: "monospace",
+                  letterSpacing: "0.5em",
+                  textTransform: "uppercase",
+                  height: 64,
+                  paddingLeft: "0.5em",
+                }}
               />
-              <p className="text-xs text-center text-muted-foreground">
-                Código alfanumérico de 3 a 5 letras
+              <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", textAlign: "center" }}>
+                Código alfanumérico de 3 a 5 caracteres
               </p>
             </div>
 
             {error && (
-              <div className="rounded-xl bg-destructive/10 p-2 text-center text-sm text-destructive">
+              <div
+                style={{
+                  background: "var(--avd-bad-bg, hsl(0 84% 50% / 0.08))",
+                  border: "1px solid var(--avd-bad, hsl(0 84% 50% / 0.3))",
+                  borderRadius: "var(--avd-radius-sm)",
+                  padding: "10px 14px",
+                  textAlign: "center",
+                  fontSize: 13,
+                  color: "var(--avd-bad, hsl(0 72% 50%))",
+                  fontWeight: 600,
+                }}
+              >
                 {error}
               </div>
             )}
 
-            <Button
+            <button
               type="submit"
-              className="w-full"
+              className="avd-btn avd-btn-primary avd-btn-primary-lg"
               disabled={loading || code.length < 3}
-              size="lg"
+              style={{ width: "100%", justifyContent: "center", marginTop: 4 }}
             >
               {loading ? (
                 <>
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  <div
+                    style={{
+                      width: 16,
+                      height: 16,
+                      border: "2px solid white",
+                      borderTopColor: "transparent",
+                      borderRadius: "50%",
+                      animation: "spin 0.7s linear infinite",
+                    }}
+                  />
                   Verificando...
                 </>
               ) : (
                 <>
                   Acceder
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight style={{ width: 15, height: 15 }} />
                 </>
               )}
-            </Button>
+            </button>
           </form>
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
+          <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", textAlign: "center", marginTop: 20 }}>
             El código se muestra en la pantalla de proyección
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -141,6 +141,7 @@ export function AdminVotingDetail() {
   const [seatStatus, setSeatStatus] = useState<SeatStatus | null>(null);
   const [currentRoundVotes, setCurrentRoundVotes] = useState(0);
   const [savingConfig, setSavingConfig] = useState(false);
+  const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
   const [configAccessCode, setConfigAccessCode] = useState("");
   const [configCensusMode, setConfigCensusMode] = useState<"maximum" | "exact">("maximum");
   const [loading, setLoading] = useState(true);
@@ -278,6 +279,7 @@ export function AdminVotingDetail() {
     : "Siguiente ronda";
 
   const workflowActionDisabled = Boolean(
+    isWorkflowRunning ||
     !round ||
     (round.is_closed && !round.round_finalized) ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
@@ -381,17 +383,22 @@ export function AdminVotingDetail() {
   };
 
   const runProjectionWorkflowStep = async () => {
-    if (!round) return;
-    if (canOpenRoom) { await callOpenRoom(); return; }
-    if (!round.round_finalized) {
-      if (canStartRound) { await callStartRound(); return; }
-      if (!canFinalizeRound) return;
-      await finalizeRound(); return;
+    if (!round || isWorkflowRunning) return;
+    setIsWorkflowRunning(true);
+    try {
+      if (canOpenRoom) { await callOpenRoom(); return; }
+      if (!round.round_finalized) {
+        if (canStartRound) { await callStartRound(); return; }
+        if (!canFinalizeRound) return;
+        await finalizeRound(); return;
+      }
+      if (!round.show_results_to_voters) { await publishProjectionResults(); return; }
+      if (!round.show_ballot_summary_projection) { await publishProjectionBallots(); return; }
+      if (selectionQuotaReached && !round.show_final_gallery_projection) { await publishFinalGallery(); return; }
+      await startNextRound();
+    } finally {
+      setIsWorkflowRunning(false);
     }
-    if (!round.show_results_to_voters) { await publishProjectionResults(); return; }
-    if (!round.show_ballot_summary_projection) { await publishProjectionBallots(); return; }
-    if (selectionQuotaReached && !round.show_final_gallery_projection) { await publishFinalGallery(); return; }
-    await startNextRound();
   };
 
   const hideAllResults = async () => {
@@ -842,10 +849,12 @@ export function AdminVotingDetail() {
               onClick={runProjectionWorkflowStep}
               disabled={workflowActionDisabled}
             >
-              {workflowActionLabel === "Abrir sala" || workflowActionLabel === "Iniciar ronda"
+              {isWorkflowRunning
+                ? <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                : workflowActionLabel === "Abrir sala" || workflowActionLabel === "Iniciar ronda"
                 ? <Play size={16} />
                 : <StepForward size={16} />}
-              {workflowActionLabel}
+              {isWorkflowRunning ? "Procesando..." : workflowActionLabel}
             </button>
           </div>
         </div>

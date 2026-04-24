@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { CheckCircle2, MousePointerClick, Shield, Send, HelpCircle } from "lucide-react";
+import { CheckCircle2, MousePointerClick, Shield, Send, HelpCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STEPS = [
   {
@@ -9,198 +7,203 @@ const STEPS = [
     title: "Selecciona candidatos",
     description:
       "Pulsa sobre las tarjetas de los candidatos que quieres votar. Puedes seleccionar hasta el máximo indicado.",
-    color: "text-primary",
-    bgColor: "bg-primary-fixed",
+    accent: "text-violet-600 dark:text-violet-400",
+    iconBg: "bg-violet-500/10",
+    iconRing: "ring-violet-500/25",
+    dotActive: "bg-violet-500",
+    topBar: "from-violet-500/80 via-violet-400/50 to-violet-500/20",
+    nextBg: "bg-violet-500/10 hover:bg-violet-500/15 border-violet-500/30 text-violet-700 dark:text-violet-400",
   },
   {
     icon: CheckCircle2,
     title: "Revisa tu selección",
     description:
       "Puedes cambiar tu selección en cualquier momento antes de confirmar. Los candidatos seleccionados se marcan con un borde y un ✓.",
-    color: "text-green-500",
-    bgColor: "bg-green-500/10",
+    accent: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-500/10",
+    iconRing: "ring-emerald-500/25",
+    dotActive: "bg-emerald-500",
+    topBar: "from-emerald-500/80 via-emerald-400/50 to-emerald-500/20",
+    nextBg: "bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
   },
   {
     icon: Send,
     title: "Confirma tu voto",
     description:
       'Cuando estés seguro, pulsa el botón "Votar" para enviar tu selección. Una vez confirmado, no podrás cambiar tu voto.',
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
+    accent: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-amber-500/10",
+    iconRing: "ring-amber-500/25",
+    dotActive: "bg-amber-500",
+    topBar: "from-amber-500/80 via-amber-400/50 to-amber-500/20",
+    nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
   },
   {
     icon: Shield,
     title: "Voto seguro y anónimo",
     description:
       "Tu voto es completamente anónimo. Se encripta antes de enviarse y recibirás un código de verificación.",
-    color: "text-primary-container",
-    bgColor: "bg-primary-fixed",
+    accent: "text-sky-600 dark:text-sky-400",
+    iconBg: "bg-sky-500/10",
+    iconRing: "ring-sky-500/25",
+    dotActive: "bg-sky-500",
+    topBar: "from-sky-500/80 via-sky-400/50 to-sky-500/20",
+    nextBg: "bg-sky-500/10 hover:bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-400",
   },
 ];
 
 interface VotingTutorialProps {
-  /** Force open even if already seen */
   forceOpen?: boolean;
-  /** Round identifier to persist first-visit state per voting round */
   roundId?: string;
-  /** Use compact icon-only trigger, useful in tight headers */
   compactTrigger?: boolean;
 }
 
 const TUTORIAL_KEY = "mcm_voting_tutorial_seen";
 
 function hasSeenTutorial(): boolean {
-  try {
-    return localStorage.getItem(TUTORIAL_KEY) === "1";
-  } catch {
-    return false;
-  }
+  try { return localStorage.getItem(TUTORIAL_KEY) === "1"; } catch { return false; }
 }
-
 function markTutorialSeen(): void {
-  try {
-    localStorage.setItem(TUTORIAL_KEY, "1");
-  } catch {
-    // Ignore storage issues.
-  }
+  try { localStorage.setItem(TUTORIAL_KEY, "1"); } catch { /* ignore */ }
 }
 
-export function VotingTutorial({ forceOpen, roundId, compactTrigger = false }: VotingTutorialProps) {
+export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = false }: VotingTutorialProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (forceOpen) {
-      setOpen(true);
-      setStep(0);
-      return;
-    }
-    // Show tutorial on first visit (once per device)
-    if (!hasSeenTutorial()) {
-      setOpen(true);
-    }
+    if (forceOpen) { setOpen(true); setStep(0); return; }
+    if (!hasSeenTutorial()) setOpen(true);
   }, [forceOpen]);
 
-  const handleClose = () => {
-    setOpen(false);
-    setStep(0);
-    markTutorialSeen();
-  };
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") handleClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
 
-  const handleNext = () => {
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    } else {
-      handleClose();
-    }
-  };
-
-  const handlePrev = () => {
-    if (step > 0) setStep(step - 1);
-  };
+  const handleClose = () => { setOpen(false); setStep(0); markTutorialSeen(); };
+  const handleNext  = () => { if (step < STEPS.length - 1) setStep(step + 1); else handleClose(); };
+  const handlePrev  = () => { if (step > 0) setStep(step - 1); };
 
   const current = STEPS[step];
   const Icon = current.icon;
+  const isLast = step === STEPS.length - 1;
 
   return (
     <>
-      {/* "¿Cómo votar?" button — always visible */}
-      {compactTrigger ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="h-9 w-9 shrink-0 rounded-xl border border-outline-variant/55 bg-surface-container-low px-0 hover:bg-surface-container dark:border-outline-variant/65 dark:bg-surface-container"
-          onClick={() => {
-            setStep(0);
-            setOpen(true);
-          }}
-          aria-label="Abrir guía de votación"
-        >
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            setStep(0);
-            setOpen(true);
-          }}
-        >
-          <HelpCircle className="w-4 h-4 mr-1" />
-          ¿Cómo votar?
-        </Button>
-      )}
+      <button
+        type="button"
+        onClick={() => { setStep(0); setOpen(true); }}
+        aria-label="Abrir guía de votación"
+        className="avd-btn avd-btn-icon"
+        title="¿Cómo votar?"
+        style={compactTrigger ? {} : { width: "auto", padding: "0 10px", gap: 6 }}
+      >
+        <HelpCircle style={{ width: 14, height: 14 }} />
+        {!compactTrigger && <span>¿Cómo votar?</span>}
+      </button>
 
-      <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-        <DialogContent className="w-[calc(100%-1.5rem)] max-w-md overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest p-0 shadow-tech dark:border-outline-variant/70 dark:bg-surface-container-low">
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-primary-fixed/70 px-6 pb-5 pt-6 dark:from-primary-fixed/60 dark:via-surface-container-low dark:to-primary-fixed/45">
-            <div className="absolute -left-10 -top-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl" />
-            <div className="absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-primary-container/20 blur-2xl" />
+      {open && (
+        <div
+          className="avd-dialog-overlay"
+          style={{ zIndex: 110 }}
+          onClick={handleClose}
+        >
+          <div
+            className="avd-dialog"
+            style={{ maxWidth: 420, padding: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top accent bar */}
+            <div className={`h-1 w-full bg-gradient-to-r ${current.topBar} transition-all duration-500`} />
 
-            {/* Progress dots */}
-            <div className="relative z-10 flex justify-center gap-2">
-            {STEPS.map((_, i) => (
+            {/* Icon area */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "32px 32px 24px" }}>
+              {/* Step dots */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-full transition-all duration-300 ${
+                      i === step
+                        ? `w-6 h-2 ${current.dotActive}`
+                        : i < step
+                        ? `w-2 h-2 ${current.dotActive} opacity-50`
+                        : "w-2 h-2 bg-muted-foreground/25"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Icon bubble */}
               <div
-                key={i}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  i === step
-                    ? "w-8 bg-primary"
-                    : i < step
-                    ? "bg-primary/50"
-                    : "bg-muted"
-                }`}
-              />
-            ))}
+                className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300`}
+              >
+                <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
+              </div>
             </div>
 
-            <div className={`relative z-10 mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-3xl ${current.bgColor} shadow-[0_18px_26px_-18px_rgba(37,99,235,0.8)]`}>
-              <Icon className={`h-10 w-10 ${current.color}`} />
+            {/* Content */}
+            <div style={{ padding: "0 32px 24px" }}>
+              <h3
+                style={{
+                  fontSize: 22,
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  color: "var(--avd-fg)",
+                  marginBottom: 12,
+                  lineHeight: 1.2,
+                }}
+              >
+                {current.title}
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--avd-fg-muted)", lineHeight: 1.6, fontWeight: 500 }}>
+                {current.description}
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div
+              style={{
+                padding: "12px 24px",
+                borderTop: "1px solid var(--avd-border-soft)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+                background: "var(--avd-bg-sunken)",
+              }}
+            >
+              <button
+                onClick={handlePrev}
+                disabled={step === 0}
+                className="avd-btn"
+              >
+                <ChevronLeft style={{ width: 13, height: 13 }} />
+                Anterior
+              </button>
+
+              <button
+                onClick={handleClose}
+                className="avd-btn avd-btn-ghost"
+              >
+                <X style={{ width: 12, height: 12 }} />
+                Saltar
+              </button>
+
+              <button
+                onClick={handleNext}
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-[13px] font-bold transition-all ${current.nextBg}`}
+              >
+                {isLast ? "¡Entendido!" : "Siguiente"}
+                {!isLast && <ChevronRight style={{ width: 13, height: 13 }} />}
+              </button>
             </div>
           </div>
-
-          {/* Content */}
-          <div className="px-8 py-6 text-center">
-            <h3 className="font-headline text-4xl font-extrabold tracking-tight text-foreground sm:text-[2.4rem]">{current.title}</h3>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              {current.description}
-            </p>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-between border-t border-outline-variant/45 px-6 pb-6 pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrev}
-              disabled={step === 0}
-              className="min-w-[80px]"
-            >
-              Anterior
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="text-muted-foreground"
-            >
-              Saltar
-            </Button>
-
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleNext}
-              className="min-w-[80px]"
-            >
-              {step === STEPS.length - 1 ? "¡Entendido!" : "Siguiente"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }
