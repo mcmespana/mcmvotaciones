@@ -89,13 +89,17 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
           <div style={{flex:1, minWidth:0}}>
             <div style={{fontSize:15, fontWeight:700, letterSpacing:"-0.01em", lineHeight:1.3, color:"var(--avd-fg)", marginBottom:6, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as const}}>{round.title}</div>
             <div style={{display:"flex", flexWrap:"wrap", gap:5, alignItems:"center"}}>
-              <span
-                className={`avd-chip ${round.team === "ECE" ? "avd-chip-brand" : ""}`}
-                style={round.team === "ECL" ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : {}}
-              >{round.team}</span>
-              {round.voting_type_name && round.voting_type_name !== round.team && (
-                <span className="avd-chip avd-chip-muted" style={{fontSize:11}}>{round.voting_type_name}</span>
-              )}
+              {(() => {
+                const label = round.voting_type_name || round.team;
+                const isECE = label === "ECE";
+                const isECL = label === "ECL";
+                return (
+                  <span
+                    className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
+                    style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
+                  >{label}</span>
+                );
+              })()}
               <span className="avd-chip avd-chip-muted">{round.year}</span>
               <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5}}>
                 {chip.pulse && <span className="avd-pulse-dot" />}
@@ -212,7 +216,8 @@ export function AdminVotingList() {
     }
     const t = votingTypes.find(vt => vt.id === typeId);
     if (!t) return;
-    setForm(p => ({ ...p, voting_type_id: t.id, voting_type_name: t.name, max_selected_candidates: t.max_selected_candidates, max_votes_per_round: t.max_votes_per_round, census_mode: t.census_mode }));
+    const team: "ECE" | "ECL" = t.name === "ECL" ? "ECL" : "ECE";
+    setForm(p => ({ ...p, voting_type_id: t.id, voting_type_name: t.name, team, max_selected_candidates: t.max_selected_candidates, max_votes_per_round: t.max_votes_per_round, census_mode: t.census_mode }));
   };
 
   const loadRounds = useCallback(async () => {
@@ -258,9 +263,10 @@ export function AdminVotingList() {
     const generatedAccessCode = generateAccessCode();
     try {
       setCreatingRound(true);
+      const derivedTeam: "ECE" | "ECL" = form.voting_type_name === "ECL" ? "ECL" : "ECE";
       const { data: inserted, error } = await supabase.from("rounds").insert([{
         title, description: form.description.trim() || null,
-        year: form.year, team: form.team, max_votantes: form.max_votantes,
+        year: form.year, team: derivedTeam, max_votantes: form.max_votantes,
         access_code: generatedAccessCode, census_mode: form.census_mode, is_active: false,
         voting_type_id: form.voting_type_id || null,
         voting_type_name: form.voting_type_name || null,
@@ -362,7 +368,7 @@ export function AdminVotingList() {
         ) : (
           <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
             <div style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 120px 100px 40px" : "1fr 90px 90px 120px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
-              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Equipo</div>{isSuperAdmin && <div></div>}
+              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Tipo</div>{isSuperAdmin && <div></div>}
             </div>
             {filteredRounds.map(r => {
               const chip = getStatusChip(r);
@@ -382,10 +388,17 @@ export function AdminVotingList() {
                   <div style={{fontWeight:600, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.votes_current_round}/{r.max_votantes}</div>
                   <div><span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span></div>
                   <div>
-                    <span
-                      className={`avd-chip ${r.team === "ECE" ? "avd-chip-brand" : ""}`}
-                      style={r.team === "ECL" ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : {}}
-                    >{r.team}</span>
+                    {(() => {
+                      const label = r.voting_type_name || r.team;
+                      const isECE = label === "ECE";
+                      const isECL = label === "ECL";
+                      return (
+                        <span
+                          className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
+                          style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
+                        >{label}</span>
+                      );
+                    })()}
                   </div>
                   {isSuperAdmin && (
                     <div style={{display:"flex", justifyContent:"center"}}>
@@ -458,10 +471,10 @@ export function AdminVotingList() {
                 {/* Config fields — shown always, pre-filled from type */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                   <div className="avd-form-field">
-                    <label className="avd-label">Total a seleccionar</label>
+                    <label className="avd-label">Total seleccionadas</label>
                     <input className="avd-input" type="number" min={1} max={100}
-                      value={form.max_selected_candidates}
-                      onChange={e => setForm(p => ({ ...p, max_selected_candidates: Math.max(1, parseInt(e.target.value) || 1), voting_type_id: null, voting_type_name: "" }))}
+                      value={form.max_selected_candidates || ""}
+                      onChange={e => { const v = parseInt(e.target.value); setForm(p => ({ ...p, max_selected_candidates: isNaN(v) ? 0 : v, voting_type_id: null, voting_type_name: "" })); }}
                     />
                   </div>
                   <div className="avd-form-field">
@@ -482,15 +495,6 @@ export function AdminVotingList() {
                   </div>
                 </div>
 
-                <div className="avd-form-grid avd-form-grid-2">
-                  <div className="avd-form-field">
-                    <label className="avd-label">Equipo</label>
-                    <select className="avd-select" value={form.team} onChange={e => setForm(p => ({...p, team: e.target.value as "ECE" | "ECL"}))}>
-                      <option value="ECE">ECE</option>
-                      <option value="ECL">ECL</option>
-                    </select>
-                  </div>
-                </div>
               </div>
             </div>
             <div className="avd-dialog-foot">

@@ -54,7 +54,7 @@ export interface BallotSummary {
 }
 
 export type ProjectionState = "waiting" | "voting" | "results" | "final-gallery";
-export type ProjectionWaitingMode = "idle" | "room-open" | "paused" | "finalized";
+export type ProjectionWaitingMode = "idle" | "room-open" | "paused" | "finalized" | "closed";
 
 export interface ProjectionData {
   state: ProjectionState;
@@ -113,7 +113,9 @@ export function useProjectionData(): ProjectionData {
   );
 
   const waitingMode: ProjectionWaitingMode = (() => {
-    if (!round || !round.is_active || round.is_closed || round.show_final_gallery_projection) return "idle";
+    if (!round) return "idle";
+    if (round.is_closed && !round.show_final_gallery_projection) return "closed";
+    if (!round.is_active || round.show_final_gallery_projection) return "idle";
     if (round.round_finalized && !round.show_results_to_voters) return "finalized";
     if (!round.is_voting_open && round.join_locked && !round.round_finalized) return "paused";
     if (!round.is_voting_open && !round.round_finalized) return "room-open";

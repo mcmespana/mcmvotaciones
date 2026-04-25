@@ -60,7 +60,9 @@ export function ProjectionWaiting({
   }, []);
 
   const subtitle =
-    waitingMode === "paused"
+    waitingMode === "closed"
+      ? "La votación ha finalizado. Gracias por participar."
+      : waitingMode === "paused"
       ? "Votacion en pausa. Esperando reanudacion..."
       : waitingMode === "finalized"
       ? "Ronda finalizada. Esperando publicacion de resultados"
@@ -69,11 +71,13 @@ export function ProjectionWaiting({
       : "La votacion comenzara en breve";
 
   const modeLabel =
-    waitingMode === "paused"     ? "Pausa activa"    :
-    waitingMode === "finalized"  ? "Ronda cerrada"   :
-    waitingMode === "room-open"  ? "Sala abierta"    : "Preparando sala";
+    waitingMode === "closed"     ? "Votación cerrada" :
+    waitingMode === "paused"     ? "Pausa activa"     :
+    waitingMode === "finalized"  ? "Ronda cerrada"    :
+    waitingMode === "room-open"  ? "Sala abierta"     : "Preparando sala";
 
   const modeKind: ChipKind =
+    waitingMode === "closed"    ? "ok"    :
     waitingMode === "paused"    ? "warn"  :
     waitingMode === "finalized" ? "ok"    :
     waitingMode === "room-open" ? "brand" : "muted";
@@ -189,7 +193,7 @@ export function ProjectionWaiting({
             </div>
           </div>
 
-          {roundTitle && (
+          {roundTitle && waitingMode !== "closed" && waitingMode !== "idle" && (
             <div style={{ padding: "28px", borderBottom: "1px solid var(--avd-border)" }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 8 }}>Ronda activa</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: "var(--avd-fg)", lineHeight: 1.3 }}>{roundTitle}</div>

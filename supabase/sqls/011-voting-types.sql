@@ -27,3 +27,13 @@ ON CONFLICT (name) DO NOTHING;
 ALTER TABLE public.rounds
   ADD COLUMN IF NOT EXISTS voting_type_id   UUID REFERENCES public.voting_types(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS voting_type_name TEXT;
+
+-- RLS + grants
+GRANT ALL ON TABLE public.voting_types TO anon;
+GRANT ALL ON TABLE public.voting_types TO authenticated;
+GRANT ALL   ON TABLE public.voting_types TO service_role;
+
+ALTER TABLE public.voting_types ENABLE ROW LEVEL SECURITY;
+
+-- App uses custom auth (not Supabase Auth), so all requests run as anon — match pattern of other tables.
+CREATE POLICY "Allow all voting_types operations" ON public.voting_types FOR ALL USING (true) WITH CHECK (true);

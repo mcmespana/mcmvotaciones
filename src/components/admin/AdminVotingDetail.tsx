@@ -109,7 +109,8 @@ function csvEscape(value: string): string {
 }
 
 const WORKFLOW_STEPS = [
-  { id: "start", label: "Iniciar ronda", sub: "Empieza el voto" },
+  { id: "open-room", label: "Abrir sala", sub: "Sala de espera abierta" },
+  { id: "start", label: "Iniciar votación", sub: "Empieza el voto" },
   { id: "close-vote", label: "Finalizar votación", sub: "Cierra y procesa" },
   { id: "results", label: "Ver resultados ronda", sub: "Se proyectan los resultados" },
   { id: "ballots", label: "Ver papeletas", sub: "Se proyectan las papeletas" },
@@ -120,12 +121,13 @@ function getStage(round: RoundDetail | null): number {
   if (!round) return 0;
   if (round.is_closed) return WORKFLOW_STEPS.length;
   if (!round.round_finalized) {
-    if (round.is_voting_open) return 1;
+    if (round.is_voting_open) return 2;
+    if (round.is_active) return 1;
     return 0;
   }
-  if (!round.show_results_to_voters) return 2;
-  if (!round.show_ballot_summary_projection) return 3;
-  return 4;
+  if (!round.show_results_to_voters) return 3;
+  if (!round.show_ballot_summary_projection) return 4;
+  return 5;
 }
 
 /* ── Component ── */
@@ -287,7 +289,8 @@ export function AdminVotingDetail() {
   const workflowActionLabel = !round
     ? "Acción"
     : round.is_closed ? "Votación completada"
-    : canOpenRoom || canStartRound ? "Iniciar ronda"
+    : canOpenRoom ? "Abrir sala"
+    : canStartRound ? "Iniciar votación"
     : !round.round_finalized ? "Finalizar votación"
     : !round.show_results_to_voters ? "Ver resultados ronda"
     : !round.show_ballot_summary_projection ? "Ver papeletas"
@@ -425,9 +428,7 @@ export function AdminVotingDetail() {
     setIsWorkflowRunning(true);
     try {
       if (canOpenRoom) {
-        const opened = await callOpenRoom(false);
-        if (!opened) return;
-        await callStartRound(true);
+        await callOpenRoom(false);
         return;
       }
       if (!round.round_finalized) {
@@ -807,7 +808,17 @@ export function AdminVotingDetail() {
             {statusChip.txt}
           </span>
           <span className="avd-chip avd-chip-muted">Ronda {round.current_round_number}</span>
-          <span className="avd-chip avd-chip-muted">{round.team}</span>
+          {(() => {
+            const label = round.voting_type_name || round.team;
+            const isECE = label === "ECE";
+            const isECL = label === "ECL";
+            return (
+              <span
+                className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
+                style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
+              >{label}</span>
+            );
+          })()}
           {round.year && <span className="avd-chip avd-chip-muted">{round.year}</span>}
           <span className="avd-chip avd-chip-mono" title="Código de acceso" style={{ gap: 4 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--avd-brand)", flexShrink: 0, display: "inline-block" }} />
@@ -852,7 +863,7 @@ export function AdminVotingDetail() {
             >
               {isWorkflowRunning
                 ? <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                : workflowActionLabel === "Iniciar ronda"
+                : workflowActionLabel === "Abrir sala" || workflowActionLabel === "Iniciar votación"
                 ? <Play size={16} />
                 : <StepForward size={16} />}
               {isWorkflowRunning ? "Procesando..." : workflowActionLabel}

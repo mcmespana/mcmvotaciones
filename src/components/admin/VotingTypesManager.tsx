@@ -53,6 +53,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
 
   const saveEdit = async () => {
     if (!editingId) return;
+    if (editForm.max_selected_candidates < 1) { toast({ title: "Seleccionadas debe ser mínimo 1", variant: "destructive" }); return; }
     setSaving(true);
     const { error } = await supabase
       .from("voting_types")
@@ -69,6 +70,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
   const createType = async () => {
     const name = newForm.name.trim();
     if (!name) { toast({ title: "Nombre obligatorio", variant: "destructive" }); return; }
+    if (newForm.max_selected_candidates < 1) { toast({ title: "Seleccionadas debe ser mínimo 1", variant: "destructive" }); return; }
     setCreating(true);
     const { error } = await supabase
       .from("voting_types")
@@ -115,12 +117,12 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                   )}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                     <div className="avd-form-field">
-                      <label className="avd-label">Seleccionar</label>
-                      <input className="avd-input" type="number" min={1} max={100} value={editForm.max_selected_candidates} onChange={e => setEditForm(p => ({ ...p, max_selected_candidates: Math.max(1, parseInt(e.target.value) || 1) }))} />
+                      <label className="avd-label">Seleccionadas</label>
+                      <input className="avd-input" type="number" min={1} max={100} value={editForm.max_selected_candidates || ""} onChange={e => { const v = parseInt(e.target.value); setEditForm(p => ({ ...p, max_selected_candidates: isNaN(v) ? 0 : v })); }} />
                     </div>
                     <div className="avd-form-field">
                       <label className="avd-label">Votos/ronda</label>
-                      <input className="avd-input" type="number" min={0} max={100} value={editForm.max_votes_per_round} onChange={e => setEditForm(p => ({ ...p, max_votes_per_round: Math.max(0, parseInt(e.target.value) || 0) }))} />
+                      <input className="avd-input" type="number" min={0} max={100} value={editForm.max_votes_per_round} onChange={e => { const v = parseInt(e.target.value); setEditForm(p => ({ ...p, max_votes_per_round: isNaN(v) ? 0 : v })); }} />
                     </div>
                     <div className="avd-form-field">
                       <label className="avd-label">Censo</label>
@@ -174,12 +176,12 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                 <input className="avd-input" placeholder="Mi tipo" value={newForm.name} onChange={e => setNewForm(p => ({ ...p, name: e.target.value }))} />
               </div>
               <div className="avd-form-field">
-                <label className="avd-label">Seleccionar</label>
-                <input className="avd-input" type="number" min={1} max={100} value={newForm.max_selected_candidates} onChange={e => setNewForm(p => ({ ...p, max_selected_candidates: Math.max(1, parseInt(e.target.value) || 1) }))} />
+                <label className="avd-label">Seleccionadas</label>
+                <input className="avd-input" type="number" min={1} max={100} value={newForm.max_selected_candidates || ""} onChange={e => { const v = parseInt(e.target.value); setNewForm(p => ({ ...p, max_selected_candidates: isNaN(v) ? 0 : v })); }} />
               </div>
               <div className="avd-form-field">
                 <label className="avd-label">Votos/ronda</label>
-                <input className="avd-input" type="number" min={0} max={100} value={newForm.max_votes_per_round} onChange={e => setNewForm(p => ({ ...p, max_votes_per_round: Math.max(0, parseInt(e.target.value) || 0) }))} />
+                <input className="avd-input" type="number" min={0} max={100} value={newForm.max_votes_per_round} onChange={e => { const v = parseInt(e.target.value); setNewForm(p => ({ ...p, max_votes_per_round: isNaN(v) ? 0 : v })); }} />
               </div>
               <div className="avd-form-field">
                 <label className="avd-label">Censo</label>
