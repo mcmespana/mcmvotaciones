@@ -224,12 +224,6 @@ export function ComunicaImport() {
           <div className="avd-brand-mark">C</div>
           <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--avd-fg)' }}>VotacionesMCM</span>
         </div>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--avd-fg-muted)' }}>
-          <span style={{ color: 'var(--avd-border)' }}>/</span>
-          <span>Admin</span>
-          <span style={{ color: 'var(--avd-border)' }}>/</span>
-          <span style={{ color: 'var(--avd-fg)', fontWeight: 600 }}>SinergiaCRM</span>
-        </nav>
         <div style={{ flex: 1 }} />
         <button className="avd-btn avd-btn-sm" onClick={() => navigate(selectedRoundId ? `/admin/votaciones/${selectedRoundId}` : '/admin/dashboard?tab=votaciones')}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>

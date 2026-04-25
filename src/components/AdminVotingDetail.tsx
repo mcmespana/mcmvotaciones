@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
 import {
   ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download,
-  FileUp, Globe, Grid, List, Moon, MonitorOff, Pause, Pencil,
+  FileUp, Globe, Grid, List, Moon, Pause, Pencil,
   Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
   Sun, Trash2, Undo2, Upload, UserPlus, Users, XCircle,
 } from "lucide-react";
@@ -19,6 +19,7 @@ import { BallotReview } from "@/components/BallotReview";
 
 interface RoundDetail {
   id: string;
+  slug: string | null;
   title: string;
   description: string | null;
   year: number;
@@ -105,12 +106,11 @@ function csvEscape(value: string): string {
 }
 
 const WORKFLOW_STEPS = [
-  { id: "open",     label: "Abrir sala",          sub: "Habilita códigos" },
-  { id: "start",    label: "Iniciar ronda",        sub: "Empieza el voto" },
-  { id: "finalize", label: "Finalizar ronda",      sub: "Procesa resultados" },
-  { id: "proj_res", label: "Proyecta resultado",   sub: "Paso 1" },
-  { id: "proj_bal", label: "Proyecta papeletas",   sub: "Paso 2" },
-  { id: "next",     label: "Siguiente ronda",      sub: "o cierre final" },
+  { id: "open",     label: "Abrir sala",            sub: "Habilita códigos" },
+  { id: "start",    label: "Iniciar ronda",          sub: "Empieza el voto" },
+  { id: "finalize", label: "Finalizar ronda",        sub: "Procesa resultados" },
+  { id: "confirm",  label: "Confirmar selección",    sub: "Revisa candidatos" },
+  { id: "next",     label: "Siguiente ronda",        sub: "o cierre final" },
 ];
 
 function getStage(round: RoundDetail | null): number {
@@ -118,9 +118,8 @@ function getStage(round: RoundDetail | null): number {
   if (!round.is_active && !round.is_closed) return 0;
   if (round.is_active && !round.is_voting_open && !round.round_finalized) return 1;
   if (round.is_voting_open) return 2;
-  if (round.round_finalized && !round.show_results_to_voters) return 3;
-  if (round.round_finalized && round.show_results_to_voters && !round.show_ballot_summary_projection) return 4;
-  if (round.round_finalized && round.show_ballot_summary_projection) return 5;
+  if (round.round_finalized && !round.show_ballot_summary_projection) return 3;
+  if (round.round_finalized && round.show_ballot_summary_projection) return 4;
   return 2;
 }
 
@@ -200,7 +199,7 @@ export function AdminVotingDetail() {
     try {
       setLoading(true);
       const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
-        supabase.from("rounds").select("id,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round").eq("id", roundId).single(),
+        supabase.from("rounds").select("id,slug,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round").eq("id", roundId).single(),
         supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected").eq("round_id", roundId).order("order_index", { ascending: true }),
         supabase.from("seats").select("id,estado,joined_at,last_seen_at,browser_instance_id").eq("round_id", roundId).order("joined_at", { ascending: false }).limit(60),
         supabase.rpc("get_round_seats_status", { p_round_id: roundId }),
@@ -253,7 +252,7 @@ export function AdminVotingDetail() {
   const hasCandidates = activeCandidatesCount > 0;
   const maxSelectedCandidates = round?.max_selected_candidates || 6;
   const selectionQuotaReached = selectedCandidatesCount >= maxSelectedCandidates;
-  const publicCandidatesPath = roundId ? `/candidatos/${roundId}` : "";
+  const publicCandidatesPath = roundId ? `/candidatos/${round?.slug || roundId}` : "";
   const publicCandidatesUrl = publicCandidatesPath ? `${window.location.origin}${publicCandidatesPath}` : "";
 
   const isVotingStarted = Boolean(round && (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0));
@@ -263,18 +262,17 @@ export function AdminVotingDetail() {
   const canStartRound = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
   const canPauseRound = Boolean(round && round.is_active && round.is_voting_open && !round.round_finalized && !round.is_closed);
   const canResumeRound = Boolean(round && round.is_active && !round.is_voting_open && round.join_locked && !round.round_finalized && !round.is_closed);
-  const isProjectingSomething = Boolean(round && (round.show_final_gallery_projection || round.show_results_to_voters || round.show_ballot_summary_projection));
+  const isProjectingSomething = Boolean(round && round.show_results_to_voters);
   const canFinalizeRound = Boolean(round && round.is_active && (round.is_voting_open || round.join_locked) && currentRoundVotes > 0 && !round.round_finalized && !round.is_closed);
   const canStartNextRound = Boolean(round && !selectionQuotaReached && round.is_active && round.round_finalized && !round.is_closed);
-  const isVotingFinishedAndReviewed = Boolean(round && round.round_finalized && round.show_results_to_voters && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed));
+  const isVotingFinishedAndReviewed = Boolean(round && round.round_finalized && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed));
 
   const workflowActionLabel = !round
     ? "Acción"
     : canOpenRoom ? "Abrir sala"
     : !round.round_finalized
       ? canFinalizeRound ? "Finalizar ronda" : canStartRound ? "Iniciar ronda" : "Finalizar ronda"
-    : !round.show_results_to_voters ? "Paso 1: Resultados"
-    : !round.show_ballot_summary_projection ? "Paso 2: Papeletas"
+    : !round.show_ballot_summary_projection ? "Confirmar selección"
     : (selectionQuotaReached || round.is_closed) ? "Votación completada"
     : "Siguiente ronda";
 
@@ -283,7 +281,7 @@ export function AdminVotingDetail() {
     !round ||
     (round.is_closed && !round.round_finalized) ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-    (round.round_finalized && round.show_results_to_voters && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed || !canStartNextRound))
+    (round.round_finalized && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed || !canStartNextRound))
   );
 
   const stage = getStage(round);
@@ -297,11 +295,9 @@ export function AdminVotingDetail() {
     : { cls: "avd-chip-muted", txt: "Sin iniciar" };
 
   /* ── Projection label ── */
-  const projLabel = !round ? "Esperando"
-    : round.show_ballot_summary_projection ? "Papeletas"
-    : round.show_results_to_voters ? "Resultados"
-    : round.show_final_gallery_projection ? "Galería final"
-    : "Esperando";
+  const projLabel = !round ? "Sin difundir"
+    : round.show_results_to_voters ? "Galería activa"
+    : "Sin difundir";
 
   /* ── Candidate filter ── */
   const filteredCandidates = useMemo(() => {
@@ -358,27 +354,11 @@ export function AdminVotingDetail() {
     await loadRound();
   };
 
-  const publishProjectionResults = async () => {
+  const confirmSelection = async () => {
     if (!roundId || !round?.round_finalized) { toast({ title: "Ronda no finalizada", description: "Primero finaliza la ronda.", variant: "destructive" }); return; }
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, show_ballot_summary_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo publicar resultados", variant: "destructive" }); return; }
-    toast({ title: "Resultados publicados", description: "Paso 1 activado en proyección" });
-    await loadRound();
-  };
-
-  const publishProjectionBallots = async () => {
-    if (!roundId || !round?.round_finalized) { toast({ title: "Ronda no finalizada", description: "Primero finaliza la ronda.", variant: "destructive" }); return; }
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, show_ballot_summary_projection: true, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo publicar papeletas", variant: "destructive" }); return; }
-    toast({ title: "Papeletas publicadas", description: "Paso 2 activado en proyección" });
-    await loadRound();
-  };
-
-  const publishFinalGallery = async () => {
-    if (!roundId) return;
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, show_ballot_summary_projection: true, show_final_gallery_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo publicar la galería", variant: "destructive" }); return; }
-    toast({ title: "Ganadores proyectados", description: "Paso 3 activado en proyección" });
+    const { error } = await supabase.from("rounds").update({ show_ballot_summary_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+    if (error) { toast({ title: "Error", description: "No se pudo confirmar la selección", variant: "destructive" }); return; }
+    toast({ title: "Selección confirmada", description: "Candidatos de esta ronda confirmados" });
     await loadRound();
   };
 
@@ -392,29 +372,19 @@ export function AdminVotingDetail() {
         if (!canFinalizeRound) return;
         await finalizeRound(); return;
       }
-      if (!round.show_results_to_voters) { await publishProjectionResults(); return; }
-      if (!round.show_ballot_summary_projection) { await publishProjectionBallots(); return; }
-      if (selectionQuotaReached && !round.show_final_gallery_projection) { await publishFinalGallery(); return; }
+      if (!round.show_ballot_summary_projection) { await confirmSelection(); return; }
       await startNextRound();
     } finally {
       setIsWorkflowRunning(false);
     }
   };
 
-  const hideAllResults = async () => {
-    if (!roundId) return;
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: false, show_ballot_summary_projection: false, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo ocultar la proyección", variant: "destructive" }); return; }
-    toast({ title: "Proyección ocultada", description: "La pantalla está en modo espera." });
-    await loadRound();
-  };
-
-  const toggleFinalResults = async () => {
-    if (!roundId || !round?.round_finalized) return;
-    const nextShowGallery = !round.show_final_gallery_projection;
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, show_ballot_summary_projection: true, show_final_gallery_projection: nextShowGallery, updated_at: new Date().toISOString() }).eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo actualizar la galería final", variant: "destructive" }); return; }
-    toast({ title: nextShowGallery ? "Resultados finales publicados" : "Resultados finales ocultados" });
+  const toggleGallery = async () => {
+    if (!roundId || !round?.round_finalized || !round.show_ballot_summary_projection) return;
+    const nextOn = !round.show_results_to_voters;
+    const { error } = await supabase.from("rounds").update({ show_results_to_voters: nextOn, show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() }).eq("id", roundId);
+    if (error) { toast({ title: "Error", description: "No se pudo actualizar la galería", variant: "destructive" }); return; }
+    toast({ title: nextOn ? "Galería activada" : "Galería desactivada" });
     await loadRound();
   };
 
@@ -683,7 +653,7 @@ export function AdminVotingDetail() {
         <div className="avd-live-card" style={{ maxWidth: 400, textAlign: "center", gap: 8 }}>
           <p style={{ color: "var(--avd-fg)", fontWeight: 600, margin: 0 }}>Votación no encontrada</p>
           <p style={{ color: "var(--avd-fg-muted)", fontSize: 13, margin: 0 }}>No se encontró la votación solicitada.</p>
-          <button className="avd-btn avd-btn-sm" onClick={() => navigate("/admin/dashboard?tab=votaciones")} style={{ marginTop: 4 }}>
+          <button className="avd-btn avd-btn-sm" onClick={() => navigate("/admin/votaciones")} style={{ marginTop: 4 }}>
             <ArrowLeft size={13} /> Volver
           </button>
         </div>
@@ -705,14 +675,6 @@ export function AdminVotingDetail() {
           <div className="avd-brand-mark">C</div>
           <span>VotacionesMCM</span>
         </div>
-        <nav className="avd-topbar-crumbs">
-          <span className="avd-sep">/</span>
-          <span>Admin</span>
-          <span className="avd-sep">/</span>
-          <span>Votaciones</span>
-          <span className="avd-sep">/</span>
-          <span className="avd-current">{round.team} {round.year}</span>
-        </nav>
         <div className="avd-topbar-spacer" />
         <span className="avd-chip avd-chip-mono avd-chip-muted">
           {new Date(now).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
@@ -728,32 +690,12 @@ export function AdminVotingDetail() {
 
       {/* ═══ Page header ═══ */}
       <section className="avd-page-header">
-        <div className="avd-page-header-top">
-          <div className="avd-page-title-block">
-            <div className="avd-page-meta">
-              <button className="avd-btn avd-btn-sm" onClick={() => navigate("/admin/dashboard?tab=votaciones")}>
-                <ArrowLeft size={13} /> Volver a votaciones
-              </button>
-              <span className={`avd-chip ${statusChip.cls}`} style={{ height: 24, fontSize: 12 }}>
-                {round.is_voting_open && <span className="avd-pulse-dot" style={{ marginRight: 2 }} />}
-                {statusChip.txt}
-              </span>
-              <span className="avd-chip avd-chip-muted">Ronda {round.current_round_number}</span>
-              <span className="avd-chip avd-chip-muted">{round.team}</span>
-              <span className="avd-chip avd-chip-mono" title="Código de acceso" style={{ gap: 4 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--avd-brand)", flexShrink: 0, display: "inline-block" }} />
-                {round.access_code || "––––"}
-                <button
-                  onClick={() => copyText(round.access_code || "", "Código copiado")}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "var(--avd-fg-faint)" }}
-                >
-                  <Copy size={10} />
-                </button>
-              </span>
-            </div>
-            <h1>{round.title}</h1>
-            {round.description && <p className="avd-desc">{round.description}</p>}
-          </div>
+
+        {/* Row 1: nav + actions */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+          <button className="avd-btn avd-btn-sm avd-btn-ghost" onClick={() => navigate("/admin/votaciones")}>
+            <ArrowLeft size={13} /> Volver a votaciones
+          </button>
           <div className="avd-header-actions">
             <button className="avd-btn avd-btn-sm" onClick={() => setIsAnalyticsOpen(true)}>
               <BarChart2 size={14} /> Análisis
@@ -770,57 +712,33 @@ export function AdminVotingDetail() {
           </div>
         </div>
 
-        {/* KPI Strip */}
-        <div className="avd-kpi-strip">
-          <div className="avd-kpi" data-accent="ok">
-            <div className="avd-kpi-label"><Users size={11} />Conectados</div>
-            <div className="avd-kpi-value avd-tabular">
-              {seatStatus?.occupied_seats ?? 0}
-              <span className="avd-unit">/ {round.max_votantes}</span>
-            </div>
-            <div className="avd-kpi-bar">
-              <div className="avd-kpi-bar-fill avd-ok" style={{ width: `${occupiedPct}%` }} />
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent="brand">
-            <div className="avd-kpi-label">Votos ronda {round.current_round_number}</div>
-            <div className="avd-kpi-value avd-tabular">
-              {currentRoundVotes}
-              <span className="avd-unit">/ {round.max_votantes}</span>
-            </div>
-            <div className="avd-kpi-bar">
-              <div className="avd-kpi-bar-fill" style={{ width: `${votesPct}%` }} />
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent="brand">
-            <div className="avd-kpi-label">Participación</div>
-            <div className="avd-kpi-value avd-tabular">
-              {votesPct}
-              <span className="avd-unit">%</span>
-            </div>
-            <div className="avd-kpi-meta">Objetivo {round.max_selected_candidates} selecciones</div>
-          </div>
-          <div className="avd-kpi">
-            <div className="avd-kpi-label">Candidatas</div>
-            <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
-            <div className="avd-kpi-meta">
-              {selectedCandidatesCount} seleccionadas · {candidates.length - activeCandidatesCount} eliminadas
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
-            <div className="avd-kpi-label">Censo</div>
-            <div className="avd-kpi-value" style={{ fontSize: 16 }}>
-              {round.census_mode === "exact" ? "Exacto" : "Máximo"}
-            </div>
-            <div className="avd-kpi-meta">
-              {round.census_mode === "exact" ? "Arranca al llenar cupo" : "Inicio manual"}
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={isProjectingSomething ? "violet" : undefined}>
-            <div className="avd-kpi-label">Proyección</div>
-            <div className="avd-kpi-value" style={{ fontSize: 16 }}>{projLabel}</div>
-            <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
-          </div>
+        {/* Row 2: Title */}
+        <h1 style={{ fontFamily: "var(--avd-font-sans)", fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 10px", lineHeight: 1.1, color: "var(--avd-fg)" }}>
+          {round.title}
+        </h1>
+
+        {/* Row 3: Meta chips */}
+        <div className="avd-page-meta" style={{ marginBottom: 14 }}>
+          <span className={`avd-chip ${statusChip.cls}`} style={{ height: 24, fontSize: 12 }}>
+            {round.is_voting_open && <span className="avd-pulse-dot" style={{ marginRight: 2 }} />}
+            {statusChip.txt}
+          </span>
+          <span className="avd-chip avd-chip-muted">Ronda {round.current_round_number}</span>
+          <span className="avd-chip avd-chip-muted">{round.team}</span>
+          {round.year && <span className="avd-chip avd-chip-muted">{round.year}</span>}
+          <span className="avd-chip avd-chip-mono" title="Código de acceso" style={{ gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--avd-brand)", flexShrink: 0, display: "inline-block" }} />
+            {round.access_code || "––––"}
+            <button
+              onClick={() => copyText(round.access_code || "", "Código copiado")}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "var(--avd-fg-faint)" }}
+            >
+              <Copy size={10} />
+            </button>
+          </span>
+          {round.description && (
+            <span style={{ fontSize: 12, color: "var(--avd-fg-muted)", marginLeft: 2 }}>· {round.description}</span>
+          )}
         </div>
 
         {/* Workflow Rail */}
@@ -863,152 +781,216 @@ export function AdminVotingDetail() {
       {/* ═══ Main grid ═══ */}
       <div className="avd-page-main">
 
-        {/* ── Left: Candidates ── */}
-        <main className="avd-col avd-col-main">
-          <div className="avd-col-inner">
-            <div className="avd-candidates-head">
-              <div className="avd-candidates-head-left">
-                <h2>Candidatas</h2>
-                <span className="avd-counts">
-                  {selectedCandidatesCount} seleccionadas · {activeCandidatesCount} activas
-                </span>
+        {/* ── Left aside: Info ── */}
+        <aside className="avd-col avd-col-left">
+          <div style={{ padding: "14px 16px 8px", borderBottom: "1px solid var(--avd-border-soft)" }}>
+            <h3 className="avd-section-title" style={{ margin: 0 }}>
+              Información
+              <span className="avd-hint">
+                <span className="avd-pulse-dot" style={{ width: 6, height: 6 }} /> En vivo
+              </span>
+            </h3>
+          </div>
+          <div className="avd-kpi-stack" style={{ padding: "4px 0" }}>
+            <div className="avd-kpi" data-accent="ok" style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none", borderBottom: "1px solid var(--avd-border-soft)" }}>
+              <div className="avd-kpi-label"><Users size={11} />Conectados</div>
+              <div className="avd-kpi-value avd-tabular">
+                {seatStatus?.occupied_seats ?? 0}
+                <span className="avd-unit">/ {round.max_votantes}</span>
               </div>
-              <div className="avd-candidates-head-right">
-                <div className="avd-segmented">
-                  <button className={candidateView === "list" ? "active" : ""} onClick={() => setCandidateView("list")}>
-                    <List size={13} /> Lista
-                  </button>
-                  <button className={candidateView === "grid" ? "active" : ""} onClick={() => setCandidateView("grid")}>
-                    <Grid size={13} /> Tarjetas
-                  </button>
-                </div>
-                <div className="avd-search-wrap" style={{ width: 180 }}>
-                  <Search size={14} />
-                  <input
-                    className="avd-input"
-                    placeholder="Buscar candidata..."
-                    value={candidateSearch}
-                    onChange={(e) => setCandidateSearch(e.target.value)}
-                  />
-                </div>
-                {!isVotingStarted && (
-                  <>
-                    <button className="avd-btn avd-btn-sm" onClick={openAddCandidateDialog}>
-                      <UserPlus size={14} /> Añadir
-                    </button>
-                    <button className="avd-btn avd-btn-sm" onClick={() => setIsImportOpen(true)}>
-                      <Upload size={14} /> Importar
-                    </button>
-                    <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
-                      <ArrowUpRight size={14} /> Comunica
-                    </button>
-                    <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
-                      <Download size={14} /> Dataset
-                    </button>
-                  </>
-                )}
+              <div className="avd-kpi-bar">
+                <div className="avd-kpi-bar-fill avd-ok" style={{ width: `${occupiedPct}%` }} />
               </div>
             </div>
+            <div className="avd-kpi" data-accent="brand" style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none", borderBottom: "1px solid var(--avd-border-soft)" }}>
+              <div className="avd-kpi-label">Votos ronda {round.current_round_number}</div>
+              <div className="avd-kpi-value avd-tabular">
+                {currentRoundVotes}
+                <span className="avd-unit">/ {round.max_votantes}</span>
+              </div>
+              <div className="avd-kpi-bar">
+                <div className="avd-kpi-bar-fill" style={{ width: `${votesPct}%` }} />
+              </div>
+            </div>
+            <div className="avd-kpi" data-accent="brand" style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none", borderBottom: "1px solid var(--avd-border-soft)" }}>
+              <div className="avd-kpi-label">Participación</div>
+              <div className="avd-kpi-value avd-tabular">
+                {votesPct}<span className="avd-unit">%</span>
+              </div>
+              <div className="avd-kpi-meta">Objetivo {round.max_selected_candidates} selecciones</div>
+            </div>
+            <div className="avd-kpi" style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none", borderBottom: "1px solid var(--avd-border-soft)" }}>
+              <div className="avd-kpi-label">Candidatas</div>
+              <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
+              <div className="avd-kpi-meta">
+                {selectedCandidatesCount} seleccionadas · {candidates.length - activeCandidatesCount} eliminadas
+              </div>
+            </div>
+            <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined} style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none", borderBottom: "1px solid var(--avd-border-soft)" }}>
+              <div className="avd-kpi-label">Censo</div>
+              <div className="avd-kpi-value" style={{ fontSize: 16 }}>
+                {round.census_mode === "exact" ? "Exacto" : "Máximo"}
+              </div>
+              <div className="avd-kpi-meta">
+                {round.census_mode === "exact" ? "Arranca al llenar cupo" : "Inicio manual"}
+              </div>
+            </div>
+            <div className="avd-kpi" data-accent={isProjectingSomething ? "violet" : undefined} style={{ padding: "10px 16px", borderRadius: 0, background: "transparent", border: "none" }}>
+              <div className="avd-kpi-label">Proyección</div>
+              <div className="avd-kpi-value" style={{ fontSize: 16 }}>{projLabel}</div>
+              <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
+            </div>
+          </div>
+        </aside>
 
-            <div className="avd-candidates-shell">
-              {filteredCandidates.length === 0 ? (
-                <div className="avd-empty">
-                  <UserPlus size={28} />
-                  <p className="avd-empty-title">Sin candidatas</p>
-                  <p className="avd-empty-sub">Usa Añadir o Importar para comenzar.</p>
-                </div>
-              ) : candidateView === "list" ? (
-                filteredCandidates.map((c) => (
-                  <div
-                    key={c.id}
-                    className={`avd-cand-row ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
-                  >
-                    <div className="avd-cand-avatar">{initials(c)}</div>
-                    <div className="avd-cand-info">
-                      <div className="avd-cand-name">{formatCandidateName(c)}</div>
-                      <div className="avd-cand-meta">
-                        {c.location || "Sin ubicación"}
-                        {c.group_name && <> · {c.group_name}</>}
-                        {c.age && <> · {c.age} años</>}
-                      </div>
-                    </div>
-                    <div className="avd-cand-badges">
-                      {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
-                      {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
-                    </div>
-                    <div className="avd-cand-actions">
-                      <button
-                        className="avd-btn avd-btn-ghost avd-btn-icon-sm"
-                        onClick={() => openEditCandidateDialog(c)}
-                        title="Editar"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      {c.is_selected && (
-                        <button
-                          className="avd-btn avd-btn-ghost avd-btn-icon-sm"
-                          onClick={() => unselectCandidate(c.id)}
-                          title="Deshacer selección"
-                        >
-                          <Undo2 size={13} />
-                        </button>
-                      )}
-                      {!isVotingStarted && (
-                        <button
-                          className="avd-btn avd-btn-ghost avd-btn-icon-sm"
-                          onClick={() => deleteCandidate(c.id)}
-                          title="Eliminar"
-                          style={{ color: "var(--avd-fg-faint)" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-bad)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      )}
-                    </div>
+        {/* ── Center: Candidates ── */}
+        <main className="avd-col avd-col-main">
+          <div className="avd-col-inner">
+            <div className="avd-candidates-pane">
+              <div className="avd-candidates-head">
+                  <div className="avd-candidates-head-left">
+                    <h2>Candidatas</h2>
+                    <span className="avd-counts">
+                      {selectedCandidatesCount} seleccionadas · {activeCandidatesCount} activas
+                    </span>
                   </div>
-                ))
-              ) : (
-                <div className="avd-cand-grid">
-                  {filteredCandidates.map((c) => (
-                    <div
-                      key={c.id}
-                      className={`avd-cand-card ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
-                    >
-                      <div className="avd-cand-card-head">
-                        <div className="avd-cand-card-avatar">{initials(c)}</div>
-                        <div className="avd-cand-card-body">
-                          <div className="avd-cand-card-name">{formatCandidateName(c)}</div>
-                          <div className="avd-cand-card-meta">
-                            {c.location}{c.age && ` · ${c.age}a`}
+                  <div className="avd-candidates-head-right">
+                    <div className="avd-segmented">
+                      <button className={candidateView === "list" ? "active" : ""} onClick={() => setCandidateView("list")}>
+                        <List size={13} /> Lista
+                      </button>
+                      <button className={candidateView === "grid" ? "active" : ""} onClick={() => setCandidateView("grid")}>
+                        <Grid size={13} /> Tarjetas
+                      </button>
+                    </div>
+                    <div className="avd-search-wrap" style={{ width: 180 }}>
+                      <Search size={14} />
+                      <input
+                        className="avd-input"
+                        placeholder="Buscar candidata..."
+                        value={candidateSearch}
+                        onChange={(e) => setCandidateSearch(e.target.value)}
+                      />
+                    </div>
+                    {!isVotingStarted && (
+                      <>
+                        <button className="avd-btn avd-btn-sm" onClick={openAddCandidateDialog}>
+                          <UserPlus size={14} /> Añadir
+                        </button>
+                        <button className="avd-btn avd-btn-sm" onClick={() => setIsImportOpen(true)}>
+                          <Upload size={14} /> Importar
+                        </button>
+                        <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
+                          <ArrowUpRight size={14} /> Comunica
+                        </button>
+                        <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
+                          <Download size={14} /> Dataset
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="avd-candidates-shell">
+                  {filteredCandidates.length === 0 ? (
+                    <div className="avd-empty">
+                      <UserPlus size={28} />
+                      <p className="avd-empty-title">Sin candidatas</p>
+                      <p className="avd-empty-sub">Usa Añadir o Importar para comenzar.</p>
+                    </div>
+                  ) : candidateView === "list" ? (
+                    filteredCandidates.map((c) => (
+                      <div
+                        key={c.id}
+                        className={`avd-cand-row ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
+                      >
+                        <div className="avd-cand-avatar">{initials(c)}</div>
+                        <div className="avd-cand-info">
+                          <div className="avd-cand-name">{formatCandidateName(c)}</div>
+                          <div className="avd-cand-meta">
+                            {c.location || "Sin ubicación"}
+                            {c.group_name && <> · {c.group_name}</>}
+                            {c.age && <> · {c.age} años</>}
                           </div>
                         </div>
-                      </div>
-                      {c.group_name && (
-                        <div style={{ fontSize: 11.5, color: "var(--avd-fg-muted)" }}>{c.group_name}</div>
-                      )}
-                      <div className="avd-cand-card-foot">
-                        <div style={{ display: "flex", gap: 4 }}>
+                        <div className="avd-cand-badges">
                           {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
                           {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
                         </div>
-                        <div style={{ display: "flex", gap: 2 }}>
-                          <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)}>
+                        <div className="avd-cand-actions">
+                          <button
+                            className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                            onClick={() => openEditCandidateDialog(c)}
+                            title="Editar"
+                          >
                             <Pencil size={13} />
                           </button>
+                          {c.is_selected && (
+                            <button
+                              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                              onClick={() => unselectCandidate(c.id)}
+                              title="Deshacer selección"
+                            >
+                              <Undo2 size={13} />
+                            </button>
+                          )}
                           {!isVotingStarted && (
-                            <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => deleteCandidate(c.id)}>
+                            <button
+                              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                              onClick={() => deleteCandidate(c.id)}
+                              title="Eliminar"
+                              style={{ color: "var(--avd-fg-faint)" }}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-bad)")}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                            >
                               <Trash2 size={13} />
                             </button>
                           )}
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="avd-cand-grid">
+                      {filteredCandidates.map((c) => (
+                        <div
+                          key={c.id}
+                          className={`avd-cand-card ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
+                        >
+                          <div className="avd-cand-card-head">
+                            <div className="avd-cand-card-avatar">{initials(c)}</div>
+                            <div className="avd-cand-card-body">
+                              <div className="avd-cand-card-name">{formatCandidateName(c)}</div>
+                              <div className="avd-cand-card-meta">
+                                {c.location}{c.age && ` · ${c.age}a`}
+                              </div>
+                            </div>
+                          </div>
+                          {c.group_name && (
+                            <div style={{ fontSize: 11.5, color: "var(--avd-fg-muted)" }}>{c.group_name}</div>
+                          )}
+                          <div className="avd-cand-card-foot">
+                            <div style={{ display: "flex", gap: 4 }}>
+                              {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
+                              {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
+                            </div>
+                            <div style={{ display: "flex", gap: 2 }}>
+                              <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)}>
+                                <Pencil size={13} />
+                              </button>
+                              {!isVotingStarted && (
+                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => deleteCandidate(c.id)}>
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
         </main>
 
         {/* ── Right: Live + Controls ── */}
@@ -1106,18 +1088,10 @@ export function AdminVotingDetail() {
                     <XCircle size={14} /> Cerrar sala
                   </button>
                 )}
-                {isProjectingSomething && (
-                  <button className="avd-btn avd-btn-block avd-btn-danger" onClick={hideAllResults}>
-                    <MonitorOff size={14} /> Apagar proyección especial
-                  </button>
-                )}
                 <div className="avd-proj-toggle">
                   <div className="avd-label-row">
                     <Globe size={14} />
-                    <div>
-                      <div>Lista pública</div>
-                      <div className="avd-sub">/candidatos/{roundId?.slice(0, 8)}</div>
-                    </div>
+                    <div>Lista pública</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
@@ -1134,18 +1108,18 @@ export function AdminVotingDetail() {
                     />
                   </div>
                 </div>
-                {round.round_finalized && (
+                {round.round_finalized && round.show_ballot_summary_projection && (
                   <div className="avd-proj-toggle">
                     <div className="avd-label-row">
                       <Sparkles size={14} />
                       <div>
                         <div>Galería final</div>
-                        <div className="avd-sub">Tras cierre definitivo</div>
+                        <div className="avd-sub">{round.show_results_to_voters ? "Visible para votantes" : "Oculta"}</div>
                       </div>
                     </div>
                     <button
-                      className={`avd-switch avd-switch.on-ok ${round.show_final_gallery_projection ? "on" : ""}`}
-                      onClick={toggleFinalResults}
+                      className={`avd-switch ${round.show_results_to_voters ? "on" : ""}`}
+                      onClick={toggleGallery}
                     />
                   </div>
                 )}

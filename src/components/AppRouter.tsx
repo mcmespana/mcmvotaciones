@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { VotingPage } from './VotingPage';
 import { AuthForm } from './AuthForm';
 import { AdminDashboard } from './AdminDashboard';
-import { DemoPage } from './DemoPage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -14,7 +13,7 @@ interface AppRouterProps {
 }
 
 export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
-  const { user, loading, isAdmin } = useAuth();
+  const { adminUser: user, loading, isAdmin } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(isAdminRoute);
 
   useEffect(() => {
@@ -37,11 +36,6 @@ export function AppRouter({ isAdminRoute = false }: AppRouterProps) {
       }
     }
   }, [isAdminRoute]);
-
-  // Show demo page if Supabase is not configured
-  if (!isSupabaseConfigured) {
-    return <DemoPage />;
-  }
 
   // Show loading spinner while checking auth
   if (loading) {

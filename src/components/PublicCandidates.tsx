@@ -6,6 +6,8 @@ import { useTheme } from "next-themes";
 
 /* ── Interfaces ── */
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface Round {
   id: string;
   title: string;
@@ -112,17 +114,18 @@ export function PublicCandidates() {
     if (!votingId) return;
     async function load() {
       try {
-        const { data: roundData } = await supabase
+        const isUuid = UUID_RE.test(votingId!);
+        const roundQuery = supabase
           .from("rounds")
           .select("id, title, team, public_candidates_enabled")
-          .eq("id", votingId!)
-          .single();
+          .eq(isUuid ? "id" : "slug", votingId!);
+        const { data: roundData } = await roundQuery.single();
         if (!roundData || !roundData.public_candidates_enabled) { setNotFound(true); return; }
         setRound(roundData);
         const { data: candidateData } = await supabase
           .from("candidates")
           .select("id, name, surname, location, group_name, age, description, image_url, order_index")
-          .eq("round_id", votingId!)
+          .eq("round_id", roundData.id)
           .order("order_index");
         setCandidates(candidateData || []);
       } catch {

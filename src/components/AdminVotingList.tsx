@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface RoundListItem {
   id: string;
+  slug: string | null;
   title: string;
   description: string | null;
   year: number;
@@ -19,6 +20,16 @@ interface RoundListItem {
   current_round_number: number;
   votes_current_round: number;
   created_at: string;
+}
+
+function generateSlug(title: string, id: string): string {
+  const base = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return `${base}-${id.replace(/-/g, "").slice(0, 6)}`;
 }
 
 interface NewRoundForm {
@@ -169,7 +180,7 @@ export function AdminVotingList() {
   const [rounds, setRounds] = useState<RoundListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [teamFilter, setTeamFilter] = useState("ALL");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">("list");
   const [loading, setLoading] = useState(true);
   const [creatingRound, setCreatingRound] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -181,7 +192,7 @@ export function AdminVotingList() {
       setLoading(true);
       const { data, error } = await supabase
         .from("rounds")
-        .select("id,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at")
+        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setRounds((data || []) as RoundListItem[]);
@@ -219,12 +230,15 @@ export function AdminVotingList() {
     const generatedAccessCode = generateAccessCode();
     try {
       setCreatingRound(true);
-      const { error } = await supabase.from("rounds").insert([{
+      const { data: inserted, error } = await supabase.from("rounds").insert([{
         title, description: form.description.trim() || null,
         year: form.year, team: form.team, max_votantes: form.max_votantes,
         access_code: generatedAccessCode, census_mode: form.census_mode, is_active: false,
-      }]);
+      }]).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        await supabase.from("rounds").update({ slug: generateSlug(title, inserted.id) }).eq("id", inserted.id);
+      }
       toast({ title: "Votación creada", description: `Código de acceso: ${generatedAccessCode}` });
       setCreateOpen(false);
       setForm({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum" });
@@ -280,13 +294,13 @@ export function AdminVotingList() {
         </div>
         {/* View toggle */}
         <div className="avd-segmented">
-          <button className={view === "grid" ? "active" : ""} onClick={() => setView("grid")}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Tarjetas
-          </button>
           <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             Lista
+          </button>
+          <button className={view === "grid" ? "active" : ""} onClick={() => setView("grid")}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Tarjetas
           </button>
         </div>
         <button className="avd-btn avd-btn-primary avd-btn-sm" onClick={() => setCreateOpen(true)}>
@@ -311,15 +325,15 @@ export function AdminVotingList() {
           </div>
         ) : (
           <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
-            <div style={{display:"grid", gridTemplateColumns:"1fr 90px 90px 120px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
-              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Equipo</div>
+            <div style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 120px 100px 40px" : "1fr 90px 90px 120px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
+              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Equipo</div>{isSuperAdmin && <div></div>}
             </div>
             {filteredRounds.map(r => {
               const chip = getStatusChip(r);
               return (
                 <div
                   key={r.id}
-                  style={{display:"grid", gridTemplateColumns:"1fr 90px 90px 120px 100px", padding:"11px 14px", borderTop:"1px solid var(--avd-border-soft)", alignItems:"center", gap:12, fontSize:13, cursor:"pointer", transition:"background 0.12s"}}
+                  style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 120px 100px 40px" : "1fr 90px 90px 120px 100px", padding:"11px 14px", borderTop:"1px solid var(--avd-border-soft)", alignItems:"center", gap:12, fontSize:13, cursor:"pointer", transition:"background 0.12s"}}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
@@ -337,6 +351,20 @@ export function AdminVotingList() {
                       style={r.team === "ECL" ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : {}}
                     >{r.team}</span>
                   </div>
+                  {isSuperAdmin && (
+                    <div style={{display:"flex", justifyContent:"center"}}>
+                      <button
+                        className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                        onClick={e => { e.stopPropagation(); setDeleteTarget(r); }}
+                        title="Eliminar"
+                        style={{border:"none", color:"var(--avd-fg-faint)"}}
+                        onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}

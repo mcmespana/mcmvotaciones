@@ -71,10 +71,12 @@ export function AdminRouter() {
 
   return (
     <Routes>
-      <Route path="/" element={<AdminDashboard />} />
-      <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route path="/" element={<Navigate to="/admin/votaciones" replace />} />
+      <Route path="/dashboard" element={<Navigate to="/admin/votaciones" replace />} />
+      <Route path="/votaciones" element={<AdminDashboard section="votaciones" />} />
+      <Route path="/usuarios" element={<AdminDashboard section="usuarios" />} />
       <Route path="/votaciones/:roundId" element={<AdminVotingDetail />} />
-      <Route path="/*" element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="/*" element={<Navigate to="/admin/votaciones" replace />} />
     </Routes>
   );
 }

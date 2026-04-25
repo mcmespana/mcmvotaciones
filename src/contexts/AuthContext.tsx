@@ -114,9 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         // Error creating admin user
         if (error.code === '23505') {
-          if (error.constraint?.includes('username')) {
+          const constraint = (error as { constraint?: string }).constraint;
+          if (constraint?.includes('username')) {
             return { error: { message: 'El nombre de usuario ya existe' } };
-          } else if (error.constraint?.includes('email')) {
+          } else if (constraint?.includes('email')) {
             return { error: { message: 'El email ya existe' } };
           }
         }
