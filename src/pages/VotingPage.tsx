@@ -58,6 +58,7 @@ interface Candidate {
   order_index: number;
   is_eliminated: boolean;
   is_selected: boolean;
+  selected_in_round: number | null;
 }
 
 interface RoundResult {
@@ -179,6 +180,7 @@ export function VotingPage() {
   const [seatError, setSeatError] = useState('');
   const [voteReceipt, setVoteReceipt] = useState<VoteReceipt | null>(null);
   const [confirmVoteOpen, setConfirmVoteOpen] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -186,6 +188,12 @@ export function VotingPage() {
   const activeRoundRef = useRef<Round | null>(null);
   const submitAnimationRoundRef = useRef<{ roundId: string; roundNumber: number } | null>(null);
   const submitTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleVisibility = () => setTabHidden(document.hidden);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   const getSeatStorageKey = (roundId: string) => `mcm_seat_id_${roundId}`;
   const getReceiptStorageKey = (roundId: string, roundNumber: number) =>
@@ -335,11 +343,14 @@ export function VotingPage() {
     }
   }, []);
 
-  // Calcula el máximo de votos por persona en esta ronda según los candidatos pendientes
   const computeMaxVotesThisRound = useCallback(() => {
     if (!activeRound) return 0;
     const currentlySelected = candidates.filter(c => c.is_selected).length;
-    return getMaxVotesAllowed(activeRound.max_selected_candidates, currentlySelected);
+    return getMaxVotesAllowed(
+      activeRound.max_selected_candidates,
+      currentlySelected,
+      activeRound.max_votes_per_round,
+    );
   }, [activeRound, candidates]);
 
   const loadResults = useCallback(async (roundId: string, roundNumber: number) => {
@@ -1141,8 +1152,11 @@ export function VotingPage() {
                       ✓
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, color: 'var(--avd-ok-fg)', fontSize: 14 }}>
-                        {candidate.name} {candidate.surname}
+                      <div style={{ fontWeight: 700, color: 'var(--avd-ok-fg)', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {candidate.name} {formatSurname(candidate.surname)}
+                        {candidate.selected_in_round != null && (
+                          <span className="avd-chip avd-chip-brand" style={{ height: 18, fontSize: 10, padding: '0 7px' }}>R{candidate.selected_in_round}</span>
+                        )}
                       </div>
                       {candidate.location && (
                         <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)', marginTop: 2 }}>
@@ -1204,10 +1218,15 @@ export function VotingPage() {
                       </div>
                       <div style={{ flexGrow: 1 }}>
                         <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: 'var(--avd-fg)' }}>
-                          {candidate.name} {candidate.surname}
+                          {candidate.name} {formatSurname(candidate.surname)}
                           {isSelected && (
                             <span className="avd-chip avd-chip-ok" style={{ height: 18, fontSize: 10, padding: '0 7px' }}>
                               SELECCIONADO
+                            </span>
+                          )}
+                          {isSelected && candidate.selected_in_round != null && (
+                            <span className="avd-chip avd-chip-brand" style={{ height: 18, fontSize: 10, padding: '0 7px' }}>
+                              R{candidate.selected_in_round}
                             </span>
                           )}
                           {hasMajority && !isSelected && (
@@ -1310,6 +1329,28 @@ export function VotingPage() {
         onComplete={handleSubmitAnimationComplete}
         voteHash={voteHashCode}
       />
+
+
+{/* Tab-hidden cover: hides ballot content when user switches tabs */}
+      {tabHidden && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 150, pointerEvents: 'none',
+            background: 'var(--background)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'column', gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 40 }}>🔒</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--foreground)' }}>
+            Votación privada
+          </span>
+          <span style={{ fontSize: 13, color: 'var(--muted-foreground)' }}>
+            Vuelve a esta pestaña para continuar
+          </span>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-5 pt-1 text-center sm:mb-7 space-y-1.5">

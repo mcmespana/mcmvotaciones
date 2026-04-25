@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { VotingTypesManager, type VotingType } from "@/components/admin/VotingTypesManager";
 
 interface RoundListItem {
   id: string;
@@ -20,6 +21,7 @@ interface RoundListItem {
   current_round_number: number;
   votes_current_round: number;
   created_at: string;
+  voting_type_name: string | null;
 }
 
 function generateSlug(title: string, id: string): string {
@@ -39,6 +41,10 @@ interface NewRoundForm {
   team: "ECE" | "ECL";
   max_votantes: number;
   census_mode: "maximum" | "exact";
+  voting_type_id: string | null;
+  voting_type_name: string;
+  max_selected_candidates: number;
+  max_votes_per_round: number;
 }
 
 function getStatusChip(r: RoundListItem) {
@@ -87,6 +93,9 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
                 className={`avd-chip ${round.team === "ECE" ? "avd-chip-brand" : ""}`}
                 style={round.team === "ECL" ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : {}}
               >{round.team}</span>
+              {round.voting_type_name && round.voting_type_name !== round.team && (
+                <span className="avd-chip avd-chip-muted" style={{fontSize:11}}>{round.voting_type_name}</span>
+              )}
               <span className="avd-chip avd-chip-muted">{round.year}</span>
               <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5}}>
                 {chip.pulse && <span className="avd-pulse-dot" />}
@@ -185,14 +194,33 @@ export function AdminVotingList() {
   const [creatingRound, setCreatingRound] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RoundListItem | null>(null);
-  const [form, setForm] = useState<NewRoundForm>({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum" });
+  const [typesManagerOpen, setTypesManagerOpen] = useState(false);
+  const [votingTypes, setVotingTypes] = useState<VotingType[]>([]);
+  const [form, setForm] = useState<NewRoundForm>({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum", voting_type_id: null, voting_type_name: "", max_selected_candidates: 1, max_votes_per_round: 0 });
+
+  const loadVotingTypes = useCallback(async () => {
+    const { data } = await supabase.from("voting_types").select("*").order("is_system", { ascending: false }).order("name");
+    setVotingTypes((data || []) as VotingType[]);
+  }, []);
+
+  useEffect(() => { loadVotingTypes(); }, [loadVotingTypes]);
+
+  const applyVotingType = (typeId: string | null) => {
+    if (!typeId) {
+      setForm(p => ({ ...p, voting_type_id: null, voting_type_name: "" }));
+      return;
+    }
+    const t = votingTypes.find(vt => vt.id === typeId);
+    if (!t) return;
+    setForm(p => ({ ...p, voting_type_id: t.id, voting_type_name: t.name, max_selected_candidates: t.max_selected_candidates, max_votes_per_round: t.max_votes_per_round, census_mode: t.census_mode }));
+  };
 
   const loadRounds = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from("rounds")
-        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at")
+        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at,voting_type_name")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setRounds((data || []) as RoundListItem[]);
@@ -234,6 +262,10 @@ export function AdminVotingList() {
         title, description: form.description.trim() || null,
         year: form.year, team: form.team, max_votantes: form.max_votantes,
         access_code: generatedAccessCode, census_mode: form.census_mode, is_active: false,
+        voting_type_id: form.voting_type_id || null,
+        voting_type_name: form.voting_type_name || null,
+        max_selected_candidates: form.max_selected_candidates,
+        max_votes_per_round: form.max_votes_per_round,
       }]).select("id").single();
       if (error) throw error;
       if (inserted?.id) {
@@ -241,7 +273,7 @@ export function AdminVotingList() {
       }
       toast({ title: "Votación creada", description: `Código de acceso: ${generatedAccessCode}` });
       setCreateOpen(false);
-      setForm({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum" });
+      setForm({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum", voting_type_id: null, voting_type_name: "", max_selected_candidates: 1, max_votes_per_round: 0 });
       await loadRounds();
     } catch {
       toast({ title: "Error", description: "No se pudo crear la votación.", variant: "destructive" });
@@ -303,6 +335,10 @@ export function AdminVotingList() {
             Tarjetas
           </button>
         </div>
+        <button className="avd-btn avd-btn-sm" onClick={() => setTypesManagerOpen(true)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Tipos de votación
+        </button>
         <button className="avd-btn avd-btn-primary avd-btn-sm" onClick={() => setCreateOpen(true)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           Crear votación
@@ -397,19 +433,61 @@ export function AdminVotingList() {
                     <input className="avd-input" type="number" min={1} value={form.max_votantes} onChange={e => setForm(p => ({...p, max_votantes: parseInt(e.target.value) || 1}))} />
                   </div>
                 </div>
+                {/* Voting type selector */}
+                <div className="avd-form-field">
+                  <label className="avd-label">Tipo de votación</label>
+                  <select
+                    className="avd-select"
+                    value={form.voting_type_id ?? "custom"}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === "custom") {
+                        setForm(p => ({ ...p, voting_type_id: null, voting_type_name: "" }));
+                      } else {
+                        applyVotingType(val);
+                      }
+                    }}
+                  >
+                    <option value="custom">Personalizado</option>
+                    {votingTypes.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}{t.is_system ? "" : " (personalizado)"}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Config fields — shown always, pre-filled from type */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                  <div className="avd-form-field">
+                    <label className="avd-label">Total a seleccionar</label>
+                    <input className="avd-input" type="number" min={1} max={100}
+                      value={form.max_selected_candidates}
+                      onChange={e => setForm(p => ({ ...p, max_selected_candidates: Math.max(1, parseInt(e.target.value) || 1), voting_type_id: null, voting_type_name: "" }))}
+                    />
+                  </div>
+                  <div className="avd-form-field">
+                    <label className="avd-label">Votos / ronda</label>
+                    <input className="avd-input" type="number" min={0} max={100}
+                      value={form.max_votes_per_round}
+                      onChange={e => setForm(p => ({ ...p, max_votes_per_round: Math.max(0, parseInt(e.target.value) || 0), voting_type_id: null, voting_type_name: "" }))}
+                    />
+                    <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 2 }}>0 = auto (máx. 3)</p>
+                  </div>
+                  <div className="avd-form-field">
+                    <label className="avd-label">Modo censo</label>
+                    <select className="avd-select" value={form.census_mode}
+                      onChange={e => setForm(p => ({ ...p, census_mode: e.target.value as "maximum" | "exact", voting_type_id: null, voting_type_name: "" }))}>
+                      <option value="maximum">Máximo</option>
+                      <option value="exact">Exacto</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="avd-form-grid avd-form-grid-2">
                   <div className="avd-form-field">
                     <label className="avd-label">Equipo</label>
                     <select className="avd-select" value={form.team} onChange={e => setForm(p => ({...p, team: e.target.value as "ECE" | "ECL"}))}>
                       <option value="ECE">ECE</option>
                       <option value="ECL">ECL</option>
-                    </select>
-                  </div>
-                  <div className="avd-form-field">
-                    <label className="avd-label">Modo de censo</label>
-                    <select className="avd-select" value={form.census_mode} onChange={e => setForm(p => ({...p, census_mode: e.target.value as "maximum" | "exact"}))}>
-                      <option value="maximum">Máximo</option>
-                      <option value="exact">Exacto</option>
                     </select>
                   </div>
                 </div>
@@ -430,6 +508,13 @@ export function AdminVotingList() {
         round={deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => { if (deleteTarget) handleDeleteRound(deleteTarget.id, deleteTarget.title); }}
+      />
+
+      <VotingTypesManager
+        open={typesManagerOpen}
+        onClose={() => setTypesManagerOpen(false)}
+        isSuperAdmin={isSuperAdmin}
+        onTypesChanged={loadVotingTypes}
       />
     </div>
   );

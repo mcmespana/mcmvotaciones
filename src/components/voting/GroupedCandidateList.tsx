@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
+import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { Search, X, MapPin, Users, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { VotingTutorial } from "@/components/voting/VotingTutorial";
@@ -107,6 +108,8 @@ export function GroupedCandidateList({
   tutorialRoundId,
 }: GroupedCandidateListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
+  const [detailZoomed, setDetailZoomed] = useState(false);
   const [expandedLocationKeys, setExpandedLocationKeys] = useState<string[]>([]);
   const [isMobileIndexOpen, setIsMobileIndexOpen] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -173,6 +176,7 @@ export function GroupedCandidateList({
 
   return (
     <div>
+      <CandidateDetailModal candidate={detailCandidate} onClose={() => { setDetailCandidate(null); setDetailZoomed(false); }} initialZoom={detailZoomed} />
       {/* Sticky header */}
       <div className="pub-sticky" ref={mobileIndexRef}>
         <div className="pub-sticky-card" style={{ maxWidth: "100%" }}>
@@ -275,6 +279,8 @@ export function GroupedCandidateList({
                 candidate={c}
                 selected={selectedCandidates.includes(c.id)}
                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
+                onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
+                onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
               />
             ))}
           </div>
@@ -374,6 +380,8 @@ export function GroupedCandidateList({
                                 candidate={c}
                                 selected={selectedCandidates.includes(c.id)}
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
+                                onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
+                                onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                               />
                               ))}
                             </div>
@@ -402,6 +410,8 @@ export function GroupedCandidateList({
                                 candidate={c}
                                 selected={selectedCandidates.includes(c.id)}
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
+                                onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
+                                onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                               />
                               ))}
                             </div>

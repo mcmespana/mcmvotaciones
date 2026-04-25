@@ -1,4 +1,5 @@
-import { Check, MapPin } from "lucide-react";
+import { Check, Info, MapPin } from "lucide-react";
+import { useRef } from "react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
@@ -18,13 +19,59 @@ interface CandidateListCardProps {
   candidate: CandidateBase;
   selected?: boolean;
   onClick?: () => void;
+  onDetailView?: (candidate: CandidateBase) => void;
+  onImageLongPress?: (candidate: CandidateBase) => void;
 }
+
+const LONG_PRESS_MS = 500;
 
 export function CandidateListCard({
   candidate,
   selected = false,
   onClick,
+  onDetailView,
+  onImageLongPress,
 }: CandidateListCardProps) {
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imgPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
+
+  const startPress = () => {
+    if (!onDetailView) return;
+    didLongPress.current = false;
+    pressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      onDetailView(candidate);
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    if (didLongPress.current) return;
+    onClick?.();
+  };
+
+  const startImgPress = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!onImageLongPress) return;
+    e.stopPropagation(); // prevent card's long-press timer
+    cancelPress();       // cancel card timer if somehow started
+    imgPressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      onImageLongPress(candidate);
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelImgPress = (e: React.TouchEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    if (imgPressTimer.current) { clearTimeout(imgPressTimer.current); imgPressTimer.current = null; }
+  };
+
   return (
     <div
       className={cn(
@@ -32,10 +79,16 @@ export function CandidateListCard({
         onClick && "group cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500/35",
         selected && "!border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/25"
       )}
-      onClick={onClick}
+      onClick={handleClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       style={{ WebkitTapHighlightColor: "transparent" }}
+      onTouchStart={startPress}
+      onTouchEnd={cancelPress}
+      onTouchMove={cancelPress}
+      onMouseDown={startPress}
+      onMouseUp={cancelPress}
+      onMouseLeave={cancelPress}
       onKeyDown={(event) => {
         if (!onClick) return;
         if (event.key === "Enter" || event.key === " ") {
@@ -57,13 +110,24 @@ export function CandidateListCard({
         </span>
       )}
 
-      <CandidateAvatar
-        name={candidate.name}
-        surname={candidate.surname}
-        imageUrl={candidate.image_url}
-        size="md"
-        className="h-14 w-14 border border-outline-variant text-base"
-      />
+      <div
+        style={{ flexShrink: 0, lineHeight: 0 }}
+        onTouchStart={onImageLongPress ? startImgPress : undefined}
+        onTouchEnd={onImageLongPress ? cancelImgPress : undefined}
+        onTouchMove={onImageLongPress ? cancelImgPress : undefined}
+        onMouseDown={onImageLongPress ? startImgPress : undefined}
+        onMouseUp={onImageLongPress ? cancelImgPress : undefined}
+        onMouseLeave={onImageLongPress ? cancelImgPress : undefined}
+      >
+        <CandidateAvatar
+          name={candidate.name}
+          surname={candidate.surname}
+          imageUrl={candidate.image_url}
+          candidateId={candidate.id}
+          size="md"
+          className="h-14 w-14 border border-outline-variant text-base"
+        />
+      </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: "var(--avd-fg)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
@@ -100,6 +164,26 @@ export function CandidateListCard({
           </p>
         )}
       </div>
+
+      {/* Info button — opens detail modal */}
+      {onDetailView && (
+        <button
+          type="button"
+          aria-label="Ver detalles"
+          onClick={(e) => { e.stopPropagation(); onDetailView(candidate); }}
+          style={{
+            position: "absolute", bottom: 8, right: 8,
+            background: "none", border: "none", cursor: "pointer",
+            color: "var(--avd-fg-faint)", padding: 4, borderRadius: 6,
+            display: "flex", alignItems: "center",
+            opacity: 0.6,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+        >
+          <Info size={14} />
+        </button>
+      )}
     </div>
   );
 }

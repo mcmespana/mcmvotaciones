@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
 import {
   ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download,
-  FileUp, Globe, Grid, List, Moon, Pause, Pencil,
+  Eye, FileUp, Globe, Grid, List, Moon, Pause, Pencil,
   Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
   Sun, Trash2, Undo2, Upload, UserPlus, Users, XCircle,
 } from "lucide-react";
@@ -27,6 +27,7 @@ interface RoundDetail {
   team: "ECE" | "ECL";
   max_votantes: number;
   max_selected_candidates: number;
+  max_votes_per_round: number;
   access_code: string | null;
   census_mode: "maximum" | "exact";
   is_active: boolean;
@@ -40,6 +41,7 @@ interface RoundDetail {
   public_candidates_enabled: boolean;
   current_round_number: number;
   votes_current_round: number;
+  voting_type_name: string | null;
 }
 
 interface Candidate {
@@ -109,28 +111,20 @@ function csvEscape(value: string): string {
 const WORKFLOW_STEPS = [
   { id: "start", label: "Iniciar ronda", sub: "Empieza el voto" },
   { id: "close-vote", label: "Finalizar votación", sub: "Cierra y procesa" },
-  { id: "results", label: "Ver resultados ronda", sub: "Revisión de resultados" },
-  { id: "ballots", label: "Ver papeletas", sub: "Auditoría de votos" },
+  { id: "results", label: "Ver resultados ronda", sub: "Se proyectan los resultados" },
+  { id: "ballots", label: "Ver papeletas", sub: "Se proyectan las papeletas" },
   { id: "finish", label: "Finalizar ronda", sub: "Siguiente ronda o cierre" },
 ];
 
-function getStage(
-  round: RoundDetail | null,
-  quotaReached = false,
-  resultsReviewed = false,
-  ballotsReviewed = false,
-): number {
+function getStage(round: RoundDetail | null): number {
   if (!round) return 0;
+  if (round.is_closed) return WORKFLOW_STEPS.length;
   if (!round.round_finalized) {
     if (round.is_voting_open) return 1;
     return 0;
   }
-  if (!resultsReviewed) return 2;
-  if (!ballotsReviewed) return 3;
-  if (quotaReached) {
-    if (round.show_ballot_summary_projection) return WORKFLOW_STEPS.length;
-    return 4;
-  }
+  if (!round.show_results_to_voters) return 2;
+  if (!round.show_ballot_summary_projection) return 3;
   return 4;
 }
 
@@ -163,7 +157,9 @@ export function AdminVotingDetail() {
   const [isEditCandidateOpen, setIsEditCandidateOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDatasetOpen, setIsDatasetOpen] = useState(false);
-  const [roundReviewState, setRoundReviewState] = useState<Record<number, { results: boolean; ballots: boolean }>>({});
+  const [salaConflict, setSalaConflict] = useState<{ id: string; title: string } | null>(null);
+  const [configMaxSelected, setConfigMaxSelected] = useState(0);
+  const [configMaxVotesPerRound, setConfigMaxVotesPerRound] = useState(0);
   const [loadingDataset, setLoadingDataset] = useState(false);
   const [importingFile, setImportingFile] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
@@ -212,7 +208,7 @@ export function AdminVotingDetail() {
     try {
       setLoading(true);
       const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
-        supabase.from("rounds").select("id,slug,title,description,year,team,max_votantes,max_selected_candidates,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round").eq("id", roundId).single(),
+        supabase.from("rounds").select("id,slug,title,description,year,team,max_votantes,max_selected_candidates,max_votes_per_round,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round,voting_type_name").eq("id", roundId).single(),
         supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected").eq("round_id", roundId).order("order_index", { ascending: true }),
         supabase.from("seats").select("id,estado,joined_at,last_seen_at,browser_instance_id").eq("round_id", roundId).order("joined_at", { ascending: false }).limit(60),
         supabase.rpc("get_round_seats_status", { p_round_id: roundId }),
@@ -229,6 +225,8 @@ export function AdminVotingDetail() {
       const normalizedAccessCode = (normalizedRound.access_code || "").toUpperCase();
       setConfigAccessCode(ACCESS_CODE_REGEX.test(normalizedAccessCode) ? normalizedAccessCode : generateAccessCode());
       setConfigCensusMode((normalizedRound.census_mode || "maximum") as "maximum" | "exact");
+      setConfigMaxSelected(normalizedRound.max_selected_candidates || 0);
+      setConfigMaxVotesPerRound(normalizedRound.max_votes_per_round || 0);
       if (!seatStatusError && seatStatusData) {
         const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number; max_votantes?: number };
         setSeatStatus({ occupied_seats: parsed.occupied_seats || 0, expired_seats: parsed.expired_seats || 0, available_seats: parsed.available_seats || 0, max_votantes: parsed.max_votantes || normalizedRound.max_votantes });
@@ -278,60 +276,34 @@ export function AdminVotingDetail() {
   const isProjectingSomething = Boolean(round && round.show_results_to_voters);
   const canFinalizeRound = Boolean(round && round.is_active && (round.is_voting_open || round.join_locked) && currentRoundVotes > 0 && !round.round_finalized && !round.is_closed);
   const canStartNextRound = Boolean(round && !selectionQuotaReached && round.is_active && round.round_finalized && !round.is_closed);
-  const currentRoundReview = useMemo(() => {
-    const roundNumber = round?.current_round_number;
-    if (!roundNumber) return { results: false, ballots: false };
-    return roundReviewState[roundNumber] || { results: false, ballots: false };
-  }, [round?.current_round_number, roundReviewState]);
-
-  const markRoundReview = useCallback((key: "results" | "ballots") => {
-    if (!round?.round_finalized) return;
-    const roundNumber = round.current_round_number;
-    setRoundReviewState((prev) => {
-      const current = prev[roundNumber] || { results: false, ballots: false };
-      if (current[key]) return prev;
-      return {
-        ...prev,
-        [roundNumber]: {
-          ...current,
-          [key]: true,
-        },
-      };
-    });
-  }, [round]);
-
   const openAnalyticsDialog = useCallback(() => {
     setIsAnalyticsOpen(true);
-    markRoundReview("results");
-  }, [markRoundReview]);
+  }, []);
 
   const openBallotsDialog = useCallback(() => {
     setIsBallotsOpen(true);
-    markRoundReview("ballots");
-  }, [markRoundReview]);
+  }, []);
 
   const workflowActionLabel = !round
     ? "Acción"
+    : round.is_closed ? "Votación completada"
     : canOpenRoom || canStartRound ? "Iniciar ronda"
-    : !round.round_finalized
-      ? "Finalizar votación"
-    : !currentRoundReview.results ? "Ver resultados ronda"
-    : !currentRoundReview.ballots ? "Ver papeletas"
-    : selectionQuotaReached && !round.show_ballot_summary_projection ? "Confirmar selección"
-    : selectionQuotaReached && round.show_ballot_summary_projection ? "Votación completada"
+    : !round.round_finalized ? "Finalizar votación"
+    : !round.show_results_to_voters ? "Ver resultados ronda"
+    : !round.show_ballot_summary_projection ? "Ver papeletas"
+    : selectionQuotaReached ? "Confirmar selección"
     : canStartNextRound ? "Finalizar ronda"
     : "Votación completada";
 
   const workflowActionDisabled = Boolean(
     isWorkflowRunning ||
     !round ||
-    (round.is_closed && !round.round_finalized) ||
+    round.is_closed ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-    (round.round_finalized && selectionQuotaReached && round.show_ballot_summary_projection) ||
-    (round.round_finalized && !selectionQuotaReached && currentRoundReview.results && currentRoundReview.ballots && !canStartNextRound)
+    (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound)
   );
 
-  const stage = getStage(round, selectionQuotaReached, currentRoundReview.results, currentRoundReview.ballots);
+  const stage = getStage(round);
 
   /* ── Status chip ── */
   const statusChip = !round ? { cls: "", txt: "Cargando" }
@@ -358,10 +330,24 @@ export function AdminVotingDetail() {
 
   /* ── Actions ── */
 
-  const callOpenRoom = async (): Promise<boolean> => {
-    if (!roundId || !round) return;
+  const callOpenRoom = async (skipConflictCheck = false): Promise<boolean> => {
+    if (!roundId || !round) return false;
     if (!hasCandidates) { toast({ title: "No se puede abrir sala", description: "Añade al menos un candidato antes de abrir la sala.", variant: "destructive" }); return false; }
     if (!canOpenRoom) { toast({ title: roomIsOpen ? "Sala ya abierta" : "No se puede abrir sala", description: roomIsOpen ? "La sala está abierta y ya puede entrar gente." : "Esta votación no está en estado válido." }); return false; }
+
+    if (!skipConflictCheck) {
+      const { data: activeRooms } = await supabase
+        .from("rounds")
+        .select("id, title")
+        .eq("is_active", true)
+        .neq("id", roundId)
+        .limit(1);
+      if (activeRooms && activeRooms.length > 0) {
+        setSalaConflict({ id: activeRooms[0].id, title: activeRooms[0].title });
+        return false;
+      }
+    }
+
     const { data, error } = await supabase.rpc("open_round_room", { p_round_id: roundId });
     if (error) { toast({ title: "Error", description: "No se pudo abrir la sala", variant: "destructive" }); return false; }
     const response = data as { success?: boolean; message?: string };
@@ -369,6 +355,16 @@ export function AdminVotingDetail() {
     toast({ title: "Sala abierta", description: response.message || "La sala está abierta" });
     await loadRound();
     return true;
+  };
+
+  const resolveRoomConflict = async () => {
+    if (!salaConflict || !roundId) return;
+    // Pause the conflicting room
+    await supabase.from("rounds").update({ is_active: false, is_voting_open: false, updated_at: new Date().toISOString() }).eq("id", salaConflict.id);
+    setSalaConflict(null);
+    // Open this room, skipping conflict check since we just resolved it
+    const opened = await callOpenRoom(true);
+    if (opened) await callStartRound(true);
   };
 
   const callStartRound = async (skipStateValidation = false): Promise<boolean> => {
@@ -387,8 +383,8 @@ export function AdminVotingDetail() {
   const callCloseRoom = async () => {
     if (!roundId || !canCloseRoom) return;
     try {
+      // Keep seats alive — devices retain their ballot identity across room open/close cycles
       await supabase.from("rounds").update({ is_active: false, is_voting_open: false, join_locked: false, updated_at: new Date().toISOString() }).eq("id", roundId);
-      await supabase.from("seats").delete().eq("round_id", roundId);
       toast({ title: "Sala cerrada", description: "La sala se cerró correctamente." });
       await loadRound();
     } catch { toast({ title: "Error", description: "No se pudo cerrar la sala", variant: "destructive" }); }
@@ -429,7 +425,7 @@ export function AdminVotingDetail() {
     setIsWorkflowRunning(true);
     try {
       if (canOpenRoom) {
-        const opened = await callOpenRoom();
+        const opened = await callOpenRoom(false);
         if (!opened) return;
         await callStartRound(true);
         return;
@@ -439,11 +435,23 @@ export function AdminVotingDetail() {
         if (!canFinalizeRound) return;
         await finalizeRound(); return;
       }
-      if (!currentRoundReview.results) { openAnalyticsDialog(); return; }
-      if (!currentRoundReview.ballots) { openBallotsDialog(); return; }
-      // Post-finalization routing
-      if (selectionQuotaReached && !round.show_ballot_summary_projection) { await confirmSelection(); return; }
-      if (!selectionQuotaReached && canStartNextRound) { await startNextRound(); return; }
+      // Step: proyectar resultados
+      if (!round.show_results_to_voters) {
+        const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+        if (error) { toast({ title: "Error", description: "No se pudo activar proyección de resultados", variant: "destructive" }); return; }
+        await loadRound();
+        return;
+      }
+      // Step: proyectar papeletas
+      if (!round.show_ballot_summary_projection) {
+        const { error } = await supabase.from("rounds").update({ show_ballot_summary_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+        if (error) { toast({ title: "Error", description: "No se pudo activar proyección de papeletas", variant: "destructive" }); return; }
+        await loadRound();
+        return;
+      }
+      // Post-proyección routing
+      if (selectionQuotaReached) { await confirmSelection(); return; }
+      if (canStartNextRound) { await startNextRound(); return; }
     } finally {
       setIsWorkflowRunning(false);
     }
@@ -496,10 +504,6 @@ export function AdminVotingDetail() {
     if (processError) { toast({ title: "Error", description: "No se pudo finalizar la ronda", variant: "destructive" }); return; }
     const { error: updateError } = await supabase.from("rounds").update({ round_finalized: true, show_results_to_voters: false, show_ballot_summary_projection: false, is_voting_open: false, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (updateError) { toast({ title: "Error", description: "No se pudo cerrar la ronda", variant: "destructive" }); return; }
-    setRoundReviewState((prev) => ({
-      ...prev,
-      [round.current_round_number]: { results: false, ballots: false },
-    }));
     toast({ title: "Ronda finalizada", description: "Ya puedes publicar resultados o iniciar la siguiente ronda" });
     await loadRound();
   };
@@ -521,7 +525,7 @@ export function AdminVotingDetail() {
       const normalizedCode = configAccessCode.trim().toUpperCase();
       const nextAccessCode = ACCESS_CODE_REGEX.test(normalizedCode) ? normalizedCode : generateAccessCode();
       if (nextAccessCode !== normalizedCode) setConfigAccessCode(nextAccessCode);
-      const { error } = await supabase.from("rounds").update({ access_code: nextAccessCode, census_mode: configCensusMode, updated_at: new Date().toISOString() }).eq("id", roundId);
+      const { error } = await supabase.from("rounds").update({ access_code: nextAccessCode, census_mode: configCensusMode, max_selected_candidates: configMaxSelected, max_votes_per_round: configMaxVotesPerRound, updated_at: new Date().toISOString() }).eq("id", roundId);
       if (error) throw error;
       toast({ title: "Configuración guardada" });
       await loadRound();
@@ -530,7 +534,7 @@ export function AdminVotingDetail() {
   };
 
   const exportBallotsCsv = async () => {
-    if (!round || !roundId || !round.is_closed) return;
+    if (!round || !roundId) return;
     const { data, error } = await supabase.from("votes").select("round_number,vote_hash,created_at,is_invalidated,invalidation_reason,candidate:candidates(name,surname)").eq("round_id", roundId).order("created_at", { ascending: true });
     if (error) { toast({ title: "Error", description: "No se pudo exportar el CSV", variant: "destructive" }); return; }
     const rows = (data || []) as unknown as VoteExportRow[];
@@ -545,13 +549,14 @@ export function AdminVotingDetail() {
     const csvLines = [header.map(csvEscape).join(",")];
     for (const [, ballotRows] of grouped) {
       const sorted = ballotRows.sort((a, b) => a.created_at.localeCompare(b.created_at));
-      const votes = sorted.map((item) => { const candidate = normalizeVoteCandidate(item.candidate); return candidate ? `${candidate.name} ${candidate.surname}`.trim() : "-"; });
+      const votes = sorted.map((item) => { const candidate = normalizeVoteCandidate(item.candidate); return candidate ? formatCandidateName(candidate) : "-"; });
       while (votes.length < 3) votes.push("-");
       const hasInvalidated = sorted.some((item) => item.is_invalidated);
       const first = sorted[0];
-      csvLines.push([round.title, String(first.round_number), shortBallotCode(first.vote_hash), votes[0] || "-", votes[1] || "-", votes[2] || "-", votes.filter((v) => v === "-").length > 0 ? "true" : "false", first.created_at, hasInvalidated ? "invalidada" : "valida"].map((f) => csvEscape(f)).join(","));
+      const enBlanco = votes.every((v) => v === "-");
+      csvLines.push([round.title, String(first.round_number), shortBallotCode(first.vote_hash), votes[0] || "-", votes[1] || "-", votes[2] || "-", enBlanco ? "true" : "false", first.created_at, hasInvalidated ? "invalidada" : "valida"].map((f) => csvEscape(f)).join(","));
     }
-    const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["﻿" + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -914,7 +919,7 @@ export function AdminVotingDetail() {
                   {round.census_mode === "exact" ? "Arranca al llenar cupo" : "Inicio manual"}
                 </div>
               </div>
-              <div className="avd-kpi" data-accent={isProjectingSomething ? "violet" : undefined}>
+              <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
                 <div className="avd-kpi-label">Proyección</div>
                 <div className="avd-kpi-value" style={{ fontSize: 16 }}>{projLabel}</div>
                 <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
@@ -1222,9 +1227,12 @@ export function AdminVotingDetail() {
                 <button className="avd-btn avd-btn-block" onClick={openBallotsDialog}>
                   <FileUp size={14} /> Revisar papeletas
                 </button>
-                <button className="avd-btn avd-btn-block" onClick={exportBallotsCsv} disabled={!round.is_closed}>
+                <button className="avd-btn avd-btn-block" onClick={exportBallotsCsv}>
                   <Download size={14} /> Exportar CSV ronda {round.current_round_number}
                 </button>
+                <a className="avd-btn avd-btn-block" href="/proyeccion" target="_blank" rel="noreferrer">
+                  <Eye size={14} /> Ver proyección
+                </a>
               </div>
             </div>
 
@@ -1233,6 +1241,29 @@ export function AdminVotingDetail() {
       </div>
 
       {/* ═══ Dialogs ═══ */}
+
+      {/* Room conflict dialog */}
+      {salaConflict && (
+        <div className="avd-dialog-overlay" onClick={() => setSalaConflict(null)}>
+          <div className="avd-dialog" style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>Sala activa detectada</h2>
+              <p>Ya existe otra sala activa: <strong>{salaConflict.title}</strong>.</p>
+            </div>
+            <div className="avd-dialog-body">
+              <p style={{ fontSize: 13, color: "var(--avd-fg-muted)", margin: 0 }}>
+                No pueden haber dos salas activas simultáneamente. ¿Quieres pausar «{salaConflict.title}» y activar esta sala?
+              </p>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setSalaConflict(null)}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={resolveRoomConflict}>
+                Pausar sala activa y continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Settings */}
       {isSettingsOpen && (
@@ -1248,6 +1279,13 @@ export function AdminVotingDetail() {
               </button>
             </div>
             <div className="avd-dialog-body">
+              {round.voting_type_name && (
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", fontSize: 13 }}>
+                  <span style={{ color: "var(--avd-fg-muted)" }}>Tipo base:</span>
+                  <span className="avd-chip avd-chip-brand" style={{ height: 20, fontSize: 11 }}>{round.voting_type_name}</span>
+                  <span style={{ fontSize: 12, color: "var(--avd-fg-faint)" }}>Los valores se pueden ajustar sin cambiar el tipo.</span>
+                </div>
+              )}
               <div className="avd-form-grid avd-form-grid-2">
                 <div className="avd-form-field">
                   <label className="avd-label">Código de acceso</label>
@@ -1270,6 +1308,33 @@ export function AdminVotingDetail() {
                     <option value="maximum">Máximo (inicio manual)</option>
                     <option value="exact">Exacto (conectados = cupo)</option>
                   </select>
+                </div>
+                <div className="avd-form-field">
+                  <label className="avd-label">Total a seleccionar</label>
+                  <input
+                    className="avd-input"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={configMaxSelected}
+                    onChange={(e) => setConfigMaxSelected(Math.max(1, parseInt(e.target.value) || 1))}
+                    disabled={isVotingStarted}
+                  />
+                  {isVotingStarted && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>No editable con votación en curso.</p>}
+                </div>
+                <div className="avd-form-field">
+                  <label className="avd-label">Máx. votos por ronda</label>
+                  <input
+                    className="avd-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={configMaxVotesPerRound}
+                    onChange={(e) => setConfigMaxVotesPerRound(Math.max(0, parseInt(e.target.value) || 0))}
+                  />
+                  <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>
+                    0 = sin límite fijo (máx. 3 por lógica automática).
+                  </p>
                 </div>
               </div>
             </div>
@@ -1321,7 +1386,7 @@ export function AdminVotingDetail() {
                 <p>Ronda {round.current_round_number} · papeletas emitidas anónimamente.</p>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                <button className="avd-btn avd-btn-sm" onClick={exportBallotsCsv} disabled={!round.is_closed}>
+                <button className="avd-btn avd-btn-sm" onClick={exportBallotsCsv}>
                   <Download size={13} /> Exportar CSV
                 </button>
                 <button className="avd-btn avd-btn-ghost avd-btn-icon" onClick={() => setIsBallotsOpen(false)}>

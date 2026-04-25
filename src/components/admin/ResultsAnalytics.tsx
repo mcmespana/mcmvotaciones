@@ -59,9 +59,9 @@ const normalizeCandidate = (candidate: RoundResult["candidate"]) =>
   Array.isArray(candidate) ? candidate[0] : candidate;
 
 const CHART_COLORS = [
-  "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6",
-  "#EC4899", "#06B6D4", "#F97316", "#14B8A6", "#6366F1",
-  "#D946EF", "#84CC16",
+  "#2563EB", "#DC2626", "#D97706", "#16A34A",
+  "#0EA5E9", "#F97316", "#EC4899", "#06B6D4",
+  "#84CC16", "#F43F5E", "#14B8A6", "#64748B",
 ];
 
 export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {

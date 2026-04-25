@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
+import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { useTheme } from "next-themes";
 
 /* ── Interfaces ── */
@@ -105,6 +106,7 @@ export function PublicCandidates() {
   const [search, setSearch] = useState("");
   const [indexOpen, setIndexOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
   const initializedRef = useRef(false);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
 
@@ -205,6 +207,7 @@ export function PublicCandidates() {
   /* ── Render ── */
   return (
     <div className="pub-page">
+      <CandidateDetailModal candidate={detailCandidate} onClose={() => setDetailCandidate(null)} />
 
       {/* Title block (above sticky — not sticky itself) */}
       <div style={{ maxWidth: 780, margin: "0 auto", padding: "20px 16px 6px", textAlign: "center" }}>
@@ -321,7 +324,12 @@ export function PublicCandidates() {
                 <div className="pub-group-body">
                   <div className="pub-cand-grid">
                     {group.candidates.map((c) => (
-                      <CandidateListCard key={c.id} candidate={c} />
+                      <CandidateListCard
+                        key={c.id}
+                        candidate={c}
+                        onClick={() => setDetailCandidate(c)}
+                        onDetailView={setDetailCandidate}
+                      />
                     ))}
                   </div>
                 </div>

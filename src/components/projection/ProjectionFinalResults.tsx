@@ -13,6 +13,7 @@ interface Candidate {
   image_url: string | null;
   is_eliminated: boolean;
   is_selected: boolean;
+  selected_in_round: number | null;
 }
 
 interface ProjectionFinalResultsProps {
@@ -166,6 +167,7 @@ export function ProjectionFinalResults({
 
                   {/* Tags */}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                    {candidate.selected_in_round != null && tagChip(`Ronda ${candidate.selected_in_round}`)}
                     {candidate.location && tagChip(`📍 ${candidate.location}`)}
                     {candidate.age && tagChip(`${candidate.age} años`)}
                     {candidate.group_name && tagChip(candidate.group_name)}

@@ -14,7 +14,8 @@
       "Bash(curl -s http://localhost:5174)",
       "Bash(git mv *)",
       "Bash(git rm *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

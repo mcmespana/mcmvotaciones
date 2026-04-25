@@ -14,6 +14,7 @@ interface Candidate {
   image_url: string | null;
   is_eliminated: boolean;
   is_selected: boolean;
+  selected_in_round: number | null;
 }
 
 interface RoundResult {
@@ -96,7 +97,12 @@ export function ProjectionResults({
       <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
         {selectedCandidates.map((c) => (
           <div key={c.id} style={{ padding: "16px 24px", borderBottom: "1px solid var(--avd-border-soft)" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok-fg)", lineHeight: 1.2 }}>{formatCandidateName(c)}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok-fg)", lineHeight: 1.2 }}>{formatCandidateName(c)}</div>
+              {c.selected_in_round != null && (
+                <span style={{ background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", border: "1px solid var(--avd-brand-border)", borderRadius: 9999, padding: "2px 10px", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>R{c.selected_in_round}</span>
+              )}
+            </div>
             {c.location && <div style={{ fontSize: 14, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 4 }}>{c.location}</div>}
           </div>
         ))}
