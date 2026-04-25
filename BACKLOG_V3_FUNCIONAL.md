@@ -49,6 +49,23 @@ Consolidar mejoras funcionales del sistema de votaciones sin perder compatibilid
   - Nunca hay dos salas activas simultáneamente.
   - Proyección cambia automáticamente a la sala activa.
 
+### 3.1) Workflow Dirigido y Secuencial de Administración (Nueva lógica de control)
+- Objetivo:
+  Garantizar un orden operativo estricto para evitar errores humanos en el cierre de rondas y publicación de resultados.
+- Requisitos funcionales:
+  - Botón de Acción Dinámico: El control principal debe mutar según el estado de la votación: Iniciar ronda → Finalizar votación → Cerrar ronda.
+  - Acciones Combinadas: Si la sala está cerrada al intentar Iniciar ronda, el sistema debe realizar el "Abrir sala" e "Iniciar ronda" en un solo paso.
+  - Bloqueo por Revisión Obligatoria: No permitir el paso a "Cerrar ronda" hasta que el administrador haya abierto explícitamente los modales de Resultados de Ronda y Revisión de Papeletas.
+  - Automatización de Fin de Proceso: Al confirmar la selección de la última ronda:
+    - Finalizar formalmente la votación.
+    - Desactivar la visibilidad de la lista pública para los votantes.
+    - Habilitar el control de "Galería Final" para la proyección de ganadores.
+- Regla de Seguridad:
+  Una vez cerrada la votación, queda prohibida la reactivación accidental de la lista pública para mantener la integridad de los resultados finales.
+- Criterios de aceptación:
+  - El administrador no puede saltarse la etapa de auditoría visual (resultados/papeletas) antes de avanzar.
+  - La interfaz de usuario refleja claramente en qué fase del workflow se encuentra la mesa de control.
+
 ## Prioridad Media (P1)
 
 ### 4) Popup ampliado de candidato en /candidatos y votación
@@ -161,12 +178,13 @@ Consolidar mejoras funcionales del sistema de votaciones sin perder compatibilid
 1. Papeleta fija por dispositivo en toda votación.
 2. Tipos de votación editables + límites dinámicos.
 3. Exclusividad de sala activa + confirmación y cambio de proyección.
-4. Popup ampliado de candidato + zoom.
-5. Fallback sin imagen por colores.
-6. Revisión de nombres/apellidos en todas las vistas.
-7. Revisión y rediseño de exportables.
-8. Revisión de resultados y gráficos del admin.
-9. Medidas de mitigación de capturas en páginas sensibles.
+4. Workflow Dirigido y Secuencial de Administración (Nueva lógica de control).
+5. Popup ampliado de candidato + zoom.
+6. Fallback sin imagen por colores.
+7. Revisión de nombres/apellidos en todas las vistas.
+8. Revisión y rediseño de exportables.
+9. Revisión de resultados y gráficos del admin.
+10. Medidas de mitigación de capturas en páginas sensibles.
 
 ## Riesgos y notas
 - Bloqueo absoluto de capturas en web no es técnicamente garantizable.

@@ -107,22 +107,31 @@ function csvEscape(value: string): string {
 }
 
 const WORKFLOW_STEPS = [
-  { id: "open",     label: "Abrir sala",            sub: "Habilita códigos" },
-  { id: "start",    label: "Iniciar ronda",          sub: "Empieza el voto" },
-  { id: "finalize", label: "Finalizar ronda",        sub: "Procesa resultados" },
-  { id: "confirm",  label: "Confirmar selección",    sub: "Revisa candidatos" },
-  { id: "next",     label: "Siguiente ronda",        sub: "o cierre final" },
+  { id: "start", label: "Iniciar ronda", sub: "Empieza el voto" },
+  { id: "close-vote", label: "Finalizar votación", sub: "Cierra y procesa" },
+  { id: "results", label: "Ver resultados ronda", sub: "Revisión de resultados" },
+  { id: "ballots", label: "Ver papeletas", sub: "Auditoría de votos" },
+  { id: "finish", label: "Finalizar ronda", sub: "Siguiente ronda o cierre" },
 ];
 
-function getStage(round: RoundDetail | null, quotaReached = false): number {
+function getStage(
+  round: RoundDetail | null,
+  quotaReached = false,
+  resultsReviewed = false,
+  ballotsReviewed = false,
+): number {
   if (!round) return 0;
-  if (!round.is_active && !round.is_closed) return 0;
-  if (round.is_active && !round.is_voting_open && !round.round_finalized) return 1;
-  if (round.is_voting_open) return 2;
-  // Only land on "confirm" step when quota is reached and not yet confirmed
-  if (round.round_finalized && quotaReached && !round.show_ballot_summary_projection) return 3;
-  if (round.round_finalized) return 4;
-  return 2;
+  if (!round.round_finalized) {
+    if (round.is_voting_open) return 1;
+    return 0;
+  }
+  if (!resultsReviewed) return 2;
+  if (!ballotsReviewed) return 3;
+  if (quotaReached) {
+    if (round.show_ballot_summary_projection) return WORKFLOW_STEPS.length;
+    return 4;
+  }
+  return 4;
 }
 
 /* ── Component ── */
@@ -154,6 +163,7 @@ export function AdminVotingDetail() {
   const [isEditCandidateOpen, setIsEditCandidateOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDatasetOpen, setIsDatasetOpen] = useState(false);
+  const [roundReviewState, setRoundReviewState] = useState<Record<number, { results: boolean; ballots: boolean }>>({});
   const [loadingDataset, setLoadingDataset] = useState(false);
   const [importingFile, setImportingFile] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
@@ -268,16 +278,48 @@ export function AdminVotingDetail() {
   const isProjectingSomething = Boolean(round && round.show_results_to_voters);
   const canFinalizeRound = Boolean(round && round.is_active && (round.is_voting_open || round.join_locked) && currentRoundVotes > 0 && !round.round_finalized && !round.is_closed);
   const canStartNextRound = Boolean(round && !selectionQuotaReached && round.is_active && round.round_finalized && !round.is_closed);
-  const isVotingFinishedAndReviewed = Boolean(round && round.round_finalized && round.show_ballot_summary_projection && (selectionQuotaReached || round.is_closed));
+  const currentRoundReview = useMemo(() => {
+    const roundNumber = round?.current_round_number;
+    if (!roundNumber) return { results: false, ballots: false };
+    return roundReviewState[roundNumber] || { results: false, ballots: false };
+  }, [round?.current_round_number, roundReviewState]);
+
+  const markRoundReview = useCallback((key: "results" | "ballots") => {
+    if (!round?.round_finalized) return;
+    const roundNumber = round.current_round_number;
+    setRoundReviewState((prev) => {
+      const current = prev[roundNumber] || { results: false, ballots: false };
+      if (current[key]) return prev;
+      return {
+        ...prev,
+        [roundNumber]: {
+          ...current,
+          [key]: true,
+        },
+      };
+    });
+  }, [round]);
+
+  const openAnalyticsDialog = useCallback(() => {
+    setIsAnalyticsOpen(true);
+    markRoundReview("results");
+  }, [markRoundReview]);
+
+  const openBallotsDialog = useCallback(() => {
+    setIsBallotsOpen(true);
+    markRoundReview("ballots");
+  }, [markRoundReview]);
 
   const workflowActionLabel = !round
     ? "Acción"
-    : canOpenRoom ? "Abrir sala"
+    : canOpenRoom || canStartRound ? "Iniciar ronda"
     : !round.round_finalized
-      ? canFinalizeRound ? "Finalizar ronda" : canStartRound ? "Iniciar ronda" : "Finalizar ronda"
+      ? "Finalizar votación"
+    : !currentRoundReview.results ? "Ver resultados ronda"
+    : !currentRoundReview.ballots ? "Ver papeletas"
     : selectionQuotaReached && !round.show_ballot_summary_projection ? "Confirmar selección"
     : selectionQuotaReached && round.show_ballot_summary_projection ? "Votación completada"
-    : canStartNextRound ? "Siguiente ronda"
+    : canStartNextRound ? "Finalizar ronda"
     : "Votación completada";
 
   const workflowActionDisabled = Boolean(
@@ -286,10 +328,10 @@ export function AdminVotingDetail() {
     (round.is_closed && !round.round_finalized) ||
     (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
     (round.round_finalized && selectionQuotaReached && round.show_ballot_summary_projection) ||
-    (round.round_finalized && !selectionQuotaReached && !canStartNextRound)
+    (round.round_finalized && !selectionQuotaReached && currentRoundReview.results && currentRoundReview.ballots && !canStartNextRound)
   );
 
-  const stage = getStage(round, selectionQuotaReached);
+  const stage = getStage(round, selectionQuotaReached, currentRoundReview.results, currentRoundReview.ballots);
 
   /* ── Status chip ── */
   const statusChip = !round ? { cls: "", txt: "Cargando" }
@@ -316,28 +358,30 @@ export function AdminVotingDetail() {
 
   /* ── Actions ── */
 
-  const callOpenRoom = async () => {
+  const callOpenRoom = async (): Promise<boolean> => {
     if (!roundId || !round) return;
-    if (!hasCandidates) { toast({ title: "No se puede abrir sala", description: "Añade al menos un candidato antes de abrir la sala.", variant: "destructive" }); return; }
-    if (!canOpenRoom) { toast({ title: roomIsOpen ? "Sala ya abierta" : "No se puede abrir sala", description: roomIsOpen ? "La sala está abierta y ya puede entrar gente." : "Esta votación no está en estado válido." }); return; }
+    if (!hasCandidates) { toast({ title: "No se puede abrir sala", description: "Añade al menos un candidato antes de abrir la sala.", variant: "destructive" }); return false; }
+    if (!canOpenRoom) { toast({ title: roomIsOpen ? "Sala ya abierta" : "No se puede abrir sala", description: roomIsOpen ? "La sala está abierta y ya puede entrar gente." : "Esta votación no está en estado válido." }); return false; }
     const { data, error } = await supabase.rpc("open_round_room", { p_round_id: roundId });
-    if (error) { toast({ title: "Error", description: "No se pudo abrir la sala", variant: "destructive" }); return; }
+    if (error) { toast({ title: "Error", description: "No se pudo abrir la sala", variant: "destructive" }); return false; }
     const response = data as { success?: boolean; message?: string };
-    if (!response?.success) { toast({ title: "No se pudo abrir sala", description: response?.message || "Operación rechazada", variant: "destructive" }); return; }
+    if (!response?.success) { toast({ title: "No se pudo abrir sala", description: response?.message || "Operación rechazada", variant: "destructive" }); return false; }
     toast({ title: "Sala abierta", description: response.message || "La sala está abierta" });
     await loadRound();
+    return true;
   };
 
-  const callStartRound = async () => {
+  const callStartRound = async (skipStateValidation = false): Promise<boolean> => {
     if (!roundId || !round) return;
-    if (!hasCandidates) { toast({ title: "No se puede iniciar", description: "Añade al menos un candidato.", variant: "destructive" }); return; }
-    if (!canStartRound) { toast({ title: "No se puede iniciar", description: "La ronda no está en un estado válido.", variant: "destructive" }); return; }
+    if (!hasCandidates) { toast({ title: "No se puede iniciar", description: "Añade al menos un candidato.", variant: "destructive" }); return false; }
+    if (!skipStateValidation && !canStartRound) { toast({ title: "No se puede iniciar", description: "La ronda no está en un estado válido.", variant: "destructive" }); return false; }
     const { data, error } = await supabase.rpc("start_voting_round", { p_round_id: roundId });
-    if (error) { toast({ title: "Error", description: "No se pudo iniciar la ronda", variant: "destructive" }); return; }
+    if (error) { toast({ title: "Error", description: "No se pudo iniciar la ronda", variant: "destructive" }); return false; }
     const response = data as { success?: boolean; message?: string };
-    if (!response?.success) { toast({ title: "No se pudo iniciar", description: response?.message || "Operación rechazada", variant: "destructive" }); return; }
+    if (!response?.success) { toast({ title: "No se pudo iniciar", description: response?.message || "Operación rechazada", variant: "destructive" }); return false; }
     toast({ title: "Ronda iniciada", description: response.message || "La ronda está en curso" });
     await loadRound();
+    return true;
   };
 
   const callCloseRoom = async () => {
@@ -361,9 +405,22 @@ export function AdminVotingDetail() {
 
   const confirmSelection = async () => {
     if (!roundId || !round?.round_finalized) { toast({ title: "Ronda no finalizada", description: "Primero finaliza la ronda.", variant: "destructive" }); return; }
-    const { error } = await supabase.from("rounds").update({ show_ballot_summary_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+    const { error } = await supabase
+      .from("rounds")
+      .update({
+        show_ballot_summary_projection: true,
+        is_closed: true,
+        is_active: false,
+        is_voting_open: false,
+        join_locked: true,
+        public_candidates_enabled: false,
+        show_results_to_voters: false,
+        show_final_gallery_projection: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo confirmar la selección", variant: "destructive" }); return; }
-    toast({ title: "Selección confirmada", description: "Candidatos de esta ronda confirmados" });
+    toast({ title: "Selección confirmada", description: "Votación cerrada, lista pública desactivada y lista para galería final." });
     await loadRound();
   };
 
@@ -371,12 +428,19 @@ export function AdminVotingDetail() {
     if (!round || isWorkflowRunning) return;
     setIsWorkflowRunning(true);
     try {
-      if (canOpenRoom) { await callOpenRoom(); return; }
+      if (canOpenRoom) {
+        const opened = await callOpenRoom();
+        if (!opened) return;
+        await callStartRound(true);
+        return;
+      }
       if (!round.round_finalized) {
         if (canStartRound) { await callStartRound(); return; }
         if (!canFinalizeRound) return;
         await finalizeRound(); return;
       }
+      if (!currentRoundReview.results) { openAnalyticsDialog(); return; }
+      if (!currentRoundReview.ballots) { openBallotsDialog(); return; }
       // Post-finalization routing
       if (selectionQuotaReached && !round.show_ballot_summary_projection) { await confirmSelection(); return; }
       if (!selectionQuotaReached && canStartNextRound) { await startNextRound(); return; }
@@ -386,7 +450,7 @@ export function AdminVotingDetail() {
   };
 
   const toggleGallery = async () => {
-    if (!roundId || !round?.round_finalized || !round.show_ballot_summary_projection) return;
+    if (!roundId || !round?.round_finalized || !round.show_ballot_summary_projection || !round.is_closed) return;
     const nextOn = !round.show_results_to_voters;
     const { error } = await supabase.from("rounds").update({ show_results_to_voters: nextOn, show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo actualizar la galería", variant: "destructive" }); return; }
@@ -396,6 +460,10 @@ export function AdminVotingDetail() {
 
   const togglePublicCandidates = async () => {
     if (!roundId || !round) return;
+    if (round.is_closed) {
+      toast({ title: "Votación cerrada", description: "La lista pública no se puede reactivar tras confirmar selección.", variant: "destructive" });
+      return;
+    }
     const next = !round.public_candidates_enabled;
     const { error } = await supabase.from("rounds").update({ public_candidates_enabled: next, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo actualizar la visibilidad", variant: "destructive" }); return; }
@@ -428,6 +496,10 @@ export function AdminVotingDetail() {
     if (processError) { toast({ title: "Error", description: "No se pudo finalizar la ronda", variant: "destructive" }); return; }
     const { error: updateError } = await supabase.from("rounds").update({ round_finalized: true, show_results_to_voters: false, show_ballot_summary_projection: false, is_voting_open: false, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (updateError) { toast({ title: "Error", description: "No se pudo cerrar la ronda", variant: "destructive" }); return; }
+    setRoundReviewState((prev) => ({
+      ...prev,
+      [round.current_round_number]: { results: false, ballots: false },
+    }));
     toast({ title: "Ronda finalizada", description: "Ya puedes publicar resultados o iniciar la siguiente ronda" });
     await loadRound();
   };
@@ -703,10 +775,10 @@ export function AdminVotingDetail() {
             <ArrowLeft size={13} /> Volver a votaciones
           </button>
           <div className="avd-header-actions">
-            <button className="avd-btn avd-btn-sm" onClick={() => setIsAnalyticsOpen(true)}>
+            <button className="avd-btn avd-btn-sm" onClick={openAnalyticsDialog}>
               <BarChart2 size={14} /> Análisis
             </button>
-            <button className="avd-btn avd-btn-sm" onClick={() => setIsBallotsOpen(true)}>
+            <button className="avd-btn avd-btn-sm" onClick={openBallotsDialog}>
               <Download size={14} /> Papeletas
             </button>
             <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(true)}>
@@ -775,7 +847,7 @@ export function AdminVotingDetail() {
             >
               {isWorkflowRunning
                 ? <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                : workflowActionLabel === "Abrir sala" || workflowActionLabel === "Iniciar ronda"
+                : workflowActionLabel === "Iniciar ronda"
                 ? <Play size={16} />
                 : <StepForward size={16} />}
               {isWorkflowRunning ? "Procesando..." : workflowActionLabel}
@@ -1113,10 +1185,11 @@ export function AdminVotingDetail() {
                     <button
                       className={`avd-switch ${round.public_candidates_enabled ? "on" : ""}`}
                       onClick={togglePublicCandidates}
+                      disabled={round.is_closed}
                     />
                   </div>
                 </div>
-                {round.round_finalized && round.show_ballot_summary_projection && (
+                {round.round_finalized && round.show_ballot_summary_projection && round.is_closed && (
                   <div className="avd-proj-toggle">
                     <div className="avd-label-row">
                       <Sparkles size={14} />
@@ -1143,10 +1216,10 @@ export function AdminVotingDetail() {
             <div>
               <h3 className="avd-section-title">Atajos</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <button className="avd-btn avd-btn-block" onClick={() => setIsAnalyticsOpen(true)}>
+                <button className="avd-btn avd-btn-block" onClick={openAnalyticsDialog}>
                   <BarChart2 size={14} /> Análisis de resultados
                 </button>
-                <button className="avd-btn avd-btn-block" onClick={() => setIsBallotsOpen(true)}>
+                <button className="avd-btn avd-btn-block" onClick={openBallotsDialog}>
                   <FileUp size={14} /> Revisar papeletas
                 </button>
                 <button className="avd-btn avd-btn-block" onClick={exportBallotsCsv} disabled={!round.is_closed}>
