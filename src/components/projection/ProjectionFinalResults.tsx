@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Check, MapPin, Cake, Tag } from "lucide-react";
-import { CandidateAvatar } from "@/components/CandidateAvatar";
+import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName } from "@/lib/candidateFormat";
 
 interface Candidate {

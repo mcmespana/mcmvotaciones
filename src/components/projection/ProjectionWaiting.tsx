@@ -83,9 +83,12 @@ export function ProjectionWaiting({
   const hasAmbiguous = Boolean(normalizedCode?.includes("0")) || Boolean(normalizedCode?.includes("O"));
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      {/* Ambient background orbs */}
+      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(100px)", top: "-15%", left: "-10%", animation: "proj-orb-slow-a 25s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(80px)", bottom: "-10%", right: "-5%", animation: "proj-orb-slow-b 30s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
       {/* Topbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, position: "relative", zIndex: 1 }}>
         <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, var(--avd-brand-400), var(--avd-brand-600))", display: "grid", placeItems: "center", color: "white", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>C</div>
         <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>VotacionesMCM</span>
         <div style={{ flex: 1 }} />
@@ -96,19 +99,19 @@ export function ProjectionWaiting({
       </div>
 
       {/* Main */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 380px", gap: 0, minHeight: 0 }}>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 380px", gap: 0, minHeight: 0, position: "relative", zIndex: 1 }}>
         {/* Left: main info */}
         <div style={{ padding: "48px 48px 48px 56px", display: "flex", flexDirection: "column", gap: 40, borderRight: "1px solid var(--avd-border)", overflow: "auto" }}>
           {/* Title block */}
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 16 }}>Sistema de votaciones</div>
-            <h1 style={{ fontSize: 72, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.05, margin: 0, color: "var(--avd-fg)" }}>MCM Votaciones</h1>
+            <h1 style={{ fontSize: 72, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.05, margin: 0, background: "linear-gradient(120deg, var(--avd-fg) 20%, var(--avd-brand-400) 50%, var(--avd-fg) 80%)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "proj-title-shimmer 6s linear infinite" }}>MCM Votaciones</h1>
             <p style={{ fontSize: 26, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 14, lineHeight: 1.4, maxWidth: "55ch" }}>{subtitle}</p>
           </div>
 
           {/* Access code */}
           {normalizedCode && (
-            <div style={card({ padding: "32px 36px" })}>
+            <div style={card({ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" })}>
               {accentBar("linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))")}
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 20 }}>Código de acceso</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -118,7 +121,7 @@ export function ProjectionWaiting({
                   return (
                     <div
                       key={`${char}-${index}`}
-                      style={{ width: 88, height: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--avd-bg)", border: "1px solid var(--avd-border-strong)", borderRadius: 10 }}
+                      style={{ width: 88, height: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--avd-bg)", border: "1px solid var(--avd-border-strong)", borderRadius: 10, animation: `card-enter 0.35s cubic-bezier(0.2,0.75,0.2,1) ${index * 0.07}s both` }}
                     >
                       {isZero ? (
                         <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--avd-font-mono)", fontSize: 56, fontWeight: 800, color: "var(--avd-brand)" }}>

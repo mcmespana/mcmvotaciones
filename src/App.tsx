@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,30 +6,33 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { VotingPage } from "@/components/VotingPage";
-import { AdminRouter } from "@/components/AdminRouter";
-import { ComunicaRouter } from "@/components/ComunicaRouter";
-import { ProjectionPage } from "@/components/ProjectionPage";
-import { PublicCandidates } from "@/components/PublicCandidates";
+import { VotingPage } from "@/pages/VotingPage";
 import NotFound from "./pages/NotFound";
+
+const AdminRouter     = lazy(() => import("@/routes/AdminRouter").then(m => ({ default: m.AdminRouter })));
+const ComunicaRouter  = lazy(() => import("@/routes/ComunicaRouter").then(m => ({ default: m.ComunicaRouter })));
+const ProjectionPage  = lazy(() => import("@/pages/ProjectionPage").then(m => ({ default: m.ProjectionPage })));
+const PublicCandidates = lazy(() => import("@/pages/PublicCandidates").then(m => ({ default: m.PublicCandidates })));
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<VotingPage />} />
-        <Route path="/proyeccion" element={<ProjectionPage />} />
-        <Route path="/candidatos/:votingId" element={<PublicCandidates />} />
-        <Route path="/admin/*" element={<AdminRouter />} />
-        <Route path="/comunica/*" element={<ComunicaRouter />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
-  );
-};
+const Spinner = () => (
+  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ width: 32, height: 32, border: "2.5px solid #333", borderTopColor: "#7c6cf8", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+);
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<VotingPage />} />
+    <Route path="/proyeccion" element={<Suspense fallback={<Spinner />}><ProjectionPage /></Suspense>} />
+    <Route path="/candidatos/:votingId" element={<Suspense fallback={<Spinner />}><PublicCandidates /></Suspense>} />
+    <Route path="/admin/*" element={<Suspense fallback={<Spinner />}><AdminRouter /></Suspense>} />
+    <Route path="/comunica/*" element={<Suspense fallback={<Spinner />}><ComunicaRouter /></Suspense>} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>

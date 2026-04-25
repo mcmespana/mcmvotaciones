@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { formatCandidateName } from "@/lib/candidateFormat";
@@ -55,6 +56,7 @@ export function ProjectionResults({
 }: ProjectionResultsProps) {
   const [revealedCount, setRevealedCount] = useState(0);
   const [showSelected, setShowSelected] = useState(false);
+  const [ballotsRef] = useAutoAnimate();
 
   const displayResults = useMemo(() => [...results].sort((a, b) => b.vote_count - a.vote_count), [results]);
   const top5Sorted = useMemo(() => displayResults.slice(0, TOP_N).reverse(), [displayResults]);
@@ -168,7 +170,7 @@ export function ProjectionResults({
                   ))}
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
+                <div ref={ballotsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
                   {ballotSummaries.map((ballot) => (
                     <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ background: "var(--avd-surface)", border: "1px solid var(--avd-border)", borderRadius: 12, padding: "22px 26px", position: "relative", overflow: "hidden" }}>
                       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))" }} />

@@ -21,6 +21,12 @@ export default {
 		extend: {
 			colors: {
 				border: 'hsl(var(--border))',
+				voting: {
+					blue: 'hsl(var(--vote-color-blue))',
+					red: 'hsl(var(--vote-color-red))',
+					yellow: 'hsl(var(--vote-color-yellow))',
+					green: 'hsl(var(--vote-color-green))',
+				},
 				outline: {
 					variant: 'hsl(var(--outline-variant))',
 				},

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { formatCandidateName } from "@/lib/candidateFormat";
@@ -72,6 +73,7 @@ export function ProjectionVoting({
   const percentage = maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
   const [flash, setFlash] = useState(false);
   const [prev, setPrev] = useState(voteCount);
+  const [ballotsRef] = useAutoAnimate();
 
   useEffect(() => {
     let t: number | null = null;
@@ -81,9 +83,12 @@ export function ProjectionVoting({
   }, [voteCount, prev]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      {/* Ambient orbs */}
+      <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: flash ? "color-mix(in oklch, var(--avd-ok) 7%, transparent)" : "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(90px)", top: "-10%", right: "5%", animation: "proj-orb-slow-a 20s ease-in-out infinite", pointerEvents: "none", zIndex: 0, transition: "background 0.6s ease" }} />
+      <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(70px)", bottom: "0%", left: "-5%", animation: "proj-orb-slow-b 26s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <div>
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--avd-fg)" }}>{roundTitle}</h1>
         </div>
@@ -104,14 +109,14 @@ export function ProjectionVoting({
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: showBallotSummary ? "1fr" : "1.6fr 1fr", gap: 0, minHeight: 0 }}>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: showBallotSummary ? "1fr" : "1.6fr 1fr", gap: 0, minHeight: 0, position: "relative", zIndex: 1 }}>
         {!showBallotSummary ? (
           <>
             {/* Left: vote count */}
             <div style={{ padding: "40px 48px", borderRight: "1px solid var(--avd-border)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 32 }}>
               {label("Votos recibidos")}
               <div style={{ display: "flex", alignItems: "baseline", gap: 16, transition: "transform 0.2s", transform: flash ? "scale(1.04)" : "scale(1)" }}>
-                <span style={{ fontSize: 160, fontWeight: 800, letterSpacing: "-0.05em", fontVariantNumeric: "tabular-nums", lineHeight: 1, color: flash ? "var(--avd-ok)" : "var(--avd-fg)", transition: "color 0.3s", fontFamily: "var(--avd-font-sans)" }}>
+                <span style={{ fontSize: 160, fontWeight: 800, letterSpacing: "-0.05em", fontVariantNumeric: "tabular-nums", lineHeight: 1, color: flash ? "var(--avd-ok)" : "var(--avd-fg)", transition: "color 0.3s", fontFamily: "var(--avd-font-sans)", animation: flash ? "proj-count-pop 0.4s ease-out" : undefined }}>
                   {voteCount}
                 </span>
                 <span style={{ fontSize: 28, fontWeight: 600, color: "var(--avd-fg-muted)" }}>/ {maxVotantes}</span>
@@ -181,7 +186,7 @@ export function ProjectionVoting({
                 ))}
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+              <div ref={ballotsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
                 {ballotSummaries.map((ballot) => (
                   <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ ...card({ padding: "24px 28px" }) }}>
                     {accentBar()}
