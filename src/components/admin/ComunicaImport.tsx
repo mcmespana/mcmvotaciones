@@ -298,7 +298,7 @@ export function ComunicaImport() {
                           <div style={{ fontWeight: 700, fontSize: 12.5, color: 'var(--avd-fg)' }}>Acceso a SinergiaCRM</div>
                           <div style={{ fontSize: 11.5, color: 'var(--avd-fg-muted)', marginTop: 1 }}>
                             Usuario y contraseña con acceso a{' '}
-                            <span style={{ fontFamily: 'var(--avd-font-mono)', fontSize: 11 }}>movimientoconsolacion.sinergiacrm.org</span>
+                            <span style={{ fontFamily: 'var(--avd-font-mono)', fontSize: 11 }}>tu CRM configurado</span>
                           </div>
                         </div>
                       </div>

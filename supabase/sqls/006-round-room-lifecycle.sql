@@ -1,5 +1,5 @@
 -- Migration 006: Round room lifecycle + join locking + projection ballot summary
--- Applied in Supabase project: mcmvotaciones (sjhxhsdckvungsrbquve)
+-- Applied in Supabase project: replace with your own project ref if needed.
 
 alter table public.rounds
   add column if not exists is_voting_open boolean not null default false,

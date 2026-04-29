@@ -3,7 +3,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 const CRM_URL  = 'https://TU_DOMINIO_SINERGIA/service/v4_1/rest.php';
-const CRM_USER = 'api_user';
+const CRM_USER = 'TU_USUARIO';
 const CRM_PASS = 'TU_PASSWORD';
 
 function out($arr, $code=200){ http_response_code($code); echo json_encode($arr, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES); exit; }

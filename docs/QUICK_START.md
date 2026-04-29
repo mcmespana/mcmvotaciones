@@ -1,156 +1,136 @@
-# ⚡ QUICK START - Despliegue del Sistema de Cupos
+# ⚡ Inicio rápido
 
-## 🎯 Para empezar inmediatamente
+Guía corta para dejar el proyecto funcionando en local y preparado para una primera votación de prueba.
 
-### Paso 1: Ejecutar Migraciones SQL (15 min)
+> 🎯 **Objetivo**: instalar dependencias, conectar Supabase, crear un admin y abrir la app.  
+> ⏱️ **Tiempo estimado**: 15-30 minutos, según tengas ya preparado Supabase.
+
+---
+
+## ✅ Requisitos
+
+| Necesitas | Para qué |
+|-----------|----------|
+| Node.js 20+ | Ejecutar Vite y el build frontend. |
+| npm | Instalar dependencias. |
+| Proyecto Supabase | Base de datos, RPC y realtime. |
+| Acceso al SQL Editor | Ejecutar instalación y migraciones. |
+
+---
+
+## 1️⃣ Instalar dependencias
+
 ```bash
-# Ir al dashboard de Supabase
-# Dashboard → SQL Editor → New Query
-
-# Ejecutar EN ORDEN:
-# 1. supabase/sqls/001-rename-expected-voters-to-max-votantes.sql
-# 2. supabase/sqls/002-create-seats-table.sql
-# 3. supabase/sqls/003-update-majority-to-fixed-threshold.sql
-# 4. supabase/sqls/004-seats-management-api.sql
-```
-
-**Validación rápida**:
-```sql
-SELECT calculate_selection_threshold(3); -- Debe retornar: 2
-SELECT calculate_selection_threshold(5); -- Debe retornar: 3
+npm install
 ```
 
 ---
 
-### Paso 2: Verificar Archivos Frontend ✅
-Estos archivos YA están actualizados:
-- ✅ `src/lib/device.ts`
-- ✅ `src/components/VotingManagement.tsx`
+## 2️⃣ Configurar variables de entorno
 
----
+Copia `.env.example` a `.env.local`:
 
-### Paso 3: Implementar VotingPage.tsx (30 min)
-📄 **Abrir**: `VOTING_PAGE_IMPLEMENTATION_GUIDE.md`
-
-**Resumen de cambios necesarios**:
-1. Añadir estados: `seatId`, `seatStatus`, `browserInstanceId`
-2. Crear función `joinRoundSeat()`
-3. Crear función `verifySeat()`
-4. Añadir heartbeat con useEffect
-5. Modificar `handleVote()` para incluir `seat_id`
-6. Añadir UI de estado de cupos
-
-**Copiar código de la guía** → Pegar en VotingPage.tsx → Ajustar imports
-
----
-
-### Paso 4: Test Rápido 🧪
-
-**Test 1: Umbral** (2 min)
-```
-1. Crear ronda con max_votantes=3
-2. Entrar con 1 navegador
-3. Marcar 3 candidatos y votar
-4. Calcular resultados
-✅ Ningún candidato debe ser seleccionado
-```
-
-**Test 2: Cupos** (3 min)
-```
-1. Ronda con max_votantes=3
-2. Abrir en Chrome, Firefox, Safari
-3. Intentar abrir en 4to navegador
-✅ Debe mostrar "Cupo completo"
-```
-
----
-
-### Paso 5: Desplegar 🚀
 ```bash
-# Commit y push
-git add .
-git commit -m "feat: sistema de cupos con umbral fijo"
-git push origin main
-
-# Deploy automático (Vercel/Netlify)
-# O build manual:
-npm run build
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key-publica
 ```
 
----
-
-## 📊 Validación Final
-
-**Después del despliegue, verificar**:
-- [ ] Nueva ronda muestra "Cupo máximo" en lugar de "Votantes esperados"
-- [ ] Formulario muestra mensaje de umbral calculado
-- [ ] VotingPage muestra estado de asientos (X/Y ocupados)
-- [ ] 4to dispositivo recibe error al unirse
-- [ ] Cambiar de navegador genera error al votar
-- [ ] Cerrar y reabrir navegador recupera asiento
+> ⚠️ **Importante**  
+> Solo las variables con prefijo `VITE_` llegan al navegador. No pongas claves privadas ni `service_role key` en el frontend.
 
 ---
 
-## ⚠️ Si algo falla
+## 3️⃣ Crear la base de datos
 
-**Error: "expected_voters does not exist"**
-→ Frontend desplegado sin ejecutar migraciones  
-→ Ejecutar migraciones SQL primero
+En Supabase:
 
-**Error: "function join_round_seat does not exist"**
-→ Migración 004 no se ejecutó  
-→ Verificar en Supabase SQL Editor History
+1. Abre **SQL Editor**.
+2. Ejecuta `supabase/sqls/setup-database.sql`.
+3. Ejecuta las migraciones numeradas de `supabase/sqls/` en orden.
+4. Consulta [../supabase/sqls/README.md](../supabase/sqls/README.md) si dudas con el orden.
 
-**Votantes bloqueados incorrectamente**
-→ Problema con localStorage/cookies  
-→ Revisar consola del navegador (F12)
+### Validación rápida del umbral
 
-**Rollback completo**:
 ```sql
--- Restaurar desde backup
-TRUNCATE TABLE rounds;
-INSERT INTO rounds SELECT * FROM rounds_backup;
--- Eliminar columna seat_id
-ALTER TABLE votes DROP COLUMN seat_id;
--- Eliminar tabla seats
-DROP TABLE seats CASCADE;
+SELECT calculate_selection_threshold(3);  -- 2
+SELECT calculate_selection_threshold(4);  -- 3
+SELECT calculate_selection_threshold(10); -- 6
 ```
 
 ---
 
-## 🎓 Ejemplos Prácticos
+## 4️⃣ Crear primer administrador
 
-### Crear ronda con cupos
-```typescript
-// max_votantes = 5
-// Umbral automático = ceil(0.5 * 5) = 3 votos
-const newRound = {
-  title: "Votación MCM 2025",
-  max_votantes: 5,
-  max_selected_candidates: 6
-};
-```
+El repo **no crea un admin por defecto** con password conocida. Crea uno propio:
 
-### Consultar cupos (admin)
 ```sql
-SELECT get_round_seats_status('uuid-ronda');
--- { occupied_seats: 3, max_votantes: 5, available_seats: 2 }
+INSERT INTO public.admin_users (username, password_hash, name, email, role)
+VALUES (
+  'admin',
+  'CAMBIA_ESTA_PASSWORD',
+  'Administrador',
+  'admin@example.org',
+  'super_admin'
+);
+```
+
+> 🔐 El trigger de base de datos convierte `password_hash` a bcrypt si recibe texto plano. Aun así, usa una contraseña fuerte y cámbiala si fue provisional.
+
+---
+
+## 5️⃣ Arrancar la aplicación
+
+```bash
+npm run dev
+```
+
+Abre:
+
+```text
+http://localhost:8080
 ```
 
 ---
 
-## 📞 Ayuda Rápida
+## 🗳️ Primera prueba manual
 
-**Documentación completa**:
-- 📘 `EXECUTIVE_SUMMARY.md` - Resumen ejecutivo
-- 🔧 `MIGRATION_INSTRUCTIONS.md` - Migraciones detalladas
-- 💻 `VOTING_PAGE_IMPLEMENTATION_GUIDE.md` - Código frontend
-- 📊 `IMPLEMENTATION_SUMMARY.md` - Resumen técnico
-
-**Tiempo estimado total**: 60-90 minutos
-**Complejidad**: Media
-**Reversibilidad**: Alta (backups disponibles)
+| Paso | Qué hacer | Resultado esperado |
+|------|-----------|--------------------|
+| 1 | Entra en `/admin`. | Ves el panel de administración. |
+| 2 | Crea una votación. | La votación aparece en el listado. |
+| 3 | Añade candidatos o importa `files/candidates-example.csv`. | Hay candidatos disponibles. |
+| 4 | Configura `max_votantes = 3`. | El umbral será 2. |
+| 5 | Abre sala e inicia votación. | La pantalla `/` permite votar. |
+| 6 | Emite una papeleta. | La ronda registra votos. |
+| 7 | Finaliza ronda. | Se calculan resultados. |
+| 8 | Si faltan elegidos, inicia otra ronda. | Los candidatos seleccionados ya no compiten. |
 
 ---
 
-¡Listo para desplegar! 🚀
+## 📦 Comandos útiles
+
+```bash
+npm run dev        # Desarrollo local
+npm run build      # Build de producción
+npm run preview    # Preview del build
+npm run lint       # Revisión ESLint
+```
+
+---
+
+## 🧯 Si algo falla
+
+| Síntoma | Posible causa | Qué revisar |
+|---------|---------------|-------------|
+| “Supabase no configurado” | Falta `.env.local` o valores incorrectos. | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. |
+| “function ... does not exist” | Falta una migración SQL. | Orden en `supabase/sqls/README.md`. |
+| No entra ningún votante | Sala no abierta o votación no iniciada. | Estado desde `/admin`. |
+| Umbral raro con números pares | Migración antigua de mayoría. | `calculate_selection_threshold(4)` debe devolver `3`. |
+
+---
+
+## 📚 Siguiente lectura
+
+- 🗳️ [Guía funcional del sistema](./VOTING_SYSTEM_GUIDE.md)
+- 🔧 [Migraciones SQL](./MIGRATION_INSTRUCTIONS.md)
+- 🔐 [Seguridad](./SECURITY.md)

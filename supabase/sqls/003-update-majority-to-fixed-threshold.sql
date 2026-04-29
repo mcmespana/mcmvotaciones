@@ -2,13 +2,13 @@
 -- MIGRACIÓN: Actualizar lógica de mayoría a umbral fijo basado en max_votantes
 -- ============================================================================
 -- Cambia de calcular mayoría sobre votos emitidos a usar un umbral fijo:
---   umbral = CEIL(0.5 * max_votantes)
+--   umbral = FLOOR(max_votantes / 2) + 1
 -- 
 -- Un candidato es seleccionado solo si: votos_candidato >= umbral
 -- 
 -- Ejemplos:
 --   max_votantes=3 → umbral=2 → mínimo 2 votos para ser seleccionado
---   max_votantes=4 → umbral=2 → mínimo 2 votos para ser seleccionado
+--   max_votantes=4 → umbral=3 → mínimo 3 votos para ser seleccionado
 --   max_votantes=5 → umbral=3 → mínimo 3 votos para ser seleccionado
 -- ============================================================================
 
@@ -16,13 +16,13 @@
 CREATE OR REPLACE FUNCTION calculate_selection_threshold(p_max_votantes INTEGER)
 RETURNS INTEGER AS $$
 BEGIN
-  -- Umbral = CEIL(0.5 * max_votantes)
+  -- Umbral Canon 119: mitad + 1
   -- Si max_votantes es 0 o NULL, retornar 1 como mínimo
   IF p_max_votantes IS NULL OR p_max_votantes <= 0 THEN
     RETURN 1;
   END IF;
   
-  RETURN CEIL(0.5 * p_max_votantes);
+  RETURN FLOOR(p_max_votantes / 2.0) + 1;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
@@ -166,10 +166,10 @@ $$ LANGUAGE plpgsql;
 
 -- 4. Actualizar comentarios de funciones
 COMMENT ON FUNCTION calculate_selection_threshold IS 
-  'Calcula el umbral de selección: CEIL(0.5 * max_votantes). Un candidato necesita al menos este número de votos para ser seleccionado.';
+  'Calcula el umbral de selección: FLOOR(max_votantes / 2) + 1. Un candidato necesita al menos este número de votos para ser seleccionado.';
 
 COMMENT ON FUNCTION calculate_round_results_with_majority IS 
-  'Calcula resultados de una ronda usando umbral fijo basado en max_votantes. has_absolute_majority = true si vote_count >= CEIL(0.5 * max_votantes)';
+  'Calcula resultados de una ronda usando umbral fijo basado en max_votantes. has_absolute_majority = true si vote_count >= FLOOR(max_votantes / 2) + 1';
 
 -- ============================================================================
 -- VERIFICACIÓN Y EJEMPLOS
@@ -180,9 +180,9 @@ DO $$
 BEGIN
   -- Test cases
   ASSERT calculate_selection_threshold(3) = 2, 'max_votantes=3 debe dar umbral=2';
-  ASSERT calculate_selection_threshold(4) = 2, 'max_votantes=4 debe dar umbral=2';
+  ASSERT calculate_selection_threshold(4) = 3, 'max_votantes=4 debe dar umbral=3';
   ASSERT calculate_selection_threshold(5) = 3, 'max_votantes=5 debe dar umbral=3';
-  ASSERT calculate_selection_threshold(10) = 5, 'max_votantes=10 debe dar umbral=5';
+  ASSERT calculate_selection_threshold(10) = 6, 'max_votantes=10 debe dar umbral=6';
   ASSERT calculate_selection_threshold(0) = 1, 'max_votantes=0 debe dar umbral=1';
   ASSERT calculate_selection_threshold(NULL) = 1, 'max_votantes=NULL debe dar umbral=1';
   

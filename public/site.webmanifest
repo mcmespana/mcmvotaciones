@@ -1,6 +1,6 @@
 {
-  "name": "MCM Panel · Para MCM App",
-  "short_name": "MCM Panel",
+  "name": "MCM Votaciones",
+  "short_name": "Votaciones",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

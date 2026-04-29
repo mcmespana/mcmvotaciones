@@ -5,9 +5,9 @@
 | Concepto | Valor |
 |----------|-------|
 | **CRM** | SinergiaCRM v4.1 (basado en SuiteCRM) |
-| **URL API** | `https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php` |
-| **Usuario** | `api_user` |
-| **Contraseña** | `w780kAp6GeG&EEffJBe0iVa)` |
+| **URL API** | `https://crm.example.org/custom/service/v4_1_SticCustom/rest.php` |
+| **Usuario** | `CRM_USER` |
+| **Contraseña** | `CRM_PASSWORD` |
 | **Formato** | Todas las llamadas son POST con parámetros `method`, `input_type`, `response_type` y `rest_data` |
 
 ---
@@ -17,13 +17,13 @@
 Todas las operaciones requieren primero obtener un `session_id` mediante login.
 
 ```javascript
-const API_URL = 'https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php';
+const API_URL = 'https://crm.example.org/custom/service/v4_1_SticCustom/rest.php';
 
 async function login() {
   const params = {
     user_auth: {
-      user_name: 'api_user',
-      password: 'w780kAp6GeG&EEffJBe0iVa)',
+      user_name: '<CRM_USER>',
+      password: '<CRM_PASSWORD>',
       encryption: 'PLAIN'
     },
     application: 'MiApp'

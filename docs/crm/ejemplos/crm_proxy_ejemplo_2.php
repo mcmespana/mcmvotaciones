@@ -10,7 +10,7 @@ ini_set('post_max_size', '50M');
 ini_set('memory_limit', '512M');
 set_time_limit(300);
 
-$CRM_ENDPOINT = 'https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php';
+$CRM_ENDPOINT = 'https://crm.example.org/custom/service/v4_1_SticCustom/rest.php';
 
 /* CORS */
 header("Access-Control-Allow-Origin: *");

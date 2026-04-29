@@ -1,227 +1,221 @@
-# Sistema de Votación por Rondas - Guía de Uso
+# 🗳️ Guía funcional del sistema de votación
 
-## 📋 Resumen del Sistema
+Esta guía explica cómo se usa el sistema en una votación real: qué configura la mesa, qué ve el votante y cómo se decide quién queda elegido.
 
-Este sistema permite realizar votaciones por rondas con selección progresiva de candidatos mediante mayoría absoluta (>50%).
+> 👥 **Público**: personas de la mesa, equipo técnico y responsables de preparar la votación.  
+> ⚖️ **Regla base**: Canon 119, mayoría de mitad + 1.
 
-## 🎯 Cómo Funciona
+---
 
-### 1. **Configuración Inicial**
-- Crear una votación con el número esperado de votantes por ronda
-- Agregar o importar candidatos (CSV/XML/JSON)
-- Activar la votación para iniciar la primera ronda
+## 📋 Resumen rápido
 
-### 2. **Rondas de Votación**
+| Concepto | Qué significa |
+|----------|---------------|
+| **Votación** | Proceso completo para elegir una o varias personas. |
+| **Ronda** | Cada intento de votación dentro del proceso. |
+| **Candidato** | Persona que puede recibir votos. |
+| **Cupo / `max_votantes`** | Número máximo de votantes autorizados. También fija el umbral. |
+| **Puestos a cubrir** | Número total de personas que se quieren seleccionar. |
+| **Papeleta** | Conjunto de votos emitidos por una persona en una ronda. |
+| **Asiento** | Reserva técnica que identifica a un votante/navegador durante la ronda. |
 
-#### **Meta de Votantes por Ronda**
-- El `expected_voters` se mantiene **constante para cada ronda**
-- El contador `votes_current_round` cuenta **votantes únicos** en la ronda actual
-- Cuando `votes_current_round` alcanza `expected_voters`, se puede finalizar la ronda
+---
 
-#### **Número de Votos por Persona**
-El sistema ajusta dinámicamente cuántos candidatos puede votar cada persona:
-- **4+ candidatos pendientes**: 3 votos por persona
-- **2-3 candidatos pendientes**: 2 votos por persona  
-- **1 candidato pendiente**: 1 voto por persona
+## ⚖️ Canon 119 en la aplicación
 
-### 3. **Selección por Mayoría Absoluta**
+Una persona candidata queda elegida cuando alcanza:
 
-Cuando finalizas una ronda:
-1. El sistema calcula el porcentaje de votos de cada candidato
-2. Los candidatos con **>50% de votos** son **seleccionados automáticamente**
-3. Los candidatos seleccionados se marcan como "Seleccionado" y dejan de aparecer en siguientes rondas
-4. El proceso continúa hasta completar todos los puestos necesarios
-
-#### Ejemplo:
-```
-Ronda 1: 100 votantes esperados
-- Candidato A: 55 votos (55%) → SELECCIONADO ✓
-- Candidato B: 30 votos (30%)
-- Candidato C: 15 votos (15%)
-
-Ronda 2: 100 votantes esperados (contador se reinicia)
-- Candidato B: Sigue en competencia
-- Candidato C: Sigue en competencia
-- Candidato A: Ya no aparece (seleccionado)
+```text
+mitad de los votos + 1
 ```
 
-### 4. **Restricciones Importantes**
+En el sistema se calcula así:
 
-#### ❌ **No se pueden eliminar candidatos si hay votos**
-Una vez que alguien ha votado en la votación:
-- No se pueden eliminar candidatos individuales
-- No se pueden eliminar candidatos seleccionados
-- No se pueden eliminar todos los candidatos
+```text
+umbral = floor(max_votantes / 2) + 1
+```
 
-Esto protege la integridad de los votos ya emitidos.
+| `max_votantes` | Cálculo | Umbral |
+|----------------|---------|--------|
+| 3 | `floor(3 / 2) + 1` | 2 |
+| 4 | `floor(4 / 2) + 1` | 3 |
+| 5 | `floor(5 / 2) + 1` | 3 |
+| 10 | `floor(10 / 2) + 1` | 6 |
 
-### 5. **Visualización de Candidatos**
+> 💡 **Por qué importa**  
+> El umbral no baja si vota menos gente. Así se evita que una participación baja seleccione candidatos con una mayoría demasiado débil.
 
-En la sección de candidatos se muestran:
-1. **Primero**: Candidatos seleccionados con badge "Seleccionado" y icono de premio
-2. **Después**: Candidatos activos ordenados por `order_index`
+---
 
-### 6. **Monitoreo en Tiempo Real**
+## 🚀 Flujo completo
 
-La pantalla de monitoreo muestra:
-- **Votantes ronda actual**: Contador único de personas que han votado
-- **Meta ronda**: Número esperado de votantes
-- **Progreso ronda**: Porcentaje de meta alcanzada
-- **Seleccionados**: Cuántos candidatos ya fueron seleccionados
-- **Indicador verde**: Aparece cuando se alcanza la meta de votantes
+### 1. Configuración inicial
 
-### 7. **Finalizar Ronda y Pasar a la Siguiente**
+La mesa o admin:
 
-#### Pasos:
-1. **Finalizar Ronda**: Presionar "Finalizar Ronda X"
-   - Calcula resultados
-   - Selecciona candidatos con mayoría absoluta
-   - Muestra resultados
+1. Crea una votación.
+2. Define `max_votantes`.
+3. Define cuántas personas hay que seleccionar.
+4. Configura cuántos candidatos puede marcar cada votante por ronda.
+5. Añade o importa candidatos.
+6. Comparte el código de acceso si la votación lo usa.
 
-2. **Publicar Resultados** (opcional):
-   - Toggle "Mostrar resultados a usuarios"
-   - Los usuarios ven los resultados en tiempo real
+### 2. Sala de espera
 
-3. **Iniciar Siguiente Ronda**:
-   - Presionar "Iniciar Ronda X+1"
-   - Reinicia contador de votantes a 0
-   - Ajusta máximo de votos por persona
-   - Oculta candidatos ya seleccionados
+Antes de votar, la mesa puede abrir sala:
 
-## 🔧 Migración de Base de Datos
+- los votantes entran;
+- el sistema reserva asientos;
+- la mesa ve cuántos cupos están ocupados;
+- todavía no se puede emitir papeleta.
 
-**IMPORTANTE**: Debes ejecutar el script de migración antes de usar el sistema actualizado.
+### 3. Ronda abierta
 
-### Pasos para migrar:
+Cuando la mesa inicia la votación:
 
-1. Ve a tu proyecto en Supabase
-2. Abre el SQL Editor
-3. Copia y pega el contenido de `migration-fix-voting-rounds.sql`
-4. Ejecuta el script
-5. Verifica que no haya errores
+- cada votante ve los candidatos disponibles;
+- marca sus opciones;
+- revisa la papeleta;
+- confirma el voto;
+- espera instrucciones o resultados.
 
-El script agrega:
-- Campo `votes_current_round` en la tabla `rounds`
-- Funciones SQL para cálculo de resultados con mayoría absoluta
-- Funciones para iniciar nuevas rondas automáticamente
-- Triggers para actualizar contadores en tiempo real
+### 4. Finalizar ronda
 
-## 📊 Funciones SQL Disponibles
+La mesa cierra la ronda y el sistema:
 
-### `process_round_results(p_round_id, p_round_number)`
-Procesa los resultados de una ronda:
-- Calcula votos y porcentajes
-- Detecta mayoría absoluta (>50%)
-- Marca candidatos seleccionados
-- Guarda resultados en `round_results`
+1. cuenta votos válidos;
+2. calcula el umbral;
+3. marca como seleccionados los candidatos que llegan al umbral;
+4. guarda resultados en `round_results`;
+5. permite proyectar resultados o papeletas.
 
-### `start_new_round(p_round_id)`
-Inicia una nueva ronda:
-- Incrementa `current_round_number`
-- Calcula nuevo `max_votes_per_round`
-- Reinicia `votes_current_round` a 0
+### 5. Siguiente ronda
 
-### `calculate_max_votes(p_round_id)`
-Calcula dinámicamente el máximo de votos:
-- Basado en candidatos pendientes de seleccionar
-- Retorna 3, 2, o 1
+Si faltan puestos por cubrir:
 
-### `get_unique_voters_count(p_round_id, p_round_number)`
-Cuenta votantes únicos en una ronda específica:
-- Usa `device_hash` para identificar votantes
-- Retorna número entero
+- se inicia una nueva ronda;
+- los candidatos ya seleccionados dejan de competir;
+- los pendientes siguen disponibles;
+- se repite el proceso.
 
-## 🚀 Flujo Completo de Uso
+---
 
-1. **Setup**:
-   ```
-   - Ejecutar migración SQL
-   - Crear votación
-   - Importar 25 candidatos
-   - Configurar expected_voters (ej: 100)
-   - Activar votación
-   ```
+## 🎯 Ejemplo práctico
 
-2. **Ronda 1**:
-   ```
-   - Usuarios votan (máx 3 candidatos)
-   - Monitorear progreso (votes_current_round)
-   - Al alcanzar meta → Finalizar ronda
-   - Ver resultados
-   - Candidatos con >50% → Seleccionados
-   - Iniciar Ronda 2
-   ```
+```text
+Votación: elección de 2 personas
+max_votantes: 5
+umbral: 3 votos
+```
 
-3. **Ronda 2**:
-   ```
-   - votes_current_round reinicia a 0
-   - Candidatos seleccionados no aparecen
-   - max_votes ajustado según pendientes
-   - Repetir proceso
-   ```
+### Ronda 1
 
-4. **Rondas Sucesivas**:
-   ```
-   - Continuar hasta completar todos los puestos
-   - Sistema ajusta votos automáticamente
-   - Cada ronda independiente con su meta
-   ```
+| Candidato | Votos | Resultado |
+|-----------|-------|-----------|
+| Ana | 4 | ✅ Seleccionada |
+| Beatriz | 2 | Sigue |
+| Carmen | 1 | Sigue |
 
-## 🎨 Características de UI
+Queda 1 puesto por cubrir.
 
-### Selección Múltiple de Candidatos
-- Hover sobre tarjeta → aparece checkbox
-- Clic en checkbox → selecciona candidato
-- Botón "Eliminar X seleccionados" → elimina en lote
+### Ronda 2
 
-### Botones con Colores
-- **Editar**: Azul suave
-- **Eliminar**: Rojo suave
-- **Eliminar Todos**: Rojo outline (solo sin votos)
+| Candidato | Votos | Resultado |
+|-----------|-------|-----------|
+| Beatriz | 3 | ✅ Seleccionada |
+| Carmen | 2 | No seleccionada |
 
-### Indicadores Visuales
-- Badge "Seleccionado" con icono de premio
-- Ring azul en candidatos seleccionados
-- Alert verde cuando meta alcanzada
+La votación puede cerrarse porque ya hay 2 personas seleccionadas.
 
-## ⚠️ Notas Importantes
+---
 
-1. **No editar candidatos con votos**: Aunque se puede editar, no es recomendable cambiar datos de candidatos después de que haya votos.
+## 🎛️ Configuraciones importantes
 
-2. **Expected voters por ronda**: Ajusta este valor según tu caso de uso. Es la meta de participación esperada en cada ronda.
+### Modo de censo
 
-3. **Mayoría absoluta es estricta**: Solo >50% selecciona un candidato. Si ninguno alcanza mayoría, todos continúan a la siguiente ronda.
+| Modo | Cuándo usarlo | Comportamiento |
+|------|---------------|----------------|
+| **Máximo** | Caso habitual. | Se puede iniciar aunque no hayan entrado todos los cupos. |
+| **Exacto** | Votaciones muy controladas. | Exige que conectados coincida con `max_votantes`. |
 
-4. **Tiempo real**: Los resultados se actualizan automáticamente en todas las pantallas cuando se publican.
+### Máximo de votos por ronda
 
-5. **Los contadores son independientes**: `vote_count` es total de votos históricos, `votes_current_round` es votantes únicos de la ronda actual.
+| Valor | Comportamiento |
+|-------|----------------|
+| `0` | Lógica heredada: hasta 3 votos, bajando a 2 o 1 si quedan pocos puestos. |
+| `1+` | Límite fijo por papeleta, sin superar puestos pendientes. |
 
-## 🐛 Troubleshooting
+---
 
-### "No aparecen candidatos en la segunda ronda"
-- **Causa**: Todos fueron seleccionados en ronda anterior
-- **Solución**: Verificar que no todos tengan `is_selected = true`
+## 🖥️ Pantallas
 
-### "No se pueden eliminar candidatos"
-- **Causa**: Ya hay votos en la votación
-- **Solución**: Esto es intencional para proteger integridad
+| Pantalla | Uso |
+|----------|-----|
+| `/` | Votar. |
+| `/admin` | Gestionar votaciones, candidatos, sala, rondas y resultados. |
+| `/proyeccion` | Proyectar resultados o papeletas. |
+| `/candidatos/:votingId` | Galería pública de candidatos cuando está habilitada. |
+| `/comunica` | Importar candidatos desde SinergiaCRM si está configurado. |
 
-### "votes_current_round no se actualiza"
-- **Causa**: Migración SQL no ejecutada
-- **Solución**: Ejecutar `migration-fix-voting-rounds.sql`
+---
 
-### "Resultados no se muestran"
-- **Causa**: No se activó toggle "Mostrar resultados"
-- **Solución**: En monitoreo, activar el switch después de finalizar ronda
+## 🔐 Integridad y límites
 
-## 📝 Changelog
+### Lo que protege el sistema
 
-### v2.0 - Sistema de Rondas Mejorado
-- ✅ Contador de votos por ronda independiente
-- ✅ Selección por mayoría absoluta (>50%)
-- ✅ Ajuste dinámico de votos por persona
-- ✅ Bloqueo de eliminación con votos existentes
-- ✅ Indicador de meta alcanzada
-- ✅ Mejoras en UI de monitoreo
-- ✅ Candidatos seleccionados mostrados primero
+- ✅ Un votante no debería emitir varias papeletas en la misma ronda desde el mismo asiento.
+- ✅ El cupo evita que entren más votantes de los previstos.
+- ✅ Los resultados se calculan al cerrar la ronda, no mientras está abierta.
+- ✅ Los candidatos seleccionados salen de rondas posteriores.
 
+### Lo que debe cuidar la mesa
+
+- ⚠️ No editar candidatos de forma sustancial cuando ya hay votos.
+- ⚠️ No compartir resultados antes de cerrar la ronda.
+- ⚠️ No confiar solo en fingerprinting como sustituto de un censo organizativo.
+- ⚠️ No subir datos personales reales al repositorio.
+
+---
+
+## 📊 Qué revisar durante una votación
+
+| Momento | Revisión |
+|---------|----------|
+| Antes de abrir sala | Candidatos, cupos, código de acceso y puestos a cubrir. |
+| Sala abierta | Número de asientos ocupados. |
+| Ronda en curso | Participación y estado de la sala. |
+| Ronda cerrada | Resultados, papeletas y candidatos seleccionados. |
+| Antes de siguiente ronda | Que los seleccionados ya no aparezcan como pendientes. |
+
+---
+
+## 🧪 Validación manual recomendada
+
+Antes de usar el sistema en una votación real:
+
+- [ ] Crear votación de prueba con `max_votantes = 3`.
+- [ ] Confirmar que el umbral es 2.
+- [ ] Votar con una sola papeleta y comprobar que nadie queda elegido.
+- [ ] Votar con dos papeletas al mismo candidato y comprobar que queda elegido.
+- [ ] Iniciar una segunda ronda.
+- [ ] Revisar `/proyeccion`.
+- [ ] Exportar resultados o papeletas si la mesa lo necesita.
+
+---
+
+## 🧯 Problemas frecuentes
+
+| Síntoma | Causa probable | Solución |
+|---------|----------------|----------|
+| No aparecen candidatos en siguiente ronda | Todos quedaron seleccionados o eliminados. | Revisar estado de candidatos en admin. |
+| No se puede votar | Sala pausada, cerrada o asiento inválido. | Revisar estado de la ronda. |
+| Resultados no se ven | No se han publicado/proyectado. | Activar visualización desde admin. |
+| Umbral incorrecto con número par | Migración antigua. | `calculate_selection_threshold(4)` debe devolver `3`. |
+
+---
+
+## 📚 Relacionado
+
+- ⚡ [Inicio rápido](./QUICK_START.md)
+- 🔧 [Migraciones](./MIGRATION_INSTRUCTIONS.md)
+- 🔄 [Tiempo real](./REALTIME_ROUND_UPDATES.md)

@@ -22,7 +22,7 @@
 
 #### Umbral Fijo de Selección
 - **Cálculo basado en cupo, no en votos emitidos**
-  - Fórmula: `umbral = ceil(0.5 * max_votantes)`
+  - Fórmula: `umbral = floor(max_votantes / 2) + 1`
   - Ejemplo: con `max_votantes=3`, un candidato necesita mínimo 2 votos
   - Previene que 1 votante seleccione múltiples candidatos
 
@@ -126,16 +126,13 @@
 
 ### 📚 Documentación
 
-**Nuevos archivos**:
-- `EXECUTIVE_SUMMARY.md` - Resumen ejecutivo completo
-- `MIGRATION_INSTRUCTIONS.md` - Guía detallada de migraciones
-- `VOTING_PAGE_IMPLEMENTATION_GUIDE.md` - Código completo para VotingPage.tsx
-- `IMPLEMENTATION_SUMMARY.md` - Resumen técnico de implementación
-- `QUICK_START.md` - Guía rápida de despliegue
-- `CHANGELOG.md` - Este archivo
-
-**Archivos actualizados**:
-- `README.md` (pendiente - actualizar con nuevas características)
+**Documentos principales**:
+- `README.md` - Visión general del proyecto
+- `docs/README.md` - Índice de documentación
+- `docs/QUICK_START.md` - Puesta en marcha
+- `docs/VOTING_SYSTEM_GUIDE.md` - Funcionamiento por rondas
+- `docs/MIGRATION_INSTRUCTIONS.md` - Guía de migraciones
+- `docs/SECURITY.md` - Recomendaciones para repo público
 
 ### ⚠️ Breaking Changes
 

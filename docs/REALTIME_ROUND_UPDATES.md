@@ -34,7 +34,7 @@ Este documento resume el cambio que permitió que la página de votación reacci
 3. Confirmar que la página de votación reacciona sin recargar.
 
 ## 📁 Referencia rápida
-- Código fuente: [`src/components/VotingPage.tsx`](../src/components/VotingPage.tsx)
+- Código fuente: [`src/pages/VotingPage.tsx`](../src/pages/VotingPage.tsx)
 - Hooks relacionados: [`src/hooks/use-toast.ts`](../src/hooks/use-toast.ts)
 - Supabase Realtime: [`src/lib/supabase.ts`](../src/lib/supabase.ts)
 

@@ -1,46 +1,77 @@
 # 📚 Guía de documentación
 
-La carpeta `docs/` ahora está organizada por objetivos concretos para facilitar el acceso a la información relevante del proyecto.
-
-## 🧭 Vistas generales
-| Documento | Para qué sirve | Tiempo estimado |
-|-----------|----------------|-----------------|
-| [`EXECUTIVE_SUMMARY.md`](./EXECUTIVE_SUMMARY.md) | Contexto de negocio y cambios principales introducidos en la versión 2.0.0. | 15 min |
-| [`PROJECT_STRUCTURE.md`](./PROJECT_STRUCTURE.md) | Detalle de la arquitectura del repositorio y convenciones de carpetas. | 10 min |
-| [`IMPLEMENTATION_SUMMARY.md`](./IMPLEMENTATION_SUMMARY.md) | Estado técnico de cada módulo y decisiones relevantes. | 10 min |
-
-## 🚀 Puesta en marcha y operaciones
-| Documento | Contenido clave |
-|-----------|-----------------|
-| [`QUICK_START.md`](./QUICK_START.md) | Pasos mínimos para levantar el entorno local y desplegar cambios. |
-| [`MIGRATION_INSTRUCTIONS.md`](./MIGRATION_INSTRUCTIONS.md) | Procedimiento paso a paso para ejecutar las migraciones de base de datos. |
-| [`REALTIME_ROUND_UPDATES.md`](./REALTIME_ROUND_UPDATES.md) | Detalles del fix que garantiza que los votantes reciben cambios en tiempo real. |
-
-## 🛠️ Guías de características
-| Documento | Descripción |
-|-----------|-------------|
-| [`VOTING_SYSTEM_GUIDE.md`](./VOTING_SYSTEM_GUIDE.md) | Conceptos funcionales del sistema de votación y roles. |
-| [`VOTING_PAGE_IMPLEMENTATION_GUIDE.md`](./VOTING_PAGE_IMPLEMENTATION_GUIDE.md) | Implementación completa de la página de votación con gestión de asientos. |
-| [`ROUND_FINALIZED_CHANGES.md`](./ROUND_FINALIZED_CHANGES.md) | Flujo completo para finalizar rondas y compartir resultados. |
-| [`EPIC_RESULTS_DISPLAY.md`](./EPIC_RESULTS_DISPLAY.md) | Historia de usuario y UX de la visualización de resultados. |
-
-## 🧪 Debug y soporte
-| Documento | Uso |
-|-----------|-----|
-| [`DEBUGGING_REALTIME.md`](./DEBUGGING_REALTIME.md) | Checklist y comandos útiles cuando el realtime presenta problemas. |
-
-## 📦 Versionado
-| Documento | Qué encontrarás |
-|-----------|-----------------|
-| [`CHANGELOG.md`](./CHANGELOG.md) | Historial de cambios del proyecto. |
-| [`RELEASE_NOTES_v2.0.0.md`](./RELEASE_NOTES_v2.0.0.md) | Release notes oficiales de la versión 2.0.0. |
-
-## 📁 Archivos heredados
-Los documentos antiguos que siguen siendo referencia puntual (por ejemplo, diseños previos o migraciones obsoletas) se conservan en esta misma carpeta. Cada archivo incluye una nota inicial indicando si la información está vigente o si debe considerarse histórica.
+Bienvenido/a a la documentación de **MCM Votaciones**. La idea de esta carpeta es que una persona técnica pueda desplegar el sistema, y una persona no tan técnica pueda entender cómo se usa en una votación real.
 
 ---
 
-### Próximos pasos sugeridos
-1. Revisa [`supabase/sqls/README.md`](../supabase/sqls/README.md) para ejecutar las migraciones en el orden correcto.
-2. Consulta [`README.md`](../README.md) en la raíz del repositorio para comandos y scripts comunes.
-3. Mantén esta estructura cuando agregues nuevos documentos: comienza por describir el objetivo del archivo y enlázalo desde esta guía.
+## 🧭 Lectura recomendada
+
+| Si quieres... | Empieza por | Después mira |
+|---------------|-------------|--------------|
+| Levantar el proyecto en local | [⚡ QUICK_START.md](./QUICK_START.md) | [🔧 MIGRATION_INSTRUCTIONS.md](./MIGRATION_INSTRUCTIONS.md) |
+| Entender cómo se vota | [🗳️ VOTING_SYSTEM_GUIDE.md](./VOTING_SYSTEM_GUIDE.md) | [🔄 REALTIME_ROUND_UPDATES.md](./REALTIME_ROUND_UPDATES.md) |
+| Preparar Supabase | [🔧 MIGRATION_INSTRUCTIONS.md](./MIGRATION_INSTRUCTIONS.md) | [../supabase/sqls/README.md](../supabase/sqls/README.md) |
+| Importar candidatos desde CRM | [📥 COMUNICA_IMPORT_GUIDE.md](./COMUNICA_IMPORT_GUIDE.md) | [crm-reference/CAMPOS_SINERGIA_CRM.md](./crm-reference/CAMPOS_SINERGIA_CRM.md) |
+| Revisar riesgos de repo público | [🔐 SECURITY.md](./SECURITY.md) | [📥 COMUNICA_IMPORT_GUIDE.md](./COMUNICA_IMPORT_GUIDE.md) |
+
+---
+
+## 🚀 Puesta en marcha y operación
+
+| Documento | Contenido | Tiempo |
+|-----------|-----------|--------|
+| [⚡ QUICK_START.md](./QUICK_START.md) | Instalación local, `.env.local`, Supabase y primer admin. | 15 min |
+| [🔧 MIGRATION_INSTRUCTIONS.md](./MIGRATION_INSTRUCTIONS.md) | Orden de scripts SQL, backups, umbral Canon 119 y validaciones. | 20 min |
+| [🔄 REALTIME_ROUND_UPDATES.md](./REALTIME_ROUND_UPDATES.md) | Cómo se actualizan votantes, admin y proyección sin recargar. | 5 min |
+| [🐛 DEBUGGING_REALTIME.md](./DEBUGGING_REALTIME.md) | Checklist cuando el tiempo real no responde. | 10 min |
+
+---
+
+## 🗳️ Guías funcionales
+
+| Documento | Para qué sirve |
+|-----------|----------------|
+| [🗳️ VOTING_SYSTEM_GUIDE.md](./VOTING_SYSTEM_GUIDE.md) | Explica el flujo de votación por rondas y el Canon 119. |
+| [📥 COMUNICA_IMPORT_GUIDE.md](./COMUNICA_IMPORT_GUIDE.md) | Explica la importación opcional desde SinergiaCRM. |
+| [📜 CHANGELOG.md](./CHANGELOG.md) | Historial resumido de cambios relevantes. |
+| [🏷️ RELEASE_NOTES_v2.0.0.md](./RELEASE_NOTES_v2.0.0.md) | Notas históricas de la versión 2.0.0. |
+
+---
+
+## 🧩 Material técnico y heredado
+
+| Carpeta / archivo | Estado | Nota |
+|-------------------|--------|------|
+| `docs/crm/` | Referencia técnica | Ejemplos heredados del CRM. Deben usar placeholders, nunca credenciales reales. |
+| `docs/crm-reference/` | Referencia útil | Campos conocidos de SinergiaCRM. |
+| `docs/redesign/` | Histórico | Prototipos de interfaz. No son necesarios para desplegar. |
+| `VOTING_PAGE_IMPLEMENTATION_GUIDE.md` | Histórico/técnico | Útil para contexto, pero la página de voto ya existe en `src/pages/VotingPage.tsx`. |
+
+---
+
+## ✅ Criterio editorial
+
+Para mantener la documentación agradable y útil:
+
+- 🎯 Empieza cada documento explicando **para qué sirve**.
+- 🧾 Usa tablas cuando ayuden a comparar opciones.
+- 🧪 Separa validación manual de instrucciones de instalación.
+- 🔐 No publiques secretos, endpoints internos, project refs privados ni datos personales.
+- 🪶 Mantén el tono claro: suficiente para técnicos, amable para quien no vive dentro del código.
+- 🔗 Si enlazas un archivo, comprueba que existe.
+
+---
+
+## 🧹 Cosas que se evitaron a propósito
+
+- Una guía de contribución larga: no es un proyecto orientado a recibir contribuciones externas.
+- Credenciales de ejemplo realistas: en un repo público son una mala idea.
+- Documentación demasiado interna de decisiones antiguas en la portada.
+
+---
+
+## 📌 Próximos pasos sugeridos
+
+1. Lee [⚡ QUICK_START.md](./QUICK_START.md) si vas a levantar el proyecto.
+2. Lee [🗳️ VOTING_SYSTEM_GUIDE.md](./VOTING_SYSTEM_GUIDE.md) si vas a usarlo en una votación.
+3. Lee [🔐 SECURITY.md](./SECURITY.md) antes de publicar cambios o hacer un fork.

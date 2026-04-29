@@ -361,18 +361,23 @@ COMMENT ON TABLE public.votes IS 'Votes with permissive RLS: access control hand
 COMMENT ON TABLE public.admin_users IS 'Admin users with bcrypt authentication - application-level access control';
 
 -- ============================================================================
--- PHASE 11: CREATE DEFAULT ADMIN USER (IF NOT EXISTS)
+-- PHASE 11: CREATE YOUR FIRST ADMIN USER
 -- ============================================================================
-
-INSERT INTO public.admin_users (username, password_hash, name, email, role) 
-VALUES (
-  'admin',
-  'Votaciones2025', -- Will be hashed by trigger
-  'Administrador MCM', 
-  'admin@movimientoconsolacion.com',
-  'super_admin'
-)
-ON CONFLICT (username) DO NOTHING;
+--
+-- This public repository intentionally does not create a default administrator
+-- with a known password. After running the setup, create your own admin from the
+-- Supabase SQL Editor. The trigger above hashes plain text passwords.
+--
+-- Example:
+--
+-- INSERT INTO public.admin_users (username, password_hash, name, email, role)
+-- VALUES (
+--   'admin',
+--   'CHANGE_THIS_PASSWORD',
+--   'Administrador',
+--   'admin@example.org',
+--   'super_admin'
+-- );
 
 -- ============================================================================
 -- SUCCESS!
@@ -380,5 +385,5 @@ ON CONFLICT (username) DO NOTHING;
 
 SELECT 
   'MCM Voting System database setup completed successfully!' as status,
-  'Default admin: username=admin, password=Votaciones2025' as credentials,
-  'IMPORTANT: Change the default password after first login!' as warning;
+  'Create an admin user with your own password before logging in.' as next_step,
+  'Never commit real credentials to the repository.' as warning;

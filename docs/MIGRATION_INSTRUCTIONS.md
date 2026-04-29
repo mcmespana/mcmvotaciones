@@ -1,337 +1,137 @@
-# 🔄 INSTRUCCIONES DE MIGRACIÓN - Sistema de Votaciones MCM
+# 🔧 Migraciones SQL
 
-## ⚠️ IMPORTANTE: LEE ESTO PRIMERO
+Guía para preparar o actualizar la base de datos de Supabase sin perder el hilo.
 
-Estas migraciones transforman el sistema de votaciones para implementar:
-1. **Umbral fijo de selección** basado en `max_votantes` (no en votos emitidos)
-2. **Sistema de cupos** con bloqueo por dispositivo/navegador
+> 🎯 **Objetivo**: saber qué scripts ejecutar, en qué orden y cómo validar la regla del Canon 119.  
+> 🧯 **Regla de oro**: en producción, primero backup; después migración.
 
-### Respaldo de Seguridad
+---
+
+## 🧭 Mapa rápido
+
+| Caso | Qué hacer |
+|------|-----------|
+| Instalación nueva | `setup-database.sql` + migraciones numeradas en orden. |
+| Proyecto ya existente | Backup + aplicar solo migraciones pendientes. |
+| Duda con el orden | Revisar [../supabase/sqls/README.md](../supabase/sqls/README.md). |
+| Error durante migración | Parar, revisar logs y restaurar si hay datos reales. |
+
+---
+
+## 1️⃣ Backup antes de producción
+
+Ejecuta una copia de tablas críticas antes de tocar una base con datos reales:
+
 ```sql
--- EJECUTAR ANTES DE CUALQUIER MIGRACIÓN
--- Crear backup de las tablas críticas
 CREATE TABLE rounds_backup AS SELECT * FROM rounds;
 CREATE TABLE candidates_backup AS SELECT * FROM candidates;
 CREATE TABLE votes_backup AS SELECT * FROM votes;
 CREATE TABLE round_results_backup AS SELECT * FROM round_results;
+CREATE TABLE seats_backup AS SELECT * FROM seats;
 ```
 
-## 📋 Orden de ejecución
+> ℹ️ Si alguna tabla todavía no existe, omite esa línea.  
+> 📌 Guarda también un backup externo desde el dashboard de Supabase si la votación es importante.
 
-> 📌 **Atajo recomendado**: ejecuta `supabase/sqls/upgrade-to-v2-0-0.sql` para aplicar todas las migraciones de la versión 2.0.0 en una sola corrida. El archivo incluye los pasos 1 a 4 descritos abajo y muestra avisos en cada fase.
+---
 
-Si prefieres correr cada script individualmente, ejecútalos en el **Supabase SQL Editor** en este orden exacto:
+## 2️⃣ Instalación nueva
 
-### ✅ Paso 1: Renombrar expected_voters → max_votantes
-**Archivo**: `supabase/sqls/001-rename-expected-voters-to-max-votantes.sql`
+### Orden recomendado
 
-**Qué hace**:
-- Renombra la columna `expected_voters` a `max_votantes` en la tabla `rounds`
-- Actualiza comentarios de documentación
+| Paso | Archivo | Qué hace |
+|------|---------|----------|
+| 1 | `supabase/sqls/setup-database.sql` | Crea tablas base, funciones y permisos iniciales. |
+| 2 | `001-rename-expected-voters-to-max-votantes.sql` | Cambia la semántica a cupos máximos. |
+| 3 | `002-create-seats-table.sql` | Añade asientos/cupos técnicos de votantes. |
+| 4 | `003-update-majority-to-fixed-threshold.sql` | Aplica umbral fijo según Canon 119. |
+| 5 | `004-seats-management-api.sql` | Añade RPC para gestionar asientos. |
+| 6 | `005+` | Aplica mejoras posteriores en orden numérico. |
 
-**Validación**:
+Después crea tu primer administrador. El setup no deja una password conocida en el repo.
+
+---
+
+## 3️⃣ Actualizar una instalación existente
+
+1. Identifica qué scripts ya se aplicaron.
+2. Haz backup.
+3. Aplica las migraciones que falten en orden.
+4. Valida funciones clave.
+5. Haz una votación de prueba antes de usarlo en una sesión real.
+
+### Validación rápida
+
 ```sql
--- Verificar que la columna existe
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'rounds' AND column_name = 'max_votantes';
-
--- Debe retornar 1 fila: max_votantes | integer
-```
-
-**Rollback si es necesario**:
-```sql
-ALTER TABLE public.rounds RENAME COLUMN max_votantes TO expected_voters;
+SELECT calculate_selection_threshold(3);  -- esperado: 2
+SELECT calculate_selection_threshold(4);  -- esperado: 3
+SELECT calculate_selection_threshold(5);  -- esperado: 3
+SELECT calculate_selection_threshold(10); -- esperado: 6
 ```
 
 ---
 
-### ✅ Paso 2: Crear tabla de asientos (seats)
-**Archivo**: `supabase/sqls/002-create-seats-table.sql`
+## ⚖️ Umbral Canon 119
 
-**Qué hace**:
-- Crea tipo enum `seat_status` (libre, ocupado, expirado)
-- Crea tabla `seats` con fingerprinting completo
-- Añade columna `seat_id` a tabla `votes`
-- Crea índices optimizados
-- Añade funciones helper: `count_occupied_seats()`, `get_max_votantes()`
+La fórmula correcta es:
 
-**Validación**:
-```sql
--- Verificar que la tabla existe
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public' AND table_name = 'seats';
-
--- Verificar que votes tiene seat_id
-SELECT column_name FROM information_schema.columns 
-WHERE table_name = 'votes' AND column_name = 'seat_id';
-
--- Probar funciones helper
-SELECT count_occupied_seats('00000000-0000-0000-0000-000000000000'::UUID);
+```text
+floor(max_votantes / 2) + 1
 ```
 
-**Rollback si es necesario**:
-```sql
-DROP TABLE IF EXISTS public.seats CASCADE;
-ALTER TABLE public.votes DROP COLUMN IF EXISTS seat_id;
-DROP FUNCTION IF EXISTS count_occupied_seats(UUID);
-DROP FUNCTION IF EXISTS get_max_votantes(UUID);
-DROP TYPE IF EXISTS seat_status;
-```
+| `max_votantes` | Umbral |
+|----------------|--------|
+| 3 | 2 |
+| 4 | 3 |
+| 5 | 3 |
+| 10 | 6 |
+
+> ⚠️ **Atención con migraciones antiguas**  
+> Si una instalación conserva una función basada en `ceil(max_votantes * 0.5)`, con 4 votantes daría 2. Para Canon 119 debe dar 3.
 
 ---
 
-### ✅ Paso 3: Actualizar lógica de mayoría a umbral fijo
-**Archivo**: `supabase/sqls/003-update-majority-to-fixed-threshold.sql`
+## 🧩 Funciones SQL importantes
 
-**Qué hace**:
-- Crea función `calculate_selection_threshold(max_votantes)` → `ceil(0.5 * max_votantes)`
-- Actualiza `calculate_round_results_with_majority()` para usar umbral fijo
-- Actualiza `process_round_results()` con información de umbral
-- Incluye tests automáticos de validación
-
-**Validación**:
-```sql
--- Verificar función de umbral
-SELECT calculate_selection_threshold(3); -- Debe retornar: 2
-SELECT calculate_selection_threshold(4); -- Debe retornar: 2
-SELECT calculate_selection_threshold(5); -- Debe retornar: 3
-
--- Simular escenario: max_votantes=3, 1 votante con 3 votos
--- (los candidatos NO deben ser seleccionados)
-```
-
-**Importante**: Esta migración REEMPLAZA las funciones existentes de cálculo de mayoría.
-
-**Rollback**: 
-Restaurar funciones desde `supabase/sqls/fix-majority-calculation-people.sql` (versión anterior).
+| Función | Uso |
+|---------|-----|
+| `calculate_selection_threshold(max_votantes)` | Calcula el umbral de elección. |
+| `join_round_seat(...)` | Reserva o recupera asiento para un votante. |
+| `verify_seat(...)` | Comprueba que el asiento sigue activo. |
+| `get_round_seats_status(round_id)` | Devuelve ocupados, expirados y disponibles. |
+| `process_round_results(round_id, round_number)` | Procesa resultados de una ronda. |
+| `start_new_round(round_id)` | Prepara la siguiente ronda. |
 
 ---
 
-### ✅ Paso 4: Crear API de gestión de asientos
-**Archivo**: `supabase/sqls/004-seats-management-api.sql`
+## 🧪 Prueba mínima tras migrar
 
-**Qué hace**:
-- `join_round_seat()`: asignar/recuperar asiento
-- `verify_seat()`: validar asiento activo
-- `get_round_seats_status()`: consultar estado de cupos
-- `clear_round_seats()`: limpiar asientos al finalizar
-- `expire_inactive_seats()`: mantenimiento de timeouts
-
-**Validación**:
-```sql
--- Probar join_round_seat con una ronda existente
-SELECT join_round_seat(
-  (SELECT id FROM rounds LIMIT 1), -- round_id
-  'test_fingerprint_123',
-  'test_browser_456',
-  'Mozilla/5.0...',
-  '192.168.1.1'
-);
-
--- Debe retornar JSON con success: true, seat_id, is_new: true
-
--- Verificar estado de asientos
-SELECT get_round_seats_status((SELECT id FROM rounds LIMIT 1));
-```
-
-**Rollback si es necesario**:
-```sql
-DROP FUNCTION IF EXISTS join_round_seat(UUID, TEXT, TEXT, TEXT, TEXT);
-DROP FUNCTION IF EXISTS verify_seat(UUID, TEXT, TEXT);
-DROP FUNCTION IF EXISTS get_round_seats_status(UUID);
-DROP FUNCTION IF EXISTS clear_round_seats(UUID);
-DROP FUNCTION IF EXISTS expire_inactive_seats(INTEGER);
-```
+| Paso | Acción | Esperado |
+|------|--------|----------|
+| 1 | Crear votación con `max_votantes = 3`. | Umbral 2. |
+| 2 | Añadir tres candidatos. | Candidatos visibles. |
+| 3 | Emitir una sola papeleta. | Nadie queda elegido. |
+| 4 | Repetir con dos votos al mismo candidato. | Ese candidato queda elegido. |
+| 5 | Iniciar siguiente ronda. | Solo compiten pendientes. |
 
 ---
 
-## 🧪 PRUEBAS POST-MIGRACIÓN
+## 🧯 Rollback
 
-### Test 1: Umbral de Selección (CA1)
-```sql
--- Escenario: max_votantes=3, solo 1 persona vota por 3 candidatos
--- RESULTADO ESPERADO: 0 candidatos seleccionados
+El rollback depende del punto exacto donde falló la migración.
 
--- 1. Crear ronda de prueba
-INSERT INTO rounds (title, year, team, max_votantes, max_selected_candidates, is_active)
-VALUES ('Test Umbral', 2025, 'ECE', 3, 6, true)
-RETURNING id;
+| Situación | Recomendación |
+|-----------|---------------|
+| Fallo antes de votos reales | Restaurar desde tablas `*_backup` o backup Supabase. |
+| Fallo después de votos reales | No hacer rollback parcial sin revisar datos. |
+| Migración a medias | Parar, revisar SQL Editor History y aplicar corrección controlada. |
 
--- Usar el ID retornado (ejemplo: 'abc-123-...')
-
--- 2. Crear 3 candidatos
-INSERT INTO candidates (round_id, name, surname, order_index)
-VALUES 
-  ('abc-123-...', 'Candidato', 'A', 1),
-  ('abc-123-...', 'Candidato', 'B', 2),
-  ('abc-123-...', 'Candidato', 'C', 3);
-
--- 3. Crear 1 asiento
-SELECT join_round_seat(
-  'abc-123-...'::UUID,
-  'fingerprint_voter1',
-  'browser_voter1',
-  'Mozilla/5.0',
-  '127.0.0.1'
-);
-
--- 4. Simular 3 votos del mismo votante (1 por candidato)
--- (Insertar manualmente en tabla votes con mismo device_hash/seat_id)
-
--- 5. Procesar resultados
-SELECT process_round_results('abc-123-...'::UUID, 1);
-
--- 6. Verificar que NINGÚN candidato fue seleccionado
-SELECT name, surname, is_selected 
-FROM candidates 
-WHERE round_id = 'abc-123-...';
-
--- ESPERADO: todas las filas con is_selected = false
-```
-
-### Test 2: Cupos Llenos (CA4)
-```sql
--- Escenario: max_votantes=3, intentar 4to dispositivo
--- RESULTADO ESPERADO: 4to recibe error ROUND_FULL
-
--- 1. Unir 3 dispositivos
-SELECT join_round_seat('abc-123-...'::UUID, 'fp1', 'br1', NULL, NULL);
-SELECT join_round_seat('abc-123-...'::UUID, 'fp2', 'br2', NULL, NULL);
-SELECT join_round_seat('abc-123-...'::UUID, 'fp3', 'br3', NULL, NULL);
-
--- 2. Intentar 4to dispositivo
-SELECT join_round_seat('abc-123-...'::UUID, 'fp4', 'br4', NULL, NULL);
-
--- ESPERADO: 
--- { "success": false, "error_code": "ROUND_FULL", "occupied_seats": 3, "max_votantes": 3 }
-```
-
-### Test 3: Reingreso Exitoso (CA5, CA7)
-```sql
--- Escenario: mismo fingerprint + browser_instance_id puede reingresar
-
--- 1. Unir dispositivo
-SELECT join_round_seat('abc-123-...'::UUID, 'fp_same', 'br_same', NULL, NULL);
-
--- 2. "Salir" (simular cierre de pestaña - no hacer nada)
-
--- 3. Reintentar con mismos datos
-SELECT join_round_seat('abc-123-...'::UUID, 'fp_same', 'br_same', NULL, NULL);
-
--- ESPERADO:
--- { "success": true, "seat_id": "...", "is_new": false, "message": "Reingreso exitoso..." }
-```
-
-### Test 4: Bloqueo por Cambio de Navegador (CA6)
-```sql
--- Escenario: mismo fingerprint pero diferente browser_instance_id = bloqueado
-
--- 1. Unir con fingerprint X + browser A
-SELECT join_round_seat('abc-123-...'::UUID, 'fp_device1', 'browser_A', NULL, NULL);
-
--- 2. Intentar con fingerprint X + browser B (diferente navegador)
-SELECT join_round_seat('abc-123-...'::UUID, 'fp_device1', 'browser_B', NULL, NULL);
-
--- ESPERADO (si cupo no lleno):
--- Se crea un NUEVO asiento (cada combinación única es un asiento diferente)
--- Pero al votar, verify_seat rechazará si no coincide con el asiento original
-```
+> 🛑 No borres tablas de votos o resultados reales sin una copia verificada.
 
 ---
 
-## 📊 LIMPIEZA DE DATOS DE PRUEBA
+## 📚 Relacionado
 
-```sql
--- Eliminar rondas de prueba
-DELETE FROM rounds WHERE title LIKE 'Test%';
-
--- Limpiar asientos expirados
-SELECT expire_inactive_seats(10); -- Expira asientos inactivos >10 min
-
--- Restaurar desde backup si algo salió mal
-TRUNCATE TABLE rounds;
-INSERT INTO rounds SELECT * FROM rounds_backup;
--- (Repetir para otras tablas según necesidad)
-```
-
----
-
-## ⚙️ CONFIGURACIÓN RECOMENDADA POST-MIGRACIÓN
-
-### 1. Job de Mantenimiento (pg_cron)
-```sql
--- Ejecutar cada 5 minutos para expirar asientos inactivos
-SELECT cron.schedule(
-  'expire-inactive-seats',
-  '*/5 * * * *', -- Cada 5 minutos
-  $$SELECT expire_inactive_seats(10)$$
-);
-```
-
-### 2. Trigger para Limpiar Asientos al Cerrar Ronda
-```sql
-CREATE OR REPLACE FUNCTION cleanup_seats_on_round_close()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.is_closed = true AND OLD.is_closed = false THEN
-    PERFORM clear_round_seats(NEW.id);
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER cleanup_seats_trigger
-  AFTER UPDATE OF is_closed ON rounds
-  FOR EACH ROW
-  EXECUTE FUNCTION cleanup_seats_on_round_close();
-```
-
----
-
-## 🚨 SOLUCIÓN DE PROBLEMAS
-
-### Error: "column expected_voters does not exist"
-**Causa**: La aplicación frontend aún usa `expected_voters`  
-**Solución**: Desplegar los cambios de frontend actualizados (VotingManagement.tsx, etc.)
-
-### Error: "function calculate_selection_threshold does not exist"
-**Causa**: Migración 003 no se ejecutó correctamente  
-**Solución**: Verificar logs de Supabase y re-ejecutar migración 003
-
-### Asientos no se liberan automáticamente
-**Causa**: Job de mantenimiento no está configurado  
-**Solución**: Ejecutar manualmente `SELECT expire_inactive_seats(10);` o configurar pg_cron
-
-### Votantes bloqueados incorrectamente
-**Causa**: Posible problema con fingerprinting en navegadores privados  
-**Solución**: Verificar que `browser_instance_id` se esté persistiendo correctamente en localStorage
-
----
-
-## 📞 SOPORTE
-
-Si encuentras problemas durante la migración:
-1. **NO** continuar con migraciones adicionales
-2. Consultar logs de Supabase: Dashboard → SQL Editor → History
-3. Ejecutar rollback de la última migración
-4. Revisar archivo `IMPLEMENTATION_SUMMARY.md` para contexto adicional
-
-## ✅ CHECKLIST FINAL
-
-- [ ] Backup de todas las tablas críticas
-- [ ] Migración 001 ejecutada y validada
-- [ ] Migración 002 ejecutada y validada
-- [ ] Migración 003 ejecutada y validada
-- [ ] Migración 004 ejecutada y validada
-- [ ] Tests post-migración ejecutados y pasados
-- [ ] Job de mantenimiento configurado
-- [ ] Trigger de limpieza configurado
-- [ ] Frontend desplegado con cambios actualizados
-- [ ] Documentación actualizada para usuarios finales
-
----
-
-**Fecha de creación**: 2025-10-10  
-**Versión**: 1.0.0  
-**Compatibilidad**: Requiere frontend actualizado con cambios de `device.ts` y tipos TypeScript
+- ⚡ [Inicio rápido](./QUICK_START.md)
+- 🗳️ [Guía funcional](./VOTING_SYSTEM_GUIDE.md)
+- 📦 [README de SQL](../supabase/sqls/README.md)

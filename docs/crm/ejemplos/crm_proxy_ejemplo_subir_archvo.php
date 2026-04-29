@@ -25,9 +25,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
 /** ===================== CONFIG ===================== **/
 
-const CRM_URL  = 'https://movimientoconsolacion.sinergiacrm.org/service/v4_1/rest.php';
-const CRM_USER = 'api_user';
-const CRM_PASS = 'w780kAp6GeG&EEffJBe0iVa)';
+const CRM_URL  = 'https://crm.example.org/service/v4_1/rest.php';
+const CRM_USER = '<CRM_USER>';
+const CRM_PASS = '<CRM_PASSWORD>';
 
 
 // Seguridad mínima: token compartido (no lo dejes como "1234", por tu bien)

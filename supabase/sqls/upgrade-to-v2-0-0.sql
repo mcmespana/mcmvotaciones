@@ -25,7 +25,7 @@ END $$;
 -- habilitados para cada ronda, NO una expectativa estimada.
 --
 -- El umbral de selección se calcula sobre este valor:
---   umbral = CEIL(0.5 * max_votantes)
+--   umbral = FLOOR(max_votantes / 2) + 1
 -- ============================================================================
 
 -- 1. Renombrar la columna en la tabla rounds
@@ -34,7 +34,7 @@ RENAME COLUMN expected_voters TO max_votantes;
 
 -- 2. Actualizar comentario de la columna
 COMMENT ON COLUMN public.rounds.max_votantes IS
-  'Número máximo de votantes (cupos) habilitados para esta ronda. Define el umbral de selección: ceil(0.5 * max_votantes)';
+  'Número máximo de votantes (cupos) habilitados para esta ronda. Define el umbral de selección: floor(max_votantes / 2) + 1';
 
 -- 3. Verificar el cambio
 DO $$
@@ -180,10 +180,10 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   IF max_votantes IS NULL OR max_votantes <= 0 THEN
-    RETURN 0;
+    RETURN 1;
   END IF;
 
-  RETURN CEIL(max_votantes * 0.5);
+  RETURN FLOOR(max_votantes / 2.0) + 1;
 END;
 $$;
 

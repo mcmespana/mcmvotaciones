@@ -63,13 +63,13 @@ const fingerprint = {
 
 **Ahora (v2.0)**:
 - ✅ Umbral fijo basado en `max_votantes`
-- ✅ Fórmula: `umbral = ceil(0.5 * max_votantes)`
+- ✅ Fórmula: `umbral = floor(max_votantes / 2) + 1`
 - ✅ Abstención no reduce el umbral
 
 ```sql
 -- Ejemplo: Ronda con 3 cupos
 max_votantes = 3
-umbral = ceil(0.5 * 3) = 2
+umbral = floor(3 / 2) + 1 = 2
 
 -- Escenarios:
 -- Si solo 1 persona vota: Ningún candidato se selecciona (necesitan 2 votos)
@@ -187,8 +187,8 @@ const [browserInstanceId] = useState(() => generateBrowserInstanceId());
 | Archivo | Cambios | Estado |
 |---------|---------|--------|
 | `src/lib/device.ts` | +150 líneas (fingerprinting) | ✅ Completo |
-| `src/components/VotingManagement.tsx` | Interfaces + UI update | ✅ Completo |
-| `src/components/VotingPage.tsx` | Sistema de asientos | 📝 Documentado |
+| `src/components/admin/AdminVotingDetail.tsx` | Gestion de rondas y cupos | ✅ Completo |
+| `src/pages/VotingPage.tsx` | Sistema de asientos | ✅ Completo |
 
 ### Documentación
 
@@ -196,13 +196,11 @@ const [browserInstanceId] = useState(() => generateBrowserInstanceId());
 |---------|-------------|
 | `docs/README.md` | Índice de docs |
 | `docs/QUICK_START.md` | 5 pasos para deployment |
-| `docs/EXECUTIVE_SUMMARY.md` | Resumen ejecutivo |
 | `docs/MIGRATION_INSTRUCTIONS.md` | Guía paso a paso |
 | `docs/VOTING_PAGE_IMPLEMENTATION_GUIDE.md` | Código completo |
-| `docs/IMPLEMENTATION_SUMMARY.md` | Estado técnico |
+| `docs/VOTING_SYSTEM_GUIDE.md` | Guia funcional |
+| `docs/SECURITY.md` | Seguridad para repo publico |
 | `docs/CHANGELOG.md` | Historial detallado |
-| `PROJECT_STRUCTURE.md` | Organización de archivos |
-| `CONTRIBUTING.md` | Guía de contribución |
 
 ---
 
@@ -253,7 +251,7 @@ npm run build
 ```
 
 **Tiempo estimado**: 60-90 minutos  
-**Documentación**: [`docs/QUICK_START.md`](./docs/QUICK_START.md)
+**Documentación**: [`QUICK_START.md`](./QUICK_START.md)
 
 ---
 
@@ -290,7 +288,7 @@ npm run build
 - [ ] Loading states durante join/verify
 - [ ] Votación deshabilitada si asiento inválido
 
-**Documentación completa**: [`docs/MIGRATION_INSTRUCTIONS.md`](./docs/MIGRATION_INSTRUCTIONS.md)
+**Documentación completa**: [`MIGRATION_INSTRUCTIONS.md`](./MIGRATION_INSTRUCTIONS.md)
 
 ---
 
@@ -308,22 +306,19 @@ Ninguno reportado al momento del lanzamiento.
 
 ## 🙏 Agradecimientos
 
-Gracias a todos los que contribuyeron a esta versión:
-- Equipo de desarrollo
-- Testers
-- Movimiento Cultural Misionero
+Gracias a todas las personas que probaron y revisaron esta version.
 
 ---
 
 ## 📚 Recursos Adicionales
 
-- 📖 [Documentación completa](./docs/README.md)
-- 🤝 [Guía de contribución](./CONTRIBUTING.md)
-- 🗂️ [Estructura del proyecto](./PROJECT_STRUCTURE.md)
+- 📖 [Documentación completa](./README.md)
+- 🚀 [Inicio rapido](./QUICK_START.md)
+- 🔄 [Migraciones](./MIGRATION_INSTRUCTIONS.md)
 - 🐛 [Debugging en tiempo real](./DEBUGGING_REALTIME.md)
 
 ---
 
 **🎉 ¡Disfruta MCM Votaciones v2.0.0!**
 
-*Desarrollado con ❤️ para el Movimiento Cultural Misionero*
+*Desarrollado para Movimiento Consolación para el Mundo*

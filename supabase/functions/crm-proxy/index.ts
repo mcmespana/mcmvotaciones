@@ -2,8 +2,7 @@
 // Actúa de proxy entre la SPA y SinergiaCRM para evitar CORS y ocultar credenciales.
 // Deno runtime
 
-const CRM_URL = Deno.env.get('SINERGIA_URL') ??
-  'https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php';
+const CRM_URL = Deno.env.get('SINERGIA_URL') ?? '';
 const CRM_USER_SECRET = Deno.env.get('SINERGIA_USER') ?? '';
 const CRM_PASS_SECRET = Deno.env.get('SINERGIA_PASS') ?? '';
 
@@ -18,6 +17,8 @@ const CORS_HEADERS = {
 // ---------------------------------------------------------------------------
 
 async function crmCall(method: string, params: unknown): Promise<Record<string, unknown>> {
+  if (!CRM_URL) throw new Error('CRM URL not configured (SINERGIA_URL)');
+
   const body = new URLSearchParams();
   body.set('method', method);
   body.set('input_type', 'JSON');

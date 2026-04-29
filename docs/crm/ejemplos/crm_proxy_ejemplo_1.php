@@ -2,12 +2,12 @@
 // crm_proxy.php — Proxy WordPress -> SinergiaCRM (busca por DNI y devuelve datos ordenados)
 
 // ====== CONFIG ======
-$CRM_URL = 'https://movimientoconsolacion.sinergiacrm.org/custom/service/v4_1_SticCustom/rest.php';
+$CRM_URL = 'https://crm.example.org/custom/service/v4_1_SticCustom/rest.php';
 // Alternativa si hiciera falta:
-// $CRM_URL = 'https://movimientoconsolacion.sinergiacrm.org/service/v4_1/rest.php';
+// $CRM_URL = 'https://crm.example.org/service/v4_1/rest.php';
 
-$CRM_USER = 'api_user';
-$CRM_PASS = 'w780kAp6GeG&EEffJBe0iVa)';
+$CRM_USER = '<CRM_USER>';
+$CRM_PASS = '<CRM_PASSWORD>';
 
 // (Opcional recomendado) Limitar a tu dominio WP (rellénalo si quieres)
 // $ALLOWED_ORIGINS = ['https://tudominio.com', 'https://www.tudominio.com'];
