@@ -319,35 +319,6 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
                 }}
               />
 
-              {/* Floating particles around bubble (final step only) */}
-              {isFinal && (
-                <>
-                  {CONFETTI_COLORS.map((c, i) => {
-                    const angle = (i / 4) * Math.PI * 2;
-                    const r = 70;
-                    const x = Math.cos(angle) * r + 56;
-                    const y = Math.sin(angle) * r + 56;
-                    return (
-                      <span
-                        key={c}
-                        aria-hidden
-                        style={{
-                          position: "absolute",
-                          left: x - 5,
-                          top: y - 5,
-                          width: 10,
-                          height: 10,
-                          borderRadius: 999,
-                          background: c,
-                          boxShadow: `0 0 12px ${c}`,
-                          animation: `vsa-float 1.6s ease-in-out ${i * 0.15}s infinite`,
-                        }}
-                      />
-                    );
-                  })}
-                </>
-              )}
-
               {/* Bubble */}
               <div
                 className={`relative w-28 h-28 rounded-2xl ${step.bgColor} ring-1 ${step.ringColor} flex items-center justify-center`}

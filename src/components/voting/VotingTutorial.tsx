@@ -194,11 +194,6 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                   className="absolute inset-0 rounded-2xl"
                   style={{ border: `2px solid ${current.color}`, animation: "vtu-ring 1.6s ease-out infinite", animationDelay: "0.55s" }}
                 />
-                <span
-                  aria-hidden
-                  className="absolute -right-1 top-1 h-2 w-2 rounded-full"
-                  style={{ background: current.color, boxShadow: `0 0 12px ${current.color}`, animation: "vtu-float 1.5s ease-in-out infinite" }}
-                />
                 <div
                   className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300`}
                   style={{ margin: "2px" }}
