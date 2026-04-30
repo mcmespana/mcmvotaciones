@@ -15,8 +15,9 @@ export function ProjectionPage() {
         showConnectedCount={data.showConnectedInWaiting}
         waitingMode={data.waitingMode}
         roundTitle={data.round?.title ?? null}
-        accessCode={data.showAccessCodeInWaiting ? data.round?.access_code ?? null : null}
+        accessCode={data.round?.access_code ?? null}
         votingUrl={votingUrl}
+        previouslySelected={data.previouslySelected}
       />
     );
   }

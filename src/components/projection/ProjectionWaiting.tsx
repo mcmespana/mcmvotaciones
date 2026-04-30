@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ProjectionWaitingMode } from "@/hooks/useProjectionData";
+import { formatCandidateName } from "@/lib/candidateFormat";
+
+interface SelectedCandidate {
+  id: string;
+  name: string;
+  surname: string;
+  location: string | null;
+  selected_in_round: number | null;
+  selected_vote_count: number | null;
+}
 
 interface ProjectionWaitingProps {
   connectedCount: number;
@@ -9,6 +19,7 @@ interface ProjectionWaitingProps {
   roundTitle: string | null;
   accessCode: string | null;
   votingUrl: string;
+  previouslySelected?: SelectedCandidate[];
 }
 
 type ChipKind = "ok" | "warn" | "brand" | "muted";
@@ -51,6 +62,7 @@ export function ProjectionWaiting({
   roundTitle,
   accessCode,
   votingUrl,
+  previouslySelected = [],
 }: ProjectionWaitingProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -96,6 +108,11 @@ export function ProjectionWaiting({
         <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, var(--avd-brand-400), var(--avd-brand-600))", display: "grid", placeItems: "center", color: "white", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>C</div>
         <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>VotacionesMCM</span>
         <div style={{ flex: 1 }} />
+        {normalizedCode && (
+          <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 16, fontWeight: 800, letterSpacing: "0.1em", color: "var(--avd-brand)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", borderRadius: 8, padding: "4px 14px", whiteSpace: "nowrap" }}>
+            {normalizedCode}
+          </span>
+        )}
         <span style={chip(modeKind)}>{modeLabel}</span>
         <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--avd-fg-muted)" }}>
           {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
@@ -114,7 +131,7 @@ export function ProjectionWaiting({
           </div>
 
           {/* Access code */}
-          {normalizedCode && (
+          {normalizedCode && shouldShowJoinQr && (
             <div style={card({ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" })}>
               {accentBar("linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))")}
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 20 }}>Código de acceso</div>
@@ -186,19 +203,37 @@ export function ProjectionWaiting({
             </div>
           )}
 
-          <div style={{ padding: "28px", borderBottom: "1px solid var(--avd-border)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 8 }}>Estado</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={chip(modeKind)}>{modeLabel}</span>
-            </div>
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--avd-border)", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", flex: 1 }}>Seleccionadas</span>
+            {previouslySelected.length > 0 && (
+              <span style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok)", fontVariantNumeric: "tabular-nums" }}>{previouslySelected.length}</span>
+            )}
           </div>
-
-          {roundTitle && waitingMode !== "closed" && waitingMode !== "idle" && (
-            <div style={{ padding: "28px", borderBottom: "1px solid var(--avd-border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 8 }}>Ronda activa</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--avd-fg)", lineHeight: 1.3 }}>{roundTitle}</div>
-            </div>
-          )}
+          <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
+            {previouslySelected.length === 0 ? (
+              <div style={{ padding: "28px 24px", fontSize: 15, color: "var(--avd-fg-muted)", fontWeight: 500, textAlign: "center", lineHeight: 1.5 }}>
+                Ninguna candidata<br />seleccionada aún
+              </div>
+            ) : (
+              previouslySelected.map((c) => (
+                <div key={c.id} style={{ padding: "14px 24px", borderBottom: "1px solid var(--avd-border-soft)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "var(--avd-ok-fg)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {formatCandidateName(c)}
+                    </div>
+                    {c.location && (
+                      <div style={{ fontSize: 12, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 2 }}>{c.location}</div>
+                    )}
+                  </div>
+                  {c.selected_in_round && (
+                    <span style={{ flexShrink: 0, background: "var(--avd-ok-bg)", color: "var(--avd-ok-fg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 9999, padding: "2px 10px", fontSize: 13, fontWeight: 700 }}>
+                      R{c.selected_in_round}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

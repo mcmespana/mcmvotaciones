@@ -619,7 +619,7 @@ export function ComunicaImport() {
 
       {/* Confirm dialog */}
       {confirmOpen && (
-        <div className="avd-dialog-overlay" onClick={() => setConfirmOpen(false)}>
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmOpen(false); }}>
           <div className="avd-dialog" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Confirmar importación?</h2>

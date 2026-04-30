@@ -51,12 +51,6 @@ function slugify(value: string): string {
 function groupCandidates(candidates: Candidate[]): LocationGroup[] {
   const active = candidates.filter((c) => !c.is_eliminated && !c.is_selected);
 
-  // If any active candidate lacks a group_name, skip per-group subdivision
-  // entirely so partial data does not produce a misleading "Sin grupo" bucket.
-  const enableGroupSplit =
-    active.length > 0 &&
-    active.every((c) => (c.group_name?.trim() ?? "") !== "");
-
   const locationMap = new Map<string, Candidate[]>();
   for (const c of active) {
     const loc = c.location?.trim() || "Sin lugar asignado";
@@ -72,18 +66,6 @@ function groupCandidates(candidates: Candidate[]): LocationGroup[] {
 
   return sortedLocations.map((location) => {
     const locCandidates = locationMap.get(location)!;
-
-    if (!enableGroupSplit) {
-      const ages = locCandidates.filter((c) => c.age !== null).map((c) => c.age!);
-      const avgAge = ages.length > 0
-        ? ages.reduce((sum, a) => sum + a, 0) / ages.length
-        : Infinity;
-      return {
-        location,
-        groups: [{ groupName: "", candidates: locCandidates, avgAge }],
-        totalCount: locCandidates.length,
-      };
-    }
 
     const groupMap = new Map<string, Candidate[]>();
     for (const c of locCandidates) {

@@ -36,7 +36,7 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
   };
 
   return (
-    <div className="avd-dialog-overlay" onClick={onClose}>
+    <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="avd-dialog" style={{maxWidth:440}} onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
           <div style={{display:"flex", alignItems:"center", gap:10}}>

@@ -171,7 +171,7 @@ interface DeleteConfirmProps { round: RoundListItem | null; onClose: () => void;
 function DeleteConfirm({ round, onClose, onConfirm }: DeleteConfirmProps) {
   if (!round) return null;
   return (
-    <div className="avd-dialog-overlay" onClick={onClose}>
+    <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="avd-dialog" style={{maxWidth:420}} onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head"><h2>¿Eliminar votación?</h2><p>Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.</p></div>
         <div className="avd-dialog-body">
@@ -423,7 +423,7 @@ export function AdminVotingList() {
 
       {/* Create dialog */}
       {createOpen && (
-        <div className="avd-dialog-overlay" onClick={() => setCreateOpen(false)}>
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCreateOpen(false); }}>
           <div className="avd-dialog" onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head"><h2>Nueva votación</h2><p>Crea una votación sin salir de la lista.</p></div>
             <div className="avd-dialog-body">

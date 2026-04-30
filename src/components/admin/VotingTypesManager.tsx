@@ -95,7 +95,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
   if (!open) return null;
 
   return (
-    <div className="avd-dialog-overlay" onClick={onClose}>
+    <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="avd-dialog" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
           <h2>Tipos de votación</h2>
@@ -202,7 +202,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
 
       {/* Delete confirmation */}
       {deleteTarget && (
-        <div className="avd-dialog-overlay" onClick={() => setDeleteTarget(null)}>
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setDeleteTarget(null); }}>
           <div className="avd-dialog" style={{ maxWidth: 380 }} onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Eliminar tipo?</h2>

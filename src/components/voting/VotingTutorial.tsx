@@ -109,7 +109,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         <div
           className="avd-dialog-overlay"
           style={{ zIndex: 110 }}
-          onClick={handleClose}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) handleClose(); }}
         >
           <div
             className="avd-dialog"

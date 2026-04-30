@@ -1374,17 +1374,10 @@ export function VotingPage() {
         </div>
       </div>
 
-      {/* Sticky bottom action bar (hidden during submit animation to avoid the
-          previous selection summary leaking on top of the new ballot reveal). */}
+      {/* Sticky bottom action bar */}
       <div
-        aria-hidden={showSubmitAnimation}
-        className="fixed inset-x-0 bottom-0 z-[60] border-t-2 border-outline-variant bg-surface-container-lowest shadow-[0_-8px_24px_-12px_hsl(var(--outline-variant)/0.45)] dark:border-outline-variant dark:bg-surface-container-low px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))] transition-opacity duration-200"
-        style={{
-          backgroundColor: "hsl(var(--surface-container-lowest))",
-          opacity: showSubmitAnimation ? 0 : 1,
-          pointerEvents: showSubmitAnimation ? "none" : "auto",
-          visibility: showSubmitAnimation ? "hidden" : "visible",
-        }}
+        className="fixed inset-x-0 bottom-0 z-[60] border-t-2 border-outline-variant bg-surface-container-lowest shadow-[0_-8px_24px_-12px_hsl(var(--outline-variant)/0.45)] dark:border-outline-variant dark:bg-surface-container-low px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]"
+        style={{ backgroundColor: "hsl(var(--surface-container-lowest))", opacity: 1 }}
       >
         <div className="mx-auto max-w-4xl space-y-2">
           {/* Selected names row */}
@@ -1441,7 +1434,7 @@ export function VotingPage() {
       </div>
 
       {confirmVoteOpen && (
-        <div className="avd-dialog-overlay" style={{ zIndex: 110 }} onClick={() => !voting && setConfirmVoteOpen(false)}>
+        <div className="avd-dialog-overlay" style={{ zIndex: 110 }} onMouseDown={(e) => { if (e.target === e.currentTarget && !voting) setConfirmVoteOpen(false); }}>
           <div className="avd-dialog" style={{ maxWidth: 420, padding: 0 }} onClick={(e) => e.stopPropagation()}>
             <div style={{ height: 4, background: 'linear-gradient(90deg,#10b981,#2dd4bf,#10b981)' }} />
 
