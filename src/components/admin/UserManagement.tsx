@@ -108,7 +108,7 @@ export function UserManagement() {
     }
   };
 
-  useEffect(() => { loadUsers(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadUsers(); }, []);
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();

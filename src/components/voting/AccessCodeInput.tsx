@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect } from "react";
 import { KeyRound, ArrowRight } from "lucide-react";
 

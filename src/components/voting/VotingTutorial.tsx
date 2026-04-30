@@ -11,7 +11,8 @@ const STEPS = [
     iconBg: "bg-red-500/10",
     iconRing: "ring-red-500/25",
     dotActive: "bg-red-500",
-    topBar: "from-red-500/80 via-red-400/50 to-red-500/20",
+    topBar: "linear-gradient(90deg, rgba(239,68,68,0.85), rgba(248,113,113,0.55), rgba(239,68,68,0.2))",
+    color: "#ef4444",
     nextBg: "bg-red-500/10 hover:bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-400",
   },
   {
@@ -23,7 +24,8 @@ const STEPS = [
     iconBg: "bg-emerald-500/10",
     iconRing: "ring-emerald-500/25",
     dotActive: "bg-emerald-500",
-    topBar: "from-emerald-500/80 via-emerald-400/50 to-emerald-500/20",
+    topBar: "linear-gradient(90deg, rgba(16,185,129,0.85), rgba(52,211,153,0.55), rgba(16,185,129,0.2))",
+    color: "#10b981",
     nextBg: "bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
   },
   {
@@ -35,7 +37,8 @@ const STEPS = [
     iconBg: "bg-yellow-500/10",
     iconRing: "ring-yellow-500/25",
     dotActive: "bg-yellow-500",
-    topBar: "from-yellow-500/80 via-yellow-400/50 to-yellow-500/20",
+    topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
+    color: "#eab308",
     nextBg: "bg-yellow-500/10 hover:bg-yellow-500/15 border-yellow-500/30 text-yellow-700 dark:text-yellow-400",
   },
   {
@@ -47,7 +50,8 @@ const STEPS = [
     iconBg: "bg-blue-500/10",
     iconRing: "ring-blue-500/25",
     dotActive: "bg-blue-500",
-    topBar: "from-blue-500/80 via-blue-400/50 to-blue-500/20",
+    topBar: "linear-gradient(90deg, rgba(59,130,246,0.85), rgba(96,165,250,0.55), rgba(59,130,246,0.2))",
+    color: "#3b82f6",
     nextBg: "bg-blue-500/10 hover:bg-blue-500/15 border-blue-500/30 text-blue-700 dark:text-blue-400",
   },
 ];
@@ -70,6 +74,7 @@ function markTutorialSeen(): void {
 export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = false }: VotingTutorialProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const [iconKey, setIconKey] = useState(0);
 
   useEffect(() => {
     if (forceOpen) { setOpen(true); setStep(0); return; }
@@ -82,6 +87,11 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setIconKey((k) => k + 1);
+  }, [open, step]);
 
   const handleClose = () => { setOpen(false); setStep(0); markTutorialSeen(); };
   const handleNext  = () => { if (step < STEPS.length - 1) setStep(step + 1); else handleClose(); };
@@ -111,13 +121,44 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
           style={{ zIndex: 110 }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) handleClose(); }}
         >
+          <style>{`
+            @keyframes vtu-pop {
+              0%   { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+              60%  { transform: scale(1.1) rotate(3deg); opacity: 1; }
+              100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            }
+            @keyframes vtu-ring {
+              0%   { transform: scale(0.85); opacity: 0.55; }
+              100% { transform: scale(1.5); opacity: 0; }
+            }
+            @keyframes vtu-float {
+              0%,100% { transform: translateY(0) scale(1); opacity: 0.5; }
+              50%     { transform: translateY(-7px) scale(1.15); opacity: 1; }
+            }
+            @keyframes vtu-shimmer {
+              0%   { background-position: -200% 0; }
+              100% { background-position: 200% 0; }
+            }
+            .vtu-shimmer-bar {
+              background-size: 200% 100%;
+              animation: vtu-shimmer 1.8s linear infinite;
+            }
+          `}</style>
           <div
             className="avd-dialog"
             style={{ maxWidth: 420, padding: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top accent bar */}
-            <div className={`h-1 w-full bg-gradient-to-r ${current.topBar} transition-all duration-500`} />
+            <div
+              className="vtu-shimmer-bar"
+              style={{
+                height: 4,
+                width: "100%",
+                backgroundImage: current.topBar,
+                transition: "background-image 450ms",
+              }}
+            />
 
             {/* Icon area */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "32px 32px 24px" }}>
@@ -139,9 +180,31 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
 
               {/* Icon bubble */}
               <div
-                className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300`}
+                key={iconKey}
+                className="relative"
+                style={{ width: 84, height: 84, animation: "vtu-pop 520ms cubic-bezier(0.22, 1, 0.36, 1)" }}
               >
-                <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ border: `2px solid ${current.color}`, animation: "vtu-ring 1.6s ease-out infinite" }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ border: `2px solid ${current.color}`, animation: "vtu-ring 1.6s ease-out infinite", animationDelay: "0.55s" }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute -right-1 top-1 h-2 w-2 rounded-full"
+                  style={{ background: current.color, boxShadow: `0 0 12px ${current.color}`, animation: "vtu-float 1.5s ease-in-out infinite" }}
+                />
+                <div
+                  className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300`}
+                  style={{ margin: "2px" }}
+                >
+                  <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
+                </div>
               </div>
             </div>
 

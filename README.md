@@ -126,6 +126,15 @@ La aplicación queda disponible en `http://localhost:8080`.
 | `/candidatos/:votingId` | Galería pública de candidatos, si se habilita. | Sí |
 | `/comunica` | Importador opcional desde SinergiaCRM. | No |
 
+### Preview local UI (sin Supabase)
+
+Desde la ruta principal puedes forzar vistas de interfaz:
+
+- `/?preview=tutorial` abre `VotingTutorial`.
+- `/?preview=anim` abre `VoteSubmitAnimation`.
+- `/?preview=ticket` abre el ticket de "Voto registrado" con papeleta demo.
+- `/` vuelve al flujo normal.
+
 ---
 
 ## 📚 Documentación

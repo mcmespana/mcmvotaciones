@@ -10,6 +10,7 @@ import { debugLog } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { GroupedCandidateList } from '@/components/voting/GroupedCandidateList';
 import { VoteSubmitAnimation } from '@/components/voting/VoteSubmitAnimation';
+import { VotingTutorial } from '@/components/voting/VotingTutorial';
 import { AccessCodeInput, isAccessCodeVerified, markAccessCodeVerified } from '@/components/voting/AccessCodeInput';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 
@@ -73,6 +74,14 @@ interface VoteReceipt {
   voteCode: string;
   votes: string[];
   createdAt: string;
+}
+
+type PreviewMode = 'tutorial' | 'anim' | 'ticket';
+
+function getPreviewMode(): PreviewMode | null {
+  const value = new URLSearchParams(window.location.search).get('preview');
+  if (value === 'tutorial' || value === 'anim' || value === 'ticket') return value;
+  return null;
 }
 
 function VoteReceiptReveal({
@@ -183,6 +192,8 @@ export function VotingPage() {
   const [tabHidden, setTabHidden] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const previewMode = getPreviewMode();
+  const [previewAnimVisible, setPreviewAnimVisible] = useState(previewMode === 'anim');
   
   // Ref para evitar bucles infinitos en suscripciones
   const activeRoundRef = useRef<Round | null>(null);
@@ -517,6 +528,42 @@ export function VotingPage() {
       navigate('/admin', { replace: true });
       return;
     }
+
+    if (previewMode) {
+      if (previewMode === 'ticket') {
+        const previewRound: Round = {
+          id: 'preview-round',
+          title: 'Preview Votacion',
+          description: 'Vista local del ticket de voto',
+          team: 'ECE',
+          current_round_number: 2,
+          max_votes_per_round: 3,
+          max_selected_candidates: 6,
+          selected_candidates_count: 3,
+          is_active: true,
+          is_closed: false,
+          round_finalized: false,
+          show_results_to_voters: false,
+          show_ballot_summary_projection: false,
+          access_code: null,
+          is_voting_open: true,
+          join_locked: false,
+          votes_current_round: 0,
+        };
+        setActiveRound(previewRound);
+        setHasVoted(true);
+        setVoteHashCode('VT-DEMO-2026');
+        setVoteReceipt({
+          roundId: 'preview-round',
+          roundNumber: 2,
+          voteCode: 'VT-DEMO-2026',
+          votes: ['Ana G.', 'Maria R.', 'Lucia P.'],
+          createdAt: new Date().toISOString(),
+        });
+      }
+      setLoading(false);
+      return;
+    }
     
     loadActiveRound();
 
@@ -626,7 +673,7 @@ export function VotingPage() {
         submitTransitionTimeoutRef.current = null;
       }
     };
-  }, [navigate, loadActiveRound, toast]);
+  }, [navigate, loadActiveRound, toast, previewMode]);
 
   const submitVote = async () => {
     if (selectedCandidates.length === 0 || !activeRound) return;
@@ -942,6 +989,65 @@ export function VotingPage() {
     if (maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting) return;
     setConfirmVoteOpen(true);
   };
+
+  if (previewMode) {
+    const previewLinks = (
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <a className="avd-btn avd-btn-sm" href="/?preview=tutorial">tutorial</a>
+        <a className="avd-btn avd-btn-sm" href="/?preview=anim">anim</a>
+        <a className="avd-btn avd-btn-sm" href="/?preview=ticket">ticket</a>
+        <a className="avd-btn avd-btn-sm" href="/">normal</a>
+      </div>
+    );
+
+    if (previewMode === 'tutorial') {
+      return (
+        <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, flexDirection: 'column', gap: 14 }}>
+          <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 560, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--avd-fg)' }}>Preview local: VotingTutorial</h1>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--avd-fg-muted)' }}>
+                Usa <code>?preview=tutorial</code>, <code>?preview=anim</code> o <code>?preview=ticket</code>.
+              </p>
+            </div>
+            {previewLinks}
+          </div>
+          <VotingTutorial forceOpen roundId="preview-round" />
+        </div>
+      );
+    }
+
+    if (previewMode === 'anim') {
+      return (
+        <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, flexDirection: 'column', gap: 14 }}>
+          <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 560, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--avd-fg)' }}>Preview local: VoteSubmitAnimation</h1>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--avd-fg-muted)' }}>
+                Animacion independiente del flujo real de voto.
+              </p>
+            </div>
+            {previewLinks}
+          </div>
+          <button
+            className="avd-btn avd-btn-primary"
+            onClick={() => {
+              setPreviewAnimVisible(false);
+              window.setTimeout(() => setPreviewAnimVisible(true), 30);
+            }}
+          >
+            Repetir animacion
+          </button>
+          <VoteSubmitAnimation
+            isVisible={previewAnimVisible}
+            onComplete={() => setPreviewAnimVisible(false)}
+            voteHash="VT-DEMO-2026"
+          />
+        </div>
+      );
+    }
+
+  }
 
   if (loading) {
     return (

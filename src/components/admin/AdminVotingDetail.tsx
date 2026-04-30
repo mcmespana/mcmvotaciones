@@ -218,6 +218,39 @@ export function AdminVotingDetail() {
     setCurrentRoundVotes(uniqueBallots.size);
   }, [roundId]);
 
+  const loadInlineResults = useCallback(async (roundNumber: number) => {
+    if (!roundId) return;
+    type InlineResultRow = {
+      candidate_id: string;
+      vote_count: number;
+      percentage: number;
+      candidate:
+        | { name?: string | null; surname?: string | null; is_selected?: boolean | null }
+        | Array<{ name?: string | null; surname?: string | null; is_selected?: boolean | null }>
+        | null;
+    };
+    const { data } = await supabase
+      .from("round_results")
+      .select(`candidate_id, vote_count, percentage, candidate:candidates (name, surname, is_selected)`)
+      .eq("round_id", roundId)
+      .eq("round_number", roundNumber)
+      .order("vote_count", { ascending: false });
+    if (!data) return;
+    const results: InlineResult[] = (data as InlineResultRow[]).map((r) => {
+      const c = Array.isArray(r.candidate) ? r.candidate[0] : r.candidate;
+      return {
+        candidate_id: r.candidate_id,
+        vote_count: r.vote_count,
+        percentage: r.percentage,
+        candidate_name: c?.name || "?",
+        candidate_surname: c?.surname || "",
+        is_selected: c?.is_selected || false,
+        has_majority: r.percentage > 50,
+      };
+    });
+    setInlineResults(results);
+  }, [roundId]);
+
   const loadRound = useCallback(async () => {
     if (!roundId) return;
     try {
@@ -260,7 +293,7 @@ export function AdminVotingDetail() {
     } finally {
       setLoading(false);
     }
-  }, [roundId, toast, loadCurrentRoundVotes]);
+  }, [roundId, toast, loadCurrentRoundVotes, loadInlineResults]);
 
   useEffect(() => {
     loadRound();
@@ -530,39 +563,6 @@ export function AdminVotingDetail() {
     await loadRound();
     // Load inline results for the panel
     await loadInlineResults(round.current_round_number);
-  };
-
-  const loadInlineResults = async (roundNumber: number) => {
-    if (!roundId) return;
-    type InlineResultRow = {
-      candidate_id: string;
-      vote_count: number;
-      percentage: number;
-      candidate:
-        | { name?: string | null; surname?: string | null; is_selected?: boolean | null }
-        | Array<{ name?: string | null; surname?: string | null; is_selected?: boolean | null }>
-        | null;
-    };
-    const { data } = await supabase
-      .from("round_results")
-      .select(`candidate_id, vote_count, percentage, candidate:candidates (name, surname, is_selected)`)
-      .eq("round_id", roundId)
-      .eq("round_number", roundNumber)
-      .order("vote_count", { ascending: false });
-    if (!data) return;
-    const results: InlineResult[] = (data as InlineResultRow[]).map((r) => {
-      const c = Array.isArray(r.candidate) ? r.candidate[0] : r.candidate;
-      return {
-        candidate_id: r.candidate_id,
-        vote_count: r.vote_count,
-        percentage: r.percentage,
-        candidate_name: c?.name || "?",
-        candidate_surname: c?.surname || "",
-        is_selected: c?.is_selected || false,
-        has_majority: r.percentage > 50,
-      };
-    });
-    setInlineResults(results);
   };
 
   const forceSelectCandidate = async (candidateId: string) => {
