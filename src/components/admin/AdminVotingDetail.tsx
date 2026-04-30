@@ -7,10 +7,10 @@ import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
 import {
-  ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download,
-  Eye, FileUp, Globe, Grid, List, Moon, Pause, Pencil,
-  Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
-  Sun, Trash2, Undo2, Upload, UserPlus, Users, XCircle,
+  AlertTriangle, ArrowLeft, ArrowUpRight, BarChart2, Check, ChevronLeft,
+  ChevronRight, Copy, Download, Eye, FileUp, Globe, Grid, List, Moon, Pause,
+  Pencil, Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
+  Sun, Trash2, Undo2, Upload, UserCheck, UserPlus, Users, XCircle,
 } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { ResultsAnalytics } from "@/components/admin/ResultsAnalytics";
@@ -143,6 +143,18 @@ export function AdminVotingDetail() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [candidateSearch, setCandidateSearch] = useState("");
   const [candidateView, setCandidateView] = useState<"list" | "grid">("list");
+  const [tiedAtMajority, setTiedAtMajority] = useState<Array<{ candidateId: string; voteCount: number; totalBallots: number; roundNumber: number }>>([]);
+  const [isCandidatesCollapsed, setIsCandidatesCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("avd_candidates_collapsed") === "1";
+  });
+  const toggleCandidatesCollapsed = useCallback(() => {
+    setIsCandidatesCollapsed((prev) => {
+      const next = !prev;
+      try { window.localStorage.setItem("avd_candidates_collapsed", next ? "1" : "0"); } catch (_) { /* ignore */ }
+      return next;
+    });
+  }, []);
   const [seats, setSeats] = useState<SeatRow[]>([]);
   const [seatStatus, setSeatStatus] = useState<SeatStatus | null>(null);
   const [currentRoundVotes, setCurrentRoundVotes] = useState(0);
@@ -205,6 +217,36 @@ export function AdminVotingDetail() {
     setCurrentRoundVotes(uniqueBallots.size);
   }, [roundId]);
 
+  // Detecta candidatos con empate exacto al 50% (Canon 119: hace falta >50%
+  // estricto, así que el 50% no selecciona). El admin puede aún así forzar la
+  // selección manual si lo decide.
+  const loadTiedAtMajority = useCallback(async (rId: string, roundNumber: number) => {
+    if (!rId || !roundNumber) { setTiedAtMajority([]); return; }
+    const { data: voteRows, error } = await supabase
+      .from("votes")
+      .select("vote_hash, candidate_id, is_invalidated")
+      .eq("round_id", rId)
+      .eq("round_number", roundNumber);
+    if (error || !voteRows) { setTiedAtMajority([]); return; }
+    const valid = voteRows.filter((r) => !r.is_invalidated);
+    const ballotSet = new Set<string>();
+    const perCandidate = new Map<string, number>();
+    for (const row of valid) {
+      if (row.vote_hash) ballotSet.add(row.vote_hash);
+      perCandidate.set(row.candidate_id, (perCandidate.get(row.candidate_id) || 0) + 1);
+    }
+    const totalBallots = ballotSet.size;
+    if (totalBallots === 0) { setTiedAtMajority([]); return; }
+    const ties: Array<{ candidateId: string; voteCount: number; totalBallots: number; roundNumber: number }> = [];
+    perCandidate.forEach((voteCount, candidateId) => {
+      // Empate exacto al 50% solo posible con totalBallots par y voteCount = totalBallots/2
+      if (totalBallots % 2 === 0 && voteCount * 2 === totalBallots) {
+        ties.push({ candidateId, voteCount, totalBallots, roundNumber });
+      }
+    });
+    setTiedAtMajority(ties);
+  }, []);
+
   const loadRound = useCallback(async () => {
     if (!roundId) return;
     try {
@@ -224,6 +266,7 @@ export function AdminVotingDetail() {
       setCandidates((candidateData || []) as Candidate[]);
       setSeats((seatData || []) as SeatRow[]);
       await loadCurrentRoundVotes(normalizedRound.current_round_number);
+      await loadTiedAtMajority(normalizedRound.id, normalizedRound.current_round_number);
       const normalizedAccessCode = (normalizedRound.access_code || "").toUpperCase();
       setConfigAccessCode(ACCESS_CODE_REGEX.test(normalizedAccessCode) ? normalizedAccessCode : generateAccessCode());
       setConfigCensusMode((normalizedRound.census_mode || "maximum") as "maximum" | "exact");
@@ -320,6 +363,11 @@ export function AdminVotingDetail() {
   const projLabel = !round ? "Sin difundir"
     : round.show_results_to_voters ? "Galería activa"
     : "Sin difundir";
+
+  const tiedCandidateIds = useMemo(
+    () => new Set(tiedAtMajority.map((t) => t.candidateId)),
+    [tiedAtMajority],
+  );
 
   /* ── Candidate filter ── */
   const filteredCandidates = useMemo(() => {
@@ -453,6 +501,9 @@ export function AdminVotingDetail() {
       // Post-proyección routing
       if (selectionQuotaReached) { await confirmSelection(); return; }
       if (canStartNextRound) { await startNextRound(); return; }
+    } catch (err) {
+      console.error("Workflow step failed:", err);
+      toast({ title: "Error", description: "Ocurrió un fallo en el paso del flujo. Revisa la consola.", variant: "destructive" });
     } finally {
       setIsWorkflowRunning(false);
     }
@@ -512,9 +563,15 @@ export function AdminVotingDetail() {
   const startNextRound = async () => {
     if (!roundId || !canStartNextRound) return;
     const { data, error } = await supabase.rpc("start_new_round", { p_round_id: roundId });
-    if (error) { toast({ title: "Error", description: "No se pudo iniciar la siguiente ronda", variant: "destructive" }); return; }
-    const parsed = data as { round_number?: number };
-    await supabase.from("rounds").update({ is_active: true, round_finalized: false, is_voting_open: true, join_locked: true, show_results_to_voters: false, show_ballot_summary_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
+    if (error) {
+      toast({ title: "Error", description: "No se pudo iniciar la siguiente ronda", variant: "destructive" });
+      return;
+    }
+    const parsed = data as { success?: boolean; round_number?: number; message?: string };
+    if (parsed && parsed.success === false) {
+      toast({ title: "No se pudo iniciar", description: parsed.message || "Operación rechazada", variant: "destructive" });
+      return;
+    }
     toast({ title: "Siguiente ronda iniciada", description: `Ronda ${parsed?.round_number || "nueva"} en curso` });
     await loadRound();
   };
@@ -631,6 +688,36 @@ export function AdminVotingDetail() {
     const { error } = await supabase.rpc("unselect_candidate", { p_candidate_id: candidateId });
     if (error) { toast({ title: "Error", description: "No se pudo desmarcar al candidato", variant: "destructive" }); return; }
     toast({ title: "Candidato desmarcado" });
+    await loadRound();
+  };
+
+  const forceSelectCandidate = async (candidate: Candidate) => {
+    if (!round) return;
+    const remainingSlots = Math.max(round.max_selected_candidates - selectedCandidatesCount, 0);
+    const overQuota = remainingSlots <= 0;
+    const baseMsg = `Forzar selección manual de "${formatCandidateName(candidate)}". Se contará como seleccionado para la ronda ${round.current_round_number}.`;
+    const warnMsg = overQuota
+      ? `\n\nATENCIÓN: ya hay ${selectedCandidatesCount}/${round.max_selected_candidates} seleccionados. Esta acción superará el cupo configurado.`
+      : "";
+    if (!window.confirm(`${baseMsg}${warnMsg}\n\n¿Confirmas?`)) return;
+    const { data, error } = await supabase.rpc("force_select_candidate", {
+      p_candidate_id: candidate.id,
+      p_round_number: round.current_round_number,
+      p_vote_count: null,
+    });
+    if (error) {
+      toast({ title: "Error", description: "No se pudo forzar la selección", variant: "destructive" });
+      return;
+    }
+    const response = data as { success?: boolean; message?: string; already_selected?: boolean };
+    if (!response?.success) {
+      toast({ title: "No se pudo forzar selección", description: response?.message || "Operación rechazada", variant: "destructive" });
+      return;
+    }
+    toast({
+      title: response.already_selected ? "Ya estaba seleccionado" : "Selección forzada",
+      description: `${formatCandidateName(candidate)} marcado como seleccionado.`,
+    });
     await loadRound();
   };
 
@@ -872,8 +959,72 @@ export function AdminVotingDetail() {
         </div>
       </section>
 
+      {/* ═══ Empate al 50% (Canon 119: requiere mayoría estricta >50%) ═══ */}
+      {round?.round_finalized && tiedAtMajority.length > 0 && (() => {
+        const ties = tiedAtMajority
+          .map((t) => ({ ...t, candidate: candidates.find((c) => c.id === t.candidateId) }))
+          .filter((t) => t.candidate && !t.candidate.is_selected && !t.candidate.is_eliminated);
+        if (ties.length === 0) return null;
+        return (
+          <div
+            role="alert"
+            style={{
+              margin: "10px 16px 0",
+              padding: "12px 14px",
+              borderRadius: "var(--avd-radius-md)",
+              border: "1px solid color-mix(in oklch, var(--avd-warn) 45%, transparent)",
+              background: "var(--avd-warn-bg)",
+              display: "flex",
+              gap: 12,
+              alignItems: "flex-start",
+            }}
+          >
+            <AlertTriangle size={18} style={{ color: "var(--avd-warn)", flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--avd-warn-fg)", marginBottom: 4 }}>
+                {ties.length === 1 ? "1 candidata empatada al 50%" : `${ties.length} candidatas empatadas al 50%`} (Canon 119: hace falta mayoría estricta &gt;50%)
+              </div>
+              <div style={{ fontSize: 12, color: "var(--avd-warn-fg)", opacity: 0.92, marginBottom: 8, lineHeight: 1.5 }}>
+                Estas candidatas no están seleccionadas automáticamente. Puedes forzar su selección manualmente desde la lista o aquí mismo.
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {ties.map((t) => (
+                  <div
+                    key={t.candidateId}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "5px 8px 5px 10px",
+                      background: "var(--avd-surface)",
+                      border: "1px solid var(--avd-border)",
+                      borderRadius: 999,
+                      fontSize: 12,
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: "var(--avd-fg)" }}>{formatCandidateName(t.candidate!)}</span>
+                    <span style={{ color: "var(--avd-fg-muted)", fontSize: 11 }}>
+                      {t.voteCount}/{t.totalBallots} votos · 50,00%
+                    </span>
+                    <button
+                      type="button"
+                      className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                      onClick={() => forceSelectCandidate(t.candidate!)}
+                      title="Forzar selección manual"
+                      style={{ width: 24, height: 24 }}
+                    >
+                      <UserCheck size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ═══ Main grid ═══ */}
-      <div className="avd-page-main">
+      <div className={`avd-page-main${isCandidatesCollapsed ? " is-candidates-collapsed" : ""}`}>
 
         {/* ── Left aside: Info ── */}
         <aside className="avd-col avd-col-left">
@@ -941,10 +1092,35 @@ export function AdminVotingDetail() {
 
         {/* ── Center: Candidates ── */}
         <main className="avd-col avd-col-main">
+          {isCandidatesCollapsed ? (
+            <button
+              type="button"
+              className="avd-candidates-collapsed-rail"
+              onClick={toggleCandidatesCollapsed}
+              title="Mostrar candidatas"
+              aria-label="Mostrar lista de candidatas"
+            >
+              <ChevronRight size={16} />
+              <span className="avd-candidates-collapsed-rail-label">
+                Candidatas · {selectedCandidatesCount}/{activeCandidatesCount}
+              </span>
+              <ChevronRight size={16} />
+            </button>
+          ) : (
           <div className="avd-col-inner">
             <div className="avd-candidates-pane">
               <div className="avd-candidates-head">
                   <div className="avd-candidates-head-left">
+                    <button
+                      type="button"
+                      className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                      onClick={toggleCandidatesCollapsed}
+                      title="Replegar lista de candidatas"
+                      aria-label="Replegar lista de candidatas"
+                      style={{ marginRight: 4 }}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
                     <h2>Candidatas</h2>
                     <span className="avd-counts">
                       {selectedCandidatesCount} seleccionadas · {activeCandidatesCount} activas
@@ -1012,6 +1188,15 @@ export function AdminVotingDetail() {
                         <div className="avd-cand-badges">
                           {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
                           {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
+                          {!c.is_selected && !c.is_eliminated && tiedCandidateIds.has(c.id) && (
+                            <span
+                              className="avd-chip avd-chip-warn"
+                              title="Canon 119: empate al 50%, no alcanza mayoría estricta"
+                              style={{ height: 20, fontSize: 11 }}
+                            >
+                              Empate 50%
+                            </span>
+                          )}
                         </div>
                         <div className="avd-cand-actions">
                           <button
@@ -1021,13 +1206,24 @@ export function AdminVotingDetail() {
                           >
                             <Pencil size={13} />
                           </button>
-                          {c.is_selected && (
+                          {c.is_selected ? (
                             <button
                               className="avd-btn avd-btn-ghost avd-btn-icon-sm"
                               onClick={() => unselectCandidate(c.id)}
                               title="Deshacer selección"
                             >
                               <Undo2 size={13} />
+                            </button>
+                          ) : (
+                            <button
+                              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                              onClick={() => forceSelectCandidate(c)}
+                              title="Forzar selección manual"
+                              style={{ color: "var(--avd-fg-faint)" }}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-ok)")}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                            >
+                              <UserCheck size={13} />
                             </button>
                           )}
                           {!isVotingStarted && (
@@ -1065,16 +1261,42 @@ export function AdminVotingDetail() {
                             <div style={{ fontSize: 11.5, color: "var(--avd-fg-muted)" }}>{c.group_name}</div>
                           )}
                           <div className="avd-cand-card-foot">
-                            <div style={{ display: "flex", gap: 4 }}>
+                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                               {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
                               {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
+                              {!c.is_selected && !c.is_eliminated && tiedCandidateIds.has(c.id) && (
+                                <span
+                                  className="avd-chip avd-chip-warn"
+                                  title="Canon 119: empate al 50%, no alcanza mayoría estricta"
+                                  style={{ height: 20, fontSize: 11 }}
+                                >
+                                  Empate 50%
+                                </span>
+                              )}
                             </div>
                             <div style={{ display: "flex", gap: 2 }}>
-                              <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)}>
+                              <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)} title="Editar">
                                 <Pencil size={13} />
                               </button>
+                              {c.is_selected ? (
+                                <button
+                                  className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                                  onClick={() => unselectCandidate(c.id)}
+                                  title="Deshacer selección"
+                                >
+                                  <Undo2 size={13} />
+                                </button>
+                              ) : (
+                                <button
+                                  className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                                  onClick={() => forceSelectCandidate(c)}
+                                  title="Forzar selección manual"
+                                >
+                                  <UserCheck size={13} />
+                                </button>
+                              )}
                               {!isVotingStarted && (
-                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => deleteCandidate(c.id)}>
+                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => deleteCandidate(c.id)} title="Eliminar">
                                   <Trash2 size={13} />
                                 </button>
                               )}
@@ -1087,6 +1309,7 @@ export function AdminVotingDetail() {
                 </div>
               </div>
             </div>
+          )}
         </main>
 
         {/* ── Right: Live + Controls ── */}
