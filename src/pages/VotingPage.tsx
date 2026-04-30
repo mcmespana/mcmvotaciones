@@ -1479,22 +1479,6 @@ export function VotingPage() {
                     animationDelay: '0.6s',
                   }} />
 
-                  {/* Floating particles */}
-                  {['#34d399','#6ee7b7','#a7f3d0','#fff'].map((c, i) => {
-                    const angle = (i / 4) * Math.PI * 2 - Math.PI / 4;
-                    const r = 60;
-                    const x = Math.cos(angle) * r + 50;
-                    const y = Math.sin(angle) * r + 50;
-                    return (
-                      <span key={i} style={{
-                        position: 'absolute', left: x - 4, top: y - 4,
-                        width: 8, height: 8, borderRadius: 999,
-                        background: c, boxShadow: `0 0 10px ${c}`,
-                        animation: `tkt-float 2s ease-in-out ${i * 0.2}s infinite`,
-                      }} />
-                    );
-                  })}
-
                   {/* Icon bubble */}
                   <div style={{
                     width: 100, height: 100, borderRadius: 18,
