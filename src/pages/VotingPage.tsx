@@ -1276,38 +1276,192 @@ export function VotingPage() {
     if (hasVoted) {
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative' }}>
+        {/* Ticket keyframes */}
+        <style>{`
+          @keyframes tkt-pop {
+            0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+            60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+          }
+          @keyframes tkt-fade-up {
+            0%   { transform: translateY(12px); opacity: 0; }
+            100% { transform: translateY(0);   opacity: 1; }
+          }
+          @keyframes tkt-ring {
+            0%   { transform: scale(0.85); opacity: 0.5; }
+            100% { transform: scale(1.6); opacity: 0; }
+          }
+          @keyframes tkt-float {
+            0%,100% { transform: translateY(0) scale(1);   opacity: 0.55; }
+            50%     { transform: translateY(-10px) scale(1.2); opacity: 1; }
+          }
+          @keyframes tkt-shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          @keyframes tkt-card-in {
+            0%   { transform: translateY(18px) scale(0.95); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+          }
+          @keyframes tkt-glow-pulse {
+            0%,100% { box-shadow: 0 0 30px -8px rgba(16,185,129,0.4); }
+            50%     { box-shadow: 0 0 50px -5px rgba(16,185,129,0.65); }
+          }
+          @keyframes tkt-check-burst {
+            0%   { transform: scale(0.3); opacity: 0; }
+            50%  { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes tkt-receipt-in {
+            0%   { transform: translateY(12px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+          }
+        `}</style>
+
         <div style={{ position: 'absolute', right: 16, top: 16, zIndex: 20 }}>
           <ThemeToggle mode="inline" />
         </div>
 
-        <div style={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Main status card — spinning border wrapper */}
-          <div style={{ position: 'relative', borderRadius: 'calc(var(--avd-radius-lg) + 4px)', overflow: 'hidden', padding: '4px', animation: 'ok-card-enter 0.5s cubic-bezier(0.2,0.75,0.2,1) both', flexShrink: 0 }}>
-            {/* Spinning conic-gradient border layer */}
-            <div style={{ position: 'absolute', width: '200%', height: '200%', top: '-50%', left: '-50%', background: 'conic-gradient(from 0deg, oklch(0.20 0.1 150) 0deg, oklch(0.20 0.1 150) 50deg, oklch(0.90 0.22 150) 120deg, oklch(0.90 0.22 150) 160deg, oklch(0.20 0.1 150) 230deg, oklch(0.20 0.1 150) 280deg, oklch(0.90 0.22 150) 350deg, oklch(0.90 0.22 150) 380deg)', animation: 'spin 3s linear infinite', pointerEvents: 'none' }} />
-            {/* Card content sits on top */}
-            <div style={{ position: 'relative', zIndex: 1, overflow: 'hidden', borderRadius: 'calc(var(--avd-radius-lg) - 1px)', background: 'var(--avd-ok)' }}>
-              <div style={{ padding: '40px 32px', textAlign: 'center' }}>
-                <div style={{ margin: '0 auto 24px', width: 88, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'color-mix(in oklch, var(--avd-ok) 70%, black)', border: '1px solid color-mix(in oklch, var(--avd-ok) 50%, white)', animation: 'ok-glow 2.5s ease-in-out 0.5s infinite' }}>
-                  <CheckCircle2 style={{ width: 52, height: 52, color: 'white' }} strokeWidth={1.5} />
+        <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* ═══ Main ticket card ═══ */}
+          <div style={{
+            position: 'relative',
+            borderRadius: 'calc(var(--avd-radius-lg) + 4px)',
+            overflow: 'hidden',
+            padding: '4px',
+            animation: 'tkt-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
+            flexShrink: 0,
+          }}>
+            {/* Spinning conic-gradient border */}
+            <div style={{
+              position: 'absolute', width: '200%', height: '200%', top: '-50%', left: '-50%',
+              background: 'conic-gradient(from 0deg, oklch(0.20 0.12 155) 0deg, oklch(0.20 0.12 155) 50deg, oklch(0.85 0.22 155) 120deg, oklch(0.85 0.22 155) 160deg, oklch(0.20 0.12 155) 230deg, oklch(0.20 0.12 155) 280deg, oklch(0.85 0.22 155) 350deg, oklch(0.85 0.22 155) 380deg)',
+              animation: 'spin 3s linear infinite', pointerEvents: 'none',
+            }} />
+
+            <div style={{
+              position: 'relative', zIndex: 1, overflow: 'hidden',
+              borderRadius: 'calc(var(--avd-radius-lg) - 1px)',
+              background: 'linear-gradient(165deg, oklch(0.52 0.17 155), oklch(0.45 0.15 160))',
+            }}>
+              {/* Top shimmer bar */}
+              <div style={{
+                height: 3, width: '100%',
+                backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.35), rgba(255,255,255,0.08))',
+                backgroundSize: '200% 100%',
+                animation: 'tkt-shimmer 2s linear infinite',
+              }} />
+
+              <div style={{ padding: '36px 32px 28px', textAlign: 'center' }}>
+
+                {/* Icon with pulsing rings + floating particles */}
+                <div style={{
+                  position: 'relative', width: 100, height: 100,
+                  margin: '0 auto 24px',
+                  animation: 'tkt-pop 550ms cubic-bezier(0.22, 1, 0.36, 1)',
+                }}>
+                  {/* Pulsing rings */}
+                  <span style={{
+                    position: 'absolute', inset: 0, borderRadius: 18,
+                    border: '2px solid rgba(255,255,255,0.35)',
+                    animation: 'tkt-ring 1.8s ease-out infinite',
+                  }} />
+                  <span style={{
+                    position: 'absolute', inset: 0, borderRadius: 18,
+                    border: '2px solid rgba(255,255,255,0.35)',
+                    animation: 'tkt-ring 1.8s ease-out infinite',
+                    animationDelay: '0.6s',
+                  }} />
+
+                  {/* Floating particles */}
+                  {['#34d399','#6ee7b7','#a7f3d0','#fff'].map((c, i) => {
+                    const angle = (i / 4) * Math.PI * 2 - Math.PI / 4;
+                    const r = 60;
+                    const x = Math.cos(angle) * r + 50;
+                    const y = Math.sin(angle) * r + 50;
+                    return (
+                      <span key={i} style={{
+                        position: 'absolute', left: x - 4, top: y - 4,
+                        width: 8, height: 8, borderRadius: 999,
+                        background: c, boxShadow: `0 0 10px ${c}`,
+                        animation: `tkt-float 2s ease-in-out ${i * 0.2}s infinite`,
+                      }} />
+                    );
+                  })}
+
+                  {/* Icon bubble */}
+                  <div style={{
+                    width: 100, height: 100, borderRadius: 18,
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'tkt-glow-pulse 2.5s ease-in-out infinite',
+                  }}>
+                    <CheckCircle2 style={{
+                      width: 52, height: 52, color: 'white',
+                      animation: 'tkt-check-burst 600ms cubic-bezier(0.22, 1, 0.36, 1) 0.3s both',
+                    }} strokeWidth={1.5} />
+                  </div>
                 </div>
-                <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em', color: 'white' }}>
-                  Voto registrado
-                </h1>
-                <p style={{ color: 'color-mix(in oklch, white 75%, var(--avd-ok))', fontSize: 13, marginBottom: 4 }}>Nombre de la votación</p>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, color: 'white' }}>
-                  {activeRound?.title} R{activeRound?.current_round_number}
-                </p>
-                <p style={{ color: 'color-mix(in oklch, white 65%, var(--avd-ok))', fontSize: 12 }}>
+
+                {/* Title text with fade-up */}
+                <div style={{ animation: 'tkt-fade-up 450ms ease-out 0.2s both' }}>
+                  <h1 style={{
+                    fontSize: 30, fontWeight: 900, marginBottom: 16,
+                    letterSpacing: '-0.025em', color: 'white', lineHeight: 1.1,
+                  }}>
+                    Voto registrado
+                  </h1>
+                </div>
+
+                {/* Voting name + round — separated */}
+                <div style={{ animation: 'tkt-fade-up 450ms ease-out 0.35s both' }}>
+                  <p style={{
+                    fontWeight: 800, fontSize: 16, color: 'white',
+                    marginBottom: 4, letterSpacing: '-0.01em',
+                  }}>
+                    {activeRound?.title}
+                  </p>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '3px 12px', borderRadius: 999,
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    marginBottom: 0,
+                  }}>
+                    <span style={{
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: '#6ee7b7', boxShadow: '0 0 6px #6ee7b7',
+                    }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                      Ronda {activeRound?.current_round_number}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom verification footer */}
+              <div style={{
+                padding: '12px 24px',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.12)',
+                textAlign: 'center',
+                animation: 'tkt-fade-up 450ms ease-out 0.5s both',
+              }}>
+                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11.5, fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
                   Muestra esta pantalla para verificar que has votado correctamente.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Receipt card */}
+          {/* ═══ Receipt card ═══ */}
           {(voteHashCode || voteReceipt) && (
-            <div style={{ overflow: 'hidden', borderRadius: 'var(--avd-radius-lg)', border: '1px solid var(--avd-border)', background: 'var(--avd-surface)' }}>
+            <div style={{
+              overflow: 'hidden', borderRadius: 'var(--avd-radius-lg)',
+              border: '1px solid var(--avd-border)', background: 'var(--avd-surface)',
+              animation: 'tkt-receipt-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both',
+            }}>
               <VoteReceiptReveal
                 voteHashCode={voteHashCode}
                 voteReceipt={voteReceipt}
