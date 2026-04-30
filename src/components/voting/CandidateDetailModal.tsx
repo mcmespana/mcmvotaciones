@@ -59,7 +59,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false }
       ref={overlayRef}
       className="avd-dialog-overlay"
       style={{ zIndex: 200, overflowY: "auto" }}
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      onMouseDown={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div
         className="avd-dialog"

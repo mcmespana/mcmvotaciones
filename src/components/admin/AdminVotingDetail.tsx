@@ -289,6 +289,7 @@ export function AdminVotingDetail() {
   const publicCandidatesUrl = publicCandidatesPath ? `${window.location.origin}${publicCandidatesPath}` : "";
 
   const isVotingStarted = Boolean(round && (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0));
+  const isMaxVotantesLocked = isVotingStarted;
   const roomIsOpen = Boolean(round && round.is_active && !round.is_voting_open && !round.is_closed);
   const canOpenRoom = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
   const canCloseRoom = Boolean(round && roomIsOpen);
@@ -533,6 +534,15 @@ export function AdminVotingDetail() {
 
   const loadInlineResults = async (roundNumber: number) => {
     if (!roundId) return;
+    type InlineResultRow = {
+      candidate_id: string;
+      vote_count: number;
+      percentage: number;
+      candidate:
+        | { name?: string | null; surname?: string | null; is_selected?: boolean | null }
+        | Array<{ name?: string | null; surname?: string | null; is_selected?: boolean | null }>
+        | null;
+    };
     const { data } = await supabase
       .from("round_results")
       .select(`candidate_id, vote_count, percentage, candidate:candidates (name, surname, is_selected)`)
@@ -540,7 +550,7 @@ export function AdminVotingDetail() {
       .eq("round_number", roundNumber)
       .order("vote_count", { ascending: false });
     if (!data) return;
-    const results: InlineResult[] = (data as any[]).map((r) => {
+    const results: InlineResult[] = (data as InlineResultRow[]).map((r) => {
       const c = Array.isArray(r.candidate) ? r.candidate[0] : r.candidate;
       return {
         candidate_id: r.candidate_id,
@@ -593,8 +603,10 @@ export function AdminVotingDetail() {
     try {
       const normalizedCode = configAccessCode.trim().toUpperCase();
       const nextAccessCode = ACCESS_CODE_REGEX.test(normalizedCode) ? normalizedCode : generateAccessCode();
+      const nextMaxVotantes = isMaxVotantesLocked ? round.max_votantes : configMaxVotantes;
       if (nextAccessCode !== normalizedCode) setConfigAccessCode(nextAccessCode);
-      const { error } = await supabase.from("rounds").update({ access_code: nextAccessCode, census_mode: configCensusMode, max_votantes: configMaxVotantes, max_selected_candidates: configMaxSelected, max_votes_per_round: configMaxVotesPerRound, updated_at: new Date().toISOString() }).eq("id", roundId);
+      if (nextMaxVotantes !== configMaxVotantes) setConfigMaxVotantes(nextMaxVotantes);
+      const { error } = await supabase.from("rounds").update({ access_code: nextAccessCode, census_mode: configCensusMode, max_votantes: nextMaxVotantes, max_selected_candidates: configMaxSelected, max_votes_per_round: configMaxVotesPerRound, updated_at: new Date().toISOString() }).eq("id", roundId);
       if (error) throw error;
       toast({ title: "Configuración guardada" });
       await loadRound();
@@ -1481,21 +1493,14 @@ export function AdminVotingDetail() {
             <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
               <div>
                 <h2>Configuración de la votación</h2>
-                <p>Actualiza código de acceso y modo de censo.</p>
               </div>
               <button className="avd-btn avd-btn-ghost avd-btn-icon" onClick={() => setIsSettingsOpen(false)}>
                 <XCircle size={14} />
               </button>
             </div>
             <div className="avd-dialog-body">
-              {round.voting_type_name && (
-                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", fontSize: 13 }}>
-                  <span style={{ color: "var(--avd-fg-muted)" }}>Tipo base:</span>
-                  <span className="avd-chip avd-chip-brand" style={{ height: 20, fontSize: 11 }}>{round.voting_type_name}</span>
-                  <span style={{ fontSize: 12, color: "var(--avd-fg-faint)" }}>Los valores se pueden ajustar sin cambiar el tipo.</span>
-                </div>
-              )}
-              <div className="avd-form-grid avd-form-grid-2">
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
                 <div className="avd-form-field">
                   <label className="avd-label">Código de acceso</label>
                   <div style={{ display: "flex", gap: 6 }}>
@@ -1518,8 +1523,9 @@ export function AdminVotingDetail() {
                     <option value="exact">Exacto (conectados = cupo)</option>
                   </select>
                 </div>
-                <div className="avd-form-field">
-                  <label className="avd-label">Nº máximo de votantes</label>
+                </div>
+                <div className="avd-form-field" style={{ maxWidth: 220 }}>
+                  <label className="avd-label">Nº máximo de votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
                   <input
                     className="avd-input"
                     type="number"
@@ -1527,12 +1533,20 @@ export function AdminVotingDetail() {
                     max={9999}
                     value={configMaxVotantes}
                     onChange={(e) => setConfigMaxVotantes(Math.max(1, parseInt(e.target.value) || 1))}
-                    disabled={isVotingStarted}
+                    disabled={isMaxVotantesLocked}
                   />
-                  {isVotingStarted && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>No editable con votación en curso.</p>}
+                  {isMaxVotantesLocked && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>Se puede configurar solo antes de abrir la sala.</p>}
                 </div>
-                <div className="avd-form-field">
-                  <label className="avd-label">Total a seleccionar</label>
+                {round.voting_type_name && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", fontSize: 13 }}>
+                    <span style={{ color: "var(--avd-fg-muted)" }}>Tipo base:</span>
+                    <span className="avd-chip avd-chip-brand" style={{ height: 20, fontSize: 11 }}>{round.voting_type_name}</span>
+                    <span style={{ fontSize: 12, color: "var(--avd-fg-faint)" }}>Los valores se pueden ajustar sin cambiar el tipo.</span>
+                  </div>
+                )}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, alignItems: "start" }}>
+                  <div className="avd-form-field">
+                    <label className="avd-label">Total a seleccionar</label>
                   <input
                     className="avd-input"
                     type="number"
@@ -1559,6 +1573,7 @@ export function AdminVotingDetail() {
                   </p>
                 </div>
               </div>
+            </div>
             </div>
             <div className="avd-dialog-foot">
               <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(false)}>Cancelar</button>
