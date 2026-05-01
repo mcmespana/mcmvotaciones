@@ -307,8 +307,9 @@ export function useProjectionData(): ProjectionData {
 
   // Real-time subscriptions
   useEffect(() => {
+    const uid = crypto.randomUUID();
     const roundsChannel = supabase
-      .channel("projection-rounds")
+      .channel(`projection-rounds-${uid}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "rounds" },
@@ -319,22 +320,21 @@ export function useProjectionData(): ProjectionData {
       )
       .subscribe();
 
+    let voteDebounceTimer: ReturnType<typeof setTimeout> | null = null;
     const votesChannel = supabase
-      .channel("projection-votes")
+      .channel(`projection-votes-${uid}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "votes" },
         () => {
-          // Increment vote count optimistically
-          setVoteCount((prev) => prev + 1);
-          // Reload to get accurate count
-          setTimeout(() => loadActiveRound(), 500);
+          if (voteDebounceTimer) clearTimeout(voteDebounceTimer);
+          voteDebounceTimer = setTimeout(() => loadActiveRound(), 1000);
         }
       )
       .subscribe();
 
     const resultsChannel = supabase
-      .channel("projection-results")
+      .channel(`projection-results-${uid}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "round_results" },
@@ -346,6 +346,7 @@ export function useProjectionData(): ProjectionData {
       .subscribe();
 
     return () => {
+      if (voteDebounceTimer) clearTimeout(voteDebounceTimer);
       supabase.removeChannel(roundsChannel);
       supabase.removeChannel(votesChannel);
       supabase.removeChannel(resultsChannel);

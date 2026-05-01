@@ -307,7 +307,7 @@ export function AdminVotingDetail() {
     const metricsInterval = window.setInterval(() => {
       loadSeatsAndStatus();
       loadCurrentRoundVotes(currentRoundNumberRef.current);
-    }, 3000);
+    }, 10000);
     return () => { window.clearInterval(metricsInterval); supabase.removeChannel(channel); };
   }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes]);
 
@@ -425,7 +425,7 @@ export function AdminVotingDetail() {
   };
 
   const callStartRound = async (skipStateValidation = false): Promise<boolean> => {
-    if (!roundId || !round) return;
+    if (!roundId || !round) return false;
     if (!hasCandidates) { toast({ title: "No se puede iniciar", description: "Añade al menos un candidato.", variant: "destructive" }); return false; }
     if (!skipStateValidation && !canStartRound) { toast({ title: "No se puede iniciar", description: "La ronda no está en un estado válido.", variant: "destructive" }); return false; }
     const { data, error } = await supabase.rpc("start_voting_round", { p_round_id: roundId });
