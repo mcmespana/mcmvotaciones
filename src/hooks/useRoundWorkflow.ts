@@ -22,7 +22,6 @@ export interface RoundWorkflow {
   stage: number;
   label: string;
   disabled: boolean;
-  color: "brand" | "ok" | "warn" | "muted";
   roomIsOpen: boolean;
   canOpenRoom: boolean;
   canCloseRoom: boolean;
@@ -84,15 +83,8 @@ export function useRoundWorkflow({
       (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound),
     );
 
-    const color: RoundWorkflow["color"] =
-      !round || round.is_closed ? "muted"
-      : round.is_voting_open ? "ok"
-      : round.round_finalized ? "warn"
-      : round.is_active ? "brand"
-      : "muted";
-
     return {
-      stage, label, disabled, color,
+      stage, label, disabled,
       roomIsOpen, canOpenRoom, canCloseRoom,
       canStartRound, canPauseRound, canResumeRound,
       canFinalizeRound, canStartNextRound,

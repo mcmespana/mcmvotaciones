@@ -434,6 +434,7 @@ export function AdminVotingDetail() {
 
   const confirmSelection = async () => {
     if (!roundId || !round?.round_finalized) { toast({ title: "Ronda no finalizada", description: "Primero finaliza la ronda.", variant: "destructive" }); return; }
+    if (!selectionQuotaReached) { toast({ title: "Cupo no alcanzado", description: `Faltan ${maxSelectedCandidates - selectedCandidatesCount} candidata(s) por seleccionar.`, variant: "destructive" }); return; }
     const { error } = await supabase
       .from("rounds")
       .update({

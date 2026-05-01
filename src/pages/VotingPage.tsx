@@ -776,8 +776,6 @@ export function VotingPage() {
         votes: buildReceiptVotes(selectedCandidates),
         createdAt: new Date().toISOString(),
       };
-      persistVoteReceipt(persistedReceipt);
-
       // Submit votes for each selected candidate
       const votes = selectedCandidates.map(candidateId => ({
         round_id: activeRound.id,
@@ -805,7 +803,8 @@ export function VotingPage() {
         return;
       }
 
-      // Mark as voted locally
+      // INSERT confirmed — persist receipt and mark locally
+      persistVoteReceipt(persistedReceipt);
       markAsVoted(activeRound.id, activeRound.current_round_number);
       // Don't set hasVoted yet - the animation onComplete will handle it
 
