@@ -375,15 +375,15 @@ export function AdminVotingList() {
           </div>
         ) : (
           <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
-            <div style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 120px 100px 40px" : "1fr 90px 90px 120px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
-              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Tipo</div>{isSuperAdmin && <div></div>}
+            <div style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
+              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div>{isSuperAdmin && <div></div>}
             </div>
             {filteredRounds.map(r => {
               const chip = getStatusChip(r);
               return (
                 <div
                   key={r.id}
-                  style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 120px 100px 40px" : "1fr 90px 90px 120px 100px", padding:"11px 14px", borderTop:"1px solid var(--avd-border-soft)", alignItems:"center", gap:12, fontSize:13, cursor:"pointer", transition:"background 0.12s"}}
+                  style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px", padding:"11px 14px", borderTop:"1px solid var(--avd-border-soft)", alignItems:"center", gap:12, fontSize:13, cursor:"pointer", transition:"background 0.12s"}}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
@@ -396,6 +396,8 @@ export function AdminVotingList() {
                   <div style={{fontWeight:600, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.votes_current_round}/{r.max_votantes}</div>
                   <div style={{display:"flex", flexDirection:"column", gap:3}}>
                     <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
+                  </div>
+                  <div style={{display:"flex", flexDirection:"column", gap:3}}>
                     {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, width:"fit-content"}}>👤 Lista pública</span>}
                     {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content"}}>🖼 Galería activa</span>}
                   </div>

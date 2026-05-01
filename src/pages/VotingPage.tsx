@@ -1165,6 +1165,9 @@ export function VotingPage() {
     const isPaused = activeRound.join_locked;
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+          <ThemeToggle />
+        </div>
         {/* Ambient orbs */}
         <div style={{ position: 'absolute', width: 280, height: 280, borderRadius: '50%', background: isPaused ? 'color-mix(in oklch, var(--avd-warn) 8%, transparent)' : 'color-mix(in oklch, var(--avd-brand) 8%, transparent)', filter: 'blur(60px)', top: '10%', left: '-10%', animation: 'proj-orb-slow-a 18s ease-in-out infinite', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', width: 220, height: 220, borderRadius: '50%', background: isPaused ? 'color-mix(in oklch, var(--avd-warn) 6%, transparent)' : 'color-mix(in oklch, var(--avd-brand) 6%, transparent)', filter: 'blur(50px)', bottom: '5%', right: '-5%', animation: 'proj-orb-slow-b 22s ease-in-out infinite', pointerEvents: 'none' }} />
@@ -1204,6 +1207,9 @@ export function VotingPage() {
     const label = activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada';
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+          <ThemeToggle />
+        </div>
         <div style={{ background: 'var(--avd-surface)', border: '1px solid color-mix(in oklch, var(--avd-warn) 35%, transparent)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-md)', width: '100%', maxWidth: 420, overflow: 'hidden', textAlign: 'center' }}>
           <div style={{ height: 3, background: 'linear-gradient(90deg, var(--avd-warn), var(--avd-warn-600))' }} />
           <div style={{ padding: 40 }}>
@@ -1634,6 +1640,7 @@ export function VotingPage() {
       </div>
 
       {/* Sticky bottom action bar */}
+      {!showSubmitAnimation && (
       <div
         className="fixed inset-x-0 bottom-0 z-[60] border-t-2 border-outline-variant bg-surface-container-lowest shadow-[0_-8px_24px_-12px_hsl(var(--outline-variant)/0.45)] dark:border-outline-variant dark:bg-surface-container-low px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]"
         style={{ backgroundColor: "hsl(var(--surface-container-lowest))", opacity: 1 }}
@@ -1691,6 +1698,7 @@ export function VotingPage() {
           </div>
         </div>
       </div>
+      )}
 
       {confirmVoteOpen && (
         <div className="avd-dialog-overlay" style={{ zIndex: 110 }} onMouseDown={(e) => { if (e.target === e.currentTarget && !voting) setConfirmVoteOpen(false); }}>

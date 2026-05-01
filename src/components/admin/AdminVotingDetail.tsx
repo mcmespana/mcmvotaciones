@@ -177,6 +177,10 @@ export function AdminVotingDetail() {
   const [importingFile, setImportingFile] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
+  const [candidateToSelect, setCandidateToSelect] = useState<Candidate | null>(null);
+  const [candidateToUnselect, setCandidateToUnselect] = useState<Candidate | null>(null);
+  const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
+  const [isCloseRoundConfirmOpen, setIsCloseRoundConfirmOpen] = useState(false);
   const [candidateForm, setCandidateForm] = useState<CandidateFormState>({
     name: "", surname: "", location: "", group_name: "", age: "", description: "", image_url: "",
   });
@@ -449,7 +453,7 @@ export function AdminVotingDetail() {
 
   const closeVoting = async () => {
     if (!roundId) return;
-    if (!window.confirm("¿Seguro que quieres cerrar definitivamente esta ronda? Se bloqueará y los asistentes no podrán participar.")) return;
+    setIsCloseRoundConfirmOpen(false);
     const { error } = await supabase.from("rounds").update({ is_closed: true, is_active: false, is_voting_open: false, join_locked: true, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo cerrar la votación", variant: "destructive" }); return; }
     toast({ title: "Votación cerrada", description: "Se cerró la votación y se bloqueó la entrada" });
@@ -719,7 +723,6 @@ export function AdminVotingDetail() {
   };
 
   const unselectCandidate = async (candidateId: string) => {
-    if (!window.confirm("¿Seguro que quieres quitar la selección a este candidato?")) return;
     const { error } = await supabase.rpc("unselect_candidate", { p_candidate_id: candidateId });
     if (error) { toast({ title: "Error", description: "No se pudo desmarcar al candidato", variant: "destructive" }); return; }
 
@@ -753,8 +756,23 @@ export function AdminVotingDetail() {
     await loadRound();
   };
 
+  const quickSelectCandidate = async (candidateId: string) => {
+    setCandidateToSelect(null);
+    const roundNumber = round?.current_round_number || 1;
+    
+    const { error } = await supabase.from("candidates").update({
+      is_selected: true,
+      selected_in_round: roundNumber,
+      updated_at: new Date().toISOString()
+    }).eq("id", candidateId);
+    
+    if (error) { toast({ title: "Error", description: "No se pudo seleccionar al candidato", variant: "destructive" }); return; }
+    toast({ title: "Candidato seleccionado", description: "Añadido directamente a la lista de seleccionados." });
+    await loadRound();
+  };
+
   const deleteCandidate = async (candidateId: string) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este candidato?")) return;
+    setCandidateToDelete(null);
     const { error } = await supabase.from("candidates").delete().eq("id", candidateId);
     if (error) { toast({ title: "Error", description: "No se pudo eliminar el candidato", variant: "destructive" }); return; }
     toast({ title: "Candidato eliminado" });
@@ -1211,10 +1229,19 @@ export function AdminVotingDetail() {
                           >
                             <Pencil size={13} />
                           </button>
+                          {!c.is_selected && !c.is_eliminated && (
+                            <button
+                              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                              onClick={() => setCandidateToSelect(c)}
+                              title="Añadir a seleccionados directamente"
+                            >
+                              <UserPlus size={13} />
+                            </button>
+                          )}
                           {c.is_selected && (
                             <button
                               className="avd-btn avd-btn-ghost avd-btn-icon-sm"
-                              onClick={() => unselectCandidate(c.id)}
+                              onClick={() => setCandidateToUnselect(c)}
                               title="Deshacer selección"
                             >
                               <Undo2 size={13} />
@@ -1223,7 +1250,7 @@ export function AdminVotingDetail() {
                           {!isVotingStarted && (
                             <button
                               className="avd-btn avd-btn-ghost avd-btn-icon-sm"
-                              onClick={() => deleteCandidate(c.id)}
+                              onClick={() => setCandidateToDelete(c)}
                               title="Eliminar"
                               style={{ color: "var(--avd-fg-faint)" }}
                               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-bad)")}
@@ -1260,11 +1287,21 @@ export function AdminVotingDetail() {
                               {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
                             </div>
                             <div style={{ display: "flex", gap: 2 }}>
-                              <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)}>
+                              <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)} title="Editar">
                                 <Pencil size={13} />
                               </button>
+                              {!c.is_selected && !c.is_eliminated && (
+                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToSelect(c)} title="Añadir a seleccionados directamente">
+                                  <UserPlus size={13} />
+                                </button>
+                              )}
+                              {c.is_selected && (
+                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToUnselect(c)} title="Deshacer selección">
+                                  <Undo2 size={13} />
+                                </button>
+                              )}
                               {!isVotingStarted && (
-                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => deleteCandidate(c.id)}>
+                                <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToDelete(c)} title="Eliminar">
                                   <Trash2 size={13} />
                                 </button>
                               )}
@@ -1417,7 +1454,7 @@ export function AdminVotingDetail() {
                   </button>
                 )}
                 {!round.is_closed && (
-                  <button className="avd-btn avd-btn-block avd-btn-danger" onClick={closeVoting}>
+                  <button className="avd-btn avd-btn-block avd-btn-danger" onClick={() => setIsCloseRoundConfirmOpen(true)}>
                     <XCircle size={14} /> Cerrar definitivamente
                   </button>
                 )}
@@ -1477,7 +1514,7 @@ export function AdminVotingDetail() {
       {/* Settings */}
       {isSettingsOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsSettingsOpen(false); }}>
-          <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog" style={{ maxWidth: 660 }} onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
               <div>
                 <h2>Configuración de la votación</h2>
@@ -1512,19 +1549,7 @@ export function AdminVotingDetail() {
                   </select>
                 </div>
                 </div>
-                <div className="avd-form-field" style={{ maxWidth: 220 }}>
-                  <label className="avd-label">Nº máximo de votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
-                  <input
-                    className="avd-input"
-                    type="number"
-                    min={1}
-                    max={9999}
-                    value={configMaxVotantes}
-                    onChange={(e) => setConfigMaxVotantes(Math.max(1, parseInt(e.target.value) || 1))}
-                    disabled={isMaxVotantesLocked}
-                  />
-                  {isMaxVotantesLocked && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>Se puede configurar solo antes de abrir la sala.</p>}
-                </div>
+
                 {round.voting_type_name && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", fontSize: 13 }}>
                     <span style={{ color: "var(--avd-fg-muted)" }}>Tipo base:</span>
@@ -1532,36 +1557,54 @@ export function AdminVotingDetail() {
                     <span style={{ fontSize: 12, color: "var(--avd-fg-faint)" }}>Los valores se pueden ajustar sin cambiar el tipo.</span>
                   </div>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, alignItems: "start" }}>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, alignItems: "start" }}>
                   <div className="avd-form-field">
-                    <label className="avd-label">Total a seleccionar</label>
-                  <input
-                    className="avd-input"
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={configMaxSelected}
-                    onChange={(e) => setConfigMaxSelected(Math.max(1, parseInt(e.target.value) || 1))}
-                    disabled={isVotingStarted}
-                  />
-                  {isVotingStarted && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>No editable con votación en curso.</p>}
-                </div>
-                <div className="avd-form-field">
-                  <label className="avd-label">Máx. votos por ronda</label>
-                  <input
-                    className="avd-input"
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={configMaxVotesPerRound}
-                    onChange={(e) => setConfigMaxVotesPerRound(Math.max(0, parseInt(e.target.value) || 0))}
-                  />
-                  <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>
-                    0 = sin límite fijo (máx. 3 por lógica automática).
-                  </p>
+                    <label className="avd-label">Nº máx. votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
+                    <input
+                      className="avd-input"
+                      type="number"
+                      min={1}
+                      max={9999}
+                      value={configMaxVotantes}
+                      onChange={(e) => setConfigMaxVotantes(Math.max(1, parseInt(e.target.value) || 1))}
+                      disabled={isMaxVotantesLocked}
+                      style={isMaxVotantesLocked ? { background: "var(--avd-bg-sunken)", color: "var(--avd-fg-muted)" } : undefined}
+                    />
+                    {isMaxVotantesLocked && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>Se puede configurar solo antes de abrir la sala.</p>}
+                  </div>
+                  
+                  <div className="avd-form-field">
+                    <label className="avd-label">Total a seleccionar {isVotingStarted && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
+                    <input
+                      className="avd-input"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={configMaxSelected}
+                      onChange={(e) => setConfigMaxSelected(Math.max(1, parseInt(e.target.value) || 1))}
+                      disabled={isVotingStarted}
+                      style={isVotingStarted ? { background: "var(--avd-bg-sunken)", color: "var(--avd-fg-muted)" } : undefined}
+                    />
+                    {isVotingStarted && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>No editable con votación en curso.</p>}
+                  </div>
+                  
+                  <div className="avd-form-field">
+                    <label className="avd-label">Máx. votos por ronda</label>
+                    <input
+                      className="avd-input"
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={configMaxVotesPerRound}
+                      onChange={(e) => setConfigMaxVotesPerRound(Math.max(0, parseInt(e.target.value) || 0))}
+                    />
+                    <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>
+                      0 = sin límite fijo (máx. 3 por lógica automática).
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
             <div className="avd-dialog-foot">
               <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(false)}>Cancelar</button>
@@ -1788,6 +1831,85 @@ export function AdminVotingDetail() {
               <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={loadDataset} disabled={loadingDataset}>
                 {loadingDataset ? "Cargando..." : "Cargar dataset"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Quick select candidate */}
+      {candidateToSelect && (
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToSelect(null); }}>
+          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>¿Seleccionar directamente?</h2>
+              <p>Vas a forzar la selección de este candidato ahora mismo y será marcado como seleccionado en esta ronda.</p>
+            </div>
+            <div className="avd-dialog-body">
+              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-bg-sunken)", border: "1px solid var(--avd-border)", fontSize: 13, fontWeight: 600, color: "var(--avd-fg)" }}>
+                {formatCandidateName(candidateToSelect)}
+              </div>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setCandidateToSelect(null)}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={() => quickSelectCandidate(candidateToSelect.id)}>Seleccionar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Unselect candidate */}
+      {candidateToUnselect && (
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToUnselect(null); }}>
+          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>¿Deshacer selección?</h2>
+              <p>Quitarás a este candidato de la lista de seleccionados y volverá a estar disponible.</p>
+            </div>
+            <div className="avd-dialog-body">
+              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "color-mix(in oklch, var(--avd-warn) 15%, transparent)", border: "1px solid color-mix(in oklch, var(--avd-warn) 30%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--avd-warn)" }}>
+                {formatCandidateName(candidateToUnselect)}
+              </div>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setCandidateToUnselect(null)}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm" style={{ background: "var(--avd-warn)", color: "var(--avd-warn-fg)", borderColor: "color-mix(in oklch, var(--avd-warn) 50%, #000)" }} onClick={() => { setCandidateToUnselect(null); unselectCandidate(candidateToUnselect.id); }}>Desmarcar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Delete candidate */}
+      {candidateToDelete && (
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToDelete(null); }}>
+          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>¿Eliminar candidato?</h2>
+              <p>Esta acción no se puede deshacer y el candidato se borrará de la lista.</p>
+            </div>
+            <div className="avd-dialog-body">
+              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-bad-bg)", border: "1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--avd-bad-fg)" }}>
+                {formatCandidateName(candidateToDelete)}
+              </div>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setCandidateToDelete(null)}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm avd-btn-danger" onClick={() => deleteCandidate(candidateToDelete.id)}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Close Round */}
+      {isCloseRoundConfirmOpen && (
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsCloseRoundConfirmOpen(false); }}>
+          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>¿Cerrar ronda definitivamente?</h2>
+              <p>Se bloqueará y los asistentes no podrán participar.</p>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setIsCloseRoundConfirmOpen(false)}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm avd-btn-danger" onClick={closeVoting}>Cerrar ronda</button>
             </div>
           </div>
         </div>
