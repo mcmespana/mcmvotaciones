@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { Chip, card, AccentBar, SelectedCandidatesSidebar, BallotsGrid } from "./_shared";
 
 interface SelectedCandidate {
   id: string;
@@ -30,28 +29,6 @@ function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-}
-
-type ChipKind = "ok" | "warn" | "brand" | "muted";
-function chip(kind: ChipKind, label: string, size: "md" | "lg" = "md"): React.ReactNode {
-  const h = size === "lg" ? 44 : 36;
-  const fs = size === "lg" ? 17 : 15;
-  const px = size === "lg" ? 22 : 16;
-  const base: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: h, padding: `0 ${px}px`, borderRadius: 9999, fontSize: fs, fontWeight: 700, letterSpacing: "-0.005em", whiteSpace: "nowrap", border: "1px solid", fontFamily: "var(--avd-font-sans)" };
-  let colors: React.CSSProperties;
-  if (kind === "ok")    colors = { background: "var(--avd-ok-bg)",    color: "var(--avd-ok-fg)",         borderColor: "color-mix(in oklch, var(--avd-ok) 30%, transparent)" };
-  else if (kind === "warn")  colors = { background: "var(--avd-warn-bg)",  color: "var(--avd-warn-fg)",       borderColor: "color-mix(in oklch, var(--avd-warn) 32%, transparent)" };
-  else if (kind === "brand") colors = { background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)",  borderColor: "var(--avd-brand-border)" };
-  else                       colors = { background: "var(--avd-bg-sunken)",color: "var(--avd-fg-muted)",     borderColor: "var(--avd-border-soft)" };
-  return <span style={{ ...base, ...colors }}>{label}</span>;
-}
-
-function card(extra?: React.CSSProperties): React.CSSProperties {
-  return { background: "var(--avd-surface)", border: "1px solid var(--avd-border)", borderRadius: 14, position: "relative", overflow: "hidden", ...extra };
-}
-
-function accentBar(color?: string): React.ReactNode {
-  return <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color || "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))", opacity: 0.9 }} />;
 }
 
 function label(text: string): React.ReactNode {
@@ -93,8 +70,8 @@ export function ProjectionVoting({
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--avd-fg)" }}>{roundTitle}</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8 }}>
-          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team, "md")}
-          {chip("brand", `Ronda ${roundNumber}`, "md")}
+          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="brand" label={`Ronda ${roundNumber}`} />
         </div>
         <div style={{ flex: 1 }} />
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -140,69 +117,17 @@ export function ProjectionVoting({
             </div>
 
             {/* Right: selected */}
-            <div style={{ display: "flex", flexDirection: "column", borderLeft: "1px solid var(--avd-border)" }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--avd-border)", display: "flex", alignItems: "center", gap: 10 }}>
-                <Check size={18} color="var(--avd-ok)" strokeWidth={3} />
-                <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", flex: 1 }}>Seleccionados</span>
-                {previouslySelected.length > 0 && (
-                  <span style={{ fontSize: 36, fontWeight: 800, color: "var(--avd-ok)", fontVariantNumeric: "tabular-nums" }}>{previouslySelected.length}</span>
-                )}
-              </div>
-              <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
-                {previouslySelected.length === 0 ? (
-                  <div style={{ padding: "32px 24px", fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500, textAlign: "center" }}>
-                    Ningún candidato seleccionado aún
-                  </div>
-                ) : (
-                  previouslySelected.map((c) => (
-                    <div key={c.id} style={{ padding: "16px 24px", borderBottom: "1px solid var(--avd-border-soft)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok-fg)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {formatCandidateName(c)}
-                        </div>
-                        {c.location && (
-                          <div style={{ fontSize: 14, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 2 }}>{c.location}</div>
-                        )}
-                      </div>
-                      {c.selected_in_round && (
-                        <span style={{ flexShrink: 0, background: "var(--avd-ok-bg)", color: "var(--avd-ok-fg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 9999, padding: "2px 12px", fontSize: 14, fontWeight: 700 }}>
-                          R{c.selected_in_round}
-                        </span>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
+            <div style={{ borderLeft: "1px solid var(--avd-border)" }}>
+              <SelectedCandidatesSidebar candidates={previouslySelected} />
             </div>
           </>
         ) : (
           /* Ballot summary view */
           <div style={{ padding: "32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
             {label("Papeletas registradas")}
-            {ballotSummaries.length === 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} style={{ height: 140, borderRadius: 12, background: "var(--avd-bg-sunken)", animation: "pulse 1.5s ease-in-out infinite" }} />
-                ))}
-              </div>
-            ) : (
-              <div ref={ballotsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-                {ballotSummaries.map((ballot) => (
-                  <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ ...card({ padding: "24px 28px" }) }}>
-                    {accentBar()}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                      <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 18, fontWeight: 700, color: "var(--avd-fg)" }}>{ballot.voteCode}</span>
-                      <span style={{ background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", border: "1px solid var(--avd-brand-border)", borderRadius: 9999, padding: "2px 12px", fontSize: 13, fontWeight: 700 }}>R{ballot.roundNumber}</span>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500 }}>
-                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>1.</span>{ballot.votes[0] || "—"}</span>
-                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>2.</span>{ballot.votes[1] || "—"}</span>
-                      <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>3.</span>{ballot.votes[2] || "—"}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div ref={ballotsRef}>
+              <BallotsGrid summaries={ballotSummaries} />
+            </div>
           </div>
         )}
       </div>

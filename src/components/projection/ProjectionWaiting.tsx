@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ProjectionWaitingMode } from "@/hooks/useProjectionData";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { chipStyle, card, AccentBar, SelectedCandidatesSidebar } from "./_shared";
+import type { ChipKind } from "./_shared";
 
 interface SelectedCandidate {
   id: string;
@@ -20,39 +21,6 @@ interface ProjectionWaitingProps {
   accessCode: string | null;
   votingUrl: string;
   previouslySelected?: SelectedCandidate[];
-}
-
-type ChipKind = "ok" | "warn" | "brand" | "muted";
-
-function chip(kind: ChipKind): React.CSSProperties {
-  const base: React.CSSProperties = {
-    display: "inline-flex", alignItems: "center", gap: 8,
-    padding: "0 20px", height: 40, borderRadius: 9999,
-    fontSize: 16, fontWeight: 700, letterSpacing: "-0.005em",
-    whiteSpace: "nowrap", border: "1px solid",
-    fontFamily: "var(--avd-font-sans)",
-  };
-  if (kind === "ok")    return { ...base, background: "var(--avd-ok-bg)",    color: "var(--avd-ok-fg)",         borderColor: "color-mix(in oklch, var(--avd-ok) 30%, transparent)" };
-  if (kind === "warn")  return { ...base, background: "var(--avd-warn-bg)",  color: "var(--avd-warn-fg)",       borderColor: "color-mix(in oklch, var(--avd-warn) 32%, transparent)" };
-  if (kind === "brand") return { ...base, background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)",  borderColor: "var(--avd-brand-border)" };
-  return                       { ...base, background: "var(--avd-bg-sunken)",color: "var(--avd-fg-muted)",     borderColor: "var(--avd-border-soft)" };
-}
-
-function card(extra?: React.CSSProperties): React.CSSProperties {
-  return {
-    background: "var(--avd-surface)",
-    border: "1px solid var(--avd-border)",
-    borderRadius: 16,
-    position: "relative",
-    overflow: "hidden",
-    ...extra,
-  };
-}
-
-function accentBar(color = "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))"): React.ReactNode {
-  return (
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color, opacity: 0.9 }} />
-  );
 }
 
 export function ProjectionWaiting({
@@ -113,7 +81,7 @@ export function ProjectionWaiting({
             {normalizedCode}
           </span>
         )}
-        <span style={chip(modeKind)}>{modeLabel}</span>
+        <span style={chipStyle(modeKind)}>{modeLabel}</span>
         <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--avd-fg-muted)" }}>
           {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </span>
@@ -133,7 +101,7 @@ export function ProjectionWaiting({
           {/* Access code */}
           {normalizedCode && shouldShowJoinQr && (
             <div style={card({ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" })}>
-              {accentBar("linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))")}
+              <AccentBar />
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 20 }}>Código de acceso</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 {normalizedCode.split("").map((char, index) => {
@@ -169,7 +137,7 @@ export function ProjectionWaiting({
           {/* QR */}
           {shouldShowJoinQr && (
             <div style={card({ padding: "28px 32px" })}>
-              {accentBar()}
+              <AccentBar />
               <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 28, alignItems: "center" }}>
                 <div style={{ borderRadius: 12, border: "1px solid var(--avd-border)", background: "white", padding: 10 }}>
                   <QRCodeSVG value={votingUrl} size={140} bgColor="#ffffff" fgColor="#0f172a" level="M" includeMargin title="QR de ingreso" />
@@ -202,38 +170,7 @@ export function ProjectionWaiting({
               </div>
             </div>
           )}
-
-          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--avd-border)", display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", flex: 1 }}>Seleccionadas</span>
-            {previouslySelected.length > 0 && (
-              <span style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok)", fontVariantNumeric: "tabular-nums" }}>{previouslySelected.length}</span>
-            )}
-          </div>
-          <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
-            {previouslySelected.length === 0 ? (
-              <div style={{ padding: "28px 24px", fontSize: 15, color: "var(--avd-fg-muted)", fontWeight: 500, textAlign: "center", lineHeight: 1.5 }}>
-                Ninguna candidata<br />seleccionada aún
-              </div>
-            ) : (
-              previouslySelected.map((c) => (
-                <div key={c.id} style={{ padding: "14px 24px", borderBottom: "1px solid var(--avd-border-soft)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 17, fontWeight: 800, color: "var(--avd-ok-fg)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {formatCandidateName(c)}
-                    </div>
-                    {c.location && (
-                      <div style={{ fontSize: 12, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 2 }}>{c.location}</div>
-                    )}
-                  </div>
-                  {c.selected_in_round && (
-                    <span style={{ flexShrink: 0, background: "var(--avd-ok-bg)", color: "var(--avd-ok-fg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 9999, padding: "2px 10px", fontSize: 13, fontWeight: 700 }}>
-                      R{c.selected_in_round}
-                    </span>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+          <SelectedCandidatesSidebar candidates={previouslySelected} />
         </div>
       </div>
     </div>

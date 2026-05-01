@@ -68,15 +68,15 @@ export function ProjectionPage() {
     );
   }
 
-  // Fallback (shouldn't happen)
   return (
     <ProjectionWaiting
-      connectedCount={0}
+      connectedCount={data.connectedCount ?? 0}
       showConnectedCount={false}
-      waitingMode="idle"
-      roundTitle={null}
-      accessCode={null}
+      waitingMode={data.waitingMode ?? "idle"}
+      roundTitle={data.round?.title ?? null}
+      accessCode={data.round?.access_code ?? null}
       votingUrl={votingUrl}
+      previouslySelected={data.previouslySelected}
     />
   );
 }

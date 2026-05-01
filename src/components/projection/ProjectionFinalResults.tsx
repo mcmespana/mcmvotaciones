@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Check, MapPin, Cake, Tag } from "lucide-react";
+import { Check } from "lucide-react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName } from "@/lib/candidateFormat";
+import { Chip } from "./_shared";
 
 interface Candidate {
   id: string;
@@ -21,13 +22,6 @@ interface ProjectionFinalResultsProps {
   roundNumber: number;
   team: string;
   selectedCandidates: Candidate[];
-}
-
-function chip(kind: "ok" | "warn" | "brand", label: string): React.ReactNode {
-  const base: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: 36, padding: "0 16px", borderRadius: 9999, fontSize: 15, fontWeight: 700, letterSpacing: "-0.005em", whiteSpace: "nowrap", border: "1px solid", fontFamily: "var(--avd-font-sans)" };
-  if (kind === "ok")   return <span style={{ ...base, background: "var(--avd-ok-bg)",    color: "var(--avd-ok-fg)",        borderColor: "color-mix(in oklch, var(--avd-ok) 30%, transparent)" }}>{label}</span>;
-  if (kind === "warn") return <span style={{ ...base, background: "var(--avd-warn-bg)",  color: "var(--avd-warn-fg)",      borderColor: "color-mix(in oklch, var(--avd-warn) 32%, transparent)" }}>{label}</span>;
-  return                     <span style={{ ...base, background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", borderColor: "var(--avd-brand-border)" }}>{label}</span>;
 }
 
 function tagChip(label: string): React.ReactNode {
@@ -73,9 +67,9 @@ export function ProjectionFinalResults({
         <p style={{ margin: 0, fontSize: 16, color: "var(--avd-fg-muted)", fontWeight: 600 }}>{roundTitle}</p>
         <div style={{ flex: 1 }} />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team)}
-          {chip("brand", `Ronda ${roundNumber}`)}
-          {chip("ok", `${selectedCandidates.length} elegidos`)}
+          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="brand" label={`Ronda ${roundNumber}`} />
+          <Chip kind="ok" label={`${selectedCandidates.length} elegidos`} />
         </div>
       </div>
 

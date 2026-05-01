@@ -3,6 +3,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { formatCandidateName } from "@/lib/candidateFormat";
+import { Chip, BallotsGrid } from "./_shared";
 
 interface Candidate {
   id: string;
@@ -32,14 +33,6 @@ interface ProjectionResultsProps {
   selectedCandidates: Candidate[];
   showBallotSummary: boolean;
   ballotSummaries: BallotSummary[];
-}
-
-function chip(kind: "ok" | "warn" | "brand" | "muted", label: string): React.ReactNode {
-  const base: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: 36, padding: "0 16px", borderRadius: 9999, fontSize: 15, fontWeight: 700, letterSpacing: "-0.005em", whiteSpace: "nowrap", border: "1px solid", fontFamily: "var(--avd-font-sans)" };
-  if (kind === "ok")    return <span style={{ ...base, background: "var(--avd-ok-bg)",    color: "var(--avd-ok-fg)",         borderColor: "color-mix(in oklch, var(--avd-ok) 30%, transparent)" }}>{label}</span>;
-  if (kind === "warn")  return <span style={{ ...base, background: "var(--avd-warn-bg)",  color: "var(--avd-warn-fg)",       borderColor: "color-mix(in oklch, var(--avd-warn) 32%, transparent)" }}>{label}</span>;
-  if (kind === "brand") return <span style={{ ...base, background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)",  borderColor: "var(--avd-brand-border)" }}>{label}</span>;
-  return                      <span style={{ ...base, background: "var(--avd-bg-sunken)",color: "var(--avd-fg-muted)",     borderColor: "var(--avd-border-soft)" }}>{label}</span>;
 }
 
 const TOP_N = 5;
@@ -116,9 +109,9 @@ export function ProjectionResults({
       <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 }}>Resultados — Ronda {roundNumber}</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
-          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team)}
-          {chip("brand", roundTitle)}
-          {selectedCandidates.length > 0 && chip("ok", `${selectedCandidates.length} seleccionados`)}
+          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="brand" label={roundTitle} />
+          {selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
         </div>
         <div style={{ flex: 1 }} />
         <div style={{ fontSize: 14, color: "var(--avd-fg-muted)", fontWeight: 600 }}>{displayResults.length} candidatos votados</div>
@@ -169,32 +162,9 @@ export function ProjectionResults({
           <>
             <div style={{ flex: 1, padding: "28px 36px", overflow: "auto" }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 20 }}>Papeletas registradas</div>
-              {ballotSummaries.length === 0 ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} style={{ height: 140, borderRadius: 12, background: "var(--avd-bg-sunken)", animation: "pulse 1.5s ease-in-out infinite" }} />
-                  ))}
-                </div>
-              ) : (
-                <div ref={ballotsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
-                  {ballotSummaries.map((ballot) => (
-                    <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ background: "var(--avd-surface)", border: "1px solid var(--avd-border)", borderRadius: 12, padding: "22px 26px", position: "relative", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))" }} />
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                        <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 17, fontWeight: 700, color: "var(--avd-fg)" }}>{ballot.voteCode}</span>
-                        <span style={{ background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", border: "1px solid var(--avd-brand-border)", borderRadius: 9999, padding: "2px 10px", fontSize: 12, fontWeight: 700 }}>R{ballot.roundNumber}</span>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {ballot.votes.map((vote, idx) => (
-                          <p key={idx} style={{ margin: 0, fontSize: 18, color: "var(--avd-fg)", fontWeight: 500 }}>
-                            <span style={{ color: "var(--avd-fg-faint)", marginRight: 8, fontWeight: 700 }}>{idx + 1}.</span>{vote || "—"}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div ref={ballotsRef}>
+                <BallotsGrid summaries={ballotSummaries} />
+              </div>
             </div>
             {selectedSidebar || (
               <div style={{ width: 280, flexShrink: 0, background: "var(--avd-bg-elev)", borderLeft: "1px solid var(--avd-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
