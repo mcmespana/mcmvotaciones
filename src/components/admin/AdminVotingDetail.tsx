@@ -15,6 +15,8 @@ import {
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { ResultsAnalytics } from "@/components/admin/ResultsAnalytics";
 import { BallotReview } from "@/components/voting/BallotReview";
+import { useRoundWorkflow } from "@/hooks/useRoundWorkflow";
+import { TeamChip } from "@/components/admin/TeamChip";
 
 /* ── Interfaces ── */
 
@@ -80,7 +82,6 @@ interface SeatStatus {
   occupied_seats: number;
   expired_seats: number;
   available_seats: number;
-  max_votantes: number;
 }
 
 interface VoteExportRow {
@@ -127,19 +128,6 @@ const WORKFLOW_STEPS = [
   { id: "finish", label: "Finalizar ronda", sub: "Siguiente ronda o cierre" },
 ];
 
-function getStage(round: RoundDetail | null): number {
-  if (!round) return 0;
-  if (round.is_closed) return WORKFLOW_STEPS.length;
-  if (!round.round_finalized) {
-    if (round.is_voting_open) return 2;
-    if (round.is_active) return 1;
-    return 0;
-  }
-  if (!round.show_results_to_voters) return 3;
-  if (!round.show_ballot_summary_projection) return 4;
-  return 5;
-}
-
 /* ── Component ── */
 
 export function AdminVotingDetail() {
@@ -175,7 +163,7 @@ export function AdminVotingDetail() {
   const [configMaxVotesPerRound, setConfigMaxVotesPerRound] = useState(0);
   const [loadingDataset, setLoadingDataset] = useState(false);
   const [importingFile, setImportingFile] = useState(false);
-  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(import.meta.env.DEV ? (testDatasets[0]?.id ?? "") : "");
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
   const [candidateToSelect, setCandidateToSelect] = useState<Candidate | null>(null);
   const [candidateToUnselect, setCandidateToUnselect] = useState<Candidate | null>(null);
@@ -205,15 +193,14 @@ export function AdminVotingDetail() {
     ]);
     if (!seatError) setSeats((seatData || []) as SeatRow[]);
     if (!seatStatusError && seatStatusData) {
-      const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number; max_votantes?: number };
-      setSeatStatus((prev) => ({
+      const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number };
+      setSeatStatus({
         occupied_seats: parsed.occupied_seats || 0,
         expired_seats: parsed.expired_seats || 0,
         available_seats: parsed.available_seats || 0,
-        max_votantes: parsed.max_votantes || prev?.max_votantes || round?.max_votantes || 0,
-      }));
+      });
     }
-  }, [roundId, round?.max_votantes]);
+  }, [roundId]);
 
   const loadCurrentRoundVotes = useCallback(async (roundNumber: number) => {
     if (!roundId || !roundNumber) return;
@@ -281,8 +268,8 @@ export function AdminVotingDetail() {
       setConfigMaxSelected(normalizedRound.max_selected_candidates || 0);
       setConfigMaxVotesPerRound(normalizedRound.max_votes_per_round || 0);
       if (!seatStatusError && seatStatusData) {
-        const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number; max_votantes?: number };
-        setSeatStatus({ occupied_seats: parsed.occupied_seats || 0, expired_seats: parsed.expired_seats || 0, available_seats: parsed.available_seats || 0, max_votantes: parsed.max_votantes || normalizedRound.max_votantes });
+        const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number };
+        setSeatStatus({ occupied_seats: parsed.occupied_seats || 0, expired_seats: parsed.expired_seats || 0, available_seats: parsed.available_seats || 0 });
       } else {
         setSeatStatus(null);
       }
@@ -327,15 +314,22 @@ export function AdminVotingDetail() {
 
   const isVotingStarted = Boolean(round && (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0));
   const isMaxVotantesLocked = isVotingStarted;
-  const roomIsOpen = Boolean(round && round.is_active && !round.is_voting_open && !round.is_closed);
-  const canOpenRoom = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
-  const canCloseRoom = Boolean(round && roomIsOpen);
-  const canStartRound = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
-  const canPauseRound = Boolean(round && round.is_active && round.is_voting_open && !round.round_finalized && !round.is_closed);
-  const canResumeRound = Boolean(round && round.is_active && !round.is_voting_open && round.join_locked && !round.round_finalized && !round.is_closed);
   const isProjectingSomething = Boolean(round && round.show_results_to_voters);
-  const canFinalizeRound = Boolean(round && round.is_active && (round.is_voting_open || round.join_locked) && currentRoundVotes > 0 && !round.round_finalized && !round.is_closed);
-  const canStartNextRound = Boolean(round && !selectionQuotaReached && round.is_active && round.round_finalized && !round.is_closed);
+
+  const {
+    stage,
+    label: workflowActionLabel,
+    disabled: workflowActionDisabled,
+    roomIsOpen,
+    canOpenRoom,
+    canCloseRoom,
+    canStartRound,
+    canPauseRound,
+    canResumeRound,
+    canFinalizeRound,
+    canStartNextRound,
+  } = useRoundWorkflow({ round, hasCandidates, selectionQuotaReached, currentRoundVotes, isWorkflowRunning });
+
   const openAnalyticsDialog = useCallback(() => {
     setIsAnalyticsOpen(true);
   }, []);
@@ -343,28 +337,6 @@ export function AdminVotingDetail() {
   const openBallotsDialog = useCallback(() => {
     setIsBallotsOpen(true);
   }, []);
-
-  const workflowActionLabel = !round
-    ? "Acción"
-    : round.is_closed ? "Votación completada"
-    : canOpenRoom ? "Abrir sala"
-    : canStartRound ? "Iniciar votación"
-    : !round.round_finalized ? "Finalizar votación"
-    : !round.show_results_to_voters ? "Ver resultados ronda"
-    : !round.show_ballot_summary_projection ? "Ver papeletas"
-    : selectionQuotaReached ? "Confirmar selección"
-    : canStartNextRound ? "Finalizar ronda"
-    : "Votación completada";
-
-  const workflowActionDisabled = Boolean(
-    isWorkflowRunning ||
-    !round ||
-    round.is_closed ||
-    (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-    (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound)
-  );
-
-  const stage = getStage(round);
 
   /* ── Status chip ── */
   const statusChip = !round ? { cls: "", txt: "Cargando" }
@@ -815,14 +787,17 @@ export function AdminVotingDetail() {
       else if (file.name.endsWith(".json")) { candidatesData = parseJSON(text); }
       else { throw new Error("Formato no soportado. Usa CSV, XML o JSON."); }
       const maxOrderIndex = Math.max(0, ...candidates.map((c) => c.order_index || 0));
-      let importedCount = 0; let errorCount = 0;
-      for (let i = 0; i < candidatesData.length; i++) {
-        const candidate = candidatesData[i];
-        if (!candidate.name?.trim() || !candidate.surname?.trim()) { errorCount++; continue; }
-        const { error } = await supabase.from("candidates").insert([{ round_id: round.id, name: candidate.name.trim(), surname: candidate.surname.trim(), location: candidate.location?.trim() || null, group_name: candidate.group_name?.trim() || null, age: typeof candidate.age === "number" ? candidate.age : null, description: candidate.description?.trim() || null, image_url: candidate.image_url?.trim() || null, order_index: maxOrderIndex + i + 1 }]);
-        if (error) { errorCount++; } else { importedCount++; }
+      let errorCount = 0;
+      const rows = candidatesData.reduce<object[]>((acc, candidate, i) => {
+        if (!candidate.name?.trim() || !candidate.surname?.trim()) { errorCount++; return acc; }
+        acc.push({ round_id: round.id, name: candidate.name.trim(), surname: candidate.surname.trim(), location: candidate.location?.trim() || null, group_name: candidate.group_name?.trim() || null, age: typeof candidate.age === "number" ? candidate.age : null, description: candidate.description?.trim() || null, image_url: candidate.image_url?.trim() || null, order_index: maxOrderIndex + i + 1 });
+        return acc;
+      }, []);
+      if (rows.length > 0) {
+        const { error } = await supabase.from("candidates").insert(rows);
+        if (error) throw error;
       }
-      toast({ title: "Importación completada", description: `${importedCount} candidatos importados${errorCount > 0 ? `. ${errorCount} filas con error.` : "."}` });
+      toast({ title: "Importación completada", description: `${rows.length} candidatos importados${errorCount > 0 ? `. ${errorCount} filas con error.` : "."}` });
       setIsImportOpen(false);
       await loadRound();
     } catch (error) {
@@ -836,7 +811,7 @@ export function AdminVotingDetail() {
   };
 
   const loadDataset = async () => {
-    if (!round) return;
+    if (!import.meta.env.DEV || !round) return;
     const selectedDataset = testDatasets.find((d) => d.id === selectedDatasetId);
     if (!selectedDataset) { toast({ title: "Dataset no válido", variant: "destructive" }); return; }
     try {
@@ -945,17 +920,7 @@ export function AdminVotingDetail() {
             {statusChip.txt}
           </span>
           <span className="avd-chip avd-chip-muted">Ronda {round.current_round_number}</span>
-          {(() => {
-            const label = round.voting_type_name || round.team;
-            const isECE = label === "ECE";
-            const isECL = label === "ECL";
-            return (
-              <span
-                className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
-                style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
-              >{label}</span>
-            );
-          })()}
+          <TeamChip label={round.voting_type_name || round.team} />
           {round.year && <span className="avd-chip avd-chip-muted">{round.year}</span>}
           <span className="avd-chip avd-chip-mono" title="Código de acceso" style={{ gap: 4 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--avd-brand)", flexShrink: 0, display: "inline-block" }} />
@@ -1187,9 +1152,11 @@ export function AdminVotingDetail() {
                         <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
                           <ArrowUpRight size={14} /> Comunica
                         </button>
-                        <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
-                          <Download size={14} /> Dataset
-                        </button>
+                        {import.meta.env.DEV && (
+                          <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
+                            <Download size={14} /> Dataset
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
@@ -1802,7 +1769,7 @@ export function AdminVotingDetail() {
       )}
 
       {/* Dataset */}
-      {isDatasetOpen && (
+      {import.meta.env.DEV && isDatasetOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsDatasetOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>

@@ -5,6 +5,7 @@ import { generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { VotingTypesManager, type VotingType } from "@/components/admin/VotingTypesManager";
+import { TeamChip } from "@/components/admin/TeamChip";
 
 interface RoundListItem {
   id: string;
@@ -91,17 +92,7 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
           <div style={{flex:1, minWidth:0}}>
             <div style={{fontSize:15, fontWeight:700, letterSpacing:"-0.01em", lineHeight:1.3, color:"var(--avd-fg)", marginBottom:6, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as const}}>{round.title}</div>
             <div style={{display:"flex", flexWrap:"wrap", gap:5, alignItems:"center"}}>
-              {(() => {
-                const label = round.voting_type_name || round.team;
-                const isECE = label === "ECE";
-                const isECL = label === "ECL";
-                return (
-                  <span
-                    className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
-                    style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
-                  >{label}</span>
-                );
-              })()}
+              <TeamChip label={round.voting_type_name || round.team} />
               <span className="avd-chip avd-chip-muted">{round.year}</span>
               <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5}}>
                 {chip.pulse && <span className="avd-pulse-dot" />}
@@ -402,17 +393,7 @@ export function AdminVotingList() {
                     {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content"}}>🖼 Galería activa</span>}
                   </div>
                   <div>
-                    {(() => {
-                      const label = r.voting_type_name || r.team;
-                      const isECE = label === "ECE";
-                      const isECL = label === "ECL";
-                      return (
-                        <span
-                          className={`avd-chip ${isECE ? "avd-chip-brand" : ""}`}
-                          style={isECL ? {background:"color-mix(in oklch, oklch(0.6 0.2 320) 12%, transparent)", color:"oklch(0.5 0.2 320)", borderColor:"color-mix(in oklch, oklch(0.6 0.2 320) 30%, transparent)"} : (!isECE ? {background:"color-mix(in oklch, oklch(0.6 0.15 240) 12%, transparent)", color:"oklch(0.5 0.15 240)", borderColor:"color-mix(in oklch, oklch(0.6 0.15 240) 30%, transparent)"} : {})}
-                        >{label}</span>
-                      );
-                    })()}
+                    <TeamChip label={r.voting_type_name || r.team} />
                   </div>
                   {isSuperAdmin && (
                     <div style={{display:"flex", justifyContent:"center"}}>

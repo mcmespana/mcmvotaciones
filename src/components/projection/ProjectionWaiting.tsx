@@ -43,7 +43,7 @@ export function ProjectionWaiting({
     waitingMode === "closed"
       ? "La votación ha finalizado. Gracias por participar."
       : waitingMode === "paused"
-      ? "Votacion en pausa. Esperando reanudacion..."
+      ? "Votación en pausa. Esperando reanudación..."
       : waitingMode === "finalized"
       ? "Ronda finalizada. Esperando publicacion de resultados"
       : waitingMode === "room-open"

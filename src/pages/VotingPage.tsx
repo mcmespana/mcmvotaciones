@@ -569,7 +569,7 @@ export function VotingPage() {
 
     // Subscribe to real-time updates for rounds (recarga selectiva)
     const roundsChannel = supabase
-      .channel('voter-rounds-updates')
+      .channel(`voter-rounds-updates-${crypto.randomUUID()}`)
       // Escuchar INSERT: cuando se crea una nueva ronda activa
       .on('postgres_changes', 
         { 
@@ -580,15 +580,6 @@ export function VotingPage() {
         }, 
         (payload) => {
           debugLog('🆕 New active round created:', payload);
-          const newRound = (payload as unknown as { new: Partial<Round> }).new;
-          
-          // Mostrar notificación al usuario
-          toast({
-            title: '🎉 Nueva votación disponible',
-            description: newRound.title || 'Se ha iniciado una nueva votación',
-          });
-          
-          // Recargar inmediatamente cuando hay una nueva ronda activa
           loadActiveRound({ silent: true });
         }
       )
@@ -627,18 +618,6 @@ export function VotingPage() {
             );
             if (affectsVoter) {
               debugLog('🔄 Current round updated with voter impact, reloading...');
-              // Agregar toast específico según el tipo de cambio
-              if (updated.is_active === false) {
-                toast({
-                  title: '⏸️ Votación pausada',
-                  description: 'La votación actual ha sido pausada',
-                });
-              } else if (updated.is_closed === true) {
-                toast({
-                  title: '🏁 Votación finalizada',
-                  description: 'La votación ha sido cerrada',
-                });
-              }
               loadActiveRound({ silent: true });
             }
           }
@@ -647,10 +626,6 @@ export function VotingPage() {
             debugLog('🔄 Different round became active, reloading...', {
               updatedId: updated.id,
               currentId: current?.id || 'none'
-            });
-            toast({
-              title: '🎉 Nueva votación disponible',
-              description: 'Una nueva votación está disponible',
             });
             loadActiveRound({ silent: true });
           }

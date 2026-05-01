@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { debugLog } from "@/lib/logger";
 import { formatSurname } from "@/lib/candidateFormat";
@@ -124,7 +124,7 @@ export function useProjectionData(): ProjectionData {
   })();
 
   // Selected candidates (from current round results)
-  const selectedCandidates = candidates.filter((c) => c.is_selected);
+  const selectedCandidates = useMemo(() => candidates.filter((c) => c.is_selected), [candidates]);
 
   // Load the active round and its data
   const loadActiveRound = useCallback(async () => {
