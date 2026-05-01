@@ -18,7 +18,8 @@
       "Bash(xargs grep *)",
       "Bash(git add *)",
       "Bash(git -c user.email=admin@movimientoconsolacion.com -c 'user.name=Admin MCM' commit -m ' *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(git commit *)"
     ]
   }
 }

@@ -126,21 +126,7 @@ export function ProjectionResults({
                 <div style={{ fontSize: 18, color: "var(--avd-fg-muted)", textAlign: "center", padding: 40 }}>No hay resultados para mostrar.</div>
               )}
 
-              {/* Rest (6+): static two-col grid */}
-              {restResults.length > 0 && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {restResults.map((result) => {
-                    const cand = candidates.find((c) => c.id === result.candidate_id);
-                    if (!cand) return null;
-                    const rank = rankById.get(result.candidate_id) ?? 0;
-                    const isTop = selectedIds.has(result.candidate_id);
-                    const pct = Math.min(Math.max(result.percentage, 0), 100);
-                    return <ResultRow key={result.candidate_id} cand={cand} result={result} rank={rank} isTop={isTop} pct={pct} animated={false} />;
-                  })}
-                </div>
-              )}
-
-              {/* Top 5: animated */}
+              {/* Top 5: animated — primero para jerarquía visual */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {top5Sorted.map((result) => {
                   const cand = candidates.find((c) => c.id === result.candidate_id);
@@ -155,6 +141,25 @@ export function ProjectionResults({
                   return <ResultRow key={result.candidate_id} cand={cand} result={result} rank={rank} isTop={isTop} pct={pct} animated />;
                 })}
               </div>
+
+              {/* Resto (6+): grid estático debajo */}
+              {restResults.length > 0 && (
+                <>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginTop: 4 }}>
+                    Resto de candidatos
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {restResults.map((result) => {
+                      const cand = candidates.find((c) => c.id === result.candidate_id);
+                      if (!cand) return null;
+                      const rank = rankById.get(result.candidate_id) ?? 0;
+                      const isTop = selectedIds.has(result.candidate_id);
+                      const pct = Math.min(Math.max(result.percentage, 0), 100);
+                      return <ResultRow key={result.candidate_id} cand={cand} result={result} rank={rank} isTop={isTop} pct={pct} animated={false} />;
+                    })}
+                  </div>
+                </>
+              )}
             </div>
             {selectedSidebar}
           </>
