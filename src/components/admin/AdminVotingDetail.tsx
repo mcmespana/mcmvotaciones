@@ -1104,38 +1104,11 @@ export function AdminVotingDetail() {
           </div>
           <div className="avd-kpi-panel">
             <div className="avd-kpi-stack">
-              <div className="avd-kpi" data-accent="ok">
-                <div className="avd-kpi-label"><Users size={11} />Conectados</div>
-                <div className="avd-kpi-value avd-tabular">
-                  {seatStatus?.occupied_seats ?? 0}
-                  <span className="avd-unit">/ {round.max_votantes}</span>
-                </div>
-                <div className="avd-kpi-bar">
-                  <div className="avd-kpi-bar-fill avd-ok" style={{ width: `${occupiedPct}%` }} />
-                </div>
-              </div>
-              <div className="avd-kpi" data-accent="brand">
-                <div className="avd-kpi-label">Votos ronda {round.current_round_number}</div>
-                <div className="avd-kpi-value avd-tabular">
-                  {currentRoundVotes}
-                  <span className="avd-unit">/ {round.max_votantes}</span>
-                </div>
-                <div className="avd-kpi-bar">
-                  <div className="avd-kpi-bar-fill" style={{ width: `${votesPct}%` }} />
-                </div>
-              </div>
-              <div className="avd-kpi" data-accent="brand">
-                <div className="avd-kpi-label">Participación</div>
-                <div className="avd-kpi-value avd-tabular">
-                  {votesPct}<span className="avd-unit">%</span>
-                </div>
-                <div className="avd-kpi-meta">Objetivo {round.max_selected_candidates} selecciones</div>
-              </div>
               <div className="avd-kpi">
                 <div className="avd-kpi-label">Candidatas</div>
                 <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
                 <div className="avd-kpi-meta">
-                  {selectedCandidatesCount} seleccionadas · {candidates.length - activeCandidatesCount} eliminadas
+                  {candidates.length - activeCandidatesCount} eliminadas
                 </div>
               </div>
               <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
@@ -1455,9 +1428,11 @@ export function AdminVotingDetail() {
             <div>
               <h3 className="avd-section-title">Atajos</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <button className="avd-btn avd-btn-block" onClick={openAnalyticsDialog}>
-                  <BarChart2 size={14} /> Análisis de resultados
-                </button>
+                {!(round.round_finalized && !round.is_closed && inlineResults.length > 0) && (
+                  <button className="avd-btn avd-btn-block" onClick={openAnalyticsDialog}>
+                    <BarChart2 size={14} /> Análisis de resultados
+                  </button>
+                )}
                 <button className="avd-btn avd-btn-block" onClick={openBallotsDialog}>
                   <FileUp size={14} /> Revisar papeletas
                 </button>
