@@ -22,6 +22,8 @@ interface RoundListItem {
   votes_current_round: number;
   created_at: string;
   voting_type_name: string | null;
+  public_candidates_enabled: boolean;
+  show_final_gallery_projection: boolean;
 }
 
 function generateSlug(title: string, id: string): string {
@@ -105,6 +107,12 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
                 {chip.pulse && <span className="avd-pulse-dot" />}
                 {chip.txt}
               </span>
+              {round.public_candidates_enabled && (
+                <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18}}>👤 Lista pública</span>
+              )}
+              {round.show_final_gallery_projection && (
+                <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18}}>🖼 Galería activa</span>
+              )}
             </div>
           </div>
           {isSuperAdmin && (
@@ -225,7 +233,7 @@ export function AdminVotingList() {
       setLoading(true);
       const { data, error } = await supabase
         .from("rounds")
-        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at,voting_type_name")
+        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at,voting_type_name,public_candidates_enabled,show_final_gallery_projection")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setRounds((data || []) as RoundListItem[]);
@@ -386,7 +394,11 @@ export function AdminVotingList() {
                   </div>
                   <div style={{fontWeight:700, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.current_round_number}</div>
                   <div style={{fontWeight:600, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.votes_current_round}/{r.max_votantes}</div>
-                  <div><span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span></div>
+                  <div style={{display:"flex", flexDirection:"column", gap:3}}>
+                    <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
+                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, width:"fit-content"}}>👤 Lista pública</span>}
+                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content"}}>🖼 Galería activa</span>}
+                  </div>
                   <div>
                     {(() => {
                       const label = r.voting_type_name || r.team;

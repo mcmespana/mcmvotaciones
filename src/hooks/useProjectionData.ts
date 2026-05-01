@@ -21,6 +21,7 @@ interface Round {
   access_code: string | null;
   show_ballot_summary_projection: boolean;
   show_final_gallery_projection: boolean;
+  voting_type_name: string | null;
   is_voting_open: boolean;
   join_locked: boolean;
   updated_at: string;

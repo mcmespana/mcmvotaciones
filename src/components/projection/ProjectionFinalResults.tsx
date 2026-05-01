@@ -73,7 +73,7 @@ export function ProjectionFinalResults({
         <p style={{ margin: 0, fontSize: 16, color: "var(--avd-fg-muted)", fontWeight: 600 }}>{roundTitle}</p>
         <div style={{ flex: 1 }} />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {chip("warn", `🏆 ${team}`)}
+          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team)}
           {chip("brand", `Ronda ${roundNumber}`)}
           {chip("ok", `${selectedCandidates.length} elegidos`)}
         </div>

@@ -1076,14 +1076,29 @@ export function VotingPage() {
 
   if (!activeRound) {
     return (
-      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
-          <div style={{ margin: '0 auto 20px', width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--avd-brand-bg)', border: '1px solid var(--avd-brand-border)', color: 'var(--avd-brand)' }}>
-            <Vote style={{ width: 32, height: 32 }} />
+      <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, minHeight: '100vh' }}>
+        <ThemeToggle />
+        <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: '40px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #ef4444, #22c55e, #eab308, #3b82f6)', backgroundSize: '200% auto', animation: 'shimmer-bar 3s linear infinite' }} />
+          <div style={{ position: 'relative', margin: '0 auto 24px', width: 80, height: 80 }}>
+            <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--avd-brand-bg)', border: '2px solid var(--avd-brand-border)', animation: 'pulse-ring 2s ease-in-out infinite' }} />
+            <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '50%', background: 'var(--avd-brand-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--avd-brand)' }}>
+              <Vote style={{ width: 36, height: 36 }} />
+            </div>
           </div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--avd-fg)' }}>Sin votaciones activas</h1>
-          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>No hay votaciones disponibles en este momento.</p>
+          <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 10, color: 'var(--avd-fg)', letterSpacing: '-0.01em' }}>Esperando siguiente votación…</h1>
+          <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>No hay votaciones disponibles en este momento. La página se actualizará automáticamente.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--avd-brand)', opacity: 0.7, animation: `dot-pulse 1.4s ease-in-out ${i * 0.2}s infinite` }} />
+            ))}
+          </div>
         </div>
+        <style>{`
+          @keyframes shimmer-bar { to { background-position: 200% center; } }
+          @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.15);opacity:0.5} }
+          @keyframes dot-pulse { 0%,80%,100%{transform:scale(1);opacity:0.7} 40%{transform:scale(1.4);opacity:1} }
+        `}</style>
       </div>
     );
   }

@@ -515,6 +515,18 @@ export function AdminVotingDetail() {
   const toggleGallery = async () => {
     if (!roundId || !round?.round_finalized || !round.show_ballot_summary_projection || !round.is_closed) return;
     const nextOn = !round.show_results_to_voters;
+    if (nextOn) {
+      const { data: activeGalleries } = await supabase
+        .from("rounds")
+        .select("id, title")
+        .eq("show_final_gallery_projection", true)
+        .neq("id", roundId)
+        .limit(1);
+      if (activeGalleries && activeGalleries.length > 0) {
+        await supabase.from("rounds").update({ show_results_to_voters: false, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", activeGalleries[0].id);
+        toast({ title: `Galería de "${activeGalleries[0].title}" cerrada`, description: "No puede haber dos galerías activas simultáneamente." });
+      }
+    }
     const { error } = await supabase.from("rounds").update({ show_results_to_voters: nextOn, show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo actualizar la galería", variant: "destructive" }); return; }
     toast({ title: nextOn ? "Galería activada" : "Galería desactivada" });
@@ -852,7 +864,7 @@ export function AdminVotingDetail() {
     );
   }
 
-  const occupiedPct = seatStatus ? Math.round((seatStatus.occupied_seats / (seatStatus.max_votantes || 1)) * 100) : 0;
+  const occupiedPct = seatStatus && round.max_votantes > 0 ? Math.min(Math.round((seatStatus.occupied_seats / round.max_votantes) * 100), 100) : 0;
   const votesPct = round.max_votantes > 0 ? Math.round((currentRoundVotes / round.max_votantes) * 100) : 0;
 
   /* ── Render ── */
@@ -1407,6 +1419,7 @@ export function AdminVotingDetail() {
                       className={`avd-switch ${round.public_candidates_enabled ? "on" : ""}`}
                       onClick={togglePublicCandidates}
                       disabled={round.is_closed}
+                      title={round.is_closed ? "No disponible con votación cerrada" : undefined}
                     />
                   </div>
                 </div>

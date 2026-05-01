@@ -9,6 +9,9 @@ export function ProjectionPage() {
   const votingUrl = window.location.origin;
 
   if (data.state === "waiting") {
+    const safeSelected = data.waitingMode === "finalized" && data.round
+      ? data.previouslySelected.filter(c => (c.selected_in_round ?? 0) < data.round!.current_round_number)
+      : data.previouslySelected;
     return (
       <ProjectionWaiting
         connectedCount={data.connectedCount}
@@ -17,7 +20,7 @@ export function ProjectionPage() {
         roundTitle={data.round?.title ?? null}
         accessCode={data.round?.access_code ?? null}
         votingUrl={votingUrl}
-        previouslySelected={data.previouslySelected}
+        previouslySelected={safeSelected}
       />
     );
   }
@@ -27,7 +30,7 @@ export function ProjectionPage() {
       <ProjectionResults
         roundTitle={data.round.title}
         roundNumber={data.round.current_round_number}
-        team={data.round.team}
+        team={data.round.voting_type_name || data.round.team}
         results={data.results}
         candidates={data.candidates}
         selectedCandidates={data.selectedCandidates}
@@ -42,7 +45,7 @@ export function ProjectionPage() {
       <ProjectionFinalResults
         roundTitle={data.round.title}
         roundNumber={data.round.current_round_number}
-        team={data.round.team}
+        team={data.round.voting_type_name || data.round.team}
         selectedCandidates={data.selectedCandidates}
       />
     );
@@ -53,7 +56,7 @@ export function ProjectionPage() {
       <ProjectionVoting
         roundTitle={data.round.title}
         roundNumber={data.round.current_round_number}
-        team={data.round.team}
+        team={data.round.voting_type_name || data.round.team}
         voteCount={data.voteCount}
         maxVotantes={data.round.max_votantes}
         elapsedSeconds={data.elapsedSeconds}

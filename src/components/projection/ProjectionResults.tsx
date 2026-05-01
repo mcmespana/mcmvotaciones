@@ -116,7 +116,7 @@ export function ProjectionResults({
       <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 }}>Resultados — Ronda {roundNumber}</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
-          {chip("warn", `🏆 ${team}`)}
+          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team)}
           {chip("brand", roundTitle)}
           {selectedCandidates.length > 0 && chip("ok", `${selectedCandidates.length} seleccionados`)}
         </div>

@@ -93,7 +93,7 @@ export function ProjectionVoting({
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--avd-fg)" }}>{roundTitle}</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8 }}>
-          {chip("warn", `🏆 ${team}`, "md")}
+          {chip("warn", (team === "ECE" || team === "ECL") ? `🏆 ${team}` : team, "md")}
           {chip("brand", `Ronda ${roundNumber}`, "md")}
         </div>
         <div style={{ flex: 1 }} />
