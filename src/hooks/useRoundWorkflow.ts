@@ -1,6 +1,15 @@
 import { useMemo } from "react";
 import type { RoundRow } from "@/types/db";
 
+export const WORKFLOW_STEPS = [
+  { id: "open-room",   label: "Abrir sala",           sub: "Sala de espera abierta" },
+  { id: "start",       label: "Iniciar votación",      sub: "Empieza el voto" },
+  { id: "close-vote",  label: "Finalizar votación",    sub: "Cierra y procesa" },
+  { id: "results",     label: "Ver resultados ronda",  sub: "Se proyectan los resultados" },
+  { id: "ballots",     label: "Ver papeletas",         sub: "Se proyectan las papeletas" },
+  { id: "finish",      label: "Finalizar ronda",       sub: "Siguiente ronda o cierre" },
+];
+
 type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection'>;
 
 interface UseRoundWorkflowInput {

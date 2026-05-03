@@ -15,7 +15,7 @@ import {
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { ResultsAnalytics } from "@/components/admin/ResultsAnalytics";
 import { BallotReview } from "@/components/voting/BallotReview";
-import { useRoundWorkflow } from "@/hooks/useRoundWorkflow";
+import { useRoundWorkflow, WORKFLOW_STEPS } from "@/hooks/useRoundWorkflow";
 import { TeamChip } from "@/components/admin/TeamChip";
 
 import type { RoundRow, CandidateRow } from "@/types/db";
@@ -83,15 +83,6 @@ function shortBallotCode(hash: string | null): string {
 function csvEscape(value: string): string {
   return `"${value.replace(/"/g, '""')}"`;
 }
-
-const WORKFLOW_STEPS = [
-  { id: "open-room", label: "Abrir sala", sub: "Sala de espera abierta" },
-  { id: "start", label: "Iniciar votación", sub: "Empieza el voto" },
-  { id: "close-vote", label: "Finalizar votación", sub: "Cierra y procesa" },
-  { id: "results", label: "Ver resultados ronda", sub: "Se proyectan los resultados" },
-  { id: "ballots", label: "Ver papeletas", sub: "Se proyectan las papeletas" },
-  { id: "finish", label: "Finalizar ronda", sub: "Siguiente ronda o cierre" },
-];
 
 /* ── Component ── */
 
