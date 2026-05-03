@@ -3,9 +3,9 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { supabase } from "@/lib/supabase";
-import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
+import { useRoundDetail } from "./voting-detail/hooks/useRoundDetail";
 import {
   AlertTriangle, ArrowLeft, ArrowUpRight, BarChart2, Check, CheckCircle, Copy, Download,
   Eye, Globe, Grid, List, Moon, Pause, Pencil,
@@ -18,36 +18,9 @@ import { BallotReview } from "@/components/voting/BallotReview";
 import { useRoundWorkflow, WORKFLOW_STEPS } from "@/hooks/useRoundWorkflow";
 import { TeamChip } from "@/components/admin/TeamChip";
 
-import type { RoundRow, CandidateRow } from "@/types/db";
-
-/* ── Interfaces ── */
-
-type RoundDetail = RoundRow;
-type Candidate = CandidateRow;
-
-interface InlineResult {
-  candidate_id: string;
-  vote_count: number;
-  percentage: number;
-  candidate_name: string;
-  candidate_surname: string;
-  is_selected: boolean;
-  has_majority: boolean;
-}
-
-interface SeatRow {
-  id: string;
-  estado: "libre" | "ocupado" | "expirado";
-  joined_at: string;
-  last_seen_at: string;
-  browser_instance_id: string;
-}
-
-interface SeatStatus {
-  occupied_seats: number;
-  expired_seats: number;
-  available_seats: number;
-}
+import type { RoundDetail, Candidate, SeatRow, SeatStatus, InlineResult } from "./voting-detail/hooks/useRoundDetail";
+import { useCandidateActions } from "./voting-detail/hooks/useCandidateActions";
+import type { CandidateFormState, ImportCandidate } from "./voting-detail/hooks/useCandidateActions";
 
 interface VoteExportRow {
   round_number: number;
@@ -92,178 +65,55 @@ export function AdminVotingDetail() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
-  /* State */
-  const [round, setRound] = useState<RoundDetail | null>(null);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  /* Data (loading, realtime channel, config sync) */
+  const {
+    round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,
+    currentRoundNumberRef,
+    loadRound, loadCandidates, loadSeatsAndStatus, loadCurrentRoundVotes,
+    configAccessCode, setConfigAccessCode,
+    configCensusMode, setConfigCensusMode,
+    configMaxVotantes, setConfigMaxVotantes,
+    configMaxSelected, setConfigMaxSelected,
+    configMaxVotesPerRound, setConfigMaxVotesPerRound,
+  } = useRoundDetail({ roundId, toast });
+
+  /* Candidate CRUD state + actions */
+  const {
+    editingCandidate, setEditingCandidate,
+    candidateForm, setCandidateForm,
+    isAddCandidateOpen, setIsAddCandidateOpen,
+    isEditCandidateOpen, setIsEditCandidateOpen,
+    isImportOpen, setIsImportOpen,
+    candidateToSelect, setCandidateToSelect,
+    candidateToUnselect, setCandidateToUnselect,
+    candidateToDelete, setCandidateToDelete,
+    importingFile,
+    forceSelectingId, setForceSelectingId,
+    resetCandidateForm,
+    openAddCandidateDialog,
+    openEditCandidateDialog,
+    addCandidate,
+    updateCandidate,
+    deleteCandidate,
+    unselectCandidate,
+    quickSelectCandidate,
+    importCandidates,
+  } = useCandidateActions({ roundId, round, candidates, loadRound, toast });
+
+  /* UI state */
   const [candidateSearch, setCandidateSearch] = useState("");
   const [candidateView, setCandidateView] = useState<"list" | "grid">("list");
-  const [seats, setSeats] = useState<SeatRow[]>([]);
-  const [seatStatus, setSeatStatus] = useState<SeatStatus | null>(null);
-  const [currentRoundVotes, setCurrentRoundVotes] = useState(0);
   const [savingConfig, setSavingConfig] = useState(false);
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
-  const [configAccessCode, setConfigAccessCode] = useState("");
-  const [configCensusMode, setConfigCensusMode] = useState<"maximum" | "exact">("maximum");
-  const [loading, setLoading] = useState(true);
-  const [now, setNow] = useState(Date.now());
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isBallotsOpen, setIsBallotsOpen] = useState(false);
-  const [isAddCandidateOpen, setIsAddCandidateOpen] = useState(false);
-  const [isEditCandidateOpen, setIsEditCandidateOpen] = useState(false);
-  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDatasetOpen, setIsDatasetOpen] = useState(false);
   const [salaConflict, setSalaConflict] = useState<{ id: string; title: string } | null>(null);
-  const [configMaxVotantes, setConfigMaxVotantes] = useState(0);
-  const [configMaxSelected, setConfigMaxSelected] = useState(0);
-  const [configMaxVotesPerRound, setConfigMaxVotesPerRound] = useState(0);
   const [loadingDataset, setLoadingDataset] = useState(false);
-  const [importingFile, setImportingFile] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(import.meta.env.DEV ? (testDatasets[0]?.id ?? "") : "");
-  const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
-  const [candidateToSelect, setCandidateToSelect] = useState<Candidate | null>(null);
-  const [candidateToUnselect, setCandidateToUnselect] = useState<Candidate | null>(null);
-  const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
   const [isCloseRoundConfirmOpen, setIsCloseRoundConfirmOpen] = useState(false);
-  const [candidateForm, setCandidateForm] = useState<CandidateFormState>({
-    name: "", surname: "", location: "", group_name: "", age: "", description: "", image_url: "",
-  });
-  const currentRoundNumberRef = useRef(1);
-  const channelUid = useRef(crypto.randomUUID()).current;
   const [candidatesRef] = useAutoAnimate();
-  const [inlineResults, setInlineResults] = useState<InlineResult[]>([]);
-  const [forceSelectingId, setForceSelectingId] = useState<string | null>(null);
-
-  /* Clock */
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  /* ── Data loading ── */
-
-  const loadSeatsAndStatus = useCallback(async () => {
-    if (!roundId) return;
-    const [{ data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
-      supabase.from("seats").select("id,estado,joined_at,last_seen_at,browser_instance_id").eq("round_id", roundId).order("joined_at", { ascending: false }).limit(60),
-      supabase.rpc("get_round_seats_status", { p_round_id: roundId }),
-    ]);
-    if (!seatError) setSeats((seatData || []) as SeatRow[]);
-    if (!seatStatusError && seatStatusData) {
-      const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number };
-      setSeatStatus({
-        occupied_seats: parsed.occupied_seats || 0,
-        expired_seats: parsed.expired_seats || 0,
-        available_seats: parsed.available_seats || 0,
-      });
-    }
-  }, [roundId]);
-
-  const loadCandidates = useCallback(async () => {
-    if (!roundId) return;
-    const { data, error } = await supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected,asamblea_movimiento_es,asamblea_responsabilidad").eq("round_id", roundId).order("order_index", { ascending: true });
-    if (!error) setCandidates((data || []) as Candidate[]);
-  }, [roundId]);
-
-  const loadCurrentRoundVotes = useCallback(async (roundNumber: number) => {
-    if (!roundId || !roundNumber) return;
-    const { data: liveVoteRows } = await supabase.from("votes").select("vote_hash, seat_id, device_hash").eq("round_id", roundId).eq("round_number", roundNumber);
-    const uniqueBallots = new Set((liveVoteRows || []).map((row) => row.vote_hash || row.seat_id || row.device_hash).filter(Boolean));
-    setCurrentRoundVotes(uniqueBallots.size);
-  }, [roundId]);
-
-  const loadInlineResults = useCallback(async (roundNumber: number) => {
-    if (!roundId) return;
-    type InlineResultRow = {
-      candidate_id: string;
-      vote_count: number;
-      percentage: number;
-      candidate:
-        | { name?: string | null; surname?: string | null; is_selected?: boolean | null }
-        | Array<{ name?: string | null; surname?: string | null; is_selected?: boolean | null }>
-        | null;
-    };
-    const { data } = await supabase
-      .from("round_results")
-      .select(`candidate_id, vote_count, percentage, candidate:candidates (name, surname, is_selected)`)
-      .eq("round_id", roundId)
-      .eq("round_number", roundNumber)
-      .order("vote_count", { ascending: false });
-    if (!data) return;
-    const results: InlineResult[] = (data as InlineResultRow[]).map((r) => {
-      const c = Array.isArray(r.candidate) ? r.candidate[0] : r.candidate;
-      return {
-        candidate_id: r.candidate_id,
-        vote_count: r.vote_count,
-        percentage: r.percentage,
-        candidate_name: c?.name || "?",
-        candidate_surname: c?.surname || "",
-        is_selected: c?.is_selected || false,
-        has_majority: r.percentage > 50,
-      };
-    });
-    setInlineResults(results);
-  }, [roundId]);
-
-  const loadRound = useCallback(async () => {
-    if (!roundId) return;
-    try {
-      setLoading(true);
-      const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
-        supabase.from("rounds").select("id,slug,title,description,year,team,max_votantes,max_selected_candidates,max_votes_per_round,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round,voting_type_name").eq("id", roundId).single(),
-        supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected,asamblea_movimiento_es,asamblea_responsabilidad").eq("round_id", roundId).order("order_index", { ascending: true }),
-        supabase.from("seats").select("id,estado,joined_at,last_seen_at,browser_instance_id").eq("round_id", roundId).order("joined_at", { ascending: false }).limit(60),
-        supabase.rpc("get_round_seats_status", { p_round_id: roundId }),
-      ]);
-      if (roundError) throw roundError;
-      if (candidateError) throw candidateError;
-      if (seatError) throw seatError;
-      const normalizedRound = roundData as RoundDetail;
-      setRound(normalizedRound);
-      currentRoundNumberRef.current = normalizedRound.current_round_number || 1;
-      setCandidates((candidateData || []) as Candidate[]);
-      setSeats((seatData || []) as SeatRow[]);
-      await loadCurrentRoundVotes(normalizedRound.current_round_number);
-      const normalizedAccessCode = (normalizedRound.access_code || "").toUpperCase();
-      setConfigAccessCode(ACCESS_CODE_REGEX.test(normalizedAccessCode) ? normalizedAccessCode : generateAccessCode());
-      setConfigCensusMode((normalizedRound.census_mode || "maximum") as "maximum" | "exact");
-      setConfigMaxVotantes(normalizedRound.max_votantes || 0);
-      setConfigMaxSelected(normalizedRound.max_selected_candidates || 0);
-      setConfigMaxVotesPerRound(normalizedRound.max_votes_per_round || 0);
-      if (!seatStatusError && seatStatusData) {
-        const parsed = seatStatusData as { occupied_seats?: number; expired_seats?: number; available_seats?: number };
-        setSeatStatus({ occupied_seats: parsed.occupied_seats || 0, expired_seats: parsed.expired_seats || 0, available_seats: parsed.available_seats || 0 });
-      } else {
-        setSeatStatus(null);
-      }
-      // Auto-load inline results if round is finalized
-      if (normalizedRound.round_finalized && !normalizedRound.is_closed) {
-        loadInlineResults(normalizedRound.current_round_number);
-      } else {
-        setInlineResults([]);
-      }
-    } catch {
-      toast({ title: "Error", description: "No se pudo cargar el detalle de la votacion", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }, [roundId, toast, loadCurrentRoundVotes, loadInlineResults]);
-
-  useEffect(() => {
-    loadRound();
-    const channel = supabase
-      .channel(`admin-voting-detail-${roundId}-${channelUid}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "rounds", filter: `id=eq.${roundId}` }, () => loadRound())
-      .on("postgres_changes", { event: "*", schema: "public", table: "candidates", filter: `round_id=eq.${roundId}` }, () => loadCandidates())
-      .on("postgres_changes", { event: "*", schema: "public", table: "seats", filter: `round_id=eq.${roundId}` }, () => loadSeatsAndStatus())
-      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `round_id=eq.${roundId}` }, () => loadCurrentRoundVotes(currentRoundNumberRef.current))
-      .subscribe();
-    const metricsInterval = window.setInterval(() => {
-      loadSeatsAndStatus();
-      loadCurrentRoundVotes(currentRoundNumberRef.current);
-    }, 300_000);
-    return () => { window.clearInterval(metricsInterval); supabase.removeChannel(channel); };
-  }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes, loadCandidates]);
 
   /* ── Derived state ── */
 
@@ -606,123 +456,6 @@ export function AdminVotingDetail() {
   const copyPublicCandidatesLink = useCallback(async () => {
     if (publicCandidatesUrl) await copyText(publicCandidatesUrl, "Enlace público copiado.");
   }, [copyText, publicCandidatesUrl]);
-
-  /* ── Candidate CRUD ── */
-
-  const resetCandidateForm = () => setCandidateForm({ name: "", surname: "", location: "", group_name: "", age: "", description: "", image_url: "" });
-
-  const openAddCandidateDialog = () => { setEditingCandidate(null); resetCandidateForm(); setIsAddCandidateOpen(true); };
-  const openEditCandidateDialog = (candidate: Candidate) => {
-    setEditingCandidate(candidate);
-    setCandidateForm({ name: candidate.name, surname: candidate.surname, location: candidate.location || "", group_name: candidate.group_name || "", age: candidate.age || "", description: candidate.description || "", image_url: candidate.image_url || "" });
-    setIsEditCandidateOpen(true);
-  };
-
-  const addCandidate = async () => {
-    if (!round) return;
-    if (!candidateForm.name.trim() || !candidateForm.surname.trim()) { toast({ title: "Campos obligatorios", description: "El nombre y apellido son obligatorios", variant: "destructive" }); return; }
-    const maxOrderIndex = Math.max(0, ...candidates.map((c) => c.order_index || 0));
-    const { error } = await supabase.from("candidates").insert([{ round_id: round.id, name: candidateForm.name.trim(), surname: candidateForm.surname.trim(), location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null, age: typeof candidateForm.age === "number" ? candidateForm.age : null, description: candidateForm.description.trim() || null, image_url: candidateForm.image_url.trim() || null, order_index: maxOrderIndex + 1 }]);
-    if (error) { toast({ title: "Error", description: "No se pudo añadir el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato añadido" });
-    setIsAddCandidateOpen(false);
-    resetCandidateForm();
-    await loadRound();
-  };
-
-  const updateCandidate = async () => {
-    if (!editingCandidate) return;
-    if (!candidateForm.name.trim() || !candidateForm.surname.trim()) { toast({ title: "Campos obligatorios", description: "El nombre y apellido son obligatorios", variant: "destructive" }); return; }
-    const { error } = await supabase.from("candidates").update({ name: candidateForm.name.trim(), surname: candidateForm.surname.trim(), location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null, age: typeof candidateForm.age === "number" ? candidateForm.age : null, description: candidateForm.description.trim() || null, image_url: candidateForm.image_url.trim() || null, updated_at: new Date().toISOString() }).eq("id", editingCandidate.id);
-    if (error) { toast({ title: "Error", description: "No se pudo editar el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato actualizado" });
-    setIsEditCandidateOpen(false);
-    setEditingCandidate(null);
-    resetCandidateForm();
-    await loadRound();
-  };
-
-  const unselectCandidate = async (candidateId: string) => {
-    if (!roundId) return;
-    const { data, error } = await supabase.rpc("reopen_round_after_unselect", { p_candidate_id: candidateId, p_round_id: roundId });
-    if (error || !data?.success) {
-      toast({ title: "Error", description: data?.error_code ?? "No se pudo desmarcar al candidato", variant: "destructive" });
-      return;
-    }
-    const description = !data.quota_reached ? "La ronda se ha reabierto. Puedes continuar con otra ronda." : undefined;
-    toast({ title: "Candidato desmarcado", ...(description ? { description } : {}) });
-    await loadRound();
-  };
-
-  const quickSelectCandidate = async (candidateId: string) => {
-    setCandidateToSelect(null);
-    const { data, error } = await supabase.rpc("force_select_candidate", { p_candidate_id: candidateId });
-    if (error || !data?.success) { toast({ title: "Error", description: "No se pudo seleccionar al candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato seleccionado", description: "Añadido directamente a la lista de seleccionados." });
-    await loadRound();
-  };
-
-  const deleteCandidate = async (candidateId: string) => {
-    setCandidateToDelete(null);
-    const { error } = await supabase.from("candidates").delete().eq("id", candidateId);
-    if (error) { toast({ title: "Error", description: "No se pudo eliminar el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato eliminado" });
-    await loadRound();
-  };
-
-  /* ── Import ── */
-
-  const parseCSV = (text: string): ImportCandidate[] => {
-    const lines = text.replace(/\r\n?/g, "\n").trim().split("\n");
-    const headers = lines[0].split(",").map((h) => h.trim());
-    return lines.slice(1).map((line) => {
-      const values = line.split(",").map((v) => v.trim());
-      const candidate: ImportCandidate = { name: "", surname: "", location: "", group_name: "", age: null, description: "", image_url: "" };
-      headers.forEach((header, index) => { const value = values[index] || ""; if (header === "age") { candidate.age = value ? Number(value) : null; } else if (header in candidate) { (candidate as Record<string, string | number | null>)[header] = value; } });
-      return candidate;
-    });
-  };
-
-  const parseXML = (text: string): ImportCandidate[] => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(text, "text/xml");
-    const parsedCandidates = xmlDoc.getElementsByTagName("candidate");
-    return Array.from(parsedCandidates).map((candidate) => {
-      const getTagValue = (tagName: string) => { const el = candidate.getElementsByTagName(tagName)[0]; return el ? el.textContent || "" : ""; };
-      return { name: getTagValue("name"), surname: getTagValue("surname"), location: getTagValue("location"), group_name: getTagValue("group_name"), age: getTagValue("age") ? Number(getTagValue("age")) : null, description: getTagValue("description"), image_url: getTagValue("image_url") };
-    });
-  };
-
-  const parseJSON = (text: string): ImportCandidate[] => { const payload = JSON.parse(text); return payload.candidates || payload; };
-
-  const importCandidates = async (file: File) => {
-    if (!round) return;
-    try {
-      setImportingFile(true);
-      const text = await file.text();
-      let candidatesData: ImportCandidate[] = [];
-      if (file.name.endsWith(".csv")) { candidatesData = parseCSV(text); }
-      else if (file.name.endsWith(".xml")) { candidatesData = parseXML(text); }
-      else if (file.name.endsWith(".json")) { candidatesData = parseJSON(text); }
-      else { throw new Error("Formato no soportado. Usa CSV, XML o JSON."); }
-      const maxOrderIndex = Math.max(0, ...candidates.map((c) => c.order_index || 0));
-      let errorCount = 0;
-      const rows = candidatesData.reduce<object[]>((acc, candidate, i) => {
-        if (!candidate.name?.trim() || !candidate.surname?.trim()) { errorCount++; return acc; }
-        acc.push({ round_id: round.id, name: candidate.name.trim(), surname: candidate.surname.trim(), location: candidate.location?.trim() || null, group_name: candidate.group_name?.trim() || null, age: typeof candidate.age === "number" ? candidate.age : null, description: candidate.description?.trim() || null, image_url: candidate.image_url?.trim() || null, order_index: maxOrderIndex + i + 1 });
-        return acc;
-      }, []);
-      if (rows.length > 0) {
-        const { error } = await supabase.from("candidates").insert(rows);
-        if (error) throw error;
-      }
-      toast({ title: "Importación completada", description: `${rows.length} candidatos importados${errorCount > 0 ? `. ${errorCount} filas con error.` : "."}` });
-      setIsImportOpen(false);
-      await loadRound();
-    } catch (error) {
-      toast({ title: "Error", description: error instanceof Error ? error.message : "No se pudo importar el archivo", variant: "destructive" });
-    } finally { setImportingFile(false); }
-  };
 
   const handleFileImport = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
