@@ -850,6 +850,9 @@ export function AdminVotingDetail() {
             <button className="avd-btn avd-btn-sm" onClick={openBallotsDialog}>
               <Download size={14} /> Papeletas
             </button>
+            <button className="avd-btn avd-btn-sm" onClick={exportBallotsCsv}>
+              <Download size={14} /> CSV
+            </button>
             <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(true)}>
               <Settings2 size={14} /> Ajustes
             </button>
@@ -1026,7 +1029,7 @@ export function AdminVotingDetail() {
       {/* ═══ Main grid ═══ */}
       <div className="avd-page-main">
 
-        {/* ── Left aside: Info ── */}
+        {/* ── Left aside: Info + Conexiones ── */}
         <aside className="avd-col avd-col-left">
           <div style={{ padding: "14px 16px 8px", borderBottom: "1px solid var(--avd-border-soft)" }}>
             <h3 className="avd-section-title" style={{ margin: 0 }}>
@@ -1058,6 +1061,79 @@ export function AdminVotingDetail() {
                 <div className="avd-kpi-label">Proyección</div>
                 <div className="avd-kpi-value" style={{ fontSize: 16 }}>{projLabel}</div>
                 <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Conexiones en vivo */}
+          <div style={{ borderTop: "1px solid var(--avd-border-soft)", padding: "14px 16px 8px" }}>
+            <h3 className="avd-section-title" style={{ margin: "0 0 10px" }}>
+              Conexiones
+              <span className="avd-hint">
+                <span className="avd-pulse-dot" style={{ width: 6, height: 6 }} /> Tiempo real
+              </span>
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div>
+                <div className="avd-meter-label">
+                  <span>Ocupación</span>
+                  <span className="avd-val">{seatStatus?.occupied_seats ?? 0} / {round.max_votantes}</span>
+                </div>
+                <div className="avd-meter">
+                  <div className="avd-meter-fill avd-ok" style={{ width: `${Math.min(occupiedPct, 100)}%` }} />
+                </div>
+              </div>
+              {round.is_voting_open && (
+                <div>
+                  <div className="avd-meter-label">
+                    <span>Votos R{round.current_round_number}</span>
+                    <span className="avd-val">{currentRoundVotes} / {round.max_votantes}</span>
+                  </div>
+                  <div className="avd-meter">
+                    <div className="avd-meter-fill" style={{ width: `${Math.min(votesPct, 100)}%` }} />
+                  </div>
+                </div>
+              )}
+              <div className="avd-seat-grid">
+                <div className="avd-seat-stat">
+                  <div className="avd-n avd-ok">{seatStatus?.occupied_seats ?? 0}</div>
+                  <div className="avd-l">Ocupados</div>
+                </div>
+                <div className="avd-seat-stat">
+                  <div className="avd-n avd-warn">{seatStatus?.expired_seats ?? 0}</div>
+                  <div className="avd-l">Expirados</div>
+                </div>
+                <div className="avd-seat-stat">
+                  <div className="avd-n">{seatStatus?.available_seats ?? 0}</div>
+                  <div className="avd-l">Libres</div>
+                </div>
+              </div>
+              <div>
+                <div className="avd-meter-label" style={{ marginBottom: 6 }}>
+                  <span>Sesiones ({seats.length})</span>
+                  <span style={{ color: "var(--avd-fg-faint)", fontSize: 11 }}>
+                    {round.join_locked ? "Bloqueada" : "Abierta"}
+                  </span>
+                </div>
+                <div className="avd-seats-list">
+                  {seats.length === 0 ? (
+                    <p style={{ padding: "12px", textAlign: "center", fontSize: 12, color: "var(--avd-fg-muted)", margin: 0 }}>
+                      Sin conexiones.
+                    </p>
+                  ) : (
+                    seats.slice(0, 12).map((s) => (
+                      <div key={s.id} className="avd-seat-row">
+                        <span className="avd-sid">{s.browser_instance_id.slice(0, 10)}</span>
+                        <span className={`avd-sst ${s.estado === "ocupado" ? "avd-ok" : s.estado === "expirado" ? "avd-exp" : "avd-free"}`}>
+                          {s.estado}
+                        </span>
+                        <span className="avd-st">
+                          {new Date(s.last_seen_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1234,82 +1310,9 @@ export function AdminVotingDetail() {
             </div>
         </main>
 
-        {/* ── Right: Live + Controls ── */}
+        {/* ── Right: Controls ── */}
         <aside className="avd-col avd-col-right">
           <div className="avd-col-inner">
-
-            {/* Live connections */}
-            <div>
-              <h3 className="avd-section-title">
-                Conexiones en vivo
-                <span className="avd-hint">
-                  <span className="avd-pulse-dot" style={{ width: 6, height: 6 }} /> Tiempo real
-                </span>
-              </h3>
-              <div className="avd-live-card">
-                <div>
-                  <div className="avd-meter-label">
-                    <span>Ocupación de sala</span>
-                    <span className="avd-val">{seatStatus?.occupied_seats ?? 0} / {round.max_votantes}</span>
-                  </div>
-                  <div className="avd-meter">
-                    <div className="avd-meter-fill avd-ok" style={{ width: `${Math.min(occupiedPct, 100)}%` }} />
-                  </div>
-                </div>
-                {round.is_voting_open && (
-                  <div>
-                    <div className="avd-meter-label">
-                      <span>Votos ronda {round.current_round_number}</span>
-                      <span className="avd-val">{currentRoundVotes} / {round.max_votantes}</span>
-                    </div>
-                    <div className="avd-meter">
-                      <div className="avd-meter-fill" style={{ width: `${Math.min(votesPct, 100)}%` }} />
-                    </div>
-                  </div>
-                )}
-                <div className="avd-seat-grid">
-                  <div className="avd-seat-stat">
-                    <div className="avd-n avd-ok">{seatStatus?.occupied_seats ?? 0}</div>
-                    <div className="avd-l">Ocupados</div>
-                  </div>
-                  <div className="avd-seat-stat">
-                    <div className="avd-n avd-warn">{seatStatus?.expired_seats ?? 0}</div>
-                    <div className="avd-l">Expirados</div>
-                  </div>
-                  <div className="avd-seat-stat">
-                    <div className="avd-n">{seatStatus?.available_seats ?? 0}</div>
-                    <div className="avd-l">Libres</div>
-                  </div>
-                </div>
-                <div>
-                  <div className="avd-meter-label" style={{ marginBottom: 6 }}>
-                    <span>Sesiones activas ({seats.length})</span>
-                    <span style={{ color: "var(--avd-fg-faint)" }}>
-                      {round.join_locked ? "Entrada bloqueada" : "Entrada abierta"}
-                    </span>
-                  </div>
-                  <div className="avd-seats-list">
-                    {seats.length === 0 ? (
-                      <p style={{ padding: "12px", textAlign: "center", fontSize: 12, color: "var(--avd-fg-muted)", margin: 0 }}>
-                        Sin conexiones.
-                      </p>
-                    ) : (
-                      seats.slice(0, 12).map((s) => (
-                        <div key={s.id} className="avd-seat-row">
-                          <span className="avd-sid">{s.browser_instance_id.slice(0, 10)}</span>
-                          <span className={`avd-sst ${s.estado === "ocupado" ? "avd-ok" : s.estado === "expirado" ? "avd-exp" : "avd-free"}`}>
-                            {s.estado}
-                          </span>
-                          <span className="avd-st">
-                            {new Date(s.last_seen_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Operational controls */}
             <div>
@@ -1376,19 +1379,6 @@ export function AdminVotingDetail() {
                     <XCircle size={14} /> Cerrar definitivamente
                   </button>
                 )}
-              </div>
-            </div>
-
-            {/* Shortcuts */}
-            <div>
-              <h3 className="avd-section-title">Atajos</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <button className="avd-btn avd-btn-block" onClick={exportBallotsCsv}>
-                  <Download size={14} /> Exportar CSV ronda {round.current_round_number}
-                </button>
-                <a className="avd-btn avd-btn-block" href="/proyeccion" target="_blank" rel="noreferrer">
-                  <Eye size={14} /> Ver proyección
-                </a>
               </div>
             </div>
 

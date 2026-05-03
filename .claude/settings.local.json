@@ -19,7 +19,13 @@
       "Bash(git add *)",
       "Bash(git -c user.email=admin@movimientoconsolacion.com -c 'user.name=Admin MCM' commit -m ' *)",
       "Bash(node *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\"; Get-Location; \\(Get-Item .graphify_detect.json -ErrorAction SilentlyContinue\\).Length)",
+      "PowerShell($loc = Get-Location; Write-Output \"CWD: $loc\"; $f = Get-Item \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.graphify_detect.json\" -ErrorAction SilentlyContinue; if \\($f\\) { Write-Output \"Found: $\\($f.FullName\\) size=$\\($f.Length\\)\" } else { Write-Output \"Not found\" })",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.graphify_detect.json\"\\); Write-Output \"Size: $\\($bytes.Length\\)\"; Write-Output \"First 10 bytes: $\\($bytes[0..9] -join ','\\)\"; [System.Text.Encoding]::UTF8.GetString\\($bytes[0..100]\\))",
+      "PowerShell(head *)",
+      "PowerShell($items = Get-ChildItem \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\graphify-out\" -Force; $items | ForEach-Object { \"$\\($_.Name\\) $\\($_.Length\\)\" })"
     ]
   }
 }

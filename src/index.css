@@ -763,7 +763,7 @@
 /* ── Main grid ── */
 .avd-page-main {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 360px;
+  grid-template-columns: 300px minmax(0, 1fr) 320px;
   gap: 0;
   flex: 1;
   min-height: 0;

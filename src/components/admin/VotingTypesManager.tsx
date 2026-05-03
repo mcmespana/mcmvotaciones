@@ -83,6 +83,13 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
     onTypesChanged?.();
   };
 
+  const toggleSystemType = async (t: VotingType) => {
+    const { error } = await supabase.from("voting_types").update({ is_system: !t.is_system }).eq("id", t.id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: t.is_system ? "Tipo convertido a personalizado" : "Tipo promovido a sistema" });
+    loadTypes(); onTypesChanged?.();
+  };
+
   const deleteType = async (t: VotingType) => {
     const { error } = await supabase.from("voting_types").delete().eq("id", t.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
@@ -148,6 +155,16 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                       Seleccionar {t.max_selected_candidates} · Votos/ronda {t.max_votes_per_round || "auto"} · Censo {t.census_mode === "maximum" ? "máximo" : "exacto"}
                     </span>
                   </div>
+                  {isSuperAdmin && (
+                    <button
+                      className="avd-btn avd-btn-sm"
+                      style={t.is_system ? { color: "var(--avd-fg-muted)" } : { color: "var(--avd-brand)" }}
+                      onClick={() => toggleSystemType(t)}
+                      title={t.is_system ? "Quitar del sistema (convertir a personalizado)" : "Promover a tipo del sistema"}
+                    >
+                      {t.is_system ? "← Personal." : "→ Sistema"}
+                    </button>
+                  )}
                   {(isSuperAdmin || !t.is_system) && (
                     <button className="avd-btn avd-btn-sm" onClick={() => startEdit(t)}>Editar</button>
                   )}

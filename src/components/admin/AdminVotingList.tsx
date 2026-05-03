@@ -169,7 +169,11 @@ function DeleteConfirm({ round, onClose, onConfirm }: DeleteConfirmProps) {
   );
 }
 
-export function AdminVotingList() {
+interface AdminVotingListProps {
+  refreshTypesKey?: number;
+}
+
+export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isSuperAdmin } = useAuth();
@@ -181,7 +185,6 @@ export function AdminVotingList() {
   const [creatingRound, setCreatingRound] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RoundListItem | null>(null);
-  const [typesManagerOpen, setTypesManagerOpen] = useState(false);
   const [votingTypes, setVotingTypes] = useState<VotingType[]>([]);
   const [form, setForm] = useState<NewRoundForm>({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum", voting_type_id: null, voting_type_name: "", max_selected_candidates: 1, max_votes_per_round: 0 });
 
@@ -191,6 +194,7 @@ export function AdminVotingList() {
   }, []);
 
   useEffect(() => { loadVotingTypes(); }, [loadVotingTypes]);
+  useEffect(() => { if (refreshTypesKey) loadVotingTypes(); }, [refreshTypesKey, loadVotingTypes]);
 
   const applyVotingType = (typeId: string | null) => {
     if (!typeId) {
@@ -324,11 +328,7 @@ export function AdminVotingList() {
             Tarjetas
           </button>
         </div>
-        <button className="avd-btn avd-btn-sm" onClick={() => setTypesManagerOpen(true)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          Tipos de votación
-        </button>
-        <button className="avd-btn avd-btn-primary avd-btn-sm" onClick={() => setCreateOpen(true)}>
+        <button className="avd-btn avd-btn-primary avd-btn-sm" onClick={() => { loadVotingTypes(); setCreateOpen(true); }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           Crear votación
         </button>
@@ -363,8 +363,8 @@ export function AdminVotingList() {
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
                 >
-                  <div>
-                    <div style={{fontWeight:600, letterSpacing:"-0.005em", color:"var(--avd-fg)"}}>{r.title}</div>
+                  <div style={{minWidth:0, overflow:"hidden"}}>
+                    <div style={{fontWeight:600, letterSpacing:"-0.005em", color:"var(--avd-fg)", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>{r.title}</div>
                     {r.description && <div style={{fontSize:11.5, color:"var(--avd-fg-muted)", marginTop:2, overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>{r.description}</div>}
                   </div>
                   <div style={{fontWeight:700, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.current_round_number}</div>
@@ -493,12 +493,6 @@ export function AdminVotingList() {
         onConfirm={() => { if (deleteTarget) handleDeleteRound(deleteTarget.id, deleteTarget.title); }}
       />
 
-      <VotingTypesManager
-        open={typesManagerOpen}
-        onClose={() => setTypesManagerOpen(false)}
-        isSuperAdmin={isSuperAdmin}
-        onTypesChanged={loadVotingTypes}
-      />
     </div>
   );
 }
