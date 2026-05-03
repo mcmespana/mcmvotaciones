@@ -397,22 +397,14 @@ export function AdminVotingDetail() {
 
   const confirmSelection = async () => {
     if (!roundId || !round?.round_finalized) { toast({ title: "Ronda no finalizada", description: "Primero finaliza la ronda.", variant: "destructive" }); return; }
-    if (!selectionQuotaReached) { toast({ title: "Cupo no alcanzado", description: `Faltan ${maxSelectedCandidates - selectedCandidatesCount} candidata(s) por seleccionar.`, variant: "destructive" }); return; }
-    const { error } = await supabase
-      .from("rounds")
-      .update({
-        show_ballot_summary_projection: true,
-        is_closed: true,
-        is_active: false,
-        is_voting_open: false,
-        join_locked: true,
-        public_candidates_enabled: false,
-        show_results_to_voters: false,
-        show_final_gallery_projection: false,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", roundId);
-    if (error) { toast({ title: "Error", description: "No se pudo confirmar la selección", variant: "destructive" }); return; }
+    const { data, error } = await supabase.rpc("confirm_round_selection", { p_round_id: roundId });
+    if (error || !data?.success) {
+      const desc = data?.error_code === "QUOTA_NOT_MET"
+        ? `Faltan ${(data.required ?? maxSelectedCandidates) - (data.selected_count ?? selectedCandidatesCount)} candidata(s) por seleccionar.`
+        : "No se pudo confirmar la selección";
+      toast({ title: "Cupo no alcanzado", description: desc, variant: "destructive" });
+      return;
+    }
     toast({ title: "Selección confirmada", description: "Votación cerrada, lista pública desactivada y lista para galería final." });
     await loadRound();
   };
@@ -651,36 +643,14 @@ export function AdminVotingDetail() {
   };
 
   const unselectCandidate = async (candidateId: string) => {
-    const { error } = await supabase.rpc("unselect_candidate", { p_candidate_id: candidateId });
-    if (error) { toast({ title: "Error", description: "No se pudo desmarcar al candidato", variant: "destructive" }); return; }
-
-    // Check if we need to reopen the round (it was closed because quota was reached, but now it's not)
-    if (roundId && round) {
-      const { data: freshCandidates } = await supabase
-        .from("candidates")
-        .select("is_selected")
-        .eq("round_id", roundId);
-      const newSelectedCount = (freshCandidates || []).filter((c) => c.is_selected).length;
-      const maxSelected = round.max_selected_candidates || 6;
-
-      if (newSelectedCount < maxSelected && (round.is_closed || !round.is_active)) {
-        // Reopen the round so the admin can continue with another round
-        await supabase.from("rounds").update({
-          is_closed: false,
-          is_active: true,
-          round_finalized: true,
-          show_results_to_voters: false,
-          show_ballot_summary_projection: false,
-          show_final_gallery_projection: false,
-          updated_at: new Date().toISOString(),
-        }).eq("id", roundId);
-        toast({ title: "Candidato desmarcado", description: "La ronda se ha reabierto. Puedes continuar con otra ronda." });
-        await loadRound();
-        return;
-      }
+    if (!roundId) return;
+    const { data, error } = await supabase.rpc("reopen_round_after_unselect", { p_candidate_id: candidateId, p_round_id: roundId });
+    if (error || !data?.success) {
+      toast({ title: "Error", description: data?.error_code ?? "No se pudo desmarcar al candidato", variant: "destructive" });
+      return;
     }
-
-    toast({ title: "Candidato desmarcado" });
+    const description = !data.quota_reached ? "La ronda se ha reabierto. Puedes continuar con otra ronda." : undefined;
+    toast({ title: "Candidato desmarcado", ...(description ? { description } : {}) });
     await loadRound();
   };
 
