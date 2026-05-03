@@ -345,11 +345,16 @@ export function useProjectionData(): ProjectionData {
     showConnectedInWaiting,
     showAccessCodeInWaiting,
     waitingMode,
-    previouslySelected: [...selectedCandidates].sort((a, b) => {
-      const ra = a.selected_in_round ?? 999;
-      const rb = b.selected_in_round ?? 999;
-      if (ra !== rb) return ra - rb;
-      return (b.selected_vote_count ?? 0) - (a.selected_vote_count ?? 0);
-    }),
+    previouslySelected: (() => {
+      const currentRn = round?.current_round_number ?? Number.POSITIVE_INFINITY;
+      return selectedCandidates
+        .filter(c => (c.selected_in_round ?? Number.POSITIVE_INFINITY) < currentRn)
+        .sort((a, b) => {
+          const ra = a.selected_in_round ?? 999;
+          const rb = b.selected_in_round ?? 999;
+          if (ra !== rb) return ra - rb;
+          return (b.selected_vote_count ?? 0) - (a.selected_vote_count ?? 0);
+        });
+    })(),
   };
 }

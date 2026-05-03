@@ -20,6 +20,7 @@ interface ProjectionWaitingProps {
   roundTitle: string | null;
   accessCode: string | null;
   votingUrl: string;
+  maxVotantes?: number;
   previouslySelected?: SelectedCandidate[];
 }
 
@@ -30,6 +31,7 @@ export function ProjectionWaiting({
   roundTitle,
   accessCode,
   votingUrl,
+  maxVotantes,
   previouslySelected = [],
 }: ProjectionWaitingProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -162,7 +164,7 @@ export function ProjectionWaiting({
               <div className="proj-stat-num">{connectedCount}</div>
               <div className="proj-stat-sub">personas en sala</div>
               <div className="proj-stat-progress">
-                <div className="proj-stat-progress-fill" style={{ width: `${Math.min(connectedCount, 100)}%` }} />
+                <div className="proj-stat-progress-fill" style={{ width: `${maxVotantes && maxVotantes > 0 ? Math.min(100, Math.round((connectedCount / maxVotantes) * 100)) : Math.min(connectedCount, 100)}%` }} />
               </div>
             </div>
           )}

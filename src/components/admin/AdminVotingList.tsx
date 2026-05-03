@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Users, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -177,6 +177,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isSuperAdmin } = useAuth();
+  const channelUid = useRef(crypto.randomUUID()).current;
   const [rounds, setRounds] = useState<RoundListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [teamFilter, setTeamFilter] = useState("ALL");
@@ -227,7 +228,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
     let mounted = true;
     loadRounds();
     const channel = supabase
-      .channel("admin-voting-list")
+      .channel(`admin-voting-list-${channelUid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "rounds" }, () => { if (mounted) loadRounds(); })
       .subscribe();
     return () => { mounted = false; supabase.removeChannel(channel); };

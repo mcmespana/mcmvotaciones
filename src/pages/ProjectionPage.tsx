@@ -9,9 +9,6 @@ export function ProjectionPage() {
   const votingUrl = window.location.origin;
 
   if (data.state === "waiting") {
-    const safeSelected = data.waitingMode === "finalized" && data.round
-      ? data.previouslySelected.filter(c => (c.selected_in_round ?? 0) < data.round!.current_round_number)
-      : data.previouslySelected;
     return (
       <ProjectionWaiting
         connectedCount={data.connectedCount}
@@ -20,7 +17,8 @@ export function ProjectionPage() {
         roundTitle={data.round?.title ?? null}
         accessCode={data.round?.access_code ?? null}
         votingUrl={votingUrl}
-        previouslySelected={safeSelected}
+        maxVotantes={data.round?.max_votantes}
+        previouslySelected={data.previouslySelected}
       />
     );
   }

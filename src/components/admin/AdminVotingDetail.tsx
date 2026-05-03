@@ -138,6 +138,7 @@ export function AdminVotingDetail() {
     name: "", surname: "", location: "", group_name: "", age: "", description: "", image_url: "",
   });
   const currentRoundNumberRef = useRef(1);
+  const channelUid = useRef(crypto.randomUUID()).current;
   const [candidatesRef] = useAutoAnimate();
   const [inlineResults, setInlineResults] = useState<InlineResult[]>([]);
   const [forceSelectingId, setForceSelectingId] = useState<string | null>(null);
@@ -254,7 +255,7 @@ export function AdminVotingDetail() {
   useEffect(() => {
     loadRound();
     const channel = supabase
-      .channel(`admin-voting-detail-${roundId}`)
+      .channel(`admin-voting-detail-${roundId}-${channelUid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "rounds", filter: `id=eq.${roundId}` }, () => loadRound())
       .on("postgres_changes", { event: "*", schema: "public", table: "candidates", filter: `round_id=eq.${roundId}` }, () => loadRound())
       .on("postgres_changes", { event: "*", schema: "public", table: "seats", filter: `round_id=eq.${roundId}` }, () => loadSeatsAndStatus())
