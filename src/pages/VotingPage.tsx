@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { generateDeviceHash, generateBrowserInstanceId, hasVotedLocally, markAsVoted, isVotingAvailable } from '@/lib/device';
 import { getMaxVotesAllowed } from '@/lib/votingRules';
 import { createVoteReceipt } from '@/lib/voteHash';
-import { debugLog } from '@/lib/logger';
+import { debugLog, errorLog } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { GroupedCandidateList } from '@/components/voting/GroupedCandidateList';
 import { VoteSubmitAnimation } from '@/components/voting/VoteSubmitAnimation';
@@ -253,13 +253,13 @@ export function VotingPage() {
         .order('vote_count', { ascending: false });
 
       if (error) {
-        console.error('Error loading results:', error);
+        errorLog('Error loading results:', error);
         return;
       }
 
       setResults(data || []);
     } catch (error) {
-      console.error('Error in loadResults:', error);
+      errorLog('Error in loadResults:', error);
     } finally {
       setLoadingResults(false);
     }
@@ -281,7 +281,7 @@ export function VotingPage() {
         .limit(1);
 
       if (roundError) {
-        console.error('Error loading round:', roundError);
+        errorLog('Error loading round:', roundError);
         toast({
           title: 'Error',
           description: 'No se pudo cargar la información de la votación',
@@ -353,7 +353,7 @@ export function VotingPage() {
         .eq('round_number', round.current_round_number);
 
       if (voteCheckError) {
-        console.error('Error checking existing votes:', voteCheckError);
+        errorLog('Error checking existing votes:', voteCheckError);
       } else {
         const alreadyVoted = (existingVotes && existingVotes.length > 0) || hasVotedLocally(round.id, round.current_round_number);
         setHasVoted(alreadyVoted);
@@ -372,7 +372,7 @@ export function VotingPage() {
         .order('order_index');
 
       if (candidateError) {
-        console.error('Error loading candidates:', candidateError);
+        errorLog('Error loading candidates:', candidateError);
         toast({
           title: 'Error',
           description: 'No se pudieron cargar los candidatos',
@@ -383,7 +383,7 @@ export function VotingPage() {
 
       setCandidates(candidateData || []);
     } catch (error) {
-      console.error('Error in loadActiveRound:', error);
+      errorLog('Error in loadActiveRound:', error);
       toast({
         title: 'Error',
         description: 'Error inesperado al cargar la votación',
@@ -610,7 +610,7 @@ export function VotingPage() {
         .eq('round_number', activeRound.current_round_number);
 
       if (checkError) {
-        console.error('Error checking existing vote:', checkError);
+        errorLog('Error checking existing vote:', checkError);
         setShowSubmitAnimation(false);
         toast({
           title: 'Error',
@@ -663,7 +663,7 @@ export function VotingPage() {
       });
 
       if (voteError || !ballotResult?.success) {
-        console.error('Error submitting vote:', voteError ?? ballotResult?.error_code);
+        errorLog('Error submitting vote:', voteError ?? ballotResult?.error_code);
         setShowSubmitAnimation(false);
         if (ballotResult?.error_code === 'ALREADY_VOTED') {
           toast({ title: 'Ya has votado', description: 'Este dispositivo ya emitió voto en esta ronda', variant: 'destructive' });
@@ -690,7 +690,7 @@ export function VotingPage() {
       }
 
     } catch (error) {
-      console.error('Error in submitVote:', error);
+      errorLog('Error in submitVote:', error);
       setShowSubmitAnimation(false);
       toast({
         title: 'Error',
@@ -939,11 +939,6 @@ export function VotingPage() {
             ))}
           </div>
         </div>
-        <style>{`
-          @keyframes shimmer-bar { to { background-position: 200% center; } }
-          @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.15);opacity:0.5} }
-          @keyframes dot-pulse { 0%,80%,100%{transform:scale(1);opacity:0.7} 40%{transform:scale(1.4);opacity:1} }
-        `}</style>
       </div>
     );
   }

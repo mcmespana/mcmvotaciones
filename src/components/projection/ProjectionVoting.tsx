@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
+import { getRoundTeamLabel } from "@/lib/candidateFormat";
 import { Chip, AccentBar, SelectedCandidatesSidebar, BallotsGrid } from "./_shared";
 
 interface SelectedCandidate {
@@ -67,7 +68,7 @@ export function ProjectionVoting({
           <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8 }}>
-          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
         </div>
         <div className="proj-spacer" />

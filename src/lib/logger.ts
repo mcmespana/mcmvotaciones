@@ -8,3 +8,19 @@ export function debugLog(message?: unknown, ...optionalParams: unknown[]): void 
     console.log(message, ...optionalParams);
   }
 }
+
+export function errorLog(message?: unknown, ...optionalParams: unknown[]): void {
+  if (optionalParams.length === 0) {
+    console.error(message);
+  } else {
+    console.error(message, ...optionalParams);
+  }
+}
+
+export function warnLog(message?: unknown, ...optionalParams: unknown[]): void {
+  if (optionalParams.length === 0) {
+    console.warn(message);
+  } else {
+    console.warn(message, ...optionalParams);
+  }
+}

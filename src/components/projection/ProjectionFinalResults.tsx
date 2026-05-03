@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Check, MapPin } from "lucide-react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import type { CandidateRow } from "@/types/db";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { formatCandidateName, getRoundTeamLabel } from "@/lib/candidateFormat";
 import { Chip } from "./_shared";
 
 type Candidate = CandidateRow;
@@ -56,7 +56,7 @@ export function ProjectionFinalResults({
         <p className="proj-final-subtitle">{roundTitle}</p>
         <div className="proj-spacer" />
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
           <Chip kind="ok" label={`${selectedCandidates.length} elegidos`} />
         </div>

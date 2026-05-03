@@ -275,8 +275,6 @@ export function AdminVotingDetail() {
   const publicCandidatesPath = roundId ? `/candidatos/${round?.slug || roundId}` : "";
   const publicCandidatesUrl = publicCandidatesPath ? `${window.location.origin}${publicCandidatesPath}` : "";
 
-  const isVotingStarted = Boolean(round && (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0));
-  const isMaxVotantesLocked = isVotingStarted;
   const isProjectingSomething = Boolean(round && round.show_results_to_voters);
 
   const {
@@ -291,7 +289,9 @@ export function AdminVotingDetail() {
     canResumeRound,
     canFinalizeRound,
     canStartNextRound,
+    votingStarted: isVotingStarted,
   } = useRoundWorkflow({ round, hasCandidates, selectionQuotaReached, currentRoundVotes, isWorkflowRunning });
+  const isMaxVotantesLocked = isVotingStarted;
 
   const openAnalyticsDialog = useCallback(() => {
     setIsAnalyticsOpen(true);
@@ -673,7 +673,7 @@ export function AdminVotingDetail() {
   /* ── Import ── */
 
   const parseCSV = (text: string): ImportCandidate[] => {
-    const lines = text.trim().split("\n");
+    const lines = text.replace(/\r\n?/g, "\n").trim().split("\n");
     const headers = lines[0].split(",").map((h) => h.trim());
     return lines.slice(1).map((line) => {
       const values = line.split(",").map((v) => v.trim());

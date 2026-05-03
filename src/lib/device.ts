@@ -1,3 +1,5 @@
+import { warnLog } from "@/lib/logger";
+
 /**
  * Device fingerprinting utilities for vote tracking
  * Enhanced fingerprinting with WebGL, Canvas, device memory, etc.
@@ -182,7 +184,7 @@ export function generateBrowserInstanceId(): string {
     
     return instanceId;
   } catch (error) {
-    console.warn('Failed to generate/retrieve browser instance ID:', error);
+    warnLog('Failed to generate/retrieve browser instance ID:', error);
     // Fallback to a session-based ID (will change on browser restart)
     return `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
@@ -244,7 +246,7 @@ export async function getIPAddress(): Promise<string> {
     // For now, we'll use a placeholder
     return 'client-side-unknown';
   } catch (error) {
-    console.warn('Failed to get IP address:', error);
+    warnLog('Failed to get IP address:', error);
     return 'unknown';
   }
 }
@@ -269,7 +271,7 @@ export function markAsVoted(roundId: string, roundNumber: number): void {
   try {
     localStorage.setItem(`voted_${roundId}_round_${roundNumber}`, new Date().toISOString());
   } catch (error) {
-    console.warn('Failed to mark as voted:', error);
+    warnLog('Failed to mark as voted:', error);
   }
 }
 
@@ -280,7 +282,7 @@ export function hasVotedLocally(roundId: string, roundNumber: number): boolean {
   try {
     return localStorage.getItem(`voted_${roundId}_round_${roundNumber}`) !== null;
   } catch (error) {
-    console.warn('Failed to check local vote status:', error);
+    warnLog('Failed to check local vote status:', error);
     return false;
   }
 }
@@ -312,6 +314,6 @@ export function clearLocalVoteData(roundId?: string, roundNumber?: number): void
       });
     }
   } catch (error) {
-    console.warn('Failed to clear local vote data:', error);
+    warnLog('Failed to clear local vote data:', error);
   }
 }

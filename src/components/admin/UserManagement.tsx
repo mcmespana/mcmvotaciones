@@ -1,3 +1,4 @@
+import { errorLog } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -102,7 +103,7 @@ export function UserManagement() {
         .order('created_at', { ascending: false });
       if (!error) setUsers(data || []);
     } catch (err) {
-      console.error(err);
+      errorLog(err);
     } finally {
       setLoading(false);
     }

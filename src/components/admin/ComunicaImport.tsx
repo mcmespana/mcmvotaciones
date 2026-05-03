@@ -1,3 +1,4 @@
+import { errorLog } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -99,7 +100,7 @@ export function ComunicaImport() {
       setExistingCrmIds(new Set((existing ?? []).map(e => e.crm_id as string)));
       setStep('review');
     } catch (err) {
-      console.error(err);
+      errorLog(err);
     } finally {
       setFetchLoading(false);
     }

@@ -1,3 +1,4 @@
+import { errorLog } from '@/lib/logger';
 import { createClient } from '@supabase/supabase-js';
 
 // Safe check for environment variables
@@ -17,11 +18,11 @@ const hasRealSupabaseConfig = !!(
 
 // Show warning if Supabase is not properly configured
 if (!hasRealSupabaseConfig) {
-  console.error(
+  errorLog(
     '%c⚠️ SUPABASE NO CONFIGURADO ⚠️',
     'background: #ff4444; color: white; font-size: 16px; font-weight: bold; padding: 10px;'
   );
-  console.error(
+  errorLog(
     '%cDebes configurar las credenciales de Supabase para que la aplicación funcione.\n\n' +
     '📖 Sigue las instrucciones en SUPABASE_SETUP.md\n\n' +
     '1️⃣  Crea un archivo .env.local en la raíz del proyecto\n' +

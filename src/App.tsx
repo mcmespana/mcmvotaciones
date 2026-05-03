@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,17 +20,16 @@ const queryClient = new QueryClient();
 const Spinner = () => (
   <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
     <div style={{ width: 32, height: 32, border: "2.5px solid #333", borderTopColor: "#7c6cf8", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );
 
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<VotingPage />} />
-    <Route path="/proyeccion" element={<Suspense fallback={<Spinner />}><ProjectionPage /></Suspense>} />
-    <Route path="/candidatos/:votingId" element={<Suspense fallback={<Spinner />}><PublicCandidates /></Suspense>} />
-    <Route path="/admin/*" element={<Suspense fallback={<Spinner />}><AdminRouter /></Suspense>} />
-    <Route path="/comunica/*" element={<Suspense fallback={<Spinner />}><ComunicaRouter /></Suspense>} />
+    <Route path="/proyeccion" element={<ErrorBoundary><Suspense fallback={<Spinner />}><ProjectionPage /></Suspense></ErrorBoundary>} />
+    <Route path="/candidatos/:votingId" element={<ErrorBoundary><Suspense fallback={<Spinner />}><PublicCandidates /></Suspense></ErrorBoundary>} />
+    <Route path="/admin/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><AdminRouter /></Suspense></ErrorBoundary>} />
+    <Route path="/comunica/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><ComunicaRouter /></Suspense></ErrorBoundary>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

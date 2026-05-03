@@ -10,7 +10,7 @@ export const WORKFLOW_STEPS = [
   { id: "finish",      label: "Finalizar ronda",       sub: "Siguiente ronda o cierre" },
 ];
 
-type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection'>;
+type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection' | 'current_round_number'>;
 
 interface UseRoundWorkflowInput {
   round: Round | null;
@@ -32,6 +32,8 @@ export interface RoundWorkflow {
   canResumeRound: boolean;
   canFinalizeRound: boolean;
   canStartNextRound: boolean;
+  /** True once voting has started — gates Add/Import/Dataset/Comunica buttons */
+  votingStarted: boolean;
 }
 
 export function useRoundWorkflow({
@@ -85,11 +87,16 @@ export function useRoundWorkflow({
       (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound),
     );
 
+    const votingStarted = Boolean(
+      round && (round.is_active || round.is_closed || round.round_finalized || round.current_round_number > 1 || currentRoundVotes > 0)
+    );
+
     return {
       stage, label, disabled,
       roomIsOpen, canOpenRoom, canCloseRoom,
       canStartRound, canPauseRound, canResumeRound,
       canFinalizeRound, canStartNextRound,
+      votingStarted,
     };
   }, [round, hasCandidates, selectionQuotaReached, currentRoundVotes, isWorkflowRunning]);
 }

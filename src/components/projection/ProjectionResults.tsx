@@ -3,7 +3,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import type { CandidateRow, RoundResultRow } from "@/types/db";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { formatCandidateName, getRoundTeamLabel } from "@/lib/candidateFormat";
 import { Chip, BallotsGrid } from "./_shared";
 
 type Candidate = CandidateRow;
@@ -94,7 +94,7 @@ export function ProjectionResults({
       <div className="proj-header">
         <h1 className="proj-header-title">{roundTitle}</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
-          <Chip kind="warn" label={(team === "ECE" || team === "ECL") ? `🏆 ${team}` : team} />
+          <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
           {selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
         </div>
