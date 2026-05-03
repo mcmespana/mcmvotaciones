@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Users, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { generateAccessCode } from "@/lib/accessCode";
@@ -6,26 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { VotingTypesManager, type VotingType } from "@/components/admin/VotingTypesManager";
 import { TeamChip } from "@/components/admin/TeamChip";
+import type { RoundRow } from "@/types/db";
 
-interface RoundListItem {
-  id: string;
-  slug: string | null;
-  title: string;
-  description: string | null;
-  year: number;
-  team: "ECE" | "ECL";
-  max_votantes: number;
-  is_active: boolean;
-  is_closed: boolean;
-  is_voting_open: boolean;
-  join_locked: boolean;
-  current_round_number: number;
-  votes_current_round: number;
-  created_at: string;
-  voting_type_name: string | null;
-  public_candidates_enabled: boolean;
-  show_final_gallery_projection: boolean;
-}
+type RoundListItem = Pick<RoundRow, 'id' | 'slug' | 'title' | 'description' | 'year' | 'team' | 'max_votantes' | 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'current_round_number' | 'votes_current_round' | 'created_at' | 'voting_type_name' | 'public_candidates_enabled' | 'show_final_gallery_projection'>;
 
 function generateSlug(title: string, id: string): string {
   const base = title
@@ -99,10 +83,10 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
                 {chip.txt}
               </span>
               {round.public_candidates_enabled && (
-                <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18}}>👤 Lista pública</span>
+                <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, display:'inline-flex', alignItems:'center', gap:3}}><Users size={9} /> Lista pública</span>
               )}
               {round.show_final_gallery_projection && (
-                <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18}}>🖼 Galería activa</span>
+                <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, display:'inline-flex', alignItems:'center', gap:3}}><Image size={9} /> Galería activa</span>
               )}
             </div>
           </div>
@@ -389,8 +373,8 @@ export function AdminVotingList() {
                     <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
                   </div>
                   <div style={{display:"flex", flexDirection:"column", gap:3}}>
-                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, width:"fit-content"}}>👤 Lista pública</span>}
-                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content"}}>🖼 Galería activa</span>}
+                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, width:"fit-content", display:'inline-flex', alignItems:'center', gap:3}}><Users size={9} /> Lista pública</span>}
+                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content", display:'inline-flex', alignItems:'center', gap:3}}><Image size={9} /> Galería activa</span>}
                   </div>
                   <div>
                     <TeamChip label={r.voting_type_name || r.team} />

@@ -1,12 +1,27 @@
 import { Check } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import type { BallotSummary } from "@/hooks/useProjectionData";
+import "./projection.css";
 
 /* ── Chip helpers ── */
 
 export type ChipKind = "ok" | "warn" | "brand" | "muted";
 
+const kindClass: Record<ChipKind, string> = {
+  ok:    "avd-chip-ok",
+  warn:  "avd-chip-warn",
+  brand: "avd-chip-brand",
+  muted: "avd-chip-muted",
+};
+
+const sizeClass: Record<"sm" | "md" | "lg", string> = {
+  sm: "",
+  md: "avd-chip-md",
+  lg: "avd-chip-lg",
+};
+
 export function chipStyle(kind: ChipKind, size: "sm" | "md" | "lg" = "md"): React.CSSProperties {
+  // Kept for external callers (ProjectionWaiting). Prefer <Chip> for new code.
   const h = size === "lg" ? 44 : size === "md" ? 36 : 28;
   const fs = size === "lg" ? 17 : size === "md" ? 15 : 13;
   const px = size === "lg" ? 22 : size === "md" ? 16 : 12;
@@ -22,7 +37,7 @@ export function chipStyle(kind: ChipKind, size: "sm" | "md" | "lg" = "md"): Reac
 }
 
 export function Chip({ kind, label, size = "md" }: { kind: ChipKind; label: string; size?: "sm" | "md" | "lg" }): React.ReactNode {
-  return <span style={chipStyle(kind, size)}>{label}</span>;
+  return <span className={`avd-chip ${kindClass[kind]} ${sizeClass[size]}`}>{label}</span>;
 }
 
 export function card(extra?: React.CSSProperties): React.CSSProperties {
@@ -37,16 +52,12 @@ export function card(extra?: React.CSSProperties): React.CSSProperties {
 }
 
 export function AccentBar({ color }: { color?: string }): React.ReactNode {
-  return (
-    <div style={{
-      position: "absolute", top: 0, left: 0, right: 0, height: 3,
-      background: color || "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))",
-      opacity: 0.9,
-    }} />
-  );
+  return color
+    ? <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color, opacity: 0.9 }} />
+    : <div className="avd-accent-bar" />;
 }
 
-/* ── ProjectionHeader ── */
+/* ── ProjectionHeader (unused — kept for F4 migration) ── */
 
 interface ProjectionHeaderProps {
   title: string;
@@ -74,8 +85,8 @@ export function ProjectionHeader({ title, roundNumber, team, extras, size = "sm"
       </h1>
       {(team || roundNumber != null) && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
-          {team && <span style={chipStyle("warn", "md")}>{isTeamType ? `🏆 ${team}` : team}</span>}
-          {roundNumber != null && <span style={chipStyle("brand", "md")}>Ronda {roundNumber}</span>}
+          {team && <span className={`avd-chip ${kindClass.warn} ${sizeClass.md}`}>{isTeamType ? `🏆 ${team}` : team}</span>}
+          {roundNumber != null && <span className={`avd-chip ${kindClass.brand} ${sizeClass.md}`}>Ronda {roundNumber}</span>}
         </div>
       )}
       {extras}
@@ -94,40 +105,30 @@ interface SelectedCandidate {
   selected_vote_count?: number | null;
 }
 
-interface SelectedCandidatesSidebarProps {
-  candidates: SelectedCandidate[];
-}
-
-export function SelectedCandidatesSidebar({ candidates }: SelectedCandidatesSidebarProps) {
+export function SelectedCandidatesSidebar({ candidates }: { candidates: SelectedCandidate[] }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", background: "var(--avd-bg-elev)" }}>
-      <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--avd-border)", display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="avd-selected-sidebar">
+      <div className="avd-selected-sidebar-header">
         <Check size={18} color="var(--avd-ok)" strokeWidth={3} />
-        <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", flex: 1 }}>Seleccionadas</span>
+        <span className="avd-selected-sidebar-label">Seleccionadas</span>
         {candidates.length > 0 && (
-          <span style={{ fontSize: 22, fontWeight: 800, color: "var(--avd-ok)", fontVariantNumeric: "tabular-nums" }}>{candidates.length}</span>
+          <span className="avd-selected-sidebar-count">{candidates.length}</span>
         )}
       </div>
-      <div style={{ flex: 1, overflow: "auto", padding: "8px 0" }}>
+      <div className="avd-selected-sidebar-list">
         {candidates.length === 0 ? (
-          <div style={{ padding: "28px 24px", fontSize: 15, color: "var(--avd-fg-muted)", fontWeight: 500, textAlign: "center", lineHeight: 1.5 }}>
+          <div className="avd-selected-sidebar-empty">
             Ninguna candidata<br />seleccionada aún
           </div>
         ) : (
           candidates.map((c) => (
-            <div key={c.id} style={{ padding: "14px 24px", borderBottom: "1px solid var(--avd-border-soft)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <div key={c.id} className="avd-selected-sidebar-row">
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "var(--avd-ok-fg)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {formatCandidateName(c)}
-                </div>
-                {c.location && (
-                  <div style={{ fontSize: 12, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 2 }}>{c.location}</div>
-                )}
+                <div className="avd-selected-sidebar-name">{formatCandidateName(c)}</div>
+                {c.location && <div className="avd-selected-sidebar-loc">{c.location}</div>}
               </div>
               {c.selected_in_round && (
-                <span style={{ flexShrink: 0, background: "var(--avd-ok-bg)", color: "var(--avd-ok-fg)", border: "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)", borderRadius: 9999, padding: "2px 10px", fontSize: 13, fontWeight: 700 }}>
-                  R{c.selected_in_round}
-                </span>
+                <span className="avd-selected-sidebar-round">R{c.selected_in_round}</span>
               )}
             </div>
           ))
@@ -139,33 +140,29 @@ export function SelectedCandidatesSidebar({ candidates }: SelectedCandidatesSide
 
 /* ── BallotsGrid ── */
 
-interface BallotsGridProps {
-  summaries: BallotSummary[];
-}
-
-export function BallotsGrid({ summaries }: BallotsGridProps) {
+export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="avd-ballots-grid-loading">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} style={{ height: 140, borderRadius: 12, background: "var(--avd-bg-sunken)", animation: "pulse 1.5s ease-in-out infinite" }} />
+          <div key={i} className="avd-ballots-grid-skeleton" />
         ))}
       </div>
     );
   }
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+    <div className="avd-ballots-grid">
       {summaries.map((ballot) => (
-        <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} style={{ ...card({ padding: "24px 28px" }) }}>
+        <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} className="avd-card avd-ballot-card">
           <AccentBar />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 18, fontWeight: 700, color: "var(--avd-fg)" }}>{ballot.voteCode}</span>
-            <span style={{ background: "var(--avd-brand-bg)", color: "var(--avd-brand-subtle)", border: "1px solid var(--avd-brand-border)", borderRadius: 9999, padding: "2px 12px", fontSize: 13, fontWeight: 700 }}>R{ballot.roundNumber}</span>
+          <div className="avd-ballot-card-header">
+            <span className="avd-ballot-code">{ballot.voteCode}</span>
+            <span className="avd-ballot-round-chip">R{ballot.roundNumber}</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500 }}>
-            <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>1.</span>{ballot.votes[0] || "—"}</span>
-            <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>2.</span>{ballot.votes[1] || "—"}</span>
-            <span><span style={{ color: "var(--avd-fg-faint)", marginRight: 8 }}>3.</span>{ballot.votes[2] || "—"}</span>
+          <div className="avd-ballot-votes">
+            <span><span className="avd-ballot-vote-num">1.</span>{ballot.votes[0] || "—"}</span>
+            <span><span className="avd-ballot-vote-num">2.</span>{ballot.votes[1] || "—"}</span>
+            <span><span className="avd-ballot-vote-num">3.</span>{ballot.votes[2] || "—"}</span>
           </div>
         </div>
       ))}

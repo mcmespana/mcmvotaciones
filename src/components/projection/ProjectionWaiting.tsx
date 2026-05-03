@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ProjectionWaitingMode } from "@/hooks/useProjectionData";
-import { chipStyle, card, AccentBar, SelectedCandidatesSidebar } from "./_shared";
+import { Chip, AccentBar, SelectedCandidatesSidebar } from "./_shared";
 import type { ChipKind } from "./_shared";
 
 interface SelectedCandidate {
@@ -67,58 +67,58 @@ export function ProjectionWaiting({
   const hasAmbiguous = Boolean(normalizedCode?.includes("0")) || Boolean(normalizedCode?.includes("O"));
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)", color: "var(--avd-fg)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+    <div className="proj-page">
       {/* Ambient background orbs */}
-      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(100px)", top: "-15%", left: "-10%", animation: "proj-orb-slow-a 25s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(80px)", bottom: "-10%", right: "-5%", animation: "proj-orb-slow-b 30s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+      <div className="proj-orb" style={{ width: 600, height: 600, background: "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(100px)", top: "-15%", left: "-10%", animation: "proj-orb-slow-a 25s ease-in-out infinite" }} />
+      <div className="proj-orb" style={{ width: 500, height: 500, background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(80px)", bottom: "-10%", right: "-5%", animation: "proj-orb-slow-b 30s ease-in-out infinite" }} />
+
       {/* Topbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 32px", background: "var(--avd-bg-elev)", borderBottom: "1px solid var(--avd-border)", flexShrink: 0, position: "relative", zIndex: 1 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, var(--avd-brand-400), var(--avd-brand-600))", display: "grid", placeItems: "center", color: "white", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>C</div>
-        <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>VotacionesMCM</span>
-        <div style={{ flex: 1 }} />
+      <div className="proj-topbar">
+        <div className="proj-logo">C</div>
+        <span className="proj-wordmark">VotacionesMCM</span>
+        <div className="proj-spacer" />
         {normalizedCode && (
-          <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 16, fontWeight: 800, letterSpacing: "0.1em", color: "var(--avd-brand)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", borderRadius: 8, padding: "4px 14px", whiteSpace: "nowrap" }}>
-            {normalizedCode}
-          </span>
+          <span className="proj-access-badge">{normalizedCode}</span>
         )}
-        <span style={chipStyle(modeKind)}>{modeLabel}</span>
-        <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--avd-fg-muted)" }}>
+        <Chip kind={modeKind} label={modeLabel} />
+        <span className="proj-clock">
           {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </span>
       </div>
 
       {/* Main */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 380px", gap: 0, minHeight: 0, position: "relative", zIndex: 1 }}>
+      <div className="proj-waiting-body">
         {/* Left: main info */}
-        <div style={{ padding: "48px 48px 48px 56px", display: "flex", flexDirection: "column", gap: 40, borderRight: "1px solid var(--avd-border)", overflow: "auto" }}>
+        <div className="proj-waiting-left">
           {/* Title block */}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 16 }}>Sistema de votaciones</div>
-            <h1 style={{ fontSize: 72, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.05, margin: 0, background: "linear-gradient(120deg, var(--avd-fg) 20%, var(--avd-brand-400) 50%, var(--avd-fg) 80%)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "proj-title-shimmer 6s linear infinite" }}>MCM Votaciones</h1>
-            <p style={{ fontSize: 26, color: "var(--avd-fg-muted)", fontWeight: 500, marginTop: 14, lineHeight: 1.4, maxWidth: "55ch" }}>{subtitle}</p>
+            <div className="proj-overline" style={{ marginBottom: 16 }}>Sistema de votaciones</div>
+            <h1 className="proj-waiting-title">MCM Votaciones</h1>
+            <p className="proj-waiting-subtitle">{subtitle}</p>
           </div>
 
           {/* Access code */}
           {normalizedCode && shouldShowJoinQr && (
-            <div style={card({ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" })}>
+            <div className="avd-card" style={{ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" }}>
               <AccentBar />
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 20 }}>Código de acceso</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <div className="proj-overline" style={{ marginBottom: 20 }}>Código de acceso</div>
+              <div className="proj-code-chars">
                 {normalizedCode.split("").map((char, index) => {
                   const isDigit = /[0-9]/.test(char);
                   const isZero = char === "0";
                   return (
                     <div
                       key={`${char}-${index}`}
-                      style={{ width: 88, height: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--avd-bg)", border: "1px solid var(--avd-border-strong)", borderRadius: 10, animation: `card-enter 0.35s cubic-bezier(0.2,0.75,0.2,1) ${index * 0.07}s both` }}
+                      className="proj-code-char"
+                      style={{ animation: `card-enter 0.35s cubic-bezier(0.2,0.75,0.2,1) ${index * 0.07}s both` }}
                     >
                       {isZero ? (
-                        <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--avd-font-mono)", fontSize: 56, fontWeight: 800, color: "var(--avd-brand)" }}>
+                        <span className="proj-code-zero">
                           0
-                          <span aria-hidden style={{ position: "absolute", width: 32, height: 3, background: "var(--avd-brand)", borderRadius: 2, transform: "rotate(-34deg)" }} />
+                          <span aria-hidden className="proj-code-zero-slash" />
                         </span>
                       ) : (
-                        <span style={{ fontFamily: "var(--avd-font-mono)", fontSize: 56, fontWeight: 800, color: isDigit ? "var(--avd-brand)" : "var(--avd-fg)" }}>
+                        <span className={`proj-code-glyph${isDigit ? " proj-code-glyph--digit" : ""}`}>
                           {char}
                         </span>
                       )}
@@ -127,7 +127,7 @@ export function ProjectionWaiting({
                 })}
               </div>
               {hasAmbiguous && (
-                <p style={{ marginTop: 14, fontSize: 15, fontWeight: 600, color: "var(--avd-fg-muted)" }}>
+                <p className="proj-code-note">
                   Nota: el <span style={{ fontFamily: "var(--avd-font-mono)", color: "var(--avd-brand)" }}>0</span> (cero) se muestra con barra diagonal.
                 </p>
               )}
@@ -136,20 +136,18 @@ export function ProjectionWaiting({
 
           {/* QR */}
           {shouldShowJoinQr && (
-            <div style={card({ padding: "28px 32px" })}>
+            <div className="avd-card" style={{ padding: "28px 32px" }}>
               <AccentBar />
-              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 28, alignItems: "center" }}>
-                <div style={{ borderRadius: 12, border: "1px solid var(--avd-border)", background: "white", padding: 10 }}>
+              <div className="proj-qr-grid">
+                <div className="proj-qr-frame">
                   <QRCodeSVG value={votingUrl} size={140} bgColor="#ffffff" fgColor="#0f172a" level="M" includeMargin title="QR de ingreso" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)", marginBottom: 10 }}>Escanea para ingresar</div>
-                  <p style={{ fontSize: 20, color: "var(--avd-fg-muted)", fontWeight: 500, marginBottom: 12, lineHeight: 1.4 }}>
+                  <div className="proj-qr-scan-title">Escanea para ingresar</div>
+                  <p className="proj-qr-scan-desc">
                     Apunta la cámara de tu móvil para abrir la web de votación.
                   </p>
-                  <div style={{ fontFamily: "var(--avd-font-mono)", fontSize: 14, fontWeight: 600, color: "var(--avd-fg)", background: "var(--avd-bg)", border: "1px solid var(--avd-border)", borderRadius: 6, padding: "6px 12px", display: "inline-block", maxWidth: "100%", wordBreak: "break-all" }}>
-                    {votingUrl}
-                  </div>
+                  <span className="proj-qr-url">{votingUrl}</span>
                 </div>
               </div>
             </div>
@@ -157,16 +155,14 @@ export function ProjectionWaiting({
         </div>
 
         {/* Right: stats */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: "var(--avd-bg-elev)" }}>
+        <div className="proj-waiting-right">
           {showConnectedCount && (
-            <div style={{ padding: "32px 28px", borderBottom: "1px solid var(--avd-border)", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--avd-fg-subtle)" }}>Conexiones activas</div>
-              <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums", lineHeight: 1, color: "var(--avd-fg)", fontFamily: "var(--avd-font-sans)" }}>
-                {connectedCount}
-              </div>
-              <div style={{ fontSize: 18, color: "var(--avd-fg-muted)", fontWeight: 500 }}>personas en sala</div>
-              <div style={{ height: 6, borderRadius: 6, background: "var(--avd-border-soft)", overflow: "hidden", marginTop: 8 }}>
-                <div style={{ height: "100%", width: `${Math.min(connectedCount, 100)}%`, background: "linear-gradient(90deg, var(--avd-brand-400), var(--avd-brand-600))", borderRadius: 6, transition: "width 0.4s ease" }} />
+            <div className="proj-stat-section">
+              <div className="proj-stat-label">Conexiones activas</div>
+              <div className="proj-stat-num">{connectedCount}</div>
+              <div className="proj-stat-sub">personas en sala</div>
+              <div className="proj-stat-progress">
+                <div className="proj-stat-progress-fill" style={{ width: `${Math.min(connectedCount, 100)}%` }} />
               </div>
             </div>
           )}

@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .env
 .env.local
+
+# graphify
+.graphify_python
+graphify-out/

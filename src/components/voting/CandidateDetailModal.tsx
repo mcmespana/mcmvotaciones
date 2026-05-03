@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Users, X, ZoomIn, ZoomOut } from "lucide-react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
+import type { CandidateRow } from "@/types/db";
 import { formatCandidateName } from "@/lib/candidateFormat";
 
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-}
+type Candidate = CandidateRow;
 
 interface Props {
   candidate: Candidate | null;

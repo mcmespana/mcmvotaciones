@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import type { RoundRow, RoundResultRow } from "@/types/db";
 import { formatSurname } from "@/lib/candidateFormat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,23 +26,9 @@ interface ResultsAnalyticsProps {
   lockedRoundId?: string;
 }
 
-interface Round {
-  id: string;
-  title: string;
-  team: string;
-  current_round_number: number;
-  max_votantes: number;
-  votes_current_round: number;
-  selected_candidates_count: number;
-  max_selected_candidates: number;
-  is_closed: boolean;
-}
+type Round = Pick<RoundRow, 'id' | 'title' | 'team' | 'current_round_number' | 'max_votantes' | 'votes_current_round' | 'selected_candidates_count' | 'max_selected_candidates' | 'is_closed'>;
 
-interface RoundResult {
-  candidate_id: string;
-  round_number: number;
-  vote_count: number;
-  percentage: number;
+interface RoundResult extends RoundResultRow {
   candidate?: {
     name: string;
     surname: string;

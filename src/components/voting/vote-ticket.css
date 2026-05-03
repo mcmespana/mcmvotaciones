@@ -1,0 +1,205 @@
+/* ── VoteTicket component styles ── */
+
+.tkt-card-wrapper {
+  position: relative;
+  border-radius: calc(var(--avd-radius-lg) + 4px);
+  overflow: hidden;
+  padding: 4px;
+  animation: tkt-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  flex-shrink: 0;
+}
+
+.tkt-spin-border {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.20 0.12 155) 0deg,
+    oklch(0.20 0.12 155) 50deg,
+    oklch(0.85 0.22 155) 120deg,
+    oklch(0.85 0.22 155) 160deg,
+    oklch(0.20 0.12 155) 230deg,
+    oklch(0.20 0.12 155) 280deg,
+    oklch(0.85 0.22 155) 350deg,
+    oklch(0.85 0.22 155) 380deg
+  );
+  animation: spin 3s linear infinite;
+  pointer-events: none;
+}
+
+.tkt-card-inner {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: calc(var(--avd-radius-lg) - 1px);
+  background: linear-gradient(165deg, oklch(0.52 0.17 155), oklch(0.45 0.15 160));
+}
+
+.tkt-shimmer-bar {
+  height: 3px;
+  width: 100%;
+  background-image: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.35), rgba(255,255,255,0.08));
+  background-size: 200% 100%;
+  animation: tkt-shimmer 2s linear infinite;
+}
+
+/* Icon */
+.tkt-icon-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 24px;
+  animation: tkt-pop 550ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tkt-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.35);
+  animation: tkt-ring 1.8s ease-out infinite;
+}
+
+.tkt-ring--delay {
+  animation-delay: 0.6s;
+}
+
+.tkt-icon-bubble {
+  width: 100px;
+  height: 100px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tkt-glow-pulse 2.5s ease-in-out infinite;
+}
+
+.tkt-check-icon {
+  width: 52px;
+  height: 52px;
+  color: white;
+  animation: tkt-check-burst 600ms cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* Title / round */
+.tkt-fade-up {
+  animation: tkt-fade-up 450ms ease-out both;
+}
+
+.tkt-title {
+  font-size: 30px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: -0.025em;
+  color: white;
+  line-height: 1.1;
+}
+
+.tkt-round-title {
+  font-weight: 800;
+  font-size: 16px;
+  color: white;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.tkt-round-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.tkt-round-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6ee7b7;
+  box-shadow: 0 0 6px #6ee7b7;
+  display: inline-block;
+}
+
+.tkt-round-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Footer */
+.tkt-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.12);
+  text-align: center;
+}
+
+.tkt-footer-text {
+  color: rgba(255,255,255,0.6);
+  font-size: 11.5px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Receipt card */
+.tkt-receipt-card {
+  overflow: hidden;
+  border-radius: var(--avd-radius-lg);
+  border: 1px solid var(--avd-border);
+  background: var(--avd-surface);
+  animation: tkt-receipt-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+
+/* ── Keyframes ── */
+
+@keyframes tkt-card-in {
+  0%   { transform: translateY(18px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes tkt-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes tkt-pop {
+  0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes tkt-ring {
+  0%   { transform: scale(0.85); opacity: 0.5; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes tkt-glow-pulse {
+  0%,100% { box-shadow: 0 0 30px -8px rgba(16,185,129,0.4); }
+  50%     { box-shadow: 0 0 50px -5px rgba(16,185,129,0.65); }
+}
+
+@keyframes tkt-check-burst {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes tkt-fade-up {
+  0%   { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes tkt-receipt-in {
+  0%   { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}

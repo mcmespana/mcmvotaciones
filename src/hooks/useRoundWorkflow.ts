@@ -1,14 +1,7 @@
 import { useMemo } from "react";
+import type { RoundRow } from "@/types/db";
 
-interface Round {
-  is_active: boolean;
-  is_closed: boolean;
-  is_voting_open: boolean;
-  join_locked: boolean;
-  round_finalized: boolean;
-  show_results_to_voters: boolean;
-  show_ballot_summary_projection: boolean;
-}
+type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection'>;
 
 interface UseRoundWorkflowInput {
   round: Round | null;

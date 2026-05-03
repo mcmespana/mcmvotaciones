@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import type { RoundRow } from "@/types/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,11 +42,7 @@ interface Vote {
 const normalizeCandidate = (candidate: Vote["candidate"]) =>
   Array.isArray(candidate) ? candidate[0] : candidate;
 
-interface Round {
-  id: string;
-  title: string;
-  current_round_number: number;
-}
+type Round = Pick<RoundRow, 'id' | 'title' | 'current_round_number'>;
 
 export function BallotReview({ lockedRoundId, showHeader = true }: BallotReviewProps) {
   const { toast } = useToast();

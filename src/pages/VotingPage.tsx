@@ -1,4 +1,5 @@
-import { Vote, Copy, Trash2, CheckCircle2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Vote, Trash2, ShieldCheck, Trophy, BarChart2, MapPin, Users } from 'lucide-react';
+import { flushSync } from 'react-dom';
 import { formatSurname } from '@/lib/candidateFormat';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -13,26 +14,12 @@ import { VoteSubmitAnimation } from '@/components/voting/VoteSubmitAnimation';
 import { VotingTutorial } from '@/components/voting/VotingTutorial';
 import { AccessCodeInput, isAccessCodeVerified, markAccessCodeVerified } from '@/components/voting/AccessCodeInput';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { VoteTicket } from '@/components/voting/VoteTicket';
+import type { VoteReceipt } from '@/components/voting/VoteTicket';
 
-interface Round {
-  id: string;
-  title: string;
-  description: string;
-  team: 'ECE' | 'ECL';
-  current_round_number: number;
-  max_votes_per_round: number;
-  max_selected_candidates: number;
-  selected_candidates_count: number;
-  is_active: boolean;
-  is_closed: boolean;
-  round_finalized: boolean;
-  show_results_to_voters: boolean;
-  show_ballot_summary_projection: boolean;
-  access_code: string | null;
-  is_voting_open: boolean;
-  join_locked: boolean;
-  votes_current_round: number;
-}
+import type { RoundRow, CandidateRow, RoundResultRow } from '@/types/db';
+
+type Round = RoundRow;
 
 interface JoinSeatResponse {
   success: boolean;
@@ -47,34 +34,8 @@ interface VerifySeatResponse {
   error_code?: string;
 }
 
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-  order_index: number;
-  is_eliminated: boolean;
-  is_selected: boolean;
-  selected_in_round: number | null;
-}
-
-interface RoundResult {
-  candidate_id: string;
-  vote_count: number;
-  percentage: number;
-}
-
-interface VoteReceipt {
-  roundId: string;
-  roundNumber: number;
-  voteCode: string;
-  votes: string[];
-  createdAt: string;
-}
+type Candidate = CandidateRow;
+type RoundResult = Pick<RoundResultRow, 'candidate_id' | 'vote_count' | 'percentage'>;
 
 type PreviewMode = 'tutorial' | 'anim' | 'ticket';
 
@@ -82,92 +43,6 @@ function getPreviewMode(): PreviewMode | null {
   const value = new URLSearchParams(window.location.search).get('preview');
   if (value === 'tutorial' || value === 'anim' || value === 'ticket') return value;
   return null;
-}
-
-function VoteReceiptReveal({
-  voteHashCode,
-  voteReceipt,
-  onCopy,
-}: {
-  voteHashCode: string;
-  voteReceipt: VoteReceipt | null;
-  onCopy: () => void;
-}) {
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (!revealed) return;
-
-    const t = setTimeout(() => setRevealed(false), 3000);
-    return () => clearTimeout(t);
-  }, [revealed]);
-
-  return (
-    <div>
-      <button
-        onClick={() => setRevealed((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors rounded-t-2xl"
-      >
-        <span className="flex items-center gap-2 font-semibold">
-          {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          {revealed ? "Ocultar mi papeleta" : "Ver código y papeleta"}
-        </span>
-        <span className="text-muted-foreground/50 text-xs">{revealed ? "▲" : "▼"}</span>
-      </button>
-
-      {revealed && (
-        <div className="px-4 pb-5 space-y-3">
-          {voteHashCode && (
-            <div className="overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low">
-              <div className="px-5 pt-4 pb-2 text-center">
-                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Código de verificación
-                </p>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="font-mono text-2xl font-black tracking-[0.12em] text-foreground">
-                    {voteHashCode}
-                  </span>
-                  <button
-                    onClick={onCopy}
-                    aria-label="Copiar código"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-outline-variant/65 bg-surface-container-low text-foreground transition-colors hover:bg-surface-container"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-              <div className="px-5 pb-4 text-center">
-                <p className="text-[10px] font-medium text-muted-foreground">
-                  Conserva este código para auditar tu voto
-                </p>
-              </div>
-            </div>
-          )}
-
-          {voteReceipt && (
-            <div className="overflow-hidden rounded-2xl border-2 border-outline-variant bg-surface-container-lowest dark:border-outline-variant dark:bg-surface-container-low">
-              <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
-                  Tu papeleta emitida
-                </p>
-              </div>
-              <div className="px-4 py-3 space-y-2">
-                {voteReceipt.votes.map((vote, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-[10px] font-bold text-primary">
-                      {idx + 1}
-                    </span>
-                    <span className="text-sm font-semibold text-foreground">{vote || "—"}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function VotingPage() {
@@ -776,30 +651,26 @@ export function VotingPage() {
         votes: buildReceiptVotes(selectedCandidates),
         createdAt: new Date().toISOString(),
       };
-      // Submit votes for each selected candidate
-      const votes = selectedCandidates.map(candidateId => ({
-        round_id: activeRound.id,
-        candidate_id: candidateId,
-        seat_id: seatId,
-        device_hash: deviceHash,
-        user_agent: userAgent,
-        round_number: activeRound.current_round_number,
-        ip_address: 'browser-client',
-        vote_hash: receipt.fullHash,
-      }));
+      // Submit ballot atomically via RPC (transaction: insert all votes + update counter)
+      const { data: ballotResult, error: voteError } = await supabase.rpc('cast_ballot', {
+        p_round_id:      activeRound.id,
+        p_seat_id:       seatId,
+        p_candidate_ids: selectedCandidates,
+        p_device_hash:   deviceHash,
+        p_user_agent:    userAgent,
+        p_round_number:  activeRound.current_round_number,
+        p_vote_hash:     receipt.fullHash,
+      });
 
-      const { error: voteError } = await supabase
-        .from('votes')
-        .insert(votes);
-
-      if (voteError) {
-        console.error('Error submitting vote:', voteError);
+      if (voteError || !ballotResult?.success) {
+        console.error('Error submitting vote:', voteError ?? ballotResult?.error_code);
         setShowSubmitAnimation(false);
-        toast({
-          title: 'Error',
-          description: 'No se pudo registrar el voto',
-          variant: 'destructive',
-        });
+        if (ballotResult?.error_code === 'ALREADY_VOTED') {
+          toast({ title: 'Ya has votado', description: 'Este dispositivo ya emitió voto en esta ronda', variant: 'destructive' });
+          markAsVoted(activeRound.id, activeRound.current_round_number);
+        } else {
+          toast({ title: 'Error', description: 'No se pudo registrar el voto', variant: 'destructive' });
+        }
         return;
       }
 
@@ -811,7 +682,7 @@ export function VotingPage() {
       // Fallback for mobile devices where animation completion callback may not fire reliably.
       submitTransitionTimeoutRef.current = window.setTimeout(() => {
         finalizeVoteTransition();
-      }, 9000);
+      }, 5000);
 
       // Load results if round is finalized and results should be visible
       if (activeRound.round_finalized && activeRound.show_results_to_voters) {
@@ -1240,7 +1111,7 @@ export function VotingPage() {
           {candidates.some(c => c.is_selected) && (
             <div style={{ background: 'var(--avd-surface)', border: '1px solid color-mix(in oklch, var(--avd-ok) 35%, transparent)', borderRadius: 'var(--avd-radius-lg)', padding: 24 }}>
               <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 700, color: 'var(--avd-ok-fg)', marginBottom: 6 }}>
-                <span style={{ fontSize: 20 }}>🏆</span>
+                <Trophy size={20} />
                 Candidatos Seleccionados
               </h2>
               <p style={{ marginBottom: 16, fontSize: 13, color: 'var(--avd-fg-muted)' }}>
@@ -1273,7 +1144,7 @@ export function VotingPage() {
 
           <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', padding: 24 }}>
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--avd-fg)' }}>
-              <span style={{ fontSize: 22 }}>📊</span>
+              <BarChart2 size={22} />
               Resultados de Ronda {activeRound.current_round_number}
             </h2>
             <p style={{ fontSize: 13, color: 'var(--avd-fg-muted)', marginBottom: 20 }}>
@@ -1337,10 +1208,10 @@ export function VotingPage() {
                           )}
                         </div>
                         {(candidate.location || candidate.group_name) && (
-                          <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)', marginTop: 2 }}>
-                            {candidate.location && `📍 ${candidate.location}`}
-                            {candidate.location && candidate.group_name && ' • '}
-                            {candidate.group_name && `👥 ${candidate.group_name}`}
+                          <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                            {candidate.location && <><MapPin size={10} />{candidate.location}</>}
+                            {candidate.location && candidate.group_name && <span> • </span>}
+                            {candidate.group_name && <><Users size={10} />{candidate.group_name}</>}
                           </div>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
@@ -1377,184 +1248,16 @@ export function VotingPage() {
     if (hasVoted) {
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative' }}>
-        {/* Ticket keyframes */}
-        <style>{`
-          @keyframes tkt-pop {
-            0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
-            60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-          }
-          @keyframes tkt-fade-up {
-            0%   { transform: translateY(12px); opacity: 0; }
-            100% { transform: translateY(0);   opacity: 1; }
-          }
-          @keyframes tkt-ring {
-            0%   { transform: scale(0.85); opacity: 0.5; }
-            100% { transform: scale(1.6); opacity: 0; }
-          }
-          @keyframes tkt-float {
-            0%,100% { transform: translateY(0) scale(1);   opacity: 0.55; }
-            50%     { transform: translateY(-10px) scale(1.2); opacity: 1; }
-          }
-          @keyframes tkt-shimmer {
-            0%   { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-          }
-          @keyframes tkt-card-in {
-            0%   { transform: translateY(18px) scale(0.95); opacity: 0; }
-            100% { transform: translateY(0) scale(1); opacity: 1; }
-          }
-          @keyframes tkt-glow-pulse {
-            0%,100% { box-shadow: 0 0 30px -8px rgba(16,185,129,0.4); }
-            50%     { box-shadow: 0 0 50px -5px rgba(16,185,129,0.65); }
-          }
-          @keyframes tkt-check-burst {
-            0%   { transform: scale(0.3); opacity: 0; }
-            50%  { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes tkt-receipt-in {
-            0%   { transform: translateY(12px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-          }
-        `}</style>
-
         <div style={{ position: 'absolute', right: 16, top: 16, zIndex: 20 }}>
           <ThemeToggle mode="inline" />
         </div>
-
-        <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* ═══ Main ticket card ═══ */}
-          <div style={{
-            position: 'relative',
-            borderRadius: 'calc(var(--avd-radius-lg) + 4px)',
-            overflow: 'hidden',
-            padding: '4px',
-            animation: 'tkt-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
-            flexShrink: 0,
-          }}>
-            {/* Spinning conic-gradient border */}
-            <div style={{
-              position: 'absolute', width: '200%', height: '200%', top: '-50%', left: '-50%',
-              background: 'conic-gradient(from 0deg, oklch(0.20 0.12 155) 0deg, oklch(0.20 0.12 155) 50deg, oklch(0.85 0.22 155) 120deg, oklch(0.85 0.22 155) 160deg, oklch(0.20 0.12 155) 230deg, oklch(0.20 0.12 155) 280deg, oklch(0.85 0.22 155) 350deg, oklch(0.85 0.22 155) 380deg)',
-              animation: 'spin 3s linear infinite', pointerEvents: 'none',
-            }} />
-
-            <div style={{
-              position: 'relative', zIndex: 1, overflow: 'hidden',
-              borderRadius: 'calc(var(--avd-radius-lg) - 1px)',
-              background: 'linear-gradient(165deg, oklch(0.52 0.17 155), oklch(0.45 0.15 160))',
-            }}>
-              {/* Top shimmer bar */}
-              <div style={{
-                height: 3, width: '100%',
-                backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.35), rgba(255,255,255,0.08))',
-                backgroundSize: '200% 100%',
-                animation: 'tkt-shimmer 2s linear infinite',
-              }} />
-
-              <div style={{ padding: '36px 32px 28px', textAlign: 'center' }}>
-
-                {/* Icon with pulsing rings + floating particles */}
-                <div style={{
-                  position: 'relative', width: 100, height: 100,
-                  margin: '0 auto 24px',
-                  animation: 'tkt-pop 550ms cubic-bezier(0.22, 1, 0.36, 1)',
-                }}>
-                  {/* Pulsing rings */}
-                  <span style={{
-                    position: 'absolute', inset: 0, borderRadius: 18,
-                    border: '2px solid rgba(255,255,255,0.35)',
-                    animation: 'tkt-ring 1.8s ease-out infinite',
-                  }} />
-                  <span style={{
-                    position: 'absolute', inset: 0, borderRadius: 18,
-                    border: '2px solid rgba(255,255,255,0.35)',
-                    animation: 'tkt-ring 1.8s ease-out infinite',
-                    animationDelay: '0.6s',
-                  }} />
-
-                  {/* Icon bubble */}
-                  <div style={{
-                    width: 100, height: 100, borderRadius: 18,
-                    background: 'rgba(255,255,255,0.12)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    animation: 'tkt-glow-pulse 2.5s ease-in-out infinite',
-                  }}>
-                    <CheckCircle2 style={{
-                      width: 52, height: 52, color: 'white',
-                      animation: 'tkt-check-burst 600ms cubic-bezier(0.22, 1, 0.36, 1) 0.3s both',
-                    }} strokeWidth={1.5} />
-                  </div>
-                </div>
-
-                {/* Title text with fade-up */}
-                <div style={{ animation: 'tkt-fade-up 450ms ease-out 0.2s both' }}>
-                  <h1 style={{
-                    fontSize: 30, fontWeight: 900, marginBottom: 16,
-                    letterSpacing: '-0.025em', color: 'white', lineHeight: 1.1,
-                  }}>
-                    Voto registrado
-                  </h1>
-                </div>
-
-                {/* Voting name + round — separated */}
-                <div style={{ animation: 'tkt-fade-up 450ms ease-out 0.35s both' }}>
-                  <p style={{
-                    fontWeight: 800, fontSize: 16, color: 'white',
-                    marginBottom: 4, letterSpacing: '-0.01em',
-                  }}>
-                    {activeRound?.title}
-                  </p>
-                  <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '3px 12px', borderRadius: 999,
-                    background: 'rgba(255,255,255,0.15)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    marginBottom: 0,
-                  }}>
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: '#6ee7b7', boxShadow: '0 0 6px #6ee7b7',
-                    }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                      Ronda {activeRound?.current_round_number}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom verification footer */}
-              <div style={{
-                padding: '12px 24px',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(0,0,0,0.12)',
-                textAlign: 'center',
-                animation: 'tkt-fade-up 450ms ease-out 0.5s both',
-              }}>
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11.5, fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
-                  Muestra esta pantalla para verificar que has votado correctamente.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ═══ Receipt card ═══ */}
-          {(voteHashCode || voteReceipt) && (
-            <div style={{
-              overflow: 'hidden', borderRadius: 'var(--avd-radius-lg)',
-              border: '1px solid var(--avd-border)', background: 'var(--avd-surface)',
-              animation: 'tkt-receipt-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both',
-            }}>
-              <VoteReceiptReveal
-                voteHashCode={voteHashCode}
-                voteReceipt={voteReceipt}
-                onCopy={copyVerificationCode}
-              />
-            </div>
-          )}
-        </div>
+        <VoteTicket
+          roundTitle={activeRound?.title ?? ''}
+          roundNumber={activeRound?.current_round_number ?? 0}
+          voteHashCode={voteHashCode}
+          voteReceipt={voteReceipt}
+          onCopy={copyVerificationCode}
+        />
       </div>
     );
   }
@@ -1655,7 +1358,7 @@ export function VotingPage() {
               onClick={openVoteConfirmation}
               disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting}
               className="avd-btn"
-              style={{ height: 36, background: '#059669', color: 'white', borderColor: '#047857', fontWeight: 700, padding: '0 14px', flexShrink: 0 }}
+              style={{ height: 36, background: 'var(--avd-ok)', color: 'white', borderColor: 'var(--avd-ok)', fontWeight: 700, padding: '0 14px', flexShrink: 0 }}
             >
               {voting ? (
                 <>
@@ -1723,14 +1426,12 @@ export function VotingPage() {
               </button>
               <button
                 disabled={voting}
-                onClick={async () => {
-                  await new Promise(r => setTimeout(r, 50));
-                  setConfirmVoteOpen(false);
-                  await new Promise(r => setTimeout(r, 10));
+                onClick={() => {
+                  flushSync(() => setConfirmVoteOpen(false));
                   submitVote();
                 }}
                 className="avd-btn"
-                style={{ flex: 1, justifyContent: 'center', height: 44, background: '#059669', color: 'white', borderColor: '#047857', fontWeight: 700 }}
+                style={{ flex: 1, justifyContent: 'center', height: 44, background: 'var(--avd-ok)', color: 'white', borderColor: 'var(--avd-ok)', fontWeight: 700 }}
               >
                 Confirmar voto
               </button>

@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { testDatasets } from "@/lib/testDatasets";
 import {
   AlertTriangle, ArrowLeft, ArrowUpRight, BarChart2, Check, CheckCircle, Copy, Download,
-  Eye, FileUp, Globe, Grid, List, Moon, Pause, Pencil,
+  Eye, Globe, Grid, List, Moon, Pause, Pencil,
   Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
   Sun, Trash2, Undo2, Upload, UserPlus, Users, XCircle,
 } from "lucide-react";
@@ -18,47 +18,12 @@ import { BallotReview } from "@/components/voting/BallotReview";
 import { useRoundWorkflow } from "@/hooks/useRoundWorkflow";
 import { TeamChip } from "@/components/admin/TeamChip";
 
+import type { RoundRow, CandidateRow } from "@/types/db";
+
 /* ── Interfaces ── */
 
-interface RoundDetail {
-  id: string;
-  slug: string | null;
-  title: string;
-  description: string | null;
-  year: number;
-  team: "ECE" | "ECL";
-  max_votantes: number;
-  max_selected_candidates: number;
-  max_votes_per_round: number;
-  access_code: string | null;
-  census_mode: "maximum" | "exact";
-  is_active: boolean;
-  is_closed: boolean;
-  is_voting_open: boolean;
-  join_locked: boolean;
-  round_finalized: boolean;
-  show_results_to_voters: boolean;
-  show_ballot_summary_projection: boolean;
-  show_final_gallery_projection: boolean;
-  public_candidates_enabled: boolean;
-  current_round_number: number;
-  votes_current_round: number;
-  voting_type_name: string | null;
-}
-
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-  order_index: number;
-  is_eliminated: boolean;
-  is_selected: boolean;
-}
+type RoundDetail = RoundRow;
+type Candidate = CandidateRow;
 
 interface InlineResult {
   candidate_id: string;
@@ -298,7 +263,7 @@ export function AdminVotingDetail() {
     const metricsInterval = window.setInterval(() => {
       loadSeatsAndStatus();
       loadCurrentRoundVotes(currentRoundNumberRef.current);
-    }, 10000);
+    }, 30000);
     return () => { window.clearInterval(metricsInterval); supabase.removeChannel(channel); };
   }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes]);
 
@@ -558,16 +523,8 @@ export function AdminVotingDetail() {
     if (!roundId || !round) return;
     setForceSelectingId(candidateId);
     try {
-      const { error: candErr } = await supabase.from("candidates").update({
-        is_selected: true,
-        selected_in_round: round.current_round_number,
-        updated_at: new Date().toISOString(),
-      }).eq("id", candidateId);
-      if (candErr) { toast({ title: "Error", description: "No se pudo seleccionar", variant: "destructive" }); return; }
-      await supabase.from("rounds").update({
-        selected_candidates_count: selectedCandidatesCount + 1,
-        updated_at: new Date().toISOString(),
-      }).eq("id", roundId);
+      const { data, error } = await supabase.rpc("force_select_candidate", { p_candidate_id: candidateId });
+      if (error || !data?.success) { toast({ title: "Error", description: "No se pudo seleccionar", variant: "destructive" }); return; }
       toast({ title: "Candidata seleccionada manualmente" });
       await loadRound();
       await loadInlineResults(round.current_round_number);
@@ -731,15 +688,8 @@ export function AdminVotingDetail() {
 
   const quickSelectCandidate = async (candidateId: string) => {
     setCandidateToSelect(null);
-    const roundNumber = round?.current_round_number || 1;
-    
-    const { error } = await supabase.from("candidates").update({
-      is_selected: true,
-      selected_in_round: roundNumber,
-      updated_at: new Date().toISOString()
-    }).eq("id", candidateId);
-    
-    if (error) { toast({ title: "Error", description: "No se pudo seleccionar al candidato", variant: "destructive" }); return; }
+    const { data, error } = await supabase.rpc("force_select_candidate", { p_candidate_id: candidateId });
+    if (error || !data?.success) { toast({ title: "Error", description: "No se pudo seleccionar al candidato", variant: "destructive" }); return; }
     toast({ title: "Candidato seleccionado", description: "Añadido directamente a la lista de seleccionados." });
     await loadRound();
   };
@@ -1097,11 +1047,11 @@ export function AdminVotingDetail() {
               </div>
               <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
                 <div className="avd-kpi-label">Censo</div>
-                <div className="avd-kpi-value" style={{ fontSize: 16 }}>
-                  {round.census_mode === "exact" ? "Exacto" : "Máximo"}
+                <div className="avd-kpi-value avd-tabular">
+                  {round.max_votantes}
                 </div>
                 <div className="avd-kpi-meta">
-                  {round.census_mode === "exact" ? "Arranca al llenar cupo" : "Inicio manual"}
+                  {round.census_mode === "exact" ? "Exacto" : "Máximo"}
                 </div>
               </div>
               <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
@@ -1433,14 +1383,6 @@ export function AdminVotingDetail() {
             <div>
               <h3 className="avd-section-title">Atajos</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {!(round.round_finalized && !round.is_closed && inlineResults.length > 0) && (
-                  <button className="avd-btn avd-btn-block" onClick={openAnalyticsDialog}>
-                    <BarChart2 size={14} /> Análisis de resultados
-                  </button>
-                )}
-                <button className="avd-btn avd-btn-block" onClick={openBallotsDialog}>
-                  <FileUp size={14} /> Revisar papeletas
-                </button>
                 <button className="avd-btn avd-btn-block" onClick={exportBallotsCsv}>
                   <Download size={14} /> Exportar CSV ronda {round.current_round_number}
                 </button>

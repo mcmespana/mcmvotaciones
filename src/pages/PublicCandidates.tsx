@@ -4,29 +4,14 @@ import { supabase } from "@/lib/supabase";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
 import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { useTheme } from "next-themes";
+import type { RoundRow, CandidateRow } from "@/types/db";
 
 /* ── Interfaces ── */
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-interface Round {
-  id: string;
-  title: string;
-  team: string;
-  public_candidates_enabled: boolean;
-}
-
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-  order_index: number;
-}
+type Round = Pick<RoundRow, 'id' | 'title' | 'team' | 'public_candidates_enabled'>;
+type Candidate = CandidateRow;
 
 interface GroupEntry {
   groupKey: string;

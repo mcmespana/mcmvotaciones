@@ -45,7 +45,7 @@ export function AccessCodeInput({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = code.trim().toUpperCase();
-    if (trimmed.length >= 3 && trimmed.length <= 5) {
+    if (trimmed.length === 4) {
       onSubmit(trimmed);
     }
   };
@@ -54,7 +54,7 @@ export function AccessCodeInput({
     const value = e.target.value
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, "")
-      .slice(0, 5);
+      .slice(0, 4);
     setCode(value);
   };
 
@@ -125,10 +125,10 @@ export function AccessCodeInput({
                 type="text"
                 value={code}
                 onChange={handleChange}
-                placeholder="ABC"
+                placeholder="ABCD"
                 className="avd-input"
                 disabled={loading}
-                maxLength={5}
+                maxLength={4}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -143,7 +143,7 @@ export function AccessCodeInput({
                 }}
               />
               <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", textAlign: "center" }}>
-                Código alfanumérico de 3 a 5 caracteres
+                Código alfanumérico de 4 caracteres
               </p>
             </div>
 
@@ -167,7 +167,7 @@ export function AccessCodeInput({
             <button
               type="submit"
               className="avd-btn avd-btn-primary avd-btn-primary-lg"
-              disabled={loading || code.length < 3}
+              disabled={loading || code.length < 4}
               style={{ width: "100%", justifyContent: "center", marginTop: 4 }}
             >
               {loading ? (

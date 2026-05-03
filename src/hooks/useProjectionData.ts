@@ -2,50 +2,11 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { debugLog } from "@/lib/logger";
 import { formatSurname } from "@/lib/candidateFormat";
+import type { RoundRow, CandidateRow, RoundResultRow } from "@/types/db";
 
-interface Round {
-  id: string;
-  title: string;
-  description: string;
-  team: "ECE" | "ECL";
-  current_round_number: number;
-  max_votes_per_round: number;
-  max_selected_candidates: number;
-  selected_candidates_count: number;
-  max_votantes: number;
-  votes_current_round: number;
-  is_active: boolean;
-  is_closed: boolean;
-  round_finalized: boolean;
-  show_results_to_voters: boolean;
-  access_code: string | null;
-  show_ballot_summary_projection: boolean;
-  show_final_gallery_projection: boolean;
-  voting_type_name: string | null;
-  is_voting_open: boolean;
-  join_locked: boolean;
-  updated_at: string;
-}
-
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  image_url: string | null;
-  is_eliminated: boolean;
-  is_selected: boolean;
-  selected_in_round: number | null;
-  selected_vote_count: number | null;
-}
-
-interface RoundResult {
-  candidate_id: string;
-  vote_count: number;
-  percentage: number;
-}
+type Round = RoundRow;
+type Candidate = CandidateRow;
+type RoundResult = Pick<RoundResultRow, 'candidate_id' | 'vote_count' | 'percentage'>;
 
 export interface BallotSummary {
   voteCode: string;
@@ -247,24 +208,6 @@ export function useProjectionData(): ProjectionData {
     }
   }, []);
 
-  // Load connected seats count
-  const loadConnectedCount = useCallback(async () => {
-    if (!round) {
-      setConnectedCount(0);
-      return;
-    }
-    try {
-      const { count } = await supabase
-        .from("seats")
-        .select("*", { count: "exact", head: true })
-        .eq("round_id", round.id)
-        .eq("estado", "ocupado");
-
-      setConnectedCount(count || 0);
-    } catch {
-      // seats table might not exist yet, silently ignore
-    }
-  }, [round]);
 
   // Elapsed time timer
   useEffect(() => {
@@ -298,12 +241,39 @@ export function useProjectionData(): ProjectionData {
     loadActiveRound();
   }, [loadActiveRound]);
 
-  // Poll connected count every 5 seconds
+  // Realtime seats subscription for connected count (no polling)
   useEffect(() => {
-    loadConnectedCount();
-    const interval = setInterval(loadConnectedCount, 5000);
-    return () => clearInterval(interval);
-  }, [loadConnectedCount]);
+    if (!round?.id) {
+      setConnectedCount(0);
+      return;
+    }
+    const roundId = round.id;
+
+    const fetchConnected = async () => {
+      try {
+        const { count } = await supabase
+          .from("seats")
+          .select("*", { count: "exact", head: true })
+          .eq("round_id", roundId)
+          .eq("estado", "ocupado");
+        setConnectedCount(count || 0);
+      } catch { /* seats table may not exist yet */ }
+    };
+
+    fetchConnected();
+
+    const uid = crypto.randomUUID();
+    const seatsChannel = supabase
+      .channel(`projection-seats-${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "seats", filter: `round_id=eq.${roundId}` },
+        () => { fetchConnected(); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(seatsChannel); };
+  }, [round?.id]);
 
   // Real-time subscriptions
   useEffect(() => {
@@ -321,14 +291,23 @@ export function useProjectionData(): ProjectionData {
       .subscribe();
 
     let voteDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let pendingVoteIncrement = false;
     const votesChannel = supabase
       .channel(`projection-votes-${uid}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "votes" },
         () => {
+          // Optimistic +1 on first INSERT per batch; debounced reload reconciles
+          if (!pendingVoteIncrement) {
+            setVoteCount(prev => prev + 1);
+            pendingVoteIncrement = true;
+          }
           if (voteDebounceTimer) clearTimeout(voteDebounceTimer);
-          voteDebounceTimer = setTimeout(() => loadActiveRound(), 1000);
+          voteDebounceTimer = setTimeout(() => {
+            pendingVoteIncrement = false;
+            loadActiveRound();
+          }, 1000);
         }
       )
       .subscribe();

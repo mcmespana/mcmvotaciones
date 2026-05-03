@@ -4,20 +4,9 @@ import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { Search, X, MapPin, Users, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { VotingTutorial } from "@/components/voting/VotingTutorial";
+import type { CandidateRow } from "@/types/db";
 
-interface Candidate {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-  order_index: number;
-  is_eliminated: boolean;
-  is_selected: boolean;
-}
+type Candidate = CandidateRow;
 
 interface GroupedCandidateListProps {
   candidates: Candidate[];
