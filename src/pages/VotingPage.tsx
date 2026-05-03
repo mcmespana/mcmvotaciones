@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { VoteTicket } from '@/components/voting/VoteTicket';
 import { useVotingPage } from './voting/hooks/useVotingPage';
 import type { Round } from './voting/hooks/useVotingPage';
+import { Spinner } from '@/components/ui-avd/Spinner';
 
 type PreviewMode = 'tutorial' | 'anim' | 'ticket';
 
@@ -122,7 +123,7 @@ export function VotingPage() {
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <Spinner size="md" className="mx-auto mb-4" />
           <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>Cargando votación...</p>
         </div>
       </div>
@@ -177,7 +178,7 @@ export function VotingPage() {
     return (
       <div className="pub-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', boxShadow: 'var(--avd-shadow-lg)', width: '100%', maxWidth: 420, padding: 40, textAlign: 'center' }}>
-          <div style={{ width: 32, height: 32, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
+          <Spinner size="md" style={{ margin: '0 auto 16px' }} />
           <p style={{ color: 'var(--avd-fg-muted)', fontSize: 14 }}>Validando tu asiento...</p>
         </div>
       </div>
@@ -333,7 +334,7 @@ export function VotingPage() {
             <p style={{ fontSize: 13, color: 'var(--avd-fg-muted)', marginBottom: 20 }}>Votación finalizada</p>
             {loadingResults ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
-                <div style={{ width: 28, height: 28, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <Spinner size="sm" />
               </div>
             ) : results.length === 0 ? (
               <p style={{ textAlign: 'center', color: 'var(--avd-fg-muted)', padding: '32px 0' }}>Aún no hay resultados disponibles.</p>

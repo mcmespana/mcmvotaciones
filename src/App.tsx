@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Spinner as SpinnerIcon } from "@/components/ui-avd/Spinner";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +20,7 @@ const queryClient = new QueryClient();
 
 const Spinner = () => (
   <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-    <div style={{ width: 32, height: 32, border: "2.5px solid #333", borderTopColor: "#7c6cf8", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+    <SpinnerIcon size="md" />
   </div>
 );
 
