@@ -180,7 +180,24 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false }
             </p>
           )}
 
-          {!candidate.description && !candidate.location && !candidate.group_name && !candidate.age && (
+          {(candidate.asamblea_movimiento_es || candidate.asamblea_responsabilidad) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--avd-border-soft)" }}>
+              {candidate.asamblea_movimiento_es && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--avd-fg-subtle)", marginBottom: 5 }}>Para mí el MCM es…</div>
+                  <p style={{ fontSize: 13.5, color: "var(--avd-fg-muted)", lineHeight: 1.6, margin: 0 }}>{candidate.asamblea_movimiento_es}</p>
+                </div>
+              )}
+              {candidate.asamblea_responsabilidad && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--avd-fg-subtle)", marginBottom: 5 }}>Responsabilidades en el MCM</div>
+                  <p style={{ fontSize: 13.5, color: "var(--avd-fg-muted)", lineHeight: 1.6, margin: 0 }}>{candidate.asamblea_responsabilidad}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!candidate.description && !candidate.location && !candidate.group_name && !candidate.age && !candidate.asamblea_movimiento_es && !candidate.asamblea_responsabilidad && (
             <p style={{ fontSize: 13, color: "var(--avd-fg-faint)", margin: 0 }}>
               Sin información adicional disponible.
             </p>

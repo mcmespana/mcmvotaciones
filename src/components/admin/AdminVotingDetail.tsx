@@ -213,7 +213,7 @@ export function AdminVotingDetail() {
       setLoading(true);
       const [{ data: roundData, error: roundError }, { data: candidateData, error: candidateError }, { data: seatData, error: seatError }, { data: seatStatusData, error: seatStatusError }] = await Promise.all([
         supabase.from("rounds").select("id,slug,title,description,year,team,max_votantes,max_selected_candidates,max_votes_per_round,access_code,census_mode,is_active,is_closed,is_voting_open,join_locked,round_finalized,show_results_to_voters,show_ballot_summary_projection,show_final_gallery_projection,public_candidates_enabled,current_round_number,votes_current_round,voting_type_name").eq("id", roundId).single(),
-        supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected").eq("round_id", roundId).order("order_index", { ascending: true }),
+        supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected,asamblea_movimiento_es,asamblea_responsabilidad").eq("round_id", roundId).order("order_index", { ascending: true }),
         supabase.from("seats").select("id,estado,joined_at,last_seen_at,browser_instance_id").eq("round_id", roundId).order("joined_at", { ascending: false }).limit(60),
         supabase.rpc("get_round_seats_status", { p_round_id: roundId }),
       ]);

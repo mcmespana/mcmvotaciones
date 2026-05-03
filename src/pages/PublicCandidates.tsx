@@ -111,7 +111,7 @@ export function PublicCandidates() {
         setRound(roundData);
         const { data: candidateData } = await supabase
           .from("candidates")
-          .select("id, name, surname, location, group_name, age, description, image_url, order_index")
+          .select("id, name, surname, location, group_name, age, description, image_url, order_index, asamblea_movimiento_es, asamblea_responsabilidad")
           .eq("round_id", roundData.id)
           .order("order_index");
         setCandidates(candidateData || []);

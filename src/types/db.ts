@@ -42,6 +42,8 @@ export interface CandidateRow {
   is_selected: boolean;
   selected_in_round: number | null;
   selected_vote_count: number | null;
+  asamblea_movimiento_es: string | null;
+  asamblea_responsabilidad: string | null;
   created_at: string;
   updated_at: string;
 }
