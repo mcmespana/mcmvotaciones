@@ -62,6 +62,8 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
   const activeRoundRef = useRef<Round | null>(null);
   const submitAnimationRoundRef = useRef<{ roundId: string; roundNumber: number } | null>(null);
   const submitTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
 
   useEffect(() => {
     const handleVisibility = () => setTabHidden(document.hidden);
@@ -175,12 +177,12 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
       const { data: rounds, error: roundError } = await supabase.from('rounds').select('*').eq('is_active', true).limit(1);
       if (roundError) {
         errorLog('Error loading round:', roundError);
-        toast({ title: 'Error', description: 'No se pudo cargar la información de la votación', variant: 'destructive' });
+        toastRef.current({ title: 'Error', description: 'No se pudo cargar la información de la votación', variant: 'destructive' });
         return;
       }
       if (!rounds || rounds.length === 0) {
         setActiveRound(null); setCandidates([]); setSeatId(null); setSeatError(''); setAccessCodeVerified(false);
-        toast({ title: 'Sin votaciones activas', description: 'No hay votaciones disponibles en este momento' });
+        toastRef.current({ title: 'Sin votaciones activas', description: 'No hay votaciones disponibles en este momento' });
         return;
       }
 
@@ -220,15 +222,15 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
         .from('candidates').select('*').eq('round_id', round.id).order('order_index');
       if (candidateError) {
         errorLog('Error loading candidates:', candidateError);
-        toast({ title: 'Error', description: 'No se pudieron cargar los candidatos', variant: 'destructive' });
+        toastRef.current({ title: 'Error', description: 'No se pudieron cargar los candidatos', variant: 'destructive' });
         return;
       }
       setCandidates(candidateData || []);
     } catch (error) {
       errorLog('Error in loadActiveRound:', error);
-      toast({ title: 'Error', description: 'Error inesperado al cargar la votación', variant: 'destructive' });
+      toastRef.current({ title: 'Error', description: 'Error inesperado al cargar la votación', variant: 'destructive' });
     } finally { if (!silent) setLoading(false); }
-  }, [toast, loadResults, ensureSeat, loadStoredReceipt]);
+  }, [loadResults, ensureSeat, loadStoredReceipt]);
 
   const handleAccessCode = useCallback(async (code: string) => {
     if (!activeRound) return;
@@ -249,13 +251,13 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
   const submitVote = useCallback(async (currentSeatId: string | null, currentSeatError: string) => {
     if (selectedCandidates.length === 0 || !activeRound) return;
     if (!activeRound.is_voting_open) {
-      toast({ title: 'Ronda no iniciada', description: 'La sala esta abierta, pero la ronda de voto aun no ha comenzado.', variant: 'destructive' }); return;
+      toastRef.current({ title: 'Ronda no iniciada', description: 'La sala esta abierta, pero la ronda de voto aun no ha comenzado.', variant: 'destructive' }); return;
     }
     if (!currentSeatId) {
-      toast({ title: 'Asiento no valido', description: currentSeatError || 'No se pudo validar tu asiento para votar.', variant: 'destructive' }); return;
+      toastRef.current({ title: 'Asiento no valido', description: currentSeatError || 'No se pudo validar tu asiento para votar.', variant: 'destructive' }); return;
     }
     if (activeRound.round_finalized) {
-      toast({ title: 'Ronda finalizada', description: 'Esta ronda ya ha finalizado y no se pueden enviar más votos', variant: 'destructive' }); return;
+      toastRef.current({ title: 'Ronda finalizada', description: 'Esta ronda ya ha finalizado y no se pueden enviar más votos', variant: 'destructive' }); return;
     }
     try {
       if (submitTransitionTimeoutRef.current) { clearTimeout(submitTransitionTimeoutRef.current); submitTransitionTimeoutRef.current = null; }
@@ -272,25 +274,25 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
       });
       if (verifySeatError) {
         setShowSubmitAnimation(false);
-        toast({ title: 'Error de asiento', description: 'No se pudo verificar tu asiento antes de votar.', variant: 'destructive' }); return;
+        toastRef.current({ title: 'Error de asiento', description: 'No se pudo verificar tu asiento antes de votar.', variant: 'destructive' }); return;
       }
       const verifyResponse = verifySeatData as VerifySeatResponse;
       if (!verifyResponse?.valid) {
         setShowSubmitAnimation(false); setSeatError(verifyResponse?.message || 'Tu asiento ya no es valido para esta ronda.');
-        toast({ title: 'Asiento expirado', description: verifyResponse?.message || 'Debes reingresar con un asiento valido.', variant: 'destructive' }); return;
+        toastRef.current({ title: 'Asiento expirado', description: verifyResponse?.message || 'Debes reingresar con un asiento valido.', variant: 'destructive' }); return;
       }
 
       const { data: existingVote, error: checkError } = await supabase
         .from('votes').select('id').eq('round_id', activeRound.id).eq('device_hash', deviceHash).eq('round_number', activeRound.current_round_number);
       if (checkError) {
         errorLog('Error checking existing vote:', checkError); setShowSubmitAnimation(false);
-        toast({ title: 'Error', description: 'Error al verificar el voto', variant: 'destructive' }); return;
+        toastRef.current({ title: 'Error', description: 'Error al verificar el voto', variant: 'destructive' }); return;
       }
       if (existingVote && existingVote.length > 0) {
         setShowSubmitAnimation(false);
         const storedReceipt = loadStoredReceipt(activeRound.id, activeRound.current_round_number);
         if (storedReceipt) { setVoteReceipt(storedReceipt); setVoteHashCode(storedReceipt.voteCode); }
-        toast({ title: 'Ya has votado', description: 'Este dispositivo ya ha emitido un voto en esta ronda', variant: 'destructive' });
+        toastRef.current({ title: 'Ya has votado', description: 'Este dispositivo ya ha emitido un voto en esta ronda', variant: 'destructive' });
         setHasVoted(true); markAsVoted(activeRound.id, activeRound.current_round_number); return;
       }
 
@@ -307,9 +309,9 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
         errorLog('Error submitting vote:', voteError ?? ballotResult?.error_code);
         setShowSubmitAnimation(false);
         if (ballotResult?.error_code === 'ALREADY_VOTED') {
-          toast({ title: 'Ya has votado', description: 'Este dispositivo ya emitió voto en esta ronda', variant: 'destructive' });
+          toastRef.current({ title: 'Ya has votado', description: 'Este dispositivo ya emitió voto en esta ronda', variant: 'destructive' });
           markAsVoted(activeRound.id, activeRound.current_round_number);
-        } else { toast({ title: 'Error', description: 'No se pudo registrar el voto', variant: 'destructive' }); }
+        } else { toastRef.current({ title: 'Error', description: 'No se pudo registrar el voto', variant: 'destructive' }); }
         return;
       }
 
@@ -319,12 +321,12 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
       if (activeRound.round_finalized && activeRound.show_results_to_voters) await loadResults(activeRound.id, activeRound.current_round_number);
     } catch (error) {
       errorLog('Error in submitVote:', error); setShowSubmitAnimation(false);
-      toast({ title: 'Error', description: 'Error inesperado al votar', variant: 'destructive' });
+      toastRef.current({ title: 'Error', description: 'Error inesperado al votar', variant: 'destructive' });
     } finally { setVoting(false); }
-  }, [selectedCandidates, activeRound, toast, loadStoredReceipt, buildReceiptVotes, persistVoteReceipt, finalizeVoteTransition, loadResults]);
+  }, [selectedCandidates, activeRound, loadStoredReceipt, buildReceiptVotes, persistVoteReceipt, finalizeVoteTransition, loadResults]);
 
   const copyVerificationCode = useCallback(async () => {
-    if (!voteHashCode) { toast({ title: 'Sin código', description: 'No hay un código de verificación para copiar.', variant: 'destructive' }); return; }
+    if (!voteHashCode) { toastRef.current({ title: 'Sin código', description: 'No hay un código de verificación para copiar.', variant: 'destructive' }); return; }
     try {
       if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(voteHashCode); }
       else {
@@ -340,22 +342,22 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
         document.body.removeChild(textArea);
         if (!copied) throw new Error('copy-failed');
       }
-      toast({ title: 'Copiado', description: 'Código de verificación copiado.' });
-    } catch { toast({ title: 'No se pudo copiar', description: 'Copia manualmente el código de verificación.', variant: 'destructive' }); }
-  }, [toast, voteHashCode]);
+      toastRef.current({ title: 'Copiado', description: 'Código de verificación copiado.' });
+    } catch { toastRef.current({ title: 'No se pudo copiar', description: 'Copia manualmente el código de verificación.', variant: 'destructive' }); }
+  }, [voteHashCode]);
 
   const toggleCandidateSelection = useCallback((candidateId: string) => {
     if (!activeRound) return;
     const maxVotesThisRound = computeMaxVotesThisRound();
-    if (maxVotesThisRound === 0) { toast({ title: 'Votación completada', description: 'Ya se alcanzó el máximo de candidatos seleccionados. No se admiten más votos.' }); return; }
+    if (maxVotesThisRound === 0) { toastRef.current({ title: 'Votación completada', description: 'Ya se alcanzó el máximo de candidatos seleccionados. No se admiten más votos.' }); return; }
     setSelectedCandidates(prev => {
       const isSelected = prev.includes(candidateId);
       if (isSelected) return prev.filter(id => id !== candidateId);
       if (prev.length < maxVotesThisRound) return [...prev, candidateId];
-      toast({ title: 'Límite alcanzado', description: `Solo puedes votar por ${maxVotesThisRound} candidato${maxVotesThisRound > 1 ? 's' : ''} en esta ronda`, variant: 'destructive' });
+      toastRef.current({ title: 'Límite alcanzado', description: `Solo puedes votar por ${maxVotesThisRound} candidato${maxVotesThisRound > 1 ? 's' : ''} en esta ronda`, variant: 'destructive' });
       return prev;
     });
-  }, [activeRound, computeMaxVotesThisRound, toast]);
+  }, [activeRound, computeMaxVotesThisRound]);
 
   const clearSelection = useCallback(() => setSelectedCandidates([]), []);
 
@@ -404,7 +406,6 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
       supabase.removeChannel(roundsChannel);
       if (submitTransitionTimeoutRef.current) { clearTimeout(submitTransitionTimeoutRef.current); submitTransitionTimeoutRef.current = null; }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, loadActiveRound]);
 
   const maxVotesThisRound = computeMaxVotesThisRound();
