@@ -71,13 +71,29 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION public.cast_ballot IS
+COMMENT ON FUNCTION public.cast_ballot(UUID, UUID, UUID[], TEXT, TEXT, INTEGER, TEXT, TEXT) IS
   'Atomic ballot submission. Inserts all candidate votes in one transaction and updates votes_current_round. Returns ALREADY_VOTED if device already cast a ballot this round.';
 
 -- ============================================================
 -- 2. force_select_candidate: mark candidate selected and recount atomically
 -- Returns { success, selected_count }
 -- ============================================================
+
+-- Drop any existing overloads with different signatures to avoid ambiguity
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT oid::regprocedure AS sig
+    FROM pg_proc
+    WHERE proname = 'force_select_candidate'
+      AND pronamespace = 'public'::regnamespace
+  LOOP
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || r.sig || ' CASCADE';
+  END LOOP;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION public.force_select_candidate(
   p_candidate_id UUID
 )
@@ -120,5 +136,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION public.force_select_candidate IS
+COMMENT ON FUNCTION public.force_select_candidate(UUID) IS
   'Mark a candidate as selected and atomically recount selected_candidates_count from DB. Used by both forceSelectCandidate and quickSelectCandidate in admin UI.';
