@@ -159,6 +159,12 @@ export function AdminVotingDetail() {
     }
   }, [roundId]);
 
+  const loadCandidates = useCallback(async () => {
+    if (!roundId) return;
+    const { data, error } = await supabase.from("candidates").select("id,name,surname,location,group_name,age,description,image_url,order_index,is_eliminated,is_selected,asamblea_movimiento_es,asamblea_responsabilidad").eq("round_id", roundId).order("order_index", { ascending: true });
+    if (!error) setCandidates((data || []) as Candidate[]);
+  }, [roundId]);
+
   const loadCurrentRoundVotes = useCallback(async (roundNumber: number) => {
     if (!roundId || !roundNumber) return;
     const { data: liveVoteRows } = await supabase.from("votes").select("vote_hash, seat_id, device_hash").eq("round_id", roundId).eq("round_number", roundNumber);
@@ -248,16 +254,16 @@ export function AdminVotingDetail() {
     const channel = supabase
       .channel(`admin-voting-detail-${roundId}-${channelUid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "rounds", filter: `id=eq.${roundId}` }, () => loadRound())
-      .on("postgres_changes", { event: "*", schema: "public", table: "candidates", filter: `round_id=eq.${roundId}` }, () => loadRound())
+      .on("postgres_changes", { event: "*", schema: "public", table: "candidates", filter: `round_id=eq.${roundId}` }, () => loadCandidates())
       .on("postgres_changes", { event: "*", schema: "public", table: "seats", filter: `round_id=eq.${roundId}` }, () => loadSeatsAndStatus())
       .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `round_id=eq.${roundId}` }, () => loadCurrentRoundVotes(currentRoundNumberRef.current))
       .subscribe();
     const metricsInterval = window.setInterval(() => {
       loadSeatsAndStatus();
       loadCurrentRoundVotes(currentRoundNumberRef.current);
-    }, 30000);
+    }, 300_000);
     return () => { window.clearInterval(metricsInterval); supabase.removeChannel(channel); };
-  }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes]);
+  }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes, loadCandidates]);
 
   /* ── Derived state ── */
 

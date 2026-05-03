@@ -291,23 +291,14 @@ export function useProjectionData(): ProjectionData {
       .subscribe();
 
     let voteDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-    let pendingVoteIncrement = false;
     const votesChannel = supabase
       .channel(`projection-votes-${uid}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "votes" },
         () => {
-          // Optimistic +1 on first INSERT per batch; debounced reload reconciles
-          if (!pendingVoteIncrement) {
-            setVoteCount(prev => prev + 1);
-            pendingVoteIncrement = true;
-          }
           if (voteDebounceTimer) clearTimeout(voteDebounceTimer);
-          voteDebounceTimer = setTimeout(() => {
-            pendingVoteIncrement = false;
-            loadActiveRound();
-          }, 1000);
+          voteDebounceTimer = setTimeout(() => loadActiveRound(), 1000);
         }
       )
       .subscribe();
