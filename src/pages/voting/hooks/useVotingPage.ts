@@ -182,7 +182,6 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
       }
       if (!rounds || rounds.length === 0) {
         setActiveRound(null); setCandidates([]); setSeatId(null); setSeatError(''); setAccessCodeVerified(false);
-        toastRef.current({ title: 'Sin votaciones activas', description: 'No hay votaciones disponibles en este momento' });
         return;
       }
 
