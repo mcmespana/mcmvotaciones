@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "next-themes";
@@ -8,9 +8,9 @@ import { testDatasets } from "@/lib/testDatasets";
 import { useRoundDetail } from "./voting-detail/hooks/useRoundDetail";
 import {
   AlertTriangle, ArrowLeft, ArrowUpRight, BarChart2, Check, CheckCircle, Copy, Download,
-  Eye, Globe, Grid, List, Moon, Pause, Pencil,
+  Globe, Grid, List, Moon, Pause, Pencil,
   Play, RefreshCw, Search, Settings2, Sparkles, StepForward,
-  Sun, Trash2, Undo2, Upload, UserPlus, Users, XCircle,
+  Sun, Trash2, Undo2, Upload, UserPlus, XCircle,
 } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { ResultsAnalytics } from "@/components/admin/ResultsAnalytics";
@@ -18,9 +18,10 @@ import { BallotReview } from "@/components/voting/BallotReview";
 import { useRoundWorkflow, WORKFLOW_STEPS } from "@/hooks/useRoundWorkflow";
 import { TeamChip } from "@/components/admin/TeamChip";
 
-import type { RoundDetail, Candidate, SeatRow, SeatStatus, InlineResult } from "./voting-detail/hooks/useRoundDetail";
+import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
+import { errorLog } from "@/lib/logger";
+import type { Candidate } from "./voting-detail/hooks/useRoundDetail";
 import { useCandidateActions } from "./voting-detail/hooks/useCandidateActions";
-import type { CandidateFormState, ImportCandidate } from "./voting-detail/hooks/useCandidateActions";
 
 interface VoteExportRow {
   round_number: number;
@@ -30,18 +31,6 @@ interface VoteExportRow {
   invalidation_reason: string | null;
   candidate: { name: string; surname: string } | Array<{ name: string; surname: string }> | null;
 }
-
-interface CandidateFormState {
-  name: string;
-  surname: string;
-  location: string;
-  group_name: string;
-  age: number | "";
-  description: string;
-  image_url: string;
-}
-
-type ImportCandidate = Omit<CandidateFormState, "age"> & { age: number | null };
 
 /* ── Helpers ── */
 
@@ -68,8 +57,7 @@ export function AdminVotingDetail() {
   /* Data (loading, realtime channel, config sync) */
   const {
     round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,
-    currentRoundNumberRef,
-    loadRound, loadCandidates, loadSeatsAndStatus, loadCurrentRoundVotes,
+    loadRound, loadCandidates, loadInlineResults,
     configAccessCode, setConfigAccessCode,
     configCensusMode, setConfigCensusMode,
     configMaxVotantes, setConfigMaxVotantes,
@@ -79,7 +67,6 @@ export function AdminVotingDetail() {
 
   /* Candidate CRUD state + actions */
   const {
-    editingCandidate, setEditingCandidate,
     candidateForm, setCandidateForm,
     isAddCandidateOpen, setIsAddCandidateOpen,
     isEditCandidateOpen, setIsEditCandidateOpen,
@@ -89,7 +76,6 @@ export function AdminVotingDetail() {
     candidateToDelete, setCandidateToDelete,
     importingFile,
     forceSelectingId, setForceSelectingId,
-    resetCandidateForm,
     openAddCandidateDialog,
     openEditCandidateDialog,
     addCandidate,
@@ -502,7 +488,7 @@ export function AdminVotingDetail() {
       await loadCandidates();
       toast({ title: 'Candidatos eliminados', description: 'Se han eliminado todos los candidatos y sus fotografías.' });
     } catch (error) {
-      console.error("Error eliminando candidatos:", error);
+      errorLog("Error eliminando candidatos:", error);
       toast({ title: 'Error', description: 'No se pudieron eliminar los candidatos completamente.', variant: 'destructive' });
     } finally {
       setDeletingAllCandidates(false);

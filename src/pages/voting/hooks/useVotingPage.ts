@@ -61,7 +61,7 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
 
   const activeRoundRef = useRef<Round | null>(null);
   const submitAnimationRoundRef = useRef<{ roundId: string; roundNumber: number } | null>(null);
-  const submitTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const submitTransitionTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const toastRef = useRef(toast);
   toastRef.current = toast;
 

@@ -36,7 +36,9 @@
       "mcp__claude_ai_Supabase__deploy_edge_function",
       "Bash(Get-ChildItem \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\docs\\\\crm\" -Recurse)",
       "Bash(Select-Object FullName, Length)",
-      "PowerShell(supabase *)"
+      "PowerShell(supabase *)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\supabase\\\\functions\\\\crm-proxy\\\\index copy.ts\" -ErrorAction SilentlyContinue)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

@@ -1,5 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Users, Image } from "lucide-react";
+import { errorLog } from "@/lib/logger";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { generateAccessCode } from "@/lib/accessCode";
@@ -249,7 +250,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
       setRounds(rs => rs.filter(r => r.id !== id));
       toast({ title: "Votación eliminada", description: `"${title}" y sus recursos fueron eliminados.` });
     } catch (err) {
-      console.error("Error eliminando voting round:", err);
+      errorLog("Error eliminando voting round:", err);
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : "No se pudo eliminar.", variant: "destructive" });
     }
   };

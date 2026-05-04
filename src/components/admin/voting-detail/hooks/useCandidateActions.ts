@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { errorLog } from "@/lib/logger";
 import type { useToast } from "@/hooks/use-toast";
 import type { RoundDetail, Candidate } from "./useRoundDetail";
 
@@ -138,7 +139,7 @@ export function useCandidateActions({ roundId, round, candidates, loadRound, toa
       toast({ title: "Candidato eliminado" });
       await loadRound();
     } catch (e) {
-      console.error(e);
+      errorLog(e);
       toast({ title: "Atención", description: "Se eliminó de BD pero hubo un problema soltando la foto.", variant: "destructive" });
       await loadRound();
     }

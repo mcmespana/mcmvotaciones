@@ -18,15 +18,16 @@ interface Props {
   onTypesChanged?: () => void;
 }
 
-const EMPTY_FORM = { name: "", max_selected_candidates: 1, max_votes_per_round: 0, census_mode: "maximum" as const };
+type VotingTypeForm = Omit<VotingType, "id" | "is_system">;
+const EMPTY_FORM: VotingTypeForm = { name: "", max_selected_candidates: 1, max_votes_per_round: 0, census_mode: "maximum" };
 
 export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged }: Props) {
   const { toast } = useToast();
   const [types, setTypes] = useState<VotingType[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Omit<VotingType, "id" | "is_system">>(EMPTY_FORM);
-  const [newForm, setNewForm] = useState(EMPTY_FORM);
+  const [editForm, setEditForm] = useState<VotingTypeForm>(EMPTY_FORM);
+  const [newForm, setNewForm] = useState<VotingTypeForm>(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VotingType | null>(null);
