@@ -189,10 +189,27 @@ export function PublicCandidates() {
 
   const isDark = theme === "dark";
 
+  const currentDetailIndex = detailCandidate ? filtered.findIndex((c) => c.id === detailCandidate.id) : -1;
+  const handleNextCandidate = () => {
+    if (currentDetailIndex === -1 || filtered.length <= 1) return;
+    const nextIdx = (currentDetailIndex + 1) % filtered.length;
+    setDetailCandidate(filtered[nextIdx]);
+  };
+  const handlePrevCandidate = () => {
+    if (currentDetailIndex === -1 || filtered.length <= 1) return;
+    const prevIdx = (currentDetailIndex - 1 + filtered.length) % filtered.length;
+    setDetailCandidate(filtered[prevIdx]);
+  };
+
   /* ── Render ── */
   return (
     <div className="pub-page">
-      <CandidateDetailModal candidate={detailCandidate} onClose={() => setDetailCandidate(null)} />
+      <CandidateDetailModal 
+        candidate={detailCandidate} 
+        onClose={() => setDetailCandidate(null)}
+        onNext={handleNextCandidate}
+        onPrev={handlePrevCandidate}
+      />
 
       {/* Title block (above sticky — not sticky itself) */}
       <div style={{ maxWidth: 780, margin: "0 auto", padding: "20px 16px 6px", textAlign: "center" }}>
@@ -314,6 +331,7 @@ export function PublicCandidates() {
                         candidate={c}
                         onClick={() => setDetailCandidate(c)}
                         onDetailView={setDetailCandidate}
+                        hideCheckbox={true}
                       />
                     ))}
                   </div>

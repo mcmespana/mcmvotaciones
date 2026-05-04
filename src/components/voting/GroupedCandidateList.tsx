@@ -160,28 +160,51 @@ export function GroupedCandidateList({
     );
   };
 
+  const currentDetailIndex = detailCandidate ? filteredCandidates.findIndex((c) => c.id === detailCandidate.id) : -1;
+  const handleNextCandidate = () => {
+    if (currentDetailIndex === -1 || filteredCandidates.length <= 1) return;
+    const nextIdx = (currentDetailIndex + 1) % filteredCandidates.length;
+    setDetailCandidate(filteredCandidates[nextIdx]);
+  };
+  const handlePrevCandidate = () => {
+    if (currentDetailIndex === -1 || filteredCandidates.length <= 1) return;
+    const prevIdx = (currentDetailIndex - 1 + filteredCandidates.length) % filteredCandidates.length;
+    setDetailCandidate(filteredCandidates[prevIdx]);
+  };
+
   const isFlatLayout =
     locationGroups.length === 1 && locationGroups[0].groups.length === 1;
 
   return (
     <div>
-      <CandidateDetailModal candidate={detailCandidate} onClose={() => { setDetailCandidate(null); setDetailZoomed(false); }} initialZoom={detailZoomed} />
+      <CandidateDetailModal 
+        candidate={detailCandidate} 
+        onClose={() => { setDetailCandidate(null); setDetailZoomed(false); }} 
+        initialZoom={detailZoomed} 
+        onNext={handleNextCandidate}
+        onPrev={handlePrevCandidate}
+      />
       {/* Sticky header */}
       <div className="pub-sticky" ref={mobileIndexRef}>
         <div className="pub-sticky-card" style={{ maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             {/* Search */}
-            <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ flex: "1 1 auto", maxWidth: "260px", position: "relative" }}>
               <Search
                 style={{
-                  position: "absolute", left: 10, top: "50%",
-                  transform: "translateY(-50%)", width: 14, height: 14,
+                  position: "absolute", left: 12, top: "50%",
+                  transform: "translateY(-50%)", width: 16, height: 16,
                   color: "var(--avd-fg-faint)", pointerEvents: "none",
                 }}
               />
               <input
                 className="avd-input"
-                style={{ paddingLeft: 32, paddingRight: searchQuery ? 32 : 10 }}
+                style={{ 
+                  height: 42, 
+                  paddingLeft: 38, 
+                  paddingRight: searchQuery ? 38 : 12,
+                  fontSize: 15
+                }}
                 placeholder="Buscar candidato..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -191,13 +214,13 @@ export function GroupedCandidateList({
                   type="button"
                   onClick={() => setSearchQuery("")}
                   style={{
-                    position: "absolute", right: 10, top: "50%",
+                    position: "absolute", right: 12, top: "50%",
                     transform: "translateY(-50%)", background: "none",
                     border: "none", cursor: "pointer", padding: 0,
                     color: "var(--avd-fg-faint)", display: "flex",
                   }}
                 >
-                  <X style={{ width: 13, height: 13 }} />
+                  <X style={{ width: 14, height: 14 }} />
                 </button>
               )}
             </div>
@@ -206,11 +229,13 @@ export function GroupedCandidateList({
             <button
               type="button"
               className="avd-btn avd-btn-icon"
+              style={{ width: 42, height: 42 }}
               onClick={() => setIsMobileIndexOpen((p) => !p)}
               title={isMobileIndexOpen ? "Ocultar índice" : "Mostrar índice de lugares"}
             >
               <ChevronDown
                 style={{
+                  width: 20, height: 20,
                   transition: "transform 0.2s",
                   transform: isMobileIndexOpen ? "rotate(180deg)" : "none",
                 }}
@@ -220,7 +245,6 @@ export function GroupedCandidateList({
             <VotingTutorial compactTrigger roundId={tutorialRoundId} />
             <ThemeToggle
               mode="inline"
-              buttonClassName="h-8 w-8 rounded-md shadow-none"
             />
           </div>
 

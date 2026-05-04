@@ -109,9 +109,9 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         aria-label="Abrir guía de votación"
         className="avd-btn avd-btn-icon"
         title="¿Cómo votar?"
-        style={compactTrigger ? {} : { width: "auto", padding: "0 10px", gap: 6 }}
+        style={compactTrigger ? { width: 42, height: 42 } : { width: "auto", padding: "0 10px", gap: 6 }}
       >
-        <HelpCircle style={{ width: 14, height: 14 }} />
+        <HelpCircle style={{ width: 18, height: 18 }} />
         {!compactTrigger && <span>¿Cómo votar?</span>}
       </button>
 

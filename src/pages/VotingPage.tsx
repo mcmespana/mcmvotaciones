@@ -45,11 +45,32 @@ export function VotingPage() {
 
   // Preview mode injects a fake round for ticket preview
   const [previewRound] = useState<Round | null>(() => previewMode === 'ticket' ? {
-    id: 'preview-round', title: 'Preview Votacion', description: 'Vista local del ticket de voto',
-    team: 'ECE', current_round_number: 2, max_votes_per_round: 3, max_selected_candidates: 6,
-    selected_candidates_count: 3, is_active: true, is_closed: false, round_finalized: false,
-    show_results_to_voters: false, show_ballot_summary_projection: false,
-    access_code: null, is_voting_open: true, join_locked: false, votes_current_round: 0,
+    id: 'preview-round',
+    slug: 'preview-round',
+    title: 'Preview Votacion',
+    description: 'Vista local del ticket de voto',
+    year: new Date().getFullYear(),
+    team: 'ECE',
+    max_votantes: 100,
+    max_votes_per_round: 3,
+    max_selected_candidates: 6,
+    selected_candidates_count: 3,
+    access_code: null,
+    census_mode: 'maximum',
+    is_active: true,
+    is_closed: false,
+    is_voting_open: true,
+    join_locked: false,
+    round_finalized: false,
+    show_results_to_voters: false,
+    show_ballot_summary_projection: false,
+    show_final_gallery_projection: false,
+    public_candidates_enabled: true,
+    current_round_number: 2,
+    votes_current_round: 0,
+    voting_type_name: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   } : null);
 
   const activeRound = previewMode === 'ticket' ? previewRound : activeRoundFromHook;
@@ -443,14 +464,14 @@ export function VotingPage() {
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground">Ronda {activeRound.current_round_number} - Máx. {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}</p>
               <div className="flex-1" />
-              <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger" style={{ width: 36, height: 36, padding: 0 }}>
-                <Trash2 style={{ width: 15, height: 15 }} />
+              <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger" style={{ width: 42, height: 42, padding: 0 }}>
+                <Trash2 style={{ width: 18, height: 18 }} />
               </button>
-              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting} className="avd-btn" style={{ height: 36, background: 'var(--avd-ok)', color: 'white', borderColor: 'var(--avd-ok)', fontWeight: 700, padding: '0 14px', flexShrink: 0 }}>
+              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting} className="avd-btn" style={{ height: 42, background: 'var(--avd-ok)', color: 'white', borderColor: 'var(--avd-ok)', fontWeight: 700, padding: '0 18px', flexShrink: 0 }}>
                 {voting ? (
-                  <><div style={{ width: 14, height: 14, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite', marginRight: 6 }} />Votando...</>
+                  <><div style={{ width: 16, height: 16, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite', marginRight: 8 }} />Votando...</>
                 ) : (
-                  <><Vote style={{ width: 14, height: 14, marginRight: 6 }} />Votar ({selectedCandidates.length})</>
+                  <><Vote style={{ width: 18, height: 18, marginRight: 8 }} />Votar ({selectedCandidates.length})</>
                 )}
               </button>
             </div>

@@ -34,12 +34,12 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
       className={cn(
         "group avd-btn p-0",
         mode === "inline"
-          ? "avd-btn-icon h-8 w-8 rounded-md shadow-none"
+          ? "avd-btn-icon h-[42px] w-[42px] rounded-md shadow-none"
           : "h-11 w-11 rounded-xl shadow-[var(--avd-shadow-md)]",
         buttonClassName,
       )}
     >
-      {isDark ? <Sun className="h-4 w-4 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-6" />}
+      {isDark ? <Sun className="h-5 w-5 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-5 w-5 transition-transform duration-200 group-hover:-rotate-6" />}
     </button>
   );
 

@@ -3,24 +3,15 @@ import { useRef } from "react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
-
-interface CandidateBase {
-  id: string;
-  name: string;
-  surname: string;
-  location: string | null;
-  group_name: string | null;
-  age: number | null;
-  description: string | null;
-  image_url: string | null;
-}
+import { CandidateRow } from "@/types/db";
 
 interface CandidateListCardProps {
-  candidate: CandidateBase;
+  candidate: CandidateRow;
   selected?: boolean;
   onClick?: () => void;
-  onDetailView?: (candidate: CandidateBase) => void;
-  onImageLongPress?: (candidate: CandidateBase) => void;
+  onDetailView?: (candidate: CandidateRow) => void;
+  onImageLongPress?: (candidate: CandidateRow) => void;
+  hideCheckbox?: boolean;
 }
 
 const LONG_PRESS_MS = 500;
@@ -31,6 +22,7 @@ export function CandidateListCard({
   onClick,
   onDetailView,
   onImageLongPress,
+  hideCheckbox = false,
 }: CandidateListCardProps) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imgPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -102,7 +94,7 @@ export function CandidateListCard({
         }
       }}
     >
-      {onClick && (
+      {!hideCheckbox && onClick && (
         <span
           className={cn(
             "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all",
@@ -140,16 +132,20 @@ export function CandidateListCard({
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 }}>
           {candidate.location && (
-            <span className="avd-chip" style={{ fontSize: 11, gap: 3 }}>
-              <MapPin style={{ width: 10, height: 10 }} />
-              {candidate.location}
+            <span className="avd-chip" style={{ fontSize: 11, gap: 3, maxWidth: "100%" }}>
+              <MapPin style={{ width: 10, height: 10, flexShrink: 0 }} />
+              <span className="truncate">{candidate.location}</span>
             </span>
           )}
           {candidate.group_name && (
-            <span className="avd-chip" style={{ fontSize: 11 }}>{candidate.group_name}</span>
+            <span className="avd-chip" style={{ fontSize: 11, maxWidth: "100%" }}>
+              <span className="truncate">{candidate.group_name}</span>
+            </span>
           )}
           {candidate.age != null && (
-            <span className="avd-chip" style={{ fontSize: 11 }}>{candidate.age} a</span>
+            <span className="avd-chip" style={{ fontSize: 11, flexShrink: 0 }}>
+              {candidate.age} a
+            </span>
           )}
         </div>
         {candidate.description && (
