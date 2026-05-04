@@ -31,7 +31,12 @@
       "Bash(python *)",
       "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\src\\\\pages\\\\voting\\\\hooks\")",
       "Bash(Out-Null)",
-      "Bash(Write-Host \"dir created\")"
+      "Bash(Write-Host \"dir created\")",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__deploy_edge_function",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\docs\\\\crm\" -Recurse)",
+      "Bash(Select-Object FullName, Length)",
+      "PowerShell(supabase *)"
     ]
   }
 }

@@ -82,7 +82,12 @@ export function CandidateListCard({
       onClick={handleClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
-      style={{ WebkitTapHighlightColor: "transparent" }}
+      style={{ 
+        WebkitTapHighlightColor: "transparent",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none"
+      }}
       onTouchStart={startPress}
       onTouchEnd={cancelPress}
       onTouchMove={cancelPress}

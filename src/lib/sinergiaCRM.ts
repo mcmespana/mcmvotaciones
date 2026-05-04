@@ -126,6 +126,47 @@ export interface CRMContactGroup {
   contacts: CRMContact[];
 }
 
+export interface FetchPhotosResult {
+  uploaded: number;
+  failed: number;
+  results: Record<string, string | null>;
+}
+
+export async function fetchCRMPhotos(
+  candidates: Array<{ crm_id: string; candidate_id: string }>,
+  roundId: string,
+  credentials?: CRMCredentials,
+): Promise<FetchPhotosResult> {
+  const batchSize = 15;
+  let uploaded = 0;
+  let failed = 0;
+  const results: Record<string, string | null> = {};
+
+  for (let i = 0; i < candidates.length; i += batchSize) {
+    const batch = candidates.slice(i, i + batchSize);
+    const body: Record<string, unknown> = {
+      action: 'fetch-photos',
+      crm_ids: batch.map(c => c.crm_id),
+      candidate_ids: batch.map(c => c.candidate_id),
+      round_id: roundId,
+    };
+    if (credentials?.user) body.user = credentials.user;
+    if (credentials?.pass) body.pass = credentials.pass;
+
+    const { data, error } = await supabase.functions.invoke('crm-proxy', { body });
+    if (error) throw new Error(`Error al obtener fotos: ${error.message}`);
+
+    const result = data as { ok: boolean; uploaded?: number; failed?: number; results?: Record<string, string | null>; error?: string };
+    if (!result?.ok) throw new Error(result?.error ?? 'Error desconocido al obtener fotos');
+
+    uploaded += result.uploaded ?? 0;
+    failed += result.failed ?? 0;
+    Object.assign(results, result.results ?? {});
+  }
+
+  return { uploaded, failed, results };
+}
+
 export function groupByLocation(contacts: CRMContact[]): CRMContactGroup[] {
   const map = new Map<string, CRMContact[]>();
 

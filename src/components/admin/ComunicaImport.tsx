@@ -2,7 +2,7 @@ import { errorLog } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { fetchAllCRMContacts, groupByLocation, CRMContact, CRMContactGroup } from '@/lib/sinergiaCRM';
+import { fetchAllCRMContacts, fetchCRMPhotos, groupByLocation, CRMContact, CRMContactGroup } from '@/lib/sinergiaCRM';
 
 interface Round {
   id: string;
@@ -12,7 +12,7 @@ interface Round {
   candidate_count: number;
 }
 
-type WizardStep = 'select-round' | 'confirm-fetch' | 'review' | 'importing' | 'done';
+type WizardStep = 'select-round' | 'confirm-fetch' | 'review' | 'importing' | 'photos' | 'done';
 
 const SESSIONKEY_USER = 'crm_user';
 const SESSIONKEY_PASS = 'crm_pass';
@@ -49,6 +49,8 @@ export function ComunicaImport() {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [importResult, setImportResult] = useState<{ inserted: number; skipped: number } | null>(null);
+  const [photoResult, setPhotoResult] = useState<{ uploaded: number; failed: number } | null>(null);
+  const [importedCandidates, setImportedCandidates] = useState<Array<{ crm_id: string; candidate_id: string }>>([]);
 
   useEffect(() => {
     async function loadRounds() {
@@ -168,13 +170,35 @@ export function ComunicaImport() {
     const skipped = rows.length - newRows.length;
     const BATCH = 100;
     let inserted = 0;
+    const insertedRows: Array<{ id: string; crm_id: string }> = [];
     for (let i = 0; i < newRows.length; i += BATCH) {
       const batch = newRows.slice(i, i + BATCH);
-      const { data, error } = await supabase.from('candidates').insert(batch).select('id');
+      const { data, error } = await supabase.from('candidates').insert(batch).select('id, crm_id');
       if (error) { setStep('review'); return; }
       inserted += (data ?? []).length;
+      insertedRows.push(...(data ?? []) as Array<{ id: string; crm_id: string }>);
     }
     setImportResult({ inserted, skipped });
+
+    // Arrancar fotos automáticamente si hay candidatos con crm_id
+    const withCrmId = insertedRows.filter(r => r.crm_id);
+    if (withCrmId.length > 0) {
+      setImportedCandidates(withCrmId.map(r => ({ crm_id: r.crm_id, candidate_id: r.id })));
+      setStep('photos');
+      try {
+        const credentials = crmUser && crmPass ? { user: crmUser, pass: crmPass } : undefined;
+        const result = await fetchCRMPhotos(
+          withCrmId.map(r => ({ crm_id: r.crm_id, candidate_id: r.id })),
+          selectedRoundId,
+          credentials,
+        );
+        setPhotoResult(result);
+      } catch (err) {
+        errorLog('fetchCRMPhotos error:', err);
+        setPhotoResult({ uploaded: 0, failed: withCrmId.length });
+      }
+    }
+
     setStep('done');
   }
 
@@ -186,6 +210,8 @@ export function ComunicaImport() {
     setSelected(new Set());
     setSearch('');
     setImportResult(null);
+    setPhotoResult(null);
+    setImportedCandidates([]);
     setExistingCrmIds(new Set());
     setRoundsLoading(true);
     supabase.from('rounds').select('id, title, year, team').order('created_at', { ascending: false }).then(({ data }) => {
@@ -579,6 +605,19 @@ export function ComunicaImport() {
             </div>
           )}
 
+          {/* ── PASO 4b: Importando fotos ── */}
+          {step === 'photos' && (
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '48px 24px', textAlign: 'center' }}>
+                <div style={{ width: 40, height: 40, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--avd-fg)' }}>Importando fotos desde CRM…</div>
+                <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)' }}>
+                  Descargando {importedCandidates.length} fotos. Puede tardar unos segundos.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── PASO 5: Hecho ── */}
           {step === 'done' && importResult && (
             <div style={cardStyle}>
@@ -604,6 +643,16 @@ export function ComunicaImport() {
                     </div>
                   )}
                 </div>
+
+                {photoResult !== null && (
+                  <div style={{ background: 'var(--avd-bg-sunken)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>📷</span>
+                    <div style={{ fontSize: 13, color: 'var(--avd-fg)' }}>
+                      <strong>{photoResult.uploaded}</strong> foto{photoResult.uploaded !== 1 ? 's' : ''} importada{photoResult.uploaded !== 1 ? 's' : ''}
+                      {photoResult.failed > 0 && <span style={{ color: 'var(--avd-fg-muted)' }}> · {photoResult.failed} sin foto en CRM</span>}
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="avd-btn" style={{ flex: 1, justifyContent: 'center' }} onClick={resetWizard}>
                     Importar a otra votación

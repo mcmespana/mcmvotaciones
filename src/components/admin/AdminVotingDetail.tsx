@@ -113,6 +113,8 @@ export function AdminVotingDetail() {
   const [loadingDataset, setLoadingDataset] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(import.meta.env.DEV ? (testDatasets[0]?.id ?? "") : "");
   const [isCloseRoundConfirmOpen, setIsCloseRoundConfirmOpen] = useState(false);
+  const [isDeleteAllCandidatesOpen, setIsDeleteAllCandidatesOpen] = useState(false);
+  const [deletingAllCandidates, setDeletingAllCandidates] = useState(false);
   const [candidatesRef] = useAutoAnimate();
 
   /* ── Derived state ── */
@@ -480,6 +482,33 @@ export function AdminVotingDetail() {
   };
 
   const openComunicaImport = () => { if (round) navigate(`/comunica?round=${round.id}`); };
+
+  const handleDeleteAllCandidates = async () => {
+    if (!roundId) return;
+    setDeletingAllCandidates(true);
+
+    try {
+      // 1. Obtener lista de fotos de este round y borrarlas del Storage
+      const { data: files } = await supabase.storage.from('candidate-photos').list(roundId);
+      if (files && files.length > 0) {
+        const filePaths = files.map(file => `${roundId}/${file.name}`);
+        await supabase.storage.from('candidate-photos').remove(filePaths);
+      }
+
+      // 2. Borrar candidatos
+      const { error } = await supabase.from('candidates').delete().eq('round_id', roundId);
+      if (error) throw error;
+
+      await loadCandidates();
+      toast({ title: 'Candidatos eliminados', description: 'Se han eliminado todos los candidatos y sus fotografías.' });
+    } catch (error) {
+      console.error("Error eliminando candidatos:", error);
+      toast({ title: 'Error', description: 'No se pudieron eliminar los candidatos completamente.', variant: 'destructive' });
+    } finally {
+      setDeletingAllCandidates(false);
+      setIsDeleteAllCandidatesOpen(false);
+    }
+  };
 
   /* ── Loading / Not found ── */
 
@@ -880,6 +909,14 @@ export function AdminVotingDetail() {
                         <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
                           <ArrowUpRight size={14} /> Comunica
                         </button>
+                        {hasCandidates && (
+                          <button
+                            className="avd-btn avd-btn-sm avd-btn-danger"
+                            onClick={() => setIsDeleteAllCandidatesOpen(true)}
+                          >
+                            <Trash2 size={14} /> Eliminar todos
+                          </button>
+                        )}
                         {import.meta.env.DEV && (
                           <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
                             <Download size={14} /> Dataset
@@ -1511,6 +1548,24 @@ export function AdminVotingDetail() {
             <div className="avd-dialog-foot">
               <button className="avd-btn avd-btn-sm" onClick={() => setIsCloseRoundConfirmOpen(false)}>Cancelar</button>
               <button className="avd-btn avd-btn-sm avd-btn-danger" onClick={closeVoting}>Cerrar ronda</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Delete all candidates */}
+      {isDeleteAllCandidatesOpen && (
+        <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsDeleteAllCandidatesOpen(false); }}>
+          <div className="avd-dialog" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head">
+              <h2>¿Eliminar todos los candidatos?</h2>
+              <p>Se eliminarán los <strong>{candidates.length} candidatos</strong> de «{round?.title}». Esta acción no se puede deshacer.</p>
+            </div>
+            <div className="avd-dialog-foot">
+              <button className="avd-btn avd-btn-sm" onClick={() => setIsDeleteAllCandidatesOpen(false)} disabled={deletingAllCandidates}>Cancelar</button>
+              <button className="avd-btn avd-btn-sm avd-btn-danger" onClick={handleDeleteAllCandidates} disabled={deletingAllCandidates}>
+                <Trash2 size={13} /> {deletingAllCandidates ? 'Eliminando...' : 'Eliminar todos'}
+              </button>
             </div>
           </div>
         </div>

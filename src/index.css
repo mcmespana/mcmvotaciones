@@ -2,6 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 @layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   :root {
     /* Soft Oceanic Light Mode */
     --background: 210 33% 98%;

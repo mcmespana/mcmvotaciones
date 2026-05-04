@@ -110,11 +110,38 @@ export function useCandidateActions({ roundId, round, candidates, loadRound, toa
   };
 
   const deleteCandidate = async (candidateId: string) => {
+    const candidate = candidates.find(c => c.id === candidateId);
     setCandidateToDelete(null);
-    const { error } = await supabase.from("candidates").delete().eq("id", candidateId);
-    if (error) { toast({ title: "Error", description: "No se pudo eliminar el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato eliminado" });
-    await loadRound();
+
+    try {
+      // 1. Delete image from Storage if it exists
+      if (candidate?.crm_id) {
+        // Using common extensions; it's safest to try deleting all potentials or the specific one,
+        // but if we don't know the exact ext, we could list it.
+        // Assuming we'll list and delete the one matching crm_id
+        const { data: files } = await supabase.storage.from('candidate-photos').list(roundId, { search: candidate.crm_id });
+        if (files && files.length > 0) {
+          await supabase.storage.from('candidate-photos').remove(files.map(f => `${roundId}/${f.name}`));
+        }
+      } else if (candidate?.image_url && candidate.image_url.includes('candidate-photos')) {
+         // Attempt to parse out the file path from the image_url if not crm_id based
+         const urlParts = candidate.image_url.split('candidate-photos/');
+         if (urlParts.length > 1) {
+           await supabase.storage.from('candidate-photos').remove([urlParts[1]]);
+         }
+      }
+
+      // 2. Delete candidate
+      const { error } = await supabase.from("candidates").delete().eq("id", candidateId);
+      if (error) { toast({ title: "Error", description: "No se pudo eliminar el candidato", variant: "destructive" }); return; }
+      
+      toast({ title: "Candidato eliminado" });
+      await loadRound();
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Atención", description: "Se eliminó de BD pero hubo un problema soltando la foto.", variant: "destructive" });
+      await loadRound();
+    }
   };
 
   const parseCSV = (text: string): ImportCandidate[] => {

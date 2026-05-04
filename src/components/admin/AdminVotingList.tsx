@@ -236,11 +236,20 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
 
   const handleDeleteRound = async (id: string, title: string) => {
     try {
+      // 1. Delete associated photos in Storage (candidate-photos/roundId folder)
+      const { data: files } = await supabase.storage.from('candidate-photos').list(id);
+      if (files && files.length > 0) {
+        const filePaths = files.map(file => `${id}/${file.name}`);
+        await supabase.storage.from('candidate-photos').remove(filePaths);
+      }
+
+      // 2. Delete round
       const { error } = await supabase.from('rounds').delete().eq('id', id);
       if (error) throw error;
       setRounds(rs => rs.filter(r => r.id !== id));
-      toast({ title: "Votación eliminada", description: `"${title}" eliminada.` });
+      toast({ title: "Votación eliminada", description: `"${title}" y sus recursos fueron eliminados.` });
     } catch (err) {
+      console.error("Error eliminando voting round:", err);
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : "No se pudo eliminar.", variant: "destructive" });
     }
   };

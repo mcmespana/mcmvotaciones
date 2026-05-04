@@ -90,7 +90,8 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false }
               alt={formatCandidateName(candidate)}
               onError={() => setImgFailed(true)}
               style={{
-                width: "100%", height: "100%", objectFit: "cover",
+                width: "100%", height: "100%", objectFit: "contain",
+                backgroundColor: "#f8f9fa",
                 transform: `scale(${zoom})`,
                 transition: "transform 0.25s ease",
                 cursor: zoom > 1 ? "zoom-out" : "zoom-in",
