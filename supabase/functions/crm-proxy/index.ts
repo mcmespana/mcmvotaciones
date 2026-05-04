@@ -142,15 +142,16 @@ async function fetchPhotoBytes(crmId: string, session: string): Promise<PhotoFet
   }
 }
 
-async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array, contentType: string): Promise<string> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) throw new Error('Supabase no configurado');
+async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array, contentType: string, authHeader: string, apiKey: string): Promise<string> {
+  if (!SUPABASE_URL) throw new Error('Supabase no configurado');
   const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
   const path = `${roundId}/${crmId}.${ext}`;
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/candidate-photos/${path}`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Authorization': authHeader,
+      'apikey': apiKey,
       'Content-Type': contentType,
       'x-upsert': 'true',
     },
@@ -160,13 +161,13 @@ async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array
   return `${SUPABASE_URL}/storage/v1/object/public/candidate-photos/${path}`;
 }
 
-async function updateCandidateImageUrl(candidateId: string, imageUrl: string): Promise<void> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
+async function updateCandidateImageUrl(candidateId: string, imageUrl: string, authHeader: string, apiKey: string): Promise<void> {
+  if (!SUPABASE_URL) return;
   await fetch(`${SUPABASE_URL}/rest/v1/candidates?id=eq.${candidateId}`, {
     method: 'PATCH',
     headers: {
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'apikey': SUPABASE_SERVICE_KEY,
+      'Authorization': authHeader,
+      'apikey': apiKey,
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal',
     },
@@ -178,6 +179,8 @@ async function processPhotosInChunks(
   candidates: Array<{ id: string; crm_id: string }>,
   roundId: string,
   session: string,
+  authHeader: string,
+  apiKey: string,
   chunkSize = 5,
 ): Promise<{ uploaded: number; failed: number; skipped: number; details: Record<string, string> }> {
   let uploaded = 0, failed = 0, skipped = 0;
@@ -195,8 +198,8 @@ async function processPhotosInChunks(
       }
 
       try {
-        const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType);
-        await updateCandidateImageUrl(id, publicUrl);
+        const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType, authHeader, apiKey);
+        await updateCandidateImageUrl(id, publicUrl, authHeader, apiKey);
         details[crm_id] = 'OK';
         uploaded++;
       } catch (err) {
@@ -266,7 +269,11 @@ Deno.serve(async (req: Request) => {
 
       const session = await crmLogin(loginUser, loginPass);
       const candidates = crm_ids.map((crm_id, i) => ({ crm_id, id: candidate_ids[i] }));
-      const result = await processPhotosInChunks(candidates, round_id, session);
+      
+      const authHeader = req.headers.get('Authorization') || `Bearer ${SUPABASE_SERVICE_KEY}`;
+      const apiKey = req.headers.get('apikey') || Deno.env.get('SUPABASE_ANON_KEY') || SUPABASE_SERVICE_KEY;
+      
+      const result = await processPhotosInChunks(candidates, round_id, session, authHeader, apiKey);
       crmCall('logout', { session }).catch(() => {});
 
       return new Response(
