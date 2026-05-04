@@ -1553,7 +1553,7 @@
 /* ─── Public Candidates page ─────────────────────────────────────── */
 .pub-page { min-height: 100vh; background: var(--avd-bg); font-family: var(--avd-font-sans); padding-bottom: 64px; }
 
-.pub-sticky { position: sticky; top: 0; z-index: 30; padding: 8px 12px; }
+.pub-sticky { position: sticky; top: 0; z-index: 30; padding: 8px 0; }
 @media (min-width: 640px) { .pub-sticky { padding: 10px 20px; } }
 
 .pub-sticky-card {
@@ -1561,9 +1561,14 @@
   margin: 0 auto;
   background: var(--avd-surface);
   border: 1px solid var(--avd-border);
-  border-radius: 18px;
+  border-radius: 0;
   box-shadow: var(--avd-shadow-md);
-  padding: 12px 14px;
+  padding: 10px 12px;
+}
+@media (min-width: 640px) {
+  .pub-sticky-card {
+    border-radius: 18px;
+  }
 }
 
 .pub-index {

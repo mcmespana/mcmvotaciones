@@ -66,12 +66,12 @@ function PubAvatar({ name, surname, imageUrl }: { name: string; surname: string;
         src={imageUrl}
         alt={`${name} ${surname}`}
         onError={() => setFailed(true)}
-        style={{ width: 46, height: 46, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid var(--avd-border)" }}
+        className="w-[46px] h-[46px] rounded-full object-cover shrink-0 border border-avd-border"
       />
     );
   }
   return (
-    <div style={{ width: 46, height: 46, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: 800, fontSize: 15, color, userSelect: "none" }}>
+    <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 font-extrabold text-[15px] select-none" style={{ background: bg, color }}>
       {initials}
     </div>
   );
@@ -162,8 +162,8 @@ export function PublicCandidates() {
   /* ── Loading ── */
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--avd-bg)" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <div className="min-h-screen flex items-center justify-center bg-avd-bg">
+        <div className="flex flex-col items-center gap-3">
           <div style={{ width: 32, height: 32, border: "2.5px solid var(--avd-border)", borderTopColor: "var(--avd-brand)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
           <span style={{ fontSize: 13, color: "var(--avd-fg-muted)", fontFamily: "var(--avd-font-sans)" }}>Cargando...</span>
         </div>
@@ -175,7 +175,7 @@ export function PublicCandidates() {
   /* ── Not found ── */
   if (notFound || !round) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "var(--avd-bg)", fontFamily: "var(--avd-font-sans)" }}>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-avd-bg font-avd-sans">
         <div style={{ textAlign: "center", maxWidth: 360 }}>
           <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--avd-bg-elev)", border: "1px solid var(--avd-border)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--avd-fg-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -212,7 +212,7 @@ export function PublicCandidates() {
       />
 
       {/* Title block (above sticky — not sticky itself) */}
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "20px 16px 6px", textAlign: "center" }}>
+      <div className="max-w-[780px] mx-auto px-4 pt-5 pb-1.5 text-center">
         <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--avd-fg-muted)", marginBottom: 4 }}>{round.team}</div>
         <h1 style={{ fontSize: "clamp(20px, 5vw, 28px)", fontWeight: 900, letterSpacing: "-0.025em", color: "var(--avd-fg)", margin: 0 }}>{round.title}</h1>
         <div style={{ marginTop: 6, fontSize: 12.5, color: "var(--avd-fg-muted)" }}>{filtered.length} candidatos · {groups.length} lugares</div>
@@ -225,11 +225,11 @@ export function PublicCandidates() {
           {/* Search row */}
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             {/* Search */}
-            <div style={{ flex: 1, position: "relative" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--avd-fg-faint)", pointerEvents: "none" }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <div style={{ flex: "1 1 auto", maxWidth: 260, position: "relative" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--avd-fg-faint)", pointerEvents: "none" }}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
               <input
                 className="avd-input"
-                style={{ paddingLeft: 32, paddingRight: search ? 32 : 12 }}
+                style={{ height: 42, paddingLeft: 38, paddingRight: search ? 38 : 12, fontSize: 15 }}
                 placeholder="Buscar candidato..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -237,9 +237,9 @@ export function PublicCandidates() {
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--avd-fg-faint)", display: "flex" }}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--avd-fg-faint)", display: "flex" }}
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
                 </button>
               )}
             </div>
@@ -249,9 +249,9 @@ export function PublicCandidates() {
               className="avd-btn avd-btn-icon"
               onClick={() => setIndexOpen(p => !p)}
               title={indexOpen ? "Ocultar índice" : "Mostrar índice de lugares"}
-              style={{ flexShrink: 0 }}
+              style={{ width: 42, height: 42, flexShrink: 0 }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.2s", transform: indexOpen ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.2s", transform: indexOpen ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
             {/* Theme toggle */}
@@ -260,11 +260,11 @@ export function PublicCandidates() {
                 className="avd-btn avd-btn-icon"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
                 title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-                style={{ flexShrink: 0 }}
+                style={{ width: 42, height: 42, flexShrink: 0 }}
               >
                 {isDark
-                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 }
               </button>
             )}

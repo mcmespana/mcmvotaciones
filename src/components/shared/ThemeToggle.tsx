@@ -32,12 +32,13 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       className={cn(
-        "group avd-btn p-0",
+        "group avd-btn",
         mode === "inline"
-          ? "avd-btn-icon h-[42px] w-[42px] rounded-md shadow-none"
+          ? "avd-btn-icon"
           : "h-11 w-11 rounded-xl shadow-[var(--avd-shadow-md)]",
         buttonClassName,
       )}
+      style={mode === "inline" ? { width: 42, height: 42, flexShrink: 0 } : undefined}
     >
       {isDark ? <Sun className="h-5 w-5 transition-transform duration-200 group-hover:rotate-6" /> : <Moon className="h-5 w-5 transition-transform duration-200 group-hover:-rotate-6" />}
     </button>
