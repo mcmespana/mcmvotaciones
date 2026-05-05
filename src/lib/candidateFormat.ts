@@ -1,9 +1,9 @@
-/** Returns only the first surname word (e.g. "García López" → "García") */
+/** Returns the full surname as stored */
 export function formatSurname(surname: string): string {
-  return surname.trim().split(/\s+/)[0] ?? surname;
+  return surname.trim();
 }
 
-/** Returns "Name FirstSurname" for display in all views */
+/** Returns "Name Surname" for display in all views */
 export function formatCandidateName(candidate: { name: string; surname: string }): string {
   return `${candidate.name} ${formatSurname(candidate.surname)}`;
 }

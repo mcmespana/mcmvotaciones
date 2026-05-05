@@ -90,14 +90,20 @@ export function ComunicaImport() {
     try {
       const credentials = crmUser && crmPass ? { user: crmUser, pass: crmPass } : undefined;
       const data = await fetchAllCRMContacts(credentials);
-      const filtered = selectedRelTypes.length > 0
-        ? data.filter(c => c.relationship_types.some(rt => selectedRelTypes.includes(rt)))
+      // Matching the rel-type filter + those with NO rel type at all (shown unchecked)
+      const allToShow = selectedRelTypes.length > 0
+        ? data.filter(c => c.relationship_types.some(rt => selectedRelTypes.includes(rt)) || c.relationship_types.length === 0)
         : data;
-      setContacts(filtered);
-      const grouped = groupByLocation(filtered);
+      setContacts(allToShow);
+      const grouped = groupByLocation(allToShow);
       setGroups(grouped);
       setOpenGroups(new Set(grouped.map(g => g.location)));
-      setSelected(new Set(filtered.filter(c => c.etapa?.toLowerCase() !== 'asesora').map(c => c.crm_id)));
+      // Pre-select only those matching the filter (not Asesora, not no-rel-type)
+      const preSelected = allToShow.filter(c =>
+        c.etapa?.toLowerCase() !== 'asesora' &&
+        (selectedRelTypes.length === 0 || c.relationship_types.some(rt => selectedRelTypes.includes(rt))),
+      );
+      setSelected(new Set(preSelected.map(c => c.crm_id)));
       const { data: existing } = await supabase.from('candidates').select('crm_id').eq('round_id', selectedRoundId).not('crm_id', 'is', null);
       setExistingCrmIds(new Set((existing ?? []).map(e => e.crm_id as string)));
       setStep('review');
@@ -123,6 +129,10 @@ export function ComunicaImport() {
 
   const totalFiltered = useMemo(() => filteredGroups.reduce((acc, g) => acc + g.contacts.length, 0), [filteredGroups]);
   const selectedCount = useMemo(() => [...selected].filter(id => contacts.some(c => c.crm_id === id)).length, [selected, contacts]);
+  const noRelTypeCount = useMemo(
+    () => selectedRelTypes.length > 0 ? contacts.filter(c => c.relationship_types.length === 0).length : 0,
+    [contacts, selectedRelTypes],
+  );
 
   function toggleContact(crmId: string) {
     setSelected(prev => { const next = new Set(prev); if (next.has(crmId)) next.delete(crmId); else next.add(crmId); return next; });
@@ -454,6 +464,7 @@ export function ComunicaImport() {
                     <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Selecciona los candidatos a importar</div>
                     <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>
                       {contacts.length} personas · relación <strong>{selectedRelTypes.join(', ') || 'cualquiera'}</strong>
+                      {noRelTypeCount > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{noRelTypeCount} sin relación activa (sin marcar)</span></>}
                       {existingCrmIds.size > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{existingCrmIds.size} ya en esta votación</span></>}
                     </div>
                   </div>
@@ -523,6 +534,7 @@ export function ComunicaImport() {
                                     {group.contacts.map((c, idx) => {
                                       const alreadyIn = existingCrmIds.has(c.crm_id);
                                       const isSelected = selected.has(c.crm_id);
+                                      const isNoRelType = selectedRelTypes.length > 0 && c.relationship_types.length === 0;
                                       return (
                                         <tr
                                           key={c.crm_id}
@@ -530,7 +542,11 @@ export function ComunicaImport() {
                                           style={{
                                             cursor: 'pointer',
                                             opacity: alreadyIn ? 0.6 : 1,
-                                            background: isSelected ? 'color-mix(in oklch, var(--avd-brand) 6%, transparent)' : (idx % 2 === 0 ? 'transparent' : 'var(--avd-bg-sunken)'),
+                                            background: isSelected
+                                              ? 'color-mix(in oklch, var(--avd-brand) 6%, transparent)'
+                                              : isNoRelType
+                                              ? 'color-mix(in oklch, var(--avd-warn) 10%, transparent)'
+                                              : (idx % 2 === 0 ? 'transparent' : 'var(--avd-bg-sunken)'),
                                             borderBottom: '1px solid var(--avd-border-soft)',
                                           }}
                                         >
@@ -556,6 +572,8 @@ export function ComunicaImport() {
                                               ? c.relationship_types.map(rt => (
                                                 <span key={rt} className="avd-chip" style={{ marginRight: 3, fontSize: 10.5, textTransform: 'capitalize' }}>{rt}</span>
                                               ))
+                                              : isNoRelType
+                                              ? <span className="avd-chip avd-chip-warn" style={{ fontSize: 10.5 }}>sin relación</span>
                                               : <span style={{ color: 'var(--avd-fg-faint)' }}>—</span>
                                             }
                                           </td>
