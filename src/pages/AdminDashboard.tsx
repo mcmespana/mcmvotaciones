@@ -39,14 +39,13 @@ export function AdminDashboard({ section = 'votaciones' }: AdminDashboardProps) 
         </div>
         <div className="adm-topbar-spacer" />
         <button
-          className="avd-btn avd-btn-ghost avd-btn-icon"
+          className="avd-btn avd-btn-ghost avd-btn-icon w-8 h-8 p-0"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           title="Cambiar tema"
-          style={{ width: 32, height: 32, padding: 0 }}
         >
           {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
         </button>
-        <button className="avd-btn avd-btn-sm" onClick={handleSignOut} style={{gap:6}}>
+        <button className="avd-btn avd-btn-sm gap-1.5" onClick={handleSignOut}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Cerrar sesión
         </button>
@@ -56,37 +55,34 @@ export function AdminDashboard({ section = 'votaciones' }: AdminDashboardProps) 
       <div className="adm-page-header">
         {activeSection === 'usuarios' && (
           <button
-            className="avd-btn avd-btn-ghost avd-btn-sm"
+            className="avd-btn avd-btn-ghost avd-btn-sm mb-2.5 gap-1.5"
             onClick={() => navigate('/admin/votaciones')}
-            style={{marginBottom:10, gap:6}}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
             Volver a votaciones
           </button>
         )}
-        <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:16}}>
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <div style={{fontSize:20, fontWeight:800, letterSpacing:"-0.02em", color:"var(--avd-fg)", lineHeight:1.1}}>
+            <div className="text-[20px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] leading-[1.1]">
               {activeSection === 'votaciones' ? 'Votaciones' : 'Gestión de Usuarios'}
             </div>
-            <div style={{fontSize:13, color:"var(--avd-fg-muted)", marginTop:3}}>
-              Bienvenida, {adminUser?.name} · <span style={{fontWeight:600, color:"var(--avd-brand)"}}>{roleLabel}</span>
+            <div className="text-[13px] text-[var(--avd-fg-muted)] mt-0.5">
+              Bienvenida, {adminUser?.name} · <span className="font-semibold text-[var(--avd-brand)]">{roleLabel}</span>
             </div>
           </div>
           {activeSection === 'votaciones' && isSuperAdmin && (
-            <div style={{display:"flex", gap:6}}>
+            <div className="flex gap-1.5">
               <button
-                className="avd-btn avd-btn-sm"
+                className="avd-btn avd-btn-sm gap-1.5"
                 onClick={() => setTypesManagerOpen(true)}
-                style={{gap:6}}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
                 Tipos
               </button>
               <button
-                className="avd-btn avd-btn-sm"
+                className="avd-btn avd-btn-sm gap-1.5"
                 onClick={() => navigate('/admin/usuarios')}
-                style={{gap:6}}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 Usuarios
@@ -99,13 +95,13 @@ export function AdminDashboard({ section = 'votaciones' }: AdminDashboardProps) 
       {/* Tab content */}
       <div className="adm-body">
         {activeSection === 'votaciones' && (
-          <div className="adm-body" style={{overflow:"visible"}}>
+          <div className="adm-body overflow-visible">
             <AdminVotingList refreshTypesKey={typesRefreshKey} />
           </div>
         )}
 
         {activeSection === 'usuarios' && isSuperAdmin && (
-          <div className="adm-scroll" style={{padding:0}}>
+          <div className="adm-scroll !p-0">
             <UserManagement />
           </div>
         )}

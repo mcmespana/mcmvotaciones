@@ -70,9 +70,9 @@ export function ProjectionWaiting({
 
   return (
     <div className="proj-page">
-      {/* Ambient background orbs */}
-      <div className="proj-orb" style={{ width: 600, height: 600, background: "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(100px)", top: "-15%", left: "-10%", animation: "proj-orb-slow-a 25s ease-in-out infinite" }} />
-      <div className="proj-orb" style={{ width: 500, height: 500, background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(80px)", bottom: "-10%", right: "-5%", animation: "proj-orb-slow-b 30s ease-in-out infinite" }} />
+      {/* Ambient background orbs — static colors, keep in CSS class if possible but using inline for filter/animation shorthand */}
+      <div className="proj-orb w-[600px] h-[600px] bg-[color-mix(in_oklch,var(--avd-brand)_5%,transparent)] blur-[100px] -top-[15%] -left-[10%] [animation:proj-orb-slow-a_25s_ease-in-out_infinite]" />
+      <div className="proj-orb w-[500px] h-[500px] bg-[color-mix(in_oklch,var(--avd-brand)_4%,transparent)] blur-[80px] -bottom-[10%] -right-[5%] [animation:proj-orb-slow-b_30s_ease-in-out_infinite]" />
 
       {/* Topbar */}
       <div className="proj-topbar">

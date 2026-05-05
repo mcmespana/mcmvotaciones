@@ -500,23 +500,22 @@ export function AdminVotingDetail() {
 
   if (loading) {
     return (
-      <div className="avd-app" style={{ alignItems: "center", justifyContent: "center" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 32, height: 32, border: `2px solid var(--avd-border)`, borderTop: `2px solid var(--avd-brand)`, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-          <span style={{ fontSize: 13, color: "var(--avd-fg-muted)", fontFamily: "var(--avd-font-sans)" }}>Cargando votación...</span>
+      <div className="avd-app items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin" style={{animationDuration:"0.8s"}} />
+          <span className="text-[13px] text-[var(--avd-fg-muted)] font-[var(--avd-font-sans)]">Cargando votación...</span>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!round) {
     return (
-      <div className="avd-app" style={{ alignItems: "center", justifyContent: "center" }}>
-        <div className="avd-live-card" style={{ maxWidth: 400, textAlign: "center", gap: 8 }}>
-          <p style={{ color: "var(--avd-fg)", fontWeight: 600, margin: 0 }}>Votación no encontrada</p>
-          <p style={{ color: "var(--avd-fg-muted)", fontSize: 13, margin: 0 }}>No se encontró la votación solicitada.</p>
-          <button className="avd-btn avd-btn-sm" onClick={() => navigate("/admin/votaciones")} style={{ marginTop: 4 }}>
+      <div className="avd-app items-center justify-center">
+        <div className="avd-live-card max-w-[400px] text-center gap-2">
+          <p className="text-[var(--avd-fg)] font-semibold m-0">Votación no encontrada</p>
+          <p className="text-[var(--avd-fg-muted)] text-[13px] m-0">No se encontró la votación solicitada.</p>
+          <button className="avd-btn avd-btn-sm mt-1" onClick={() => navigate("/admin/votaciones")}>
             <ArrowLeft size={13} /> Volver
           </button>
         </div>
@@ -555,7 +554,7 @@ export function AdminVotingDetail() {
       <section className="avd-page-header">
 
         {/* Row 1: nav + actions */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+        <div className="flex items-center justify-between gap-3 mb-3">
           <button className="avd-btn avd-btn-sm avd-btn-ghost" onClick={() => navigate("/admin/votaciones")}>
             <ArrowLeft size={13} /> Volver a votaciones
           </button>
@@ -579,31 +578,31 @@ export function AdminVotingDetail() {
         </div>
 
         {/* Row 2: Title */}
-        <h1 style={{ fontFamily: "var(--avd-font-sans)", fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 10px", lineHeight: 1.1, color: "var(--avd-fg)" }}>
+        <h1 className="font-[var(--avd-font-sans)] text-[26px] font-extrabold tracking-[-0.02em] m-0 mb-[10px] leading-[1.1] text-[var(--avd-fg)]">
           {round.title}
         </h1>
 
         {/* Row 3: Meta chips */}
-        <div className="avd-page-meta" style={{ marginBottom: 14 }}>
-          <span className={`avd-chip ${statusChip.cls}`} style={{ height: 24, fontSize: 12 }}>
-            {round.is_voting_open && <span className="avd-pulse-dot" style={{ marginRight: 2 }} />}
+        <div className="avd-page-meta mb-[14px]">
+          <span className={`avd-chip ${statusChip.cls} h-6 text-[12px]`}>
+            {round.is_voting_open && <span className="avd-pulse-dot mr-0.5" />}
             {statusChip.txt}
           </span>
           <span className="avd-chip avd-chip-muted">Ronda {round.current_round_number}</span>
           <TeamChip label={round.voting_type_name || round.team} />
           {round.year && <span className="avd-chip avd-chip-muted">{round.year}</span>}
-          <span className="avd-chip avd-chip-mono" title="Código de acceso" style={{ gap: 4 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--avd-brand)", flexShrink: 0, display: "inline-block" }} />
+          <span className="avd-chip avd-chip-mono gap-1" title="Código de acceso">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--avd-brand)] shrink-0 inline-block" />
             {round.access_code || "––––"}
             <button
               onClick={() => copyText(round.access_code || "", "Código copiado")}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "var(--avd-fg-faint)" }}
+              className="bg-none border-none cursor-pointer p-0 flex items-center text-[var(--avd-fg-faint)]"
             >
               <Copy size={10} />
             </button>
           </span>
           {round.description && (
-            <span style={{ fontSize: 12, color: "var(--avd-fg-muted)", marginLeft: 2 }}>· {round.description}</span>
+            <span className="text-[12px] text-[var(--avd-fg-muted)] ml-0.5">· {round.description}</span>
           )}
         </div>
 
@@ -651,29 +650,24 @@ export function AdminVotingDetail() {
         const hasTie = tiedCandidates.length >= 2 && tiedCandidates[0]?.vote_count === tiedCandidates[1]?.vote_count;
         const nobodyHasMajority = inlineResults.every(r => !r.has_majority);
         return (
-          <section style={{ padding: "0 var(--avd-page-px, 24px)", marginBottom: 16 }}>
-            <div style={{
+          <section className="px-[var(--avd-page-px,24px)] mb-4">
+            {/* dynamic: border/bg depend on nobodyHasMajority */}
+            <div className="rounded-[var(--avd-radius-lg,14px)] overflow-hidden" style={{
               border: nobodyHasMajority ? "1px solid color-mix(in oklch, var(--avd-warn) 40%, transparent)" : "1px solid color-mix(in oklch, var(--avd-ok) 40%, transparent)",
               background: nobodyHasMajority ? "color-mix(in oklch, var(--avd-warn) 6%, var(--avd-bg))" : "color-mix(in oklch, var(--avd-ok) 6%, var(--avd-bg))",
-              borderRadius: "var(--avd-radius-lg, 14px)",
-              overflow: "hidden",
             }}>
               {/* Header */}
-              <div style={{
-                padding: "14px 18px",
-                borderBottom: "1px solid color-mix(in oklch, var(--avd-border) 50%, transparent)",
-                display: "flex", alignItems: "center", gap: 10,
-              }}>
-                {nobodyHasMajority ? <AlertTriangle size={18} style={{ color: "var(--avd-warn)", flexShrink: 0 }} /> : <CheckCircle size={18} style={{ color: "var(--avd-ok)", flexShrink: 0 }} />}
+              <div className="px-[18px] py-[14px] border-b border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)] flex items-center gap-[10px]">
+                {nobodyHasMajority ? <AlertTriangle size={18} className="text-[var(--avd-warn)] shrink-0" /> : <CheckCircle size={18} className="text-[var(--avd-ok)] shrink-0" />}
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "var(--avd-fg)" }}>
+                  <div className="font-bold text-[14px] text-[var(--avd-fg)]">
                     {hasTie
                       ? `${tiedCandidates.length} candidatas empatadas al ${tiedCandidates[0]?.percentage.toFixed(0)}% (Canon 119: hace falta mayoría estricta >50%)`
                       : nobodyHasMajority
                       ? "Ninguna candidata alcanzó la mayoría absoluta (>50%)"
                       : "Resultados de la ronda"}
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--avd-fg-muted)", marginTop: 2 }}>
+                  <div className="text-[12px] text-[var(--avd-fg-muted)] mt-0.5">
                     {nobodyHasMajority
                       ? "Puedes forzar su selección manualmente o pasar a la siguiente ronda."
                       : "Las candidatas con mayoría han sido seleccionadas automáticamente."}
@@ -682,28 +676,25 @@ export function AdminVotingDetail() {
               </div>
 
               {/* Candidate rows */}
-              <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+              <div className="px-[14px] py-[10px] flex flex-col gap-1.5">
                 {inlineResults.map((r) => (
-                  <div key={r.candidate_id} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-                    borderRadius: "var(--avd-radius-md, 10px)",
+                  <div key={r.candidate_id} className="flex items-center gap-3 px-[14px] py-[10px] rounded-[var(--avd-radius-md,10px)]" style={{ /* dynamic: bg/border depend on r.is_selected */
                     background: r.is_selected ? "color-mix(in oklch, var(--avd-ok) 10%, transparent)" : "color-mix(in oklch, var(--avd-bg) 80%, transparent)",
                     border: r.is_selected ? "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)" : "1px solid var(--avd-border-soft)",
                   }}>
-                    <div style={{ flexGrow: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "var(--avd-fg)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <div className="flex-grow">
+                      <div className="font-semibold text-[14px] text-[var(--avd-fg)] flex items-center gap-2">
                         {formatCandidateName({ name: r.candidate_name, surname: r.candidate_surname })}
-                        {r.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 18, fontSize: 10 }}>Seleccionada</span>}
+                        {r.is_selected && <span className="avd-chip avd-chip-ok h-[18px] text-[10px]">Seleccionada</span>}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--avd-fg-muted)", marginTop: 2 }}>
+                      <div className="text-[12px] text-[var(--avd-fg-muted)] mt-0.5">
                         {r.vote_count}/{currentRoundVotes || totalBallots} votos · {r.percentage.toFixed(2)}%
                       </div>
                     </div>
                     {!r.is_selected && !selectionQuotaReached && (
-                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <div className="flex gap-1.5 shrink-0">
                         <button
-                          className="avd-btn avd-btn-sm"
-                          style={{ background: "var(--avd-ok)", color: "white", borderColor: "var(--avd-ok)" }}
+                          className="avd-btn avd-btn-sm bg-[var(--avd-ok)] text-white border-[var(--avd-ok)]"
                           onClick={(e) => { e.stopPropagation(); forceSelectCandidate(r.candidate_id); }}
                           disabled={forceSelectingId === r.candidate_id}
                         >
@@ -726,12 +717,11 @@ export function AdminVotingDetail() {
 
               {/* Footer action */}
               {!selectionQuotaReached && canStartNextRound && (
-                <div style={{ padding: "10px 14px 14px", borderTop: "1px solid color-mix(in oklch, var(--avd-border) 50%, transparent)" }}>
+                <div className="px-[14px] pb-[14px] pt-[10px] border-t border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)]">
                   <button
-                    className="avd-btn avd-btn-block avd-btn-primary"
+                    className="avd-btn avd-btn-block avd-btn-primary font-semibold"
                     onClick={startNextRound}
                     disabled={isWorkflowRunning}
-                    style={{ fontWeight: 600 }}
                   >
                     <RefreshCw size={14} /> Siguiente ronda sin seleccionar a nadie
                   </button>
@@ -747,11 +737,11 @@ export function AdminVotingDetail() {
 
         {/* ── Left aside: Info + Conexiones ── */}
         <aside className="avd-col avd-col-left">
-          <div style={{ padding: "14px 16px 8px", borderBottom: "1px solid var(--avd-border-soft)" }}>
-            <h3 className="avd-section-title" style={{ margin: 0 }}>
+          <div className="px-4 pt-[14px] pb-2 border-b border-[var(--avd-border-soft)]">
+            <h3 className="avd-section-title m-0">
               Información
               <span className="avd-hint">
-                <span className="avd-pulse-dot" style={{ width: 6, height: 6 }} /> En vivo
+                <span className="avd-pulse-dot w-1.5 h-1.5" /> En vivo
               </span>
             </h3>
           </div>
@@ -775,21 +765,21 @@ export function AdminVotingDetail() {
               </div>
               <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
                 <div className="avd-kpi-label">Proyección</div>
-                <div className="avd-kpi-value" style={{ fontSize: 16 }}>{projLabel}</div>
+                <div className="avd-kpi-value text-[16px]">{projLabel}</div>
                 <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
               </div>
             </div>
           </div>
 
           {/* Conexiones en vivo */}
-          <div style={{ borderTop: "1px solid var(--avd-border-soft)", padding: "14px 16px 8px" }}>
-            <h3 className="avd-section-title" style={{ margin: "0 0 10px" }}>
+          <div className="border-t border-[var(--avd-border-soft)] px-4 pt-[14px] pb-2">
+            <h3 className="avd-section-title m-0 mb-[10px]">
               Conexiones
               <span className="avd-hint">
-                <span className="avd-pulse-dot" style={{ width: 6, height: 6 }} /> Tiempo real
+                <span className="avd-pulse-dot w-1.5 h-1.5" /> Tiempo real
               </span>
             </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="flex flex-col gap-[10px]">
               <div>
                 <div className="avd-meter-label">
                   <span>Ocupación</span>
@@ -825,15 +815,15 @@ export function AdminVotingDetail() {
                 </div>
               </div>
               <div>
-                <div className="avd-meter-label" style={{ marginBottom: 6 }}>
+                <div className="avd-meter-label mb-1.5">
                   <span>Sesiones ({seats.length})</span>
-                  <span style={{ color: "var(--avd-fg-faint)", fontSize: 11 }}>
+                  <span className="text-[var(--avd-fg-faint)] text-[11px]">
                     {round.join_locked ? "Bloqueada" : "Abierta"}
                   </span>
                 </div>
                 <div className="avd-seats-list">
                   {seats.length === 0 ? (
-                    <p style={{ padding: "12px", textAlign: "center", fontSize: 12, color: "var(--avd-fg-muted)", margin: 0 }}>
+                    <p className="p-3 text-center text-[12px] text-[var(--avd-fg-muted)] m-0">
                       Sin conexiones.
                     </p>
                   ) : (
@@ -875,7 +865,7 @@ export function AdminVotingDetail() {
                         <Grid size={13} /> Tarjetas
                       </button>
                     </div>
-                    <div className="avd-search-wrap" style={{ width: 180 }}>
+                    <div className="avd-search-wrap w-[180px]">
                       <Search size={14} />
                       <input
                         className="avd-input"
@@ -934,8 +924,8 @@ export function AdminVotingDetail() {
                           </div>
                         </div>
                         <div className="avd-cand-badges">
-                          {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
-                          {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
+                          {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
+                          {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
                         </div>
                         <div className="avd-cand-actions">
                           <button
@@ -965,10 +955,9 @@ export function AdminVotingDetail() {
                           )}
                           {!isVotingStarted && (
                             <button
-                              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                              className="avd-btn avd-btn-ghost avd-btn-icon-sm text-[var(--avd-fg-faint)]"
                               onClick={() => setCandidateToDelete(c)}
                               title="Eliminar"
-                              style={{ color: "var(--avd-fg-faint)" }}
                               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-bad)")}
                               onMouseLeave={(e) => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
                             >
@@ -995,14 +984,14 @@ export function AdminVotingDetail() {
                             </div>
                           </div>
                           {c.group_name && (
-                            <div style={{ fontSize: 11.5, color: "var(--avd-fg-muted)" }}>{c.group_name}</div>
+                            <div className="text-[11.5px] text-[var(--avd-fg-muted)]">{c.group_name}</div>
                           )}
                           <div className="avd-cand-card-foot">
-                            <div style={{ display: "flex", gap: 4 }}>
-                              {c.is_selected && <span className="avd-chip avd-chip-ok" style={{ height: 20, fontSize: 11 }}>Seleccionada</span>}
-                              {c.is_eliminated && <span className="avd-chip avd-chip-bad" style={{ height: 20, fontSize: 11 }}>Eliminada</span>}
+                            <div className="flex gap-1">
+                              {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
+                              {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
                             </div>
-                            <div style={{ display: "flex", gap: 2 }}>
+                            <div className="flex gap-0.5">
                               <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)} title="Editar">
                                 <Pencil size={13} />
                               </button>
@@ -1059,7 +1048,7 @@ export function AdminVotingDetail() {
                     <Globe size={14} />
                     <div>Lista pública</div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div className="flex items-center gap-1.5">
                     <button
                       className="avd-btn avd-btn-ghost avd-btn-icon-sm"
                       onClick={copyPublicCandidatesLink}
@@ -1113,13 +1102,13 @@ export function AdminVotingDetail() {
       {/* Room conflict dialog */}
       {salaConflict && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setSalaConflict(null); }}>
-          <div className="avd-dialog" style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[400px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>Sala activa detectada</h2>
               <p>Ya existe otra sala activa: <strong>{salaConflict.title}</strong>.</p>
             </div>
             <div className="avd-dialog-body">
-              <p style={{ fontSize: 13, color: "var(--avd-fg-muted)", margin: 0 }}>
+              <p className="text-[13px] text-[var(--avd-fg-muted)] m-0">
                 No pueden haber dos salas activas simultáneamente. ¿Quieres pausar «{salaConflict.title}» y activar esta sala?
               </p>
             </div>
@@ -1136,8 +1125,8 @@ export function AdminVotingDetail() {
       {/* Settings */}
       {isSettingsOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsSettingsOpen(false); }}>
-          <div className="avd-dialog" style={{ maxWidth: 660 }} onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+          <div className="avd-dialog max-w-[660px]" onClick={(e) => e.stopPropagation()}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Configuración de la votación</h2>
               </div>
@@ -1146,19 +1135,19 @@ export function AdminVotingDetail() {
               </button>
             </div>
             <div className="avd-dialog-body">
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+              <div className="flex flex-col gap-[14px]">
+                <div className="grid gap-3" style={{gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"}}>
+
                 <div className="avd-form-field">
                   <label className="avd-label">Código de acceso</label>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div className="flex gap-1.5">
                     <input
-                      className="avd-input"
+                      className="avd-input font-[var(--avd-font-mono)] tracking-[0.12em] font-bold"
                       value={configAccessCode}
                       maxLength={4}
                       onChange={(e) => setConfigAccessCode(e.target.value.toUpperCase())}
-                      style={{ fontFamily: "var(--avd-font-mono)", letterSpacing: "0.12em", fontWeight: 700 }}
                     />
-                    <button className="avd-btn avd-btn-sm" onClick={() => setConfigAccessCode(generateAccessCode())} style={{ flexShrink: 0 }}>
+                    <button className="avd-btn avd-btn-sm shrink-0" onClick={() => setConfigAccessCode(generateAccessCode())}>
                       <RefreshCw size={13} /> Generar
                     </button>
                   </div>
@@ -1173,44 +1162,42 @@ export function AdminVotingDetail() {
                 </div>
 
                 {round.voting_type_name && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-brand-bg)", border: "1px solid var(--avd-brand-border)", fontSize: 13 }}>
-                    <span style={{ color: "var(--avd-fg-muted)" }}>Tipo base:</span>
-                    <span className="avd-chip avd-chip-brand" style={{ height: 20, fontSize: 11 }}>{round.voting_type_name}</span>
-                    <span style={{ fontSize: 12, color: "var(--avd-fg-faint)" }}>Los valores se pueden ajustar sin cambiar el tipo.</span>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] text-[13px]">
+                    <span className="text-[var(--avd-fg-muted)]">Tipo base:</span>
+                    <span className="avd-chip avd-chip-brand h-5 text-[11px]">{round.voting_type_name}</span>
+                    <span className="text-[12px] text-[var(--avd-fg-faint)]">Los valores se pueden ajustar sin cambiar el tipo.</span>
                   </div>
                 )}
-                
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, alignItems: "start" }}>
+
+                <div className="grid gap-3 items-start" style={{gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))"}}>
                   <div className="avd-form-field">
-                    <label className="avd-label">Nº máx. votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
+                    <label className="avd-label">Nº máx. votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted ml-1.5">Bloqueado</span>}</label>
                     <input
-                      className="avd-input"
+                      className={`avd-input${isMaxVotantesLocked ? " bg-[var(--avd-bg-sunken)] text-[var(--avd-fg-muted)]" : ""}`}
                       type="number"
                       min={1}
                       max={9999}
                       value={configMaxVotantes}
                       onChange={(e) => setConfigMaxVotantes(Math.max(1, parseInt(e.target.value) || 1))}
                       disabled={isMaxVotantesLocked}
-                      style={isMaxVotantesLocked ? { background: "var(--avd-bg-sunken)", color: "var(--avd-fg-muted)" } : undefined}
                     />
-                    {isMaxVotantesLocked && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>Se puede configurar solo antes de abrir la sala.</p>}
+                    {isMaxVotantesLocked && <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">Se puede configurar solo antes de abrir la sala.</p>}
                   </div>
-                  
+
                   <div className="avd-form-field">
-                    <label className="avd-label">Total a seleccionar {isVotingStarted && <span className="avd-chip avd-chip-muted" style={{ marginLeft: 6 }}>Bloqueado</span>}</label>
+                    <label className="avd-label">Total a seleccionar {isVotingStarted && <span className="avd-chip avd-chip-muted ml-1.5">Bloqueado</span>}</label>
                     <input
-                      className="avd-input"
+                      className={`avd-input${isVotingStarted ? " bg-[var(--avd-bg-sunken)] text-[var(--avd-fg-muted)]" : ""}`}
                       type="number"
                       min={1}
                       max={100}
                       value={configMaxSelected}
                       onChange={(e) => setConfigMaxSelected(Math.max(1, parseInt(e.target.value) || 1))}
                       disabled={isVotingStarted}
-                      style={isVotingStarted ? { background: "var(--avd-bg-sunken)", color: "var(--avd-fg-muted)" } : undefined}
                     />
-                    {isVotingStarted && <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>No editable con votación en curso.</p>}
+                    {isVotingStarted && <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">No editable con votación en curso.</p>}
                   </div>
-                  
+
                   <div className="avd-form-field">
                     <label className="avd-label">Máx. votos por ronda</label>
                     <input
@@ -1221,7 +1208,7 @@ export function AdminVotingDetail() {
                       value={configMaxVotesPerRound}
                       onChange={(e) => setConfigMaxVotesPerRound(Math.max(0, parseInt(e.target.value) || 0))}
                     />
-                    <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 3 }}>
+                    <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">
                       0 = sin límite fijo (máx. 3 por lógica automática).
                     </p>
                   </div>
@@ -1242,11 +1229,10 @@ export function AdminVotingDetail() {
       {isAnalyticsOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsAnalyticsOpen(false); }}>
           <div
-            className="avd-dialog avd-dialog-wide"
-            style={{ maxHeight: "90vh" }}
+            className="avd-dialog avd-dialog-wide max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Análisis de resultados</h2>
                 <p>Distribución de votos por ronda.</p>
@@ -1255,7 +1241,7 @@ export function AdminVotingDetail() {
                 <XCircle size={14} />
               </button>
             </div>
-            <div className="avd-dialog-body" style={{ height: "calc(90vh - 80px)" }}>
+            <div className="avd-dialog-body h-[calc(90vh-80px)]">
               <ResultsAnalytics lockedRoundId={round.id} />
             </div>
           </div>
@@ -1266,16 +1252,15 @@ export function AdminVotingDetail() {
       {isBallotsOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsBallotsOpen(false); }}>
           <div
-            className="avd-dialog avd-dialog-wide"
-            style={{ maxHeight: "90vh" }}
+            className="avd-dialog avd-dialog-wide max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-[10px]">
               <div>
                 <h2>Revisión de papeletas</h2>
                 <p>Ronda {round.current_round_number} · papeletas emitidas anónimamente.</p>
               </div>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div className="flex gap-1.5">
                 <button className="avd-btn avd-btn-sm" onClick={exportBallotsCsv}>
                   <Download size={13} /> Exportar CSV
                 </button>
@@ -1284,7 +1269,7 @@ export function AdminVotingDetail() {
                 </button>
               </div>
             </div>
-            <div className="avd-dialog-body" style={{ height: "calc(90vh - 80px)" }}>
+            <div className="avd-dialog-body h-[calc(90vh-80px)]">
               <BallotReview lockedRoundId={round.id} showHeader={false} />
             </div>
           </div>
@@ -1295,7 +1280,7 @@ export function AdminVotingDetail() {
       {isAddCandidateOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsAddCandidateOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Añadir candidata</h2>
                 <p>Completa los datos principales. Podrás editar después.</p>
@@ -1344,7 +1329,7 @@ export function AdminVotingDetail() {
       {isEditCandidateOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsEditCandidateOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Editar candidata</h2>
                 <p>Actualiza los datos de la candidata seleccionada.</p>
@@ -1393,7 +1378,7 @@ export function AdminVotingDetail() {
       {isImportOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsImportOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Importar candidatos</h2>
                 <p>Sube un archivo CSV, XML o JSON con los candidatos.</p>
@@ -1405,15 +1390,15 @@ export function AdminVotingDetail() {
             <div className="avd-dialog-body">
               <div className="avd-form-grid">
                 {importingFile && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--avd-fg-muted)" }}>
-                    <div style={{ width: 14, height: 14, border: "2px solid var(--avd-border)", borderTopColor: "var(--avd-brand)", borderRadius: "50%", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+                  <div className="flex items-center gap-2 text-[13px] text-[var(--avd-fg-muted)]">
+                    <div className="w-3.5 h-3.5 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin shrink-0" style={{animationDuration:"0.7s"}} />
                     Importando candidatos...
                   </div>
                 )}
-                <div style={{ border: "1.5px dashed var(--avd-border)", borderRadius: "var(--avd-radius-sm)", padding: "12px 14px", background: "var(--avd-bg-sunken)" }}>
-                  <input className="avd-input" type="file" accept=".csv,.xml,.json" onChange={handleFileImport} disabled={importingFile} style={{ height: "auto", padding: "4px 0", background: "none", border: "none", boxShadow: "none" }} />
+                <div className="border-[1.5px] border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-sm)] px-[14px] py-3 bg-[var(--avd-bg-sunken)]">
+                  <input className="avd-input h-auto py-1 px-0 bg-transparent border-none shadow-none" type="file" accept=".csv,.xml,.json" onChange={handleFileImport} disabled={importingFile} />
                 </div>
-                <p style={{ fontSize: 12, color: "var(--avd-fg-muted)", margin: 0 }}>Formatos: CSV, XML, JSON. Campos: nombre, apellido, ubicación, grupo, edad.</p>
+                <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">Formatos: CSV, XML, JSON. Campos: nombre, apellido, ubicación, grupo, edad.</p>
               </div>
             </div>
             <div className="avd-dialog-foot">
@@ -1427,7 +1412,7 @@ export function AdminVotingDetail() {
       {isDatasetOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsDatasetOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div className="avd-dialog-head flex justify-between items-start gap-3">
               <div>
                 <h2>Cargar dataset de ejemplo</h2>
                 <p>Inserta un dataset predefinido para pruebas rápidas.</p>
@@ -1461,13 +1446,13 @@ export function AdminVotingDetail() {
       {/* Modal: Quick select candidate */}
       {candidateToSelect && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToSelect(null); }}>
-          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[420px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Seleccionar directamente?</h2>
               <p>Vas a forzar la selección de este candidato ahora mismo y será marcado como seleccionado en esta ronda.</p>
             </div>
             <div className="avd-dialog-body">
-              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-bg-sunken)", border: "1px solid var(--avd-border)", fontSize: 13, fontWeight: 600, color: "var(--avd-fg)" }}>
+              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border)] text-[13px] font-semibold text-[var(--avd-fg)]">
                 {formatCandidateName(candidateToSelect)}
               </div>
             </div>
@@ -1482,19 +1467,19 @@ export function AdminVotingDetail() {
       {/* Modal: Unselect candidate */}
       {candidateToUnselect && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToUnselect(null); }}>
-          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[420px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Deshacer selección?</h2>
               <p>Quitarás a este candidato de la lista de seleccionados y volverá a estar disponible.</p>
             </div>
             <div className="avd-dialog-body">
-              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "color-mix(in oklch, var(--avd-warn) 15%, transparent)", border: "1px solid color-mix(in oklch, var(--avd-warn) 30%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--avd-warn)" }}>
+              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[color-mix(in_oklch,var(--avd-warn)_15%,transparent)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-[13px] font-semibold text-[var(--avd-warn)]">
                 {formatCandidateName(candidateToUnselect)}
               </div>
             </div>
             <div className="avd-dialog-foot">
               <button className="avd-btn avd-btn-sm" onClick={() => setCandidateToUnselect(null)}>Cancelar</button>
-              <button className="avd-btn avd-btn-sm" style={{ background: "var(--avd-warn)", color: "var(--avd-warn-fg)", borderColor: "color-mix(in oklch, var(--avd-warn) 50%, #000)" }} onClick={() => { setCandidateToUnselect(null); unselectCandidate(candidateToUnselect.id); }}>Desmarcar</button>
+              <button className="avd-btn avd-btn-sm bg-[var(--avd-warn)] text-[var(--avd-warn-fg)] border-[color-mix(in_oklch,var(--avd-warn)_50%,#000)]" onClick={() => { setCandidateToUnselect(null); unselectCandidate(candidateToUnselect.id); }}>Desmarcar</button>
             </div>
           </div>
         </div>
@@ -1503,13 +1488,13 @@ export function AdminVotingDetail() {
       {/* Modal: Delete candidate */}
       {candidateToDelete && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCandidateToDelete(null); }}>
-          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[420px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Eliminar candidato?</h2>
               <p>Esta acción no se puede deshacer y el candidato se borrará de la lista.</p>
             </div>
             <div className="avd-dialog-body">
-              <div style={{ padding: "12px 14px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-bad-bg)", border: "1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", fontSize: 13, fontWeight: 600, color: "var(--avd-bad-fg)" }}>
+              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-[13px] font-semibold text-[var(--avd-bad-fg)]">
                 {formatCandidateName(candidateToDelete)}
               </div>
             </div>
@@ -1524,7 +1509,7 @@ export function AdminVotingDetail() {
       {/* Modal: Close Round */}
       {isCloseRoundConfirmOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsCloseRoundConfirmOpen(false); }}>
-          <div className="avd-dialog" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[420px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Cerrar ronda definitivamente?</h2>
               <p>Se bloqueará y los asistentes no podrán participar.</p>
@@ -1540,7 +1525,7 @@ export function AdminVotingDetail() {
       {/* Modal: Delete all candidates */}
       {isDeleteAllCandidatesOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsDeleteAllCandidatesOpen(false); }}>
-          <div className="avd-dialog" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[440px]" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Eliminar todos los candidatos?</h2>
               <p>Se eliminarán los <strong>{candidates.length} candidatos</strong> de «{round?.title}». Esta acción no se puede deshacer.</p>

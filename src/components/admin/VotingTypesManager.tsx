@@ -104,26 +104,26 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
 
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="avd-dialog" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+      <div className="avd-dialog max-w-[560px]" onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
           <h2>Tipos de votación</h2>
           <p>Los tipos <strong>ECE</strong> y <strong>ECL</strong> son del sistema. Los personalizados pueden crearse y eliminarse libremente.</p>
         </div>
 
-        <div className="avd-dialog-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="avd-dialog-body flex flex-col gap-[10px]">
           {loading ? (
-            <div style={{ textAlign: "center", padding: 24, color: "var(--avd-fg-muted)" }}>Cargando...</div>
+            <div className="text-center p-6 text-[var(--avd-fg-muted)]">Cargando...</div>
           ) : types.map(t => (
-            <div key={t.id} style={{ border: "1px solid var(--avd-border)", borderRadius: "var(--avd-radius-md)", overflow: "hidden" }}>
+            <div key={t.id} className="border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
               {editingId === t.id ? (
-                <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="p-[14px] flex flex-col gap-[10px]">
                   {!t.is_system && (
                     <div className="avd-form-field">
                       <label className="avd-label">Nombre</label>
                       <input className="avd-input" value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
                     </div>
                   )}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                  <div className="grid grid-cols-3 gap-2">
                     <div className="avd-form-field">
                       <label className="avd-label">Seleccionadas</label>
                       <input className="avd-input" type="number" min={1} max={100} value={editForm.max_selected_candidates || ""} onChange={e => { const v = parseInt(e.target.value); setEditForm(p => ({ ...p, max_selected_candidates: isNaN(v) ? 0 : v })); }} />
@@ -140,26 +140,25 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                       </select>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <div className="flex gap-2 justify-end">
                     <button className="avd-btn avd-btn-sm" onClick={() => setEditingId(null)}>Cancelar</button>
                     <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={saveEdit} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</button>
                   </div>
                 </div>
               ) : (
-                <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontWeight: 700, fontSize: 14, color: "var(--avd-fg)" }}>{t.name}</span>
-                      {t.is_system && <span className="avd-chip avd-chip-brand" style={{ height: 18, fontSize: 10, padding: "0 7px" }}>Sistema</span>}
+                <div className="px-[14px] py-3 flex items-center gap-[10px]">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-[14px] text-[var(--avd-fg)]">{t.name}</span>
+                      {t.is_system && <span className="avd-chip avd-chip-brand h-[18px] text-[10px] px-[7px]">Sistema</span>}
                     </div>
-                    <span style={{ fontSize: 12, color: "var(--avd-fg-muted)" }}>
+                    <span className="text-[12px] text-[var(--avd-fg-muted)]">
                       Seleccionar {t.max_selected_candidates} · Votos/ronda {t.max_votes_per_round || "auto"} · Censo {t.census_mode === "maximum" ? "máximo" : "exacto"}
                     </span>
                   </div>
                   {isSuperAdmin && (
                     <button
-                      className="avd-btn avd-btn-sm"
-                      style={t.is_system ? { color: "var(--avd-fg-muted)" } : { color: "var(--avd-brand)" }}
+                      className={`avd-btn avd-btn-sm ${t.is_system ? "text-[var(--avd-fg-muted)]" : "text-[var(--avd-brand)]"}`}
                       onClick={() => toggleSystemType(t)}
                       title={t.is_system ? "Quitar del sistema (convertir a personalizado)" : "Promover a tipo del sistema"}
                     >
@@ -171,8 +170,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                   )}
                   {!t.is_system && (
                     <button
-                      className="avd-btn avd-btn-sm"
-                      style={{ color: "var(--avd-bad)", borderColor: "color-mix(in oklch, var(--avd-bad) 30%, transparent)" }}
+                      className="avd-btn avd-btn-sm text-[var(--avd-bad)] border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)]"
                       onClick={() => setDeleteTarget(t)}
                     >
                       Eliminar
@@ -184,12 +182,12 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
           ))}
 
           {/* Create new custom type */}
-          <div style={{ border: "1px dashed var(--avd-border)", borderRadius: "var(--avd-radius-md)", padding: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--avd-fg-subtle)", marginBottom: 10 }}>
+          <div className="border border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-[14px]">
+            <div className="text-[12px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[10px]">
               Nuevo tipo personalizado
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
-              <div className="avd-form-field" style={{ gridColumn: "span 1" }}>
+            <div className="grid grid-cols-4 gap-2 mb-[10px]">
+              <div className="avd-form-field">
                 <label className="avd-label">Nombre</label>
                 <input className="avd-input" placeholder="Mi tipo" value={newForm.name} onChange={e => setNewForm(p => ({ ...p, name: e.target.value }))} />
               </div>
@@ -221,13 +219,13 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
       {/* Delete confirmation */}
       {deleteTarget && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setDeleteTarget(null); }}>
-          <div className="avd-dialog" style={{ maxWidth: 380 }} onClick={e => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[380px]" onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Eliminar tipo?</h2>
               <p>Las votaciones existentes que usen este tipo mantendrán su configuración guardada.</p>
             </div>
             <div className="avd-dialog-body">
-              <div style={{ padding: "10px 12px", borderRadius: "var(--avd-radius-sm)", background: "var(--avd-bad-bg)", border: "1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", fontWeight: 600, fontSize: 13, color: "var(--avd-bad-fg)" }}>
+              <div className="px-3 py-[10px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] font-semibold text-[13px] text-[var(--avd-bad-fg)]">
                 {deleteTarget.name}
               </div>
             </div>

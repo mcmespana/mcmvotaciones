@@ -19,7 +19,7 @@ const PublicCandidates = lazy(() => import("@/pages/PublicCandidates").then(m =>
 const queryClient = new QueryClient();
 
 const Spinner = () => (
-  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+  <div className="flex min-h-screen items-center justify-center">
     <SpinnerIcon size="md" />
   </div>
 );

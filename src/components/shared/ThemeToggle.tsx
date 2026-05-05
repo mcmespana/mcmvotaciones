@@ -47,11 +47,10 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
       className={cn(
         "group avd-btn",
         mode === "inline"
-          ? "avd-btn-icon"
+          ? "avd-btn-icon w-[42px] h-[42px] shrink-0"
           : "h-11 w-11 rounded-xl shadow-[var(--avd-shadow-md)]",
         buttonClassName,
       )}
-      style={mode === "inline" ? { width: 42, height: 42, flexShrink: 0 } : undefined}
     >
       {icon}
     </button>
@@ -64,7 +63,7 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
   return createPortal(
     <div
       className={cn("pointer-events-auto fixed right-4 z-[90] md:right-6", className)}
-      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}{/* dynamic: env() safe-area cannot be expressed in Tailwind */}
     >
       {toggleButton}
     </div>,
