@@ -97,7 +97,7 @@ export function AdminVotingDetail() {
   const [isDatasetOpen, setIsDatasetOpen] = useState(false);
   const [salaConflict, setSalaConflict] = useState<{ id: string; title: string } | null>(null);
   const [loadingDataset, setLoadingDataset] = useState(false);
-  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(import.meta.env.DEV ? (testDatasets[0]?.id ?? "") : "");
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
   const [isCloseRoundConfirmOpen, setIsCloseRoundConfirmOpen] = useState(false);
   const [isDeleteAllCandidatesOpen, setIsDeleteAllCandidatesOpen] = useState(false);
   const [deletingAllCandidates, setDeletingAllCandidates] = useState(false);
@@ -451,7 +451,7 @@ export function AdminVotingDetail() {
   };
 
   const loadDataset = async () => {
-    if (!import.meta.env.DEV || !round) return;
+    if (!round) return;
     const selectedDataset = testDatasets.find((d) => d.id === selectedDatasetId);
     if (!selectedDataset) { toast({ title: "Dataset no válido", variant: "destructive" }); return; }
     try {
@@ -903,11 +903,9 @@ export function AdminVotingDetail() {
                             <Trash2 size={14} /> Eliminar todos
                           </button>
                         )}
-                        {import.meta.env.DEV && (
-                          <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
-                            <Download size={14} /> Dataset
-                          </button>
-                        )}
+                        <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
+                          <Download size={14} /> Dataset
+                        </button>
                       </>
                     )}
                   </div>
@@ -1426,7 +1424,7 @@ export function AdminVotingDetail() {
       )}
 
       {/* Dataset */}
-      {import.meta.env.DEV && isDatasetOpen && (
+      {isDatasetOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsDatasetOpen(false); }}>
           <div className="avd-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="avd-dialog-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
