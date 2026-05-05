@@ -90,16 +90,12 @@ export function ComunicaImport() {
     try {
       const credentials = crmUser && crmPass ? { user: crmUser, pass: crmPass } : undefined;
       const data = await fetchAllCRMContacts(credentials);
-      // Matching the rel-type filter + those with NO rel type at all (shown unchecked)
-      const allToShow = selectedRelTypes.length > 0
-        ? data.filter(c => c.relationship_types.some(rt => selectedRelTypes.includes(rt)) || c.relationship_types.length === 0)
-        : data;
-      setContacts(allToShow);
-      const grouped = groupByLocation(allToShow);
+      // Show everyone; the rel-type filter only controls who is pre-selected
+      setContacts(data);
+      const grouped = groupByLocation(data);
       setGroups(grouped);
       setOpenGroups(new Set(grouped.map(g => g.location)));
-      // Pre-select only those matching the filter (not Asesora, not no-rel-type)
-      const preSelected = allToShow.filter(c =>
+      const preSelected = data.filter(c =>
         c.etapa?.toLowerCase() !== 'asesora' &&
         (selectedRelTypes.length === 0 || c.relationship_types.some(rt => selectedRelTypes.includes(rt))),
       );
@@ -129,8 +125,10 @@ export function ComunicaImport() {
 
   const totalFiltered = useMemo(() => filteredGroups.reduce((acc, g) => acc + g.contacts.length, 0), [filteredGroups]);
   const selectedCount = useMemo(() => [...selected].filter(id => contacts.some(c => c.crm_id === id)).length, [selected, contacts]);
-  const noRelTypeCount = useMemo(
-    () => selectedRelTypes.length > 0 ? contacts.filter(c => c.relationship_types.length === 0).length : 0,
+  const notMatchingCount = useMemo(
+    () => selectedRelTypes.length > 0
+      ? contacts.filter(c => !c.relationship_types.some(rt => selectedRelTypes.includes(rt))).length
+      : 0,
     [contacts, selectedRelTypes],
   );
 
@@ -464,7 +462,7 @@ export function ComunicaImport() {
                     <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Selecciona los candidatos a importar</div>
                     <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>
                       {contacts.length} personas · relación <strong>{selectedRelTypes.join(', ') || 'cualquiera'}</strong>
-                      {noRelTypeCount > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{noRelTypeCount} sin relación activa (sin marcar)</span></>}
+                      {notMatchingCount > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{notMatchingCount} sin coincidencia (sin marcar)</span></>}
                       {existingCrmIds.size > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{existingCrmIds.size} ya en esta votación</span></>}
                     </div>
                   </div>
@@ -534,7 +532,7 @@ export function ComunicaImport() {
                                     {group.contacts.map((c, idx) => {
                                       const alreadyIn = existingCrmIds.has(c.crm_id);
                                       const isSelected = selected.has(c.crm_id);
-                                      const isNoRelType = selectedRelTypes.length > 0 && c.relationship_types.length === 0;
+                                      const isNoRelType = selectedRelTypes.length > 0 && !c.relationship_types.some(rt => selectedRelTypes.includes(rt));
                                       return (
                                         <tr
                                           key={c.crm_id}
