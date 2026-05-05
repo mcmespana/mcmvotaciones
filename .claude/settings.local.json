@@ -45,7 +45,17 @@
       "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-aa84531100e074563\" status --short)",
       "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a06e5bc780a383d36\" status --short)",
       "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a06e5bc780a383d36\" diff --stat HEAD)",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a81156879e846c215\\\\src\\\\index.css\")",
+      "Bash(Measure-Object -Line)",
+      "Bash(Select-Object -ExpandProperty Lines)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "PowerShell(gh pr *)",
+      "PowerShell(git *)",
+      "PowerShell(git -C $wt add src/)",
+      "PowerShell(git -C $wt commit -m \"refactor: replace inline styles with Tailwind classes \\(partial, 20 files\\)\")",
+      "PowerShell($wt = \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a81156879e846c215\")"
     ]
   }
 }
