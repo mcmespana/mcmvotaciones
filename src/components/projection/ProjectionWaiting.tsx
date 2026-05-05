@@ -94,7 +94,7 @@ export function ProjectionWaiting({
         <div className="proj-waiting-left">
           {/* Title block */}
           <div>
-            <div className="proj-overline" style={{ marginBottom: 16 }}>Sistema de votaciones</div>
+            <div className="proj-overline mb-4">Sistema de votaciones</div>
             <h1 className="proj-waiting-title">MCM Votaciones</h1>
             <p className="proj-waiting-subtitle">{subtitle}</p>
           </div>
@@ -103,7 +103,7 @@ export function ProjectionWaiting({
           {normalizedCode && shouldShowJoinQr && (
             <div className="avd-card" style={{ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" }}>
               <AccentBar />
-              <div className="proj-overline" style={{ marginBottom: 20 }}>Código de acceso</div>
+              <div className="proj-overline mb-5">Código de acceso</div>
               <div className="proj-code-chars">
                 {normalizedCode.split("").map((char, index) => {
                   const isDigit = /[0-9]/.test(char);
@@ -130,7 +130,7 @@ export function ProjectionWaiting({
               </div>
               {hasAmbiguous && (
                 <p className="proj-code-note">
-                  Nota: el <span style={{ fontFamily: "var(--avd-font-mono)", color: "var(--avd-brand)" }}>0</span> (cero) se muestra con barra diagonal.
+                  Nota: el <span className="font-avd-mono text-avd-brand">0</span> (cero) se muestra con barra diagonal.
                 </p>
               )}
             </div>
@@ -138,7 +138,7 @@ export function ProjectionWaiting({
 
           {/* QR */}
           {shouldShowJoinQr && (
-            <div className="avd-card" style={{ padding: "28px 32px" }}>
+            <div className="avd-card px-8 py-7">
               <AccentBar />
               <div className="proj-qr-grid">
                 <div className="proj-qr-frame">

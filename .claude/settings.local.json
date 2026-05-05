@@ -38,7 +38,14 @@
       "Bash(Select-Object FullName, Length)",
       "PowerShell(supabase *)",
       "Bash(Remove-Item \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\supabase\\\\functions\\\\crm-proxy\\\\index copy.ts\" -ErrorAction SilentlyContinue)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(Test-Path C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\src\\\\components\\\\ui-avd *)",
+      "Bash(git -C \"C:/Users/izanr/Projects/mcmvotaciones\" diff HEAD -- src/pages/VotingPage.tsx src/pages/LoginPage.tsx)",
+      "Bash(git checkout *)",
+      "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-aa84531100e074563\" status --short)",
+      "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a06e5bc780a383d36\" status --short)",
+      "Bash(git -C \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\.claude\\\\worktrees\\\\agent-a06e5bc780a383d36\" diff --stat HEAD)",
+      "PowerShell(Copy-Item *)"
     ]
   }
 }

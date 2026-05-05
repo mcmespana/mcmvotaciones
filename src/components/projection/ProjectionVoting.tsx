@@ -67,7 +67,7 @@ export function ProjectionVoting({
         <div>
           <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8 }}>
+        <div className="flex items-center gap-[10px] ml-2">
           <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
         </div>
@@ -113,14 +113,14 @@ export function ProjectionVoting({
             </div>
 
             {/* Right: selected */}
-            <div style={{ borderLeft: "1px solid var(--avd-border)" }}>
+            <div className="border-l border-avd-border">
               <SelectedCandidatesSidebar candidates={previouslySelected} />
             </div>
           </>
         ) : (
           /* Ballot summary view */
-          <div style={{ padding: "32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
-            <div className="proj-label" style={{ marginBottom: 0 }}>Papeletas registradas</div>
+          <div className="px-10 py-8 flex flex-col gap-6">
+            <div className="proj-label mb-0">Papeletas registradas</div>
             <div ref={ballotsRef}>
               <BallotsGrid summaries={ballotSummaries} />
             </div>

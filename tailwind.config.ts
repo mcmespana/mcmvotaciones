@@ -46,6 +46,7 @@ export default {
 					bad:           'var(--avd-bad)',
 					'bad-fg':      'var(--avd-bad-fg)',
 					'bad-bg':      'var(--avd-bad-bg)',
+					'fg-faint':    'var(--avd-fg-faint)',
 				},
 				voting: {
 					blue: 'hsl(var(--vote-color-blue))',
@@ -126,13 +127,19 @@ export default {
 			boxShadow: {
 				'tech': 'var(--shadow-card)',
 				'glow': 'var(--shadow-primary)',
-				'accent-glow': 'var(--shadow-accent)'
+				'accent-glow': 'var(--shadow-accent)',
+				'avd-xs': 'var(--avd-shadow-xs)',
+				'avd-sm': 'var(--avd-shadow-sm)',
+				'avd-md': 'var(--avd-shadow-md)',
+				'avd-lg': 'var(--avd-shadow-lg)',
 			},
 			fontFamily: {
 				headline: ['Plus Jakarta Sans', 'Segoe UI', 'sans-serif'],
 				body: ['Inter', 'Segoe UI', 'sans-serif'],
 				label: ['Inter', 'Segoe UI', 'sans-serif'],
-				mono: ['JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']
+				mono: ['JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+				'avd-sans': ['var(--avd-font-sans)'],
+				'avd-mono': ['var(--avd-font-mono)'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -141,6 +148,11 @@ export default {
 				xl: 'calc(var(--radius) + 1rem)',
 				'2xl': 'calc(var(--radius) + 1.5rem)',
 				'3xl': 'calc(var(--radius) + 2rem)',
+				'avd-xs': 'var(--avd-radius-xs)',
+				'avd-sm': 'var(--avd-radius-sm)',
+				'avd':    'var(--avd-radius)',
+				'avd-md': 'var(--avd-radius-md)',
+				'avd-lg': 'var(--avd-radius-lg)',
 			},
 			keyframes: {
 				'accordion-down': {
