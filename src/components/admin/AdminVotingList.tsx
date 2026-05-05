@@ -181,7 +181,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   const channelUid = useRef(crypto.randomUUID()).current;
   const [rounds, setRounds] = useState<RoundListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [teamFilter, setTeamFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
   const [view, setView] = useState<"grid" | "list">("list");
   const [loading, setLoading] = useState(true);
   const [creatingRound, setCreatingRound] = useState(false);
@@ -288,13 +288,26 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
 
   const totalActive = useMemo(() => rounds.filter(r => r.is_active && !r.is_closed).length, [rounds]);
 
+  const systemTypeNames = useMemo(
+    () => new Set(votingTypes.filter(t => t.is_system).map(t => t.name)),
+    [votingTypes],
+  );
+  const hasCustomTypes = useMemo(
+    () => rounds.some(r => r.voting_type_name && !systemTypeNames.has(r.voting_type_name)),
+    [rounds, systemTypeNames],
+  );
+
   const filteredRounds = useMemo(() => {
     const q = searchTerm.toLowerCase();
-    return rounds.filter(r =>
-      (!q || r.title.toLowerCase().includes(q) || (r.description || "").toLowerCase().includes(q)) &&
-      (teamFilter === "ALL" || r.team === teamFilter)
-    );
-  }, [rounds, searchTerm, teamFilter]);
+    return rounds.filter(r => {
+      const matchesSearch = !q || r.title.toLowerCase().includes(q) || (r.description || "").toLowerCase().includes(q);
+      const typeName = r.voting_type_name || "";
+      const matchesType =
+        typeFilter === "ALL" ||
+        (typeFilter === "CUSTOM" ? !systemTypeNames.has(typeName) : typeName === typeFilter);
+      return matchesSearch && matchesType;
+    });
+  }, [rounds, searchTerm, typeFilter, systemTypeNames]);
 
   if (loading) {
     return (
@@ -320,14 +333,19 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input className="avd-input" style={{paddingLeft:30}} placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
-        {/* Team filter */}
-        <div className="avd-segmented">
-          {["ALL", "ECE", "ECL"].map(t => (
-            <button key={t} className={teamFilter === t ? "active" : ""} onClick={() => setTeamFilter(t)}>
-              {t === "ALL" ? "Todos" : t}
-            </button>
+        {/* Type filter */}
+        <select
+          className="avd-select"
+          style={{ height: 30, fontSize: 12, padding: "0 24px 0 8px", minWidth: 0, width: "auto" }}
+          value={typeFilter}
+          onChange={e => setTypeFilter(e.target.value)}
+        >
+          <option value="ALL">Todos</option>
+          {Array.from(systemTypeNames).sort().map(name => (
+            <option key={name} value={name}>{name}</option>
           ))}
-        </div>
+          {hasCustomTypes && <option value="CUSTOM">Personalizado</option>}
+        </select>
         {/* View toggle */}
         <div className="avd-segmented">
           <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
