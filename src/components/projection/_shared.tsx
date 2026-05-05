@@ -70,7 +70,7 @@ export function SelectedCandidatesSidebar({ candidates }: { candidates: Selected
         ) : (
           candidates.map((c) => (
             <div key={c.id} className="avd-selected-sidebar-row">
-              <div style={{ minWidth: 0 }}>
+              <div className="min-w-0">
                 <div className="avd-selected-sidebar-name">{formatCandidateName(c)}</div>
                 {c.location && <div className="avd-selected-sidebar-loc">{c.location}</div>}
               </div>
