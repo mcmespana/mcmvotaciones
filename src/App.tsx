@@ -36,7 +36,7 @@ const AppRoutes = () => (
 );
 
 const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
