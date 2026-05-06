@@ -83,6 +83,40 @@
   letter-spacing: -0.01em;
 }
 
+.proj-topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--avd-border);
+  flex-shrink: 0;
+}
+
+.proj-topbar-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--avd-fg);
+  margin: 0;
+  line-height: 1.15;
+  max-width: 50vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-topbar-title--lg {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.proj-topbar-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .proj-access-badge {
   font-family: var(--avd-font-mono);
   font-size: 16px;

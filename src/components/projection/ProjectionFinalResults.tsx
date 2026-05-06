@@ -44,15 +44,18 @@ export function ProjectionFinalResults({
   return (
     <div className="proj-page overflow-visible">
       {/* Header */}
-      <header className="proj-header">
-        <h1 className="proj-header-title proj-header-title--flex">
+      <header className="proj-topbar">
+        <div className="proj-logo">C</div>
+        <span className="proj-wordmark">VotacionesMCM</span>
+        <div className="proj-topbar-divider" />
+        <h1 className="proj-topbar-title proj-topbar-title--lg">
           Resultados Finales
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--proj-yellow)" stroke="none" aria-hidden>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--proj-yellow)" stroke="none" aria-hidden>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         </h1>
         <span className="proj-header-subtitle">{roundTitle}</span>
-        <div className="proj-header-meta">
+        <div className="proj-topbar-meta">
           <PChip kind="yellow" label={getRoundTeamLabel(team)} />
           <PChip kind="blue" label={`Ronda ${roundNumber}`} />
           <PChip kind="emerald" label={`${selectedCandidates.length} elegidos`} />
