@@ -2,7 +2,6 @@ import type { RoundDetail, SeatRow, SeatStatus } from "./hooks/useRoundDetail";
 
 interface Props {
   round: RoundDetail;
-  candidates: { is_eliminated?: boolean }[];
   activeCandidatesCount: number;
   isProjectingSomething: boolean;
   projLabel: string;
@@ -14,7 +13,7 @@ interface Props {
 }
 
 export function SeatsLiveCard({
-  round, candidates, activeCandidatesCount, isProjectingSomething, projLabel,
+  round, activeCandidatesCount, isProjectingSomething, projLabel,
   seats, seatStatus, currentRoundVotes, occupiedPct, votesPct,
 }: Props) {
   return (
@@ -93,36 +92,24 @@ export function SeatsLiveCard({
         </div>
       </div>
 
-      {/* ── Info KPIs (abajo) ── */}
-      <div className="px-4 pt-[14px] pb-2 border-b border-[var(--avd-border-soft)]">
-        <h3 className="avd-section-title m-0 mb-[10px]">
-          Información
-          <span className="avd-hint">
-            <span className="avd-pulse-dot w-1.5 h-1.5" /> En vivo
+      {/* ── Info compacta (abajo) ── */}
+      <div className="px-4 py-3 flex flex-col gap-2 text-[12.5px]">
+        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
+          <span>Candidatas</span>
+          <span className="font-semibold text-[var(--avd-fg)] tabular-nums">{activeCandidatesCount}</span>
+        </div>
+        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
+          <span>Censo</span>
+          <span className="font-semibold text-[var(--avd-fg)] tabular-nums">
+            {round.max_votantes}
+            <span className="font-normal text-[11px] ml-1">{round.census_mode === "exact" ? "exacto" : "máx"}</span>
           </span>
-        </h3>
-      </div>
-      <div className="avd-kpi-panel">
-        <div className="avd-kpi-stack">
-          <div className="avd-kpi">
-            <div className="avd-kpi-label">Candidatas</div>
-            <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
-            <div className="avd-kpi-meta">
-              {candidates.length - activeCandidatesCount} eliminadas
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
-            <div className="avd-kpi-label">Censo</div>
-            <div className="avd-kpi-value avd-tabular">{round.max_votantes}</div>
-            <div className="avd-kpi-meta">
-              {round.census_mode === "exact" ? "Exacto" : "Máximo"}
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
-            <div className="avd-kpi-label">Proyección</div>
-            <div className="avd-kpi-value text-[16px]">{projLabel}</div>
-            <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Galería inactiva"}</div>
-          </div>
+        </div>
+        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
+          <span>Proyección</span>
+          <span className={`font-semibold tabular-nums ${isProjectingSomething ? "text-[var(--avd-brand)]" : "text-[var(--avd-fg)]"}`}>
+            {projLabel}
+          </span>
         </div>
       </div>
 

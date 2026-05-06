@@ -232,7 +232,7 @@ export function AdminVotingDetail() {
       <div className="avd-page-main">
 
         <SeatsLiveCard
-          round={round} candidates={candidates} activeCandidatesCount={activeCandidatesCount}
+          round={round} activeCandidatesCount={activeCandidatesCount}
           isProjectingSomething={isProjectingSomething} projLabel={projLabel}
           seats={seats} seatStatus={seatStatus} currentRoundVotes={currentRoundVotes}
           occupiedPct={occupiedPct} votesPct={votesPct}

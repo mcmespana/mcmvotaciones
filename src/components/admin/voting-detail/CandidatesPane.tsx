@@ -95,7 +95,7 @@ export function CandidatesPane({
                 )}
                 {!isVotingStarted && hasCandidates && (
                   <button
-                    className="avd-btn avd-btn-icon-sm text-[var(--avd-bad)]"
+                    className="avd-btn avd-btn-danger avd-btn-icon-sm"
                     style={{width:28,height:28}}
                     onClick={() => setIsDeleteAllCandidatesOpen(true)}
                     title="Eliminar todas las candidatas"
