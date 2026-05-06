@@ -68,37 +68,39 @@ export function CandidatesPane({
                 </div>
                 {!isVotingStarted && (
                   <>
-                    <button className="avd-btn avd-btn-sm" onClick={openAddCandidateDialog}>
-                      <UserPlus size={14} /> Añadir
+                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openAddCandidateDialog} title="Añadir candidata">
+                      <UserPlus size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-sm" onClick={() => setIsImportOpen(true)}>
-                      <Upload size={14} /> Importar
+                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsImportOpen(true)} title="Importar CSV">
+                      <Upload size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
-                      <ArrowUpRight size={14} /> Comunica
+                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openComunicaImport} title="Importar desde Comunica">
+                      <ArrowUpRight size={14} />
+                    </button>
+                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsDatasetOpen(true)} title="Cargar dataset de prueba">
+                      <Download size={14} />
                     </button>
                     {hasCandidates && (
                       <button
-                        className="avd-btn avd-btn-sm avd-btn-danger"
+                        className="avd-btn avd-btn-icon-sm text-[var(--avd-bad)]"
+                        style={{width:28,height:28}}
                         onClick={() => setIsDeleteAllCandidatesOpen(true)}
+                        title="Eliminar todas las candidatas"
                       >
-                        <Trash2 size={14} /> Eliminar todos
+                        <Trash2 size={14} />
                       </button>
                     )}
-                    <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
-                      <Download size={14} /> Dataset
-                    </button>
                   </>
                 )}
                 {hasCandidatesWithCrm && (
                   <button
-                    className="avd-btn avd-btn-sm"
+                    className="avd-btn avd-btn-icon-sm"
+                    style={{width:28,height:28}}
                     onClick={onRefetchPhotos}
                     disabled={refetchingPhotos}
-                    title="Reimportar fotos desde Comunica CRM"
+                    title={refetchingPhotos ? "Importando fotos..." : "Actualizar fotos desde CRM"}
                   >
                     <ImageUp size={14} />
-                    {refetchingPhotos ? "Importando..." : "Fotos CRM"}
                   </button>
                 )}
               </div>
