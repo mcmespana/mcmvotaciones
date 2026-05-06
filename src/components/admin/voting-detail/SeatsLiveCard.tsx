@@ -19,42 +19,9 @@ export function SeatsLiveCard({
 }: Props) {
   return (
     <aside className="avd-col avd-col-left">
-      <div className="px-4 pt-[14px] pb-2 border-b border-[var(--avd-border-soft)]">
-        <h3 className="avd-section-title m-0">
-          Información
-          <span className="avd-hint">
-            <span className="avd-pulse-dot w-1.5 h-1.5" /> En vivo
-          </span>
-        </h3>
-      </div>
-      <div className="avd-kpi-panel">
-        <div className="avd-kpi-stack">
-          <div className="avd-kpi">
-            <div className="avd-kpi-label">Candidatas</div>
-            <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
-            <div className="avd-kpi-meta">
-              {candidates.length - activeCandidatesCount} eliminadas
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
-            <div className="avd-kpi-label">Censo</div>
-            <div className="avd-kpi-value avd-tabular">
-              {round.max_votantes}
-            </div>
-            <div className="avd-kpi-meta">
-              {round.census_mode === "exact" ? "Exacto" : "Máximo"}
-            </div>
-          </div>
-          <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
-            <div className="avd-kpi-label">Proyección</div>
-            <div className="avd-kpi-value text-[16px]">{projLabel}</div>
-            <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Sin difundir"}</div>
-          </div>
-        </div>
-      </div>
 
-      {/* Conexiones en vivo */}
-      <div className="border-t border-[var(--avd-border-soft)] px-4 pt-[14px] pb-2">
+      {/* ── Conexiones (arriba) ── */}
+      <div className="px-4 pt-[14px] pb-3 border-b border-[var(--avd-border-soft)]">
         <h3 className="avd-section-title m-0 mb-[10px]">
           Conexiones
           <span className="avd-hint">
@@ -82,16 +49,16 @@ export function SeatsLiveCard({
               </div>
             </div>
           )}
-          <div className="avd-seat-grid">
-            <div className="avd-seat-stat">
+          <div className="flex gap-2">
+            <div className="avd-seat-stat flex-1">
               <div className="avd-n avd-ok">{seatStatus?.occupied_seats ?? 0}</div>
               <div className="avd-l">Ocupados</div>
             </div>
-            <div className="avd-seat-stat">
+            <div className="avd-seat-stat flex-1">
               <div className="avd-n avd-warn">{seatStatus?.expired_seats ?? 0}</div>
               <div className="avd-l">Expirados</div>
             </div>
-            <div className="avd-seat-stat">
+            <div className="avd-seat-stat flex-1">
               <div className="avd-n">{seatStatus?.available_seats ?? 0}</div>
               <div className="avd-l">Libres</div>
             </div>
@@ -125,6 +92,40 @@ export function SeatsLiveCard({
           </div>
         </div>
       </div>
+
+      {/* ── Info KPIs (abajo) ── */}
+      <div className="px-4 pt-[14px] pb-2 border-b border-[var(--avd-border-soft)]">
+        <h3 className="avd-section-title m-0 mb-[10px]">
+          Información
+          <span className="avd-hint">
+            <span className="avd-pulse-dot w-1.5 h-1.5" /> En vivo
+          </span>
+        </h3>
+      </div>
+      <div className="avd-kpi-panel">
+        <div className="avd-kpi-stack">
+          <div className="avd-kpi">
+            <div className="avd-kpi-label">Candidatas</div>
+            <div className="avd-kpi-value avd-tabular">{activeCandidatesCount}</div>
+            <div className="avd-kpi-meta">
+              {candidates.length - activeCandidatesCount} eliminadas
+            </div>
+          </div>
+          <div className="avd-kpi" data-accent={round.census_mode === "exact" ? "warn" : undefined}>
+            <div className="avd-kpi-label">Censo</div>
+            <div className="avd-kpi-value avd-tabular">{round.max_votantes}</div>
+            <div className="avd-kpi-meta">
+              {round.census_mode === "exact" ? "Exacto" : "Máximo"}
+            </div>
+          </div>
+          <div className="avd-kpi" data-accent={isProjectingSomething ? "brand" : undefined}>
+            <div className="avd-kpi-label">Proyección</div>
+            <div className="avd-kpi-value text-[16px]">{projLabel}</div>
+            <div className="avd-kpi-meta">{isProjectingSomething ? "En pantalla" : "Galería inactiva"}</div>
+          </div>
+        </div>
+      </div>
+
     </aside>
   );
 }

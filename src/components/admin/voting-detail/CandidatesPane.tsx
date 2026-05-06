@@ -71,25 +71,15 @@ export function CandidatesPane({
                     <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openAddCandidateDialog} title="Añadir candidata">
                       <UserPlus size={14} />
                     </button>
+                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsDatasetOpen(true)} title="Cargar dataset de prueba">
+                      <Download size={14} />
+                    </button>
                     <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsImportOpen(true)} title="Importar CSV">
                       <Upload size={14} />
                     </button>
                     <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openComunicaImport} title="Importar desde Comunica">
                       <ArrowUpRight size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsDatasetOpen(true)} title="Cargar dataset de prueba">
-                      <Download size={14} />
-                    </button>
-                    {hasCandidates && (
-                      <button
-                        className="avd-btn avd-btn-icon-sm text-[var(--avd-bad)]"
-                        style={{width:28,height:28}}
-                        onClick={() => setIsDeleteAllCandidatesOpen(true)}
-                        title="Eliminar todas las candidatas"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
                   </>
                 )}
                 {hasCandidatesWithCrm && (
@@ -101,6 +91,16 @@ export function CandidatesPane({
                     title={refetchingPhotos ? "Importando fotos..." : "Actualizar fotos desde CRM"}
                   >
                     <ImageUp size={14} />
+                  </button>
+                )}
+                {!isVotingStarted && hasCandidates && (
+                  <button
+                    className="avd-btn avd-btn-icon-sm text-[var(--avd-bad)]"
+                    style={{width:28,height:28}}
+                    onClick={() => setIsDeleteAllCandidatesOpen(true)}
+                    title="Eliminar todas las candidatas"
+                  >
+                    <Trash2 size={14} />
                   </button>
                 )}
               </div>
