@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { getRoundTeamLabel } from "@/lib/candidateFormat";
-import { Chip, AccentBar, SelectedCandidatesSidebar, BallotsGrid } from "./_shared";
+import { Chip, SelectedCandidatesSidebar, BallotTicker } from "./_shared";
 
 interface SelectedCandidate {
   id: string;
@@ -47,7 +46,6 @@ export function ProjectionVoting({
   const percentage = maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
   const [flash, setFlash] = useState(false);
   const [prev, setPrev] = useState(voteCount);
-  const [ballotsRef] = useAutoAnimate();
 
   useEffect(() => {
     let t: number | null = null;
@@ -118,12 +116,10 @@ export function ProjectionVoting({
             </div>
           </>
         ) : (
-          /* Ballot summary view */
-          <div className="px-10 py-8 flex flex-col gap-6">
-            <div className="proj-label mb-0">Papeletas registradas</div>
-            <div ref={ballotsRef}>
-              <BallotsGrid summaries={ballotSummaries} />
-            </div>
+          /* Ballot ticker view */
+          <div className="flex flex-col gap-5 py-10 px-10 min-w-0">
+            <div className="proj-label">Papeletas registradas · {ballotSummaries.length} votos</div>
+            <BallotTicker summaries={ballotSummaries} />
           </div>
         )}
       </div>

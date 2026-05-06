@@ -92,11 +92,11 @@ export function ProjectionResults({
     <div className="proj-page overflow-visible">
       {/* Header */}
       <div className="proj-header">
-        <h1 className="proj-header-title">{roundTitle}</h1>
+        <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
         <div className="flex items-center gap-2 ml-1">
           <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
-          {selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
+          {(showSelected || showBallotSummary) && selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
         </div>
         <div className="proj-spacer" />
         <div className="proj-header-meta">{displayResults.length} candidatos votados</div>

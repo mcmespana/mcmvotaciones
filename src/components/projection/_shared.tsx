@@ -85,7 +85,33 @@ export function SelectedCandidatesSidebar({ candidates }: { candidates: Selected
   );
 }
 
-/* ── BallotsGrid ── */
+/* ── BallotCard (shared) ── */
+
+function BallotCard({ ballot }: { ballot: BallotSummary }) {
+  return (
+    <div className="proj-ballot-card">
+      <div className="proj-ballot-card-accent" />
+      <div className="proj-ballot-card-top">
+        <span className="proj-ballot-card-code">{ballot.voteCode}</span>
+        <span className="proj-ballot-card-round">R{ballot.roundNumber}</span>
+      </div>
+      <div className="proj-ballot-card-sep" />
+      <ol className="proj-ballot-card-votes">
+        {ballot.votes.filter(Boolean).map((v, i) => (
+          <li key={i} className="proj-ballot-card-vote">
+            <span className="proj-ballot-card-vote-n">{i + 1}</span>
+            <span className="proj-ballot-card-vote-name">{v}</span>
+          </li>
+        ))}
+        {ballot.votes.filter(Boolean).length === 0 && (
+          <li className="proj-ballot-card-vote proj-ballot-card-vote--empty">Sin votos</li>
+        )}
+      </ol>
+    </div>
+  );
+}
+
+/* ── BallotsGrid (used in Results static view) ── */
 
 export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
@@ -100,19 +126,35 @@ export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   return (
     <div className="avd-ballots-grid">
       {summaries.map((ballot) => (
-        <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} className="avd-card avd-ballot-card">
-          <AccentBar />
-          <div className="avd-ballot-card-header">
-            <span className="avd-ballot-code">{ballot.voteCode}</span>
-            <span className="avd-ballot-round-chip">R{ballot.roundNumber}</span>
-          </div>
-          <div className="avd-ballot-votes">
-            <span><span className="avd-ballot-vote-num">1.</span>{ballot.votes[0] || "—"}</span>
-            <span><span className="avd-ballot-vote-num">2.</span>{ballot.votes[1] || "—"}</span>
-            <span><span className="avd-ballot-vote-num">3.</span>{ballot.votes[2] || "—"}</span>
-          </div>
-        </div>
+        <BallotCard key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} ballot={ballot} />
       ))}
+    </div>
+  );
+}
+
+/* ── BallotTicker (used in Voting live view) ── */
+
+export function BallotTicker({ summaries }: { summaries: BallotSummary[] }) {
+  if (summaries.length === 0) {
+    return (
+      <div className="proj-ballot-ticker-empty">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="proj-ballot-ticker-skeleton" />
+        ))}
+      </div>
+    );
+  }
+  // Duplicate for seamless infinite loop
+  const looped = [...summaries, ...summaries];
+  const durationS = Math.max(24, summaries.length * 8);
+
+  return (
+    <div className="proj-ballot-ticker-wrap">
+      <div className="proj-ballot-ticker" style={{ animationDuration: `${durationS}s` }}>
+        {looped.map((ballot, i) => (
+          <BallotCard key={`${i}-${ballot.voteCode}`} ballot={ballot} />
+        ))}
+      </div>
     </div>
   );
 }
