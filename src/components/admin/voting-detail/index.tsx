@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Download, XCircle } from "lucide-react";
+import { fetchCRMPhotos } from "@/lib/sinergiaCRM";
 import { ResultsAnalytics } from "@/components/admin/ResultsAnalytics";
 import { BallotReview } from "@/components/voting/BallotReview";
 import { useRoundWorkflow } from "@/hooks/useRoundWorkflow";
@@ -65,6 +66,7 @@ export function AdminVotingDetail() {
   const [candidateSearch, setCandidateSearch] = useState("");
   const [candidateView, setCandidateView] = useState<"list" | "grid">("list");
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
+  const [refetchingPhotos, setRefetchingPhotos] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isBallotsOpen, setIsBallotsOpen] = useState(false);
@@ -74,6 +76,7 @@ export function AdminVotingDetail() {
 
   const activeCandidatesCount = useMemo(() => candidates.filter((c) => !c.is_eliminated).length, [candidates]);
   const selectedCandidatesCount = useMemo(() => candidates.filter((c) => c.is_selected).length, [candidates]);
+  const hasCandidatesWithCrm = useMemo(() => candidates.some((c) => c.crm_id), [candidates]);
   const hasCandidates = activeCandidatesCount > 0;
   const maxSelectedCandidates = round?.max_selected_candidates || 6;
   const selectionQuotaReached = selectedCandidatesCount >= maxSelectedCandidates;
@@ -151,6 +154,29 @@ export function AdminVotingDetail() {
     if (publicCandidatesUrl) await copyText(publicCandidatesUrl, "Enlace público copiado.");
   }, [copyText, publicCandidatesUrl]);
 
+  const refetchPhotos = useCallback(async () => {
+    if (!roundId || refetchingPhotos) return;
+    const photoCandidates = candidates
+      .filter((c) => c.crm_id)
+      .map((c) => ({ crm_id: c.crm_id!, candidate_id: c.id }));
+    if (!photoCandidates.length) return;
+    setRefetchingPhotos(true);
+    try {
+      const SESSIONKEY_USER = 'crm_user';
+      const SESSIONKEY_PASS = 'crm_pass';
+      const user = sessionStorage.getItem(SESSIONKEY_USER) ?? undefined;
+      const pass = sessionStorage.getItem(SESSIONKEY_PASS) ?? undefined;
+      const credentials = user && pass ? { user, pass } : undefined;
+      const result = await fetchCRMPhotos(photoCandidates, roundId, credentials);
+      toast({ title: `Fotos actualizadas`, description: `${result.uploaded} importadas · ${result.failed} sin foto en CRM` });
+      await loadCandidates();
+    } catch (err) {
+      toast({ title: "Error al importar fotos", description: String(err), variant: "destructive" });
+    } finally {
+      setRefetchingPhotos(false);
+    }
+  }, [roundId, candidates, refetchingPhotos, toast, loadCandidates]);
+
   /* ── Loading / Not found ── */
 
   if (loading) {
@@ -220,7 +246,9 @@ export function AdminVotingDetail() {
           candidateSearch={candidateSearch} setCandidateSearch={setCandidateSearch}
           openAddCandidateDialog={openAddCandidateDialog} setIsImportOpen={setIsImportOpen}
           openComunicaImport={openComunicaImport} setIsDeleteAllCandidatesOpen={setIsDeleteAllCandidatesOpen}
-          setIsDatasetOpen={setIsDatasetOpen} openEditCandidateDialog={openEditCandidateDialog}
+          setIsDatasetOpen={setIsDatasetOpen} hasCandidatesWithCrm={hasCandidatesWithCrm}
+          refetchingPhotos={refetchingPhotos} onRefetchPhotos={refetchPhotos}
+          openEditCandidateDialog={openEditCandidateDialog}
           setCandidateToSelect={setCandidateToSelect} setCandidateToUnselect={setCandidateToUnselect}
           setCandidateToDelete={setCandidateToDelete} candidatesRef={candidatesRef} initials={initials}
         />

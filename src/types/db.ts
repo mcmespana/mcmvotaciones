@@ -37,6 +37,7 @@ export interface CandidateRow {
   age: number | null;
   description: string | null;
   image_url: string | null;
+  crm_id: string | null;
   order_index: number;
   is_eliminated: boolean;
   is_selected: boolean;

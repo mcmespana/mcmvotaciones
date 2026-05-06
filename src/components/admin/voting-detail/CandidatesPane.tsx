@@ -1,4 +1,4 @@
-import { ArrowUpRight, Download, Grid, List, Pencil, Search, Trash2, Undo2, Upload, UserPlus } from "lucide-react";
+import { ArrowUpRight, Download, Grid, ImageUp, List, Pencil, Search, Trash2, Undo2, Upload, UserPlus } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import type { Candidate } from "./hooks/useRoundDetail";
 
@@ -18,6 +18,9 @@ interface Props {
   openComunicaImport: () => void;
   setIsDeleteAllCandidatesOpen: (v: boolean) => void;
   setIsDatasetOpen: (v: boolean) => void;
+  hasCandidatesWithCrm: boolean;
+  refetchingPhotos: boolean;
+  onRefetchPhotos: () => void;
   openEditCandidateDialog: (c: Candidate) => void;
   setCandidateToSelect: (c: Candidate | null) => void;
   setCandidateToUnselect: (c: Candidate | null) => void;
@@ -30,6 +33,7 @@ export function CandidatesPane({
   filteredCandidates, selectedCandidatesCount, activeCandidatesCount, hasCandidates, isVotingStarted,
   candidateView, setCandidateView, candidateSearch, setCandidateSearch,
   openAddCandidateDialog, setIsImportOpen, openComunicaImport, setIsDeleteAllCandidatesOpen, setIsDatasetOpen,
+  hasCandidatesWithCrm, refetchingPhotos, onRefetchPhotos,
   openEditCandidateDialog, setCandidateToSelect, setCandidateToUnselect, setCandidateToDelete,
   candidatesRef, initials,
 }: Props) {
@@ -86,6 +90,17 @@ export function CandidatesPane({
                     </button>
                   </>
                 )}
+                {hasCandidatesWithCrm && (
+                  <button
+                    className="avd-btn avd-btn-sm"
+                    onClick={onRefetchPhotos}
+                    disabled={refetchingPhotos}
+                    title="Reimportar fotos desde Comunica CRM"
+                  >
+                    <ImageUp size={14} />
+                    {refetchingPhotos ? "Importando..." : "Fotos CRM"}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -102,7 +117,11 @@ export function CandidatesPane({
                     key={c.id}
                     className={`avd-cand-row ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
                   >
-                    <div className="avd-cand-avatar">{initials(c)}</div>
+                    <div className="avd-cand-avatar overflow-hidden">
+                      {c.image_url
+                        ? <img src={c.image_url} alt="" className="w-full h-full object-cover rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!).dataset.initials = initials(c); (e.currentTarget.parentElement!).textContent = initials(c); }} />
+                        : initials(c)}
+                    </div>
                     <div className="avd-cand-info">
                       <div className="avd-cand-name">{formatCandidateName(c)}</div>
                       <div className="avd-cand-meta">
@@ -163,7 +182,11 @@ export function CandidatesPane({
                       className={`avd-cand-card ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
                     >
                       <div className="avd-cand-card-head">
-                        <div className="avd-cand-card-avatar">{initials(c)}</div>
+                        <div className="avd-cand-card-avatar overflow-hidden">
+                          {c.image_url
+                            ? <img src={c.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; e.currentTarget.parentElement!.textContent = initials(c); }} />
+                            : initials(c)}
+                        </div>
                         <div className="avd-cand-card-body">
                           <div className="avd-cand-card-name">{formatCandidateName(c)}</div>
                           <div className="avd-cand-card-meta">
