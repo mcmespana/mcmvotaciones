@@ -70,9 +70,9 @@ export function ProjectionWaiting({
 
   return (
     <div className="proj-page">
-      {/* Ambient background orbs */}
-      <div className="proj-orb" style={{ width: 600, height: 600, background: "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(100px)", top: "-15%", left: "-10%", animation: "proj-orb-slow-a 25s ease-in-out infinite" }} />
-      <div className="proj-orb" style={{ width: 500, height: 500, background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(80px)", bottom: "-10%", right: "-5%", animation: "proj-orb-slow-b 30s ease-in-out infinite" }} />
+      {/* Ambient background orbs — static colors, keep in CSS class if possible but using inline for filter/animation shorthand */}
+      <div className="proj-orb w-[600px] h-[600px] bg-[color-mix(in_oklch,var(--avd-brand)_5%,transparent)] blur-[100px] -top-[15%] -left-[10%] [animation:proj-orb-slow-a_25s_ease-in-out_infinite]" />
+      <div className="proj-orb w-[500px] h-[500px] bg-[color-mix(in_oklch,var(--avd-brand)_4%,transparent)] blur-[80px] -bottom-[10%] -right-[5%] [animation:proj-orb-slow-b_30s_ease-in-out_infinite]" />
 
       {/* Topbar */}
       <div className="proj-topbar">
@@ -94,16 +94,16 @@ export function ProjectionWaiting({
         <div className="proj-waiting-left">
           {/* Title block */}
           <div>
-            <div className="proj-overline" style={{ marginBottom: 16 }}>Sistema de votaciones</div>
+            <div className="proj-overline mb-4">Sistema de votaciones</div>
             <h1 className="proj-waiting-title">MCM Votaciones</h1>
             <p className="proj-waiting-subtitle">{subtitle}</p>
           </div>
 
           {/* Access code */}
           {normalizedCode && shouldShowJoinQr && (
-            <div className="avd-card" style={{ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" }}>
+            <div className="avd-card px-9 py-8 [animation:proj-code-pulse_3s_ease-in-out_infinite]">
               <AccentBar />
-              <div className="proj-overline" style={{ marginBottom: 20 }}>Código de acceso</div>
+              <div className="proj-overline mb-5">Código de acceso</div>
               <div className="proj-code-chars">
                 {normalizedCode.split("").map((char, index) => {
                   const isDigit = /[0-9]/.test(char);
@@ -130,7 +130,7 @@ export function ProjectionWaiting({
               </div>
               {hasAmbiguous && (
                 <p className="proj-code-note">
-                  Nota: el <span style={{ fontFamily: "var(--avd-font-mono)", color: "var(--avd-brand)" }}>0</span> (cero) se muestra con barra diagonal.
+                  Nota: el <span className="font-avd-mono text-avd-brand">0</span> (cero) se muestra con barra diagonal.
                 </p>
               )}
             </div>
@@ -138,7 +138,7 @@ export function ProjectionWaiting({
 
           {/* QR */}
           {shouldShowJoinQr && (
-            <div className="avd-card" style={{ padding: "28px 32px" }}>
+            <div className="avd-card px-8 py-7">
               <AccentBar />
               <div className="proj-qr-grid">
                 <div className="proj-qr-frame">

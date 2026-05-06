@@ -89,11 +89,11 @@ export function ProjectionResults({
   );
 
   return (
-    <div className="proj-page" style={{ overflow: "unset" }}>
+    <div className="proj-page overflow-visible">
       {/* Header */}
       <div className="proj-header">
         <h1 className="proj-header-title">{roundTitle}</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
+        <div className="flex items-center gap-2 ml-1">
           <Chip kind="warn" label={getRoundTeamLabel(team)} />
           <Chip kind="brand" label={`Ronda ${roundNumber}`} />
           {selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
@@ -112,7 +112,7 @@ export function ProjectionResults({
               )}
 
               {/* Top 5: animated — primero para jerarquía visual */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="grid grid-cols-2 gap-3">
                 {top5Sorted.map((result) => {
                   const cand = candidates.find((c) => c.id === result.candidate_id);
                   if (!cand) return null;
@@ -131,7 +131,7 @@ export function ProjectionResults({
               {restResults.length > 0 && (
                 <>
                   <div className="proj-results-rest-label">Resto de candidatos</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="grid grid-cols-2 gap-[10px]">
                     {restResults.map((result) => {
                       const cand = candidates.find((c) => c.id === result.candidate_id);
                       if (!cand) return null;
@@ -156,9 +156,9 @@ export function ProjectionResults({
             </div>
             {selectedSidebar || (
               <div className="proj-sidebar-empty">
-                <div style={{ textAlign: "center", padding: 24 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--avd-fg-muted)" }}>Sin seleccionados</div>
-                  <div style={{ fontSize: 13, color: "var(--avd-fg-faint)", marginTop: 6 }}>Ningún candidato superó el 50%.</div>
+                <div className="text-center p-6">
+                  <div className="text-base font-bold text-avd-fg-muted">Sin seleccionados</div>
+                  <div className="text-[13px] text-[var(--avd-fg-faint)] mt-[6px]">Ningún candidato superó el 50%.</div>
                 </div>
               </div>
             )}
@@ -192,7 +192,7 @@ function ResultRow({
         {isTop ? <Check size={20} strokeWidth={3} /> : rank}
       </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1 min-w-0">
         <div className={`proj-result-name${isTop ? " proj-result-name--top" : ""}`}>
           {formatCandidateName(cand)}
           {isTop && <span className="proj-selected-badge">SELECCIONADO</span>}

@@ -67,19 +67,13 @@ export function CandidateListCard({
   return (
     <div
       className={cn(
-        "pub-cand-card relative outline-none",
+        "pub-cand-card relative outline-none select-none",
         onClick && "group cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500/35",
         selected && "!border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/25"
       )}
       onClick={handleClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
-      style={{ 
-        WebkitTapHighlightColor: "transparent",
-        WebkitUserSelect: "none",
-        userSelect: "none",
-        WebkitTouchCallout: "none"
-      }}
       onTouchStart={startPress}
       onTouchEnd={cancelPress}
       onTouchMove={cancelPress}
@@ -108,7 +102,7 @@ export function CandidateListCard({
       )}
 
       <div
-        style={{ flexShrink: 0, lineHeight: 0 }}
+        className="shrink-0 leading-none"
         onTouchStart={onImageLongPress ? startImgPress : undefined}
         onTouchEnd={onImageLongPress ? cancelImgPress : undefined}
         onTouchMove={onImageLongPress ? cancelImgPress : undefined}
@@ -126,41 +120,30 @@ export function CandidateListCard({
         />
       </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--avd-fg)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-sm text-[var(--avd-fg)] tracking-[-0.01em] leading-[1.3]">
           {formatCandidateName(candidate)}
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 }}>
+        <div className="flex flex-wrap gap-1 mt-[5px]">
           {candidate.location && (
-            <span className="avd-chip" style={{ fontSize: 11, gap: 3, maxWidth: "100%" }}>
-              <MapPin style={{ width: 10, height: 10, flexShrink: 0 }} />
+            <span className="avd-chip text-[11px] gap-[3px] max-w-full">
+              <MapPin className="w-2.5 h-2.5 shrink-0" />
               <span className="truncate">{candidate.location}</span>
             </span>
           )}
           {candidate.group_name && (
-            <span className="avd-chip" style={{ fontSize: 11, maxWidth: "100%" }}>
+            <span className="avd-chip text-[11px] max-w-full">
               <span className="truncate">{candidate.group_name}</span>
             </span>
           )}
           {candidate.age != null && (
-            <span className="avd-chip" style={{ fontSize: 11, flexShrink: 0 }}>
+            <span className="avd-chip text-[11px] shrink-0">
               {candidate.age} a
             </span>
           )}
         </div>
         {candidate.description && (
-          <p
-            style={{
-              margin: "6px 0 0",
-              fontSize: 12,
-              color: "var(--avd-fg-muted)",
-              lineHeight: 1.5,
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
+          <p className="mt-1.5 text-xs text-[var(--avd-fg-muted)] leading-[1.5] line-clamp-3">
             {candidate.description}
           </p>
         )}
@@ -172,15 +155,7 @@ export function CandidateListCard({
           type="button"
           aria-label="Ver detalles"
           onClick={(e) => { e.stopPropagation(); onDetailView(candidate); }}
-          style={{
-            position: "absolute", bottom: 8, right: 8,
-            background: "none", border: "none", cursor: "pointer",
-            color: "var(--avd-fg-faint)", padding: 4, borderRadius: 6,
-            display: "flex", alignItems: "center",
-            opacity: 0.6,
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+          className="absolute bottom-2 right-2 bg-transparent border-none cursor-pointer text-[var(--avd-fg-faint)] p-1 rounded-[6px] flex items-center opacity-60 hover:opacity-100 transition-opacity"
         >
           <Info size={14} />
         </button>

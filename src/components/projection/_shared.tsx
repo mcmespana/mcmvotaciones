@@ -37,7 +37,7 @@ export function card(extra?: React.CSSProperties): React.CSSProperties {
 
 export function AccentBar({ color }: { color?: string }): React.ReactNode {
   return color
-    ? <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color, opacity: 0.9 }} />
+    ? <div className="absolute top-0 left-0 right-0 h-[3px] opacity-90" style={{ background: color }} />
     : <div className="avd-accent-bar" />;
 }
 
@@ -70,7 +70,7 @@ export function SelectedCandidatesSidebar({ candidates }: { candidates: Selected
         ) : (
           candidates.map((c) => (
             <div key={c.id} className="avd-selected-sidebar-row">
-              <div style={{ minWidth: 0 }}>
+              <div className="min-w-0">
                 <div className="avd-selected-sidebar-name">{formatCandidateName(c)}</div>
                 {c.location && <div className="avd-selected-sidebar-loc">{c.location}</div>}
               </div>

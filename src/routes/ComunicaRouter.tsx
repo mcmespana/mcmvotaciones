@@ -9,12 +9,12 @@ export function ComunicaRouter() {
 
   if (!isSupabaseConfigured) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--avd-bg)', fontFamily: 'var(--avd-font-sans)' }}>
-        <div style={{ width: '100%', maxWidth: 420, background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', padding: '28px 24px', textAlign: 'center', boxShadow: 'var(--avd-shadow-md)' }}>
-          <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--avd-fg)', marginBottom: 6 }}>Supabase no configurado</div>
-          <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)', lineHeight: 1.55 }}>
-            Configura las variables de entorno <span style={{ fontFamily: 'var(--avd-font-mono)', fontSize: 12 }}>VITE_SUPABASE_URL</span> y{' '}
-            <span style={{ fontFamily: 'var(--avd-font-mono)', fontSize: 12 }}>VITE_SUPABASE_ANON_KEY</span> para usar esta sección.
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
+        <div className="w-full max-w-[420px] bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] px-6 py-7 text-center shadow-[var(--avd-shadow-md)]">
+          <div className="font-bold text-base text-[var(--avd-fg)] mb-1.5">Supabase no configurado</div>
+          <div className="text-[13px] text-[var(--avd-fg-muted)] leading-[1.55]">
+            Configura las variables de entorno <span className="font-[var(--avd-font-mono)] text-xs">VITE_SUPABASE_URL</span> y{' '}
+            <span className="font-[var(--avd-font-mono)] text-xs">VITE_SUPABASE_ANON_KEY</span> para usar esta sección.
           </div>
         </div>
       </div>
@@ -23,12 +23,11 @@ export function ComunicaRouter() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--avd-bg)', fontFamily: 'var(--avd-font-sans)' }}>
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 36, height: 36, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-          <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)', fontWeight: 500 }}>Cargando...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
+        <div className="text-center flex flex-col items-center gap-[14px]">
+          <div className="w-9 h-9 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin [animation-duration:0.7s]" />
+          <div className="text-[13px] text-[var(--avd-fg-muted)] font-medium">Cargando...</div>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -43,19 +42,19 @@ export function ComunicaRouter() {
 
   if (!isAdmin) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--avd-bg)', fontFamily: 'var(--avd-font-sans)' }}>
-        <div style={{ width: '100%', maxWidth: 420, textAlign: 'center' }}>
-          <div style={{ background: 'var(--avd-surface)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-lg)', overflow: 'hidden', boxShadow: 'var(--avd-shadow-md)' }}>
-            <div style={{ height: 3, background: 'linear-gradient(90deg, var(--avd-bad-500), oklch(0.66 0.22 28))' }} />
-            <div style={{ padding: '32px 28px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-              <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'var(--avd-bad-bg)', border: '1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)', display: 'grid', placeItems: 'center' }}>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
+        <div className="w-full max-w-[420px] text-center">
+          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] overflow-hidden shadow-[var(--avd-shadow-md)]">
+            <div className="h-[3px] bg-gradient-to-r from-[var(--avd-bad-500)] to-[oklch(0.66_0.22_28)]" />
+            <div className="px-7 pt-8 pb-7 flex flex-col items-center gap-4">
+              <div className="w-[58px] h-[58px] rounded-full bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] grid place-items-center">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--avd-bad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
               </div>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.015em', color: 'var(--avd-fg)', marginBottom: 6 }}>Acceso Denegado</div>
-                <div style={{ fontSize: 13.5, color: 'var(--avd-fg-muted)', lineHeight: 1.55 }}>Solo los administradores pueden acceder a esta sección.</div>
+                <div className="text-[20px] font-bold tracking-[-0.015em] text-[var(--avd-fg)] mb-1.5">Acceso Denegado</div>
+                <div className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.55]">Solo los administradores pueden acceder a esta sección.</div>
               </div>
-              <button className="avd-btn" onClick={() => { window.location.href = '/'; }} style={{ marginTop: 4, gap: 6 }}>
+              <button className="avd-btn mt-1 gap-1.5" onClick={() => { window.location.href = '/'; }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                 Volver a la página principal
               </button>

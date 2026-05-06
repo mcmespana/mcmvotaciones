@@ -39,7 +39,9 @@
       "PowerShell(supabase *)",
       "Bash(Remove-Item \"C:\\\\Users\\\\izanr\\\\Projects\\\\mcmvotaciones\\\\supabase\\\\functions\\\\crm-proxy\\\\index copy.ts\" -ErrorAction SilentlyContinue)",
       "mcp__ide__getDiagnostics",
-      "mcp__332567f4-df56-4efc-8f8c-72671296cff1__apply_migration"
+      "mcp__332567f4-df56-4efc-8f8c-72671296cff1__apply_migration",
+      "Bash(git checkout *)",
+      "Bash(git merge refactor/css-inline-styles --no-ff -m 'refactor: unify CSS — replace inline styles with Tailwind across 34 files *)"
     ]
   }
 }

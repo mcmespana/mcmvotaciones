@@ -20,11 +20,7 @@ const DEFAULT_RELATIONSHIP_TYPES = ['grupo', 'monitor'];
 
 function StepBadge({ n }: { n: number }) {
   return (
-    <span style={{
-      width: 22, height: 22, borderRadius: '50%',
-      background: 'var(--avd-brand)', color: '#fff',
-      fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center', flexShrink: 0,
-    }}>{n}</span>
+    <span className="w-[22px] h-[22px] rounded-full bg-[var(--avd-brand)] text-white text-[11px] font-extrabold grid place-items-center shrink-0">{n}</span>
   );
 }
 
@@ -237,21 +233,8 @@ export function ComunicaImport() {
 
   const selectedRound = rounds.find(r => r.id === selectedRoundId);
 
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--avd-surface)',
-    border: '1px solid var(--avd-border)',
-    borderRadius: 'var(--avd-radius-md)',
-    overflow: 'hidden',
-  };
-
-  const sectionHeadStyle: React.CSSProperties = {
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--avd-border-soft)',
-    background: 'var(--avd-bg-elev)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  };
+  const cardClass = 'bg-avd-surface border border-avd-border rounded-avd-md overflow-hidden';
+  const sectionHeadClass = 'px-4 py-3 border-b border-avd-border-soft bg-[var(--avd-bg-elev)] flex items-center gap-[10px]';
 
   return (
     <div className="adm-page">
@@ -259,9 +242,9 @@ export function ComunicaImport() {
       <header className="adm-topbar">
         <div className="adm-brand">
           <div className="avd-brand-mark">C</div>
-          <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--avd-fg)' }}>VotacionesMCM</span>
+          <span className="font-bold text-sm text-avd-fg">VotacionesMCM</span>
         </div>
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
         <button className="avd-btn avd-btn-sm" onClick={() => navigate(selectedRoundId ? `/admin/votaciones/${selectedRoundId}` : '/admin/dashboard?tab=votaciones')}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
           Volver
@@ -269,36 +252,36 @@ export function ComunicaImport() {
       </header>
 
       {/* Page header */}
-      <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--avd-border)', background: 'var(--avd-bg-elev)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: 860, margin: '0 auto' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--avd-brand-bg)', border: '1px solid var(--avd-brand-border)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+      <div className="px-6 pt-[18px] pb-[14px] border-b border-avd-border bg-[var(--avd-bg-elev)]">
+        <div className="flex items-center gap-3 max-w-[860px] mx-auto">
+          <div className="w-10 h-10 rounded-full bg-avd-brand-bg border border-[var(--avd-brand-border)] grid place-items-center flex-shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
           </div>
           <div>
-            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--avd-fg)' }}>Importar desde SinergiaCRM</div>
-            <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)', marginTop: 2 }}>Importa personas del CRM directamente a una votación existente</div>
+            <div className="text-[17px] font-extrabold tracking-tight text-avd-fg">Importar desde SinergiaCRM</div>
+            <div className="text-[13px] text-avd-fg-muted mt-0.5">Importa personas del CRM directamente a una votación existente</div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="adm-scroll" style={{ padding: '20px 24px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="adm-scroll p-5 px-6">
+        <div className="max-w-[860px] mx-auto flex flex-col gap-4">
 
           {/* ── PASO 1: Seleccionar votación ── */}
           {step === 'select-round' && (
-            <div style={cardStyle}>
-              <div style={sectionHeadStyle}>
+            <div className={cardClass}>
+              <div className={sectionHeadClass}>
                 <StepBadge n={1} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Configurar consulta</div>
-                  <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>Elige la votación de destino y configura la conexión con SinergiaCRM.</div>
+                  <div className="font-bold text-[13px] text-avd-fg">Configurar consulta</div>
+                  <div className="text-xs text-avd-fg-muted">Elige la votación de destino y configura la conexión con SinergiaCRM.</div>
                 </div>
               </div>
-              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="px-5 py-4 flex flex-col gap-4">
                 {roundsLoading ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--avd-fg-muted)', padding: '12px 0' }}>
-                    <div style={{ width: 16, height: 16, border: '2px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+                  <div className="flex items-center gap-2 text-[13px] text-avd-fg-muted py-3">
+                    <div className="w-4 h-4 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full shrink-0 [animation:spin_0.7s_linear_infinite]" />
                     Cargando votaciones...
                   </div>
                 ) : rounds.length === 0 ? (
@@ -320,26 +303,26 @@ export function ComunicaImport() {
                         ))}
                       </select>
                       {selectedRound && (
-                        <div style={{ marginTop: 8, padding: '10px 12px', background: 'var(--avd-bg-sunken)', border: '1px solid var(--avd-border-soft)', borderRadius: 'var(--avd-radius-sm)', fontSize: 12.5 }}>
-                          <div style={{ color: 'var(--avd-fg)', marginBottom: 2 }}><strong>Votación:</strong> {selectedRound.title}</div>
-                          <div style={{ color: 'var(--avd-fg-muted)' }}><strong>Año / Equipo:</strong> {selectedRound.year} · {selectedRound.team} &nbsp;·&nbsp; <strong>Candidatos:</strong> {selectedRound.candidate_count}</div>
+                        <div className="mt-2 p-[10px_12px] bg-avd-bg-sunken border border-avd-border-soft rounded-avd-sm text-[12.5px]">
+                          <div className="text-avd-fg mb-0.5"><strong>Votación:</strong> {selectedRound.title}</div>
+                          <div className="text-avd-fg-muted"><strong>Año / Equipo:</strong> {selectedRound.year} · {selectedRound.team} &nbsp;·&nbsp; <strong>Candidatos:</strong> {selectedRound.candidate_count}</div>
                         </div>
                       )}
                     </div>
 
                     {/* Credenciales CRM */}
-                    <div style={{ border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', background: 'var(--avd-bg-sunken)', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--avd-border-soft)', display: 'flex', gap: 8 }}>
-                        <div style={{ width: 3, borderRadius: 2, background: 'var(--avd-brand)', flexShrink: 0 }} />
+                    <div className="avd-section-card">
+                      <div className="avd-section-card-header">
+                        <div className="avd-section-accent" />
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: 12.5, color: 'var(--avd-fg)' }}>Acceso a SinergiaCRM</div>
-                          <div style={{ fontSize: 11.5, color: 'var(--avd-fg-muted)', marginTop: 1 }}>
+                          <div className="font-bold text-[12.5px] text-avd-fg">Acceso a SinergiaCRM</div>
+                          <div className="text-[11.5px] text-avd-fg-muted mt-[1px]">
                             Usuario y contraseña con acceso a{' '}
-                            <span style={{ fontFamily: 'var(--avd-font-mono)', fontSize: 11 }}>tu CRM configurado</span>
+                            <span className="font-avd-mono text-[11px]">tu CRM configurado</span>
                           </div>
                         </div>
                       </div>
-                      <div className="avd-form-grid avd-form-grid-2" style={{ padding: '12px 14px' }}>
+                      <div className="avd-form-grid avd-form-grid-2 p-[12px_14px]">
                         <div className="avd-form-field">
                           <label className="avd-label">Usuario</label>
                           <input className="avd-input" placeholder="usuario@mcm..." value={crmUser} onChange={e => setCrmUser(e.target.value)} autoComplete="username" />
@@ -352,30 +335,30 @@ export function ComunicaImport() {
                     </div>
 
                     {/* Filtro tipos de relación */}
-                    <div style={{ border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', background: 'var(--avd-bg-sunken)', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--avd-border-soft)', display: 'flex', gap: 8 }}>
-                        <div style={{ width: 3, borderRadius: 2, background: 'var(--avd-brand)', flexShrink: 0 }} />
+                    <div className="avd-section-card">
+                      <div className="avd-section-card-header">
+                        <div className="avd-section-accent" />
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: 12.5, color: 'var(--avd-fg)' }}>Filtrar por tipo de relación</div>
-                          <div style={{ fontSize: 11.5, color: 'var(--avd-fg-muted)', marginTop: 1 }}>Solo se importarán personas con al menos una de las relaciones marcadas.</div>
+                          <div className="font-bold text-[12.5px] text-avd-fg">Filtrar por tipo de relación</div>
+                          <div className="text-[11.5px] text-avd-fg-muted mt-[1px]">Solo se importarán personas con al menos una de las relaciones marcadas.</div>
                         </div>
                       </div>
-                      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                      <div className="avd-section-card-body flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-[10px]">
                           {Array.from(new Set([...DEFAULT_RELATIONSHIP_TYPES, ...selectedRelTypes])).map(type => (
-                            <label key={type} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none', fontSize: 13 }}>
+                            <label key={type} className="flex items-center gap-[7px] cursor-pointer select-none text-[13px]">
                               <input
                                 type="checkbox"
                                 checked={selectedRelTypes.includes(type)}
                                 onChange={() => toggleRelType(type)}
-                                style={{ width: 14, height: 14, accentColor: 'var(--avd-brand)', cursor: 'pointer' }}
+                                className="w-[14px] h-[14px] accent-[var(--avd-brand)] cursor-pointer"
                               />
-                              <span style={{ color: 'var(--avd-fg)', textTransform: 'capitalize' }}>{type}</span>
+                              <span className="text-avd-fg capitalize">{type}</span>
                               {!DEFAULT_RELATIONSHIP_TYPES.includes(type) && (
                                 <button
                                   type="button"
                                   onClick={e => { e.preventDefault(); setSelectedRelTypes(prev => prev.filter(t => t !== type)); }}
-                                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--avd-fg-faint)', display: 'flex' }}
+                                  className="bg-transparent border-0 cursor-pointer p-0 text-avd-fg-faint flex"
                                 >
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
                                 </button>
@@ -383,14 +366,13 @@ export function ComunicaImport() {
                             </label>
                           ))}
                         </div>
-                        <div style={{ display: 'flex', gap: 6 }}>
+                        <div className="flex gap-[6px]">
                           <input
-                            className="avd-input"
+                            className="avd-input h-[30px] text-xs"
                             placeholder="Añadir otro tipo..."
                             value={newRelType}
                             onChange={e => setNewRelType(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addRelType(); } }}
-                            style={{ height: 30, fontSize: 12 }}
                           />
                           <button className="avd-btn avd-btn-sm" onClick={addRelType} disabled={!newRelType.trim()}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
@@ -398,14 +380,14 @@ export function ComunicaImport() {
                           </button>
                         </div>
                         {selectedRelTypes.length === 0 && (
-                          <div style={{ fontSize: 12, color: 'var(--avd-warn-fg)', padding: '6px 10px', background: 'var(--avd-warn-bg)', borderRadius: 'var(--avd-radius-sm)', border: '1px solid color-mix(in oklch, var(--avd-warn) 30%, transparent)' }}>
+                          <div className="avd-warn-notice text-xs !justify-start">
                             Sin filtro activo se traerán todos los contactos del CRM.
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <button className="avd-btn avd-btn-primary avd-btn-block" style={{ height: 40, fontSize: 14, fontWeight: 700, justifyContent: 'center' }} disabled={!selectedRoundId} onClick={() => setStep('confirm-fetch')}>
+                    <button className="avd-btn avd-btn-primary avd-btn-block h-10 text-sm font-bold justify-center" disabled={!selectedRoundId} onClick={() => setStep('confirm-fetch')}>
                       Continuar
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                     </button>
@@ -417,34 +399,34 @@ export function ComunicaImport() {
 
           {/* ── PASO 2: Confirmar consulta ── */}
           {step === 'confirm-fetch' && (
-            <div style={cardStyle}>
-              <div style={sectionHeadStyle}>
+            <div className={cardClass}>
+              <div className={sectionHeadClass}>
                 <StepBadge n={2} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Consultar SinergiaCRM</div>
-                  <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>
+                  <div className="font-bold text-[13px] text-avd-fg">Consultar SinergiaCRM</div>
+                  <div className="text-xs text-avd-fg-muted">
                     Se descargarán contactos con relación{' '}
                     {selectedRelTypes.length > 0 ? <strong>{selectedRelTypes.join(', ')}</strong> : <strong>cualquiera</strong>}.
                     {' '}Puede tardar unos segundos.
                   </div>
                 </div>
               </div>
-              <div style={{ padding: '20px' }}>
+              <div className="p-5">
                 {fetchLoading ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0', textAlign: 'center' }}>
-                    <div style={{ width: 32, height: 32, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                  <div className="flex flex-col items-center gap-3 py-6 text-center">
+                    <div className="w-8 h-8 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--avd-fg)' }}>Conectando con SinergiaCRM...</div>
-                      <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)', marginTop: 4 }}>Esto puede tardar 15–30 s si hay muchos registros.</div>
+                      <div className="font-semibold text-sm text-avd-fg">Conectando con SinergiaCRM...</div>
+                      <div className="text-xs text-avd-fg-muted mt-1">Esto puede tardar 15–30 s si hay muchos registros.</div>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="avd-btn" onClick={() => setStep('select-round')} style={{ gap: 6 }}>
+                  <div className="flex gap-2">
+                    <button className="avd-btn gap-[6px]" onClick={() => setStep('select-round')}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                       Volver
                     </button>
-                    <button className="avd-btn avd-btn-primary" style={{ flex: 1, justifyContent: 'center', height: 40 }} onClick={handleFetchContacts}>
+                    <button className="avd-btn avd-btn-primary flex-1 justify-center h-10" onClick={handleFetchContacts}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                       Traer personas de SinergiaCRM
                     </button>
@@ -457,24 +439,24 @@ export function ComunicaImport() {
           {/* ── PASO 3: Revisar y seleccionar ── */}
           {step === 'review' && (
             <>
-              <div style={cardStyle}>
-                <div style={sectionHeadStyle}>
+              <div className={cardClass}>
+                <div className={sectionHeadClass}>
                   <StepBadge n={3} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Selecciona los candidatos a importar</div>
-                    <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-[13px] text-avd-fg">Selecciona los candidatos a importar</div>
+                    <div className="text-xs text-avd-fg-muted">
                       {contacts.length} personas · relación <strong>{selectedRelTypes.join(', ') || 'cualquiera'}</strong>
-                      {noRelTypeCount > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{noRelTypeCount} sin relación activa (sin marcar)</span></>}
-                      {existingCrmIds.size > 0 && <> · <span style={{ color: 'var(--avd-warn-fg)' }}>{existingCrmIds.size} ya en esta votación</span></>}
+                      {noRelTypeCount > 0 && <> · <span className="text-avd-warn-fg">{noRelTypeCount} sin relación activa (sin marcar)</span></>}
+                      {existingCrmIds.size > 0 && <> · <span className="text-avd-warn-fg">{existingCrmIds.size} ya en esta votación</span></>}
                     </div>
                   </div>
                 </div>
-                <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="p-3 px-4 flex flex-col gap-[10px]">
                   {/* Search + actions bar */}
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <div className="avd-search-wrap" style={{ flex: 1, minWidth: 200, position: 'relative' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--avd-fg-faint)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                      <input className="avd-input" style={{ paddingLeft: 30 }} placeholder="Buscar por nombre, DNI o delegación..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <div className="flex gap-2 flex-wrap items-center">
+                    <div className="avd-search-wrap flex-1 min-w-[200px] relative">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[9px] top-1/2 -translate-y-1/2 text-avd-fg-faint pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                      <input className="avd-input pl-[30px]" placeholder="Buscar por nombre, DNI o delegación..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <button className="avd-btn avd-btn-sm" onClick={selectAll}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -484,8 +466,8 @@ export function ComunicaImport() {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
                       Ninguno
                     </button>
-                    <span style={{ fontSize: 12.5, color: 'var(--avd-fg-muted)', marginLeft: 'auto' }}>
-                      <strong style={{ color: 'var(--avd-fg)' }}>{selectedCount}</strong> de <strong style={{ color: 'var(--avd-fg)' }}>{contacts.length}</strong> seleccionados
+                    <span className="text-[12.5px] text-avd-fg-muted ml-auto">
+                      <strong className="text-avd-fg">{selectedCount}</strong> de <strong className="text-avd-fg">{contacts.length}</strong> seleccionados
                       {search && ` · mostrando ${totalFiltered}`}
                     </span>
                   </div>
@@ -496,38 +478,34 @@ export function ComunicaImport() {
                       <p className="avd-empty-title">Sin resultados para «{search}»</p>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div className="flex flex-col gap-[6px]">
                       {filteredGroups.map(group => {
                         const groupSelected = group.contacts.filter(c => selected.has(c.crm_id)).length;
                         const isOpen = openGroups.has(group.location);
                         return (
-                          <div key={group.location} style={{ border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', overflow: 'hidden' }}>
+                          <div key={group.location} className="border border-avd-border rounded-avd-sm overflow-hidden">
                             <button
                               onClick={() => toggleGroup(group.location)}
-                              style={{
-                                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                                padding: '9px 12px', background: 'var(--avd-bg-elev)', border: 'none',
-                                cursor: 'pointer', textAlign: 'left', borderBottom: isOpen ? '1px solid var(--avd-border-soft)' : 'none',
-                              }}
+                              className={`w-full flex items-center gap-[10px] px-3 py-[9px] bg-[var(--avd-bg-elev)] border-none cursor-pointer text-left ${isOpen ? 'border-b border-[var(--avd-border-soft)]' : ''}`}
                             >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--avd-fg-muted)', flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                              <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--avd-fg)', flex: 1 }}>{group.location}</span>
-                              <span className="avd-chip" style={{ fontSize: 11 }}>{groupSelected}/{group.contacts.length}</span>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: 'var(--avd-fg-muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><path d="M6 9l6 6 6-6"/></svg>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-avd-fg-muted flex-shrink-0"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                              <span className="font-semibold text-[13px] text-avd-fg flex-1">{group.location}</span>
+                              <span className="avd-chip text-[11px]">{groupSelected}/{group.contacts.length}</span>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`text-avd-fg-muted transition-transform duration-150${isOpen ? ' rotate-180' : ''}`}><path d="M6 9l6 6 6-6"/></svg>
                             </button>
                             {isOpen && (
-                              <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', fontSize: 12.5, borderCollapse: 'collapse' }}>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[12.5px] border-collapse">
                                   <thead>
-                                    <tr style={{ borderBottom: '1px solid var(--avd-border-soft)' }}>
-                                      <th style={{ width: 32, padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }} />
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>Nombre</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>Apellidos</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'center' }}>Edad</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>DNI</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>Etapa</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>Relación</th>
-                                      <th style={{ padding: '6px 10px', fontWeight: 600, color: 'var(--avd-fg-muted)', textAlign: 'left' }}>Monitor de</th>
+                                    <tr className="border-b border-avd-border-soft">
+                                      <th className="w-8 px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left" />
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Nombre</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Apellidos</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-center">Edad</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">DNI</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Etapa</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Relación</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Monitor de</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -539,45 +517,36 @@ export function ComunicaImport() {
                                         <tr
                                           key={c.crm_id}
                                           onClick={() => toggleContact(c.crm_id)}
-                                          style={{
-                                            cursor: 'pointer',
-                                            opacity: alreadyIn ? 0.6 : 1,
-                                            background: isSelected
-                                              ? 'color-mix(in oklch, var(--avd-brand) 6%, transparent)'
-                                              : isNoRelType
-                                              ? 'color-mix(in oklch, var(--avd-warn) 10%, transparent)'
-                                              : (idx % 2 === 0 ? 'transparent' : 'var(--avd-bg-sunken)'),
-                                            borderBottom: '1px solid var(--avd-border-soft)',
-                                          }}
+                                          className={`cursor-pointer border-b border-avd-border-soft ${alreadyIn ? 'opacity-60' : 'opacity-100'} ${isSelected ? 'bg-[color-mix(in_oklch,var(--avd-brand)_6%,transparent)]' : isNoRelType ? 'bg-[color-mix(in_oklch,var(--avd-warn)_10%,transparent)]' : idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--avd-bg-sunken)]'}`}
                                         >
-                                          <td style={{ padding: '7px 10px' }}>
+                                          <td className="px-[10px] py-[7px]">
                                             <input
                                               type="checkbox"
                                               checked={isSelected}
                                               onChange={() => toggleContact(c.crm_id)}
                                               onClick={e => e.stopPropagation()}
-                                              style={{ width: 13, height: 13, accentColor: 'var(--avd-brand)', cursor: 'pointer' }}
+                                              className="w-[13px] h-[13px] accent-[var(--avd-brand)] cursor-pointer"
                                             />
                                           </td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg)', whiteSpace: 'nowrap' }}>
+                                          <td className="px-[10px] py-[7px] text-avd-fg whitespace-nowrap">
                                             {c.first_name}
-                                            {alreadyIn && <span className="avd-chip avd-chip-warn" style={{ marginLeft: 5, fontSize: 10, height: 16 }}>ya importada</span>}
+                                            {alreadyIn && <span className="avd-chip avd-chip-warn ml-[5px] text-[10px] h-4">ya importada</span>}
                                           </td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg)' }}>{c.last_name}</td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg-muted)', textAlign: 'center' }}>{c.age ?? '—'}</td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg-muted)', fontFamily: 'var(--avd-font-mono)', fontSize: 11.5 }}>{c.dni ?? '—'}</td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg-muted)' }}>{c.etapa ?? '—'}</td>
-                                          <td style={{ padding: '7px 10px' }}>
+                                          <td className="px-[10px] py-[7px] text-avd-fg">{c.last_name}</td>
+                                          <td className="px-[10px] py-[7px] text-avd-fg-muted text-center">{c.age ?? '—'}</td>
+                                          <td className="px-[10px] py-[7px] text-avd-fg-muted font-avd-mono text-[11.5px]">{c.dni ?? '—'}</td>
+                                          <td className="px-[10px] py-[7px] text-avd-fg-muted">{c.etapa ?? '—'}</td>
+                                          <td className="px-[10px] py-[7px]">
                                             {c.relationship_types.length > 0
                                               ? c.relationship_types.map(rt => (
-                                                <span key={rt} className="avd-chip" style={{ marginRight: 3, fontSize: 10.5, textTransform: 'capitalize' }}>{rt}</span>
+                                                <span key={rt} className="avd-chip mr-[3px] text-[10.5px] capitalize">{rt}</span>
                                               ))
                                               : isNoRelType
-                                              ? <span className="avd-chip avd-chip-warn" style={{ fontSize: 10.5 }}>sin relación</span>
-                                              : <span style={{ color: 'var(--avd-fg-faint)' }}>—</span>
+                                              ? <span className="avd-chip avd-chip-warn text-[10.5px]">sin relación</span>
+                                              : <span className="text-avd-fg-faint">—</span>
                                             }
                                           </td>
-                                          <td style={{ padding: '7px 10px', color: 'var(--avd-fg-muted)' }}>{c.monitor_de ?? '—'}</td>
+                                          <td className="px-[10px] py-[7px] text-avd-fg-muted">{c.monitor_de ?? '—'}</td>
                                         </tr>
                                       );
                                     })}
@@ -594,14 +563,13 @@ export function ComunicaImport() {
               </div>
 
               {/* Action row */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="avd-btn" onClick={() => setStep('confirm-fetch')} style={{ gap: 6 }}>
+              <div className="flex gap-2">
+                <button className="avd-btn gap-[6px]" onClick={() => setStep('confirm-fetch')}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                   Volver
                 </button>
                 <button
-                  className="avd-btn avd-btn-primary"
-                  style={{ flex: 1, justifyContent: 'center', height: 40, fontWeight: 700 }}
+                  className="avd-btn avd-btn-primary flex-1 justify-center h-10 font-bold"
                   disabled={selectedCount === 0}
                   onClick={() => setConfirmOpen(true)}
                 >
@@ -614,22 +582,22 @@ export function ComunicaImport() {
 
           {/* ── PASO 4: Importando ── */}
           {step === 'importing' && (
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '48px 24px', textAlign: 'center' }}>
-                <div style={{ width: 40, height: 40, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--avd-fg)' }}>Importando candidatos…</div>
-                <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)' }}>Por favor espera.</div>
+            <div className={cardClass}>
+              <div className="flex flex-col items-center gap-[14px] px-6 py-12 text-center">
+                <div className="w-10 h-10 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
+                <div className="text-[16px] font-bold text-avd-fg">Importando candidatos…</div>
+                <div className="text-[13px] text-avd-fg-muted">Por favor espera.</div>
               </div>
             </div>
           )}
 
           {/* ── PASO 4b: Importando fotos ── */}
           {step === 'photos' && (
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '48px 24px', textAlign: 'center' }}>
-                <div style={{ width: 40, height: 40, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--avd-fg)' }}>Importando fotos desde CRM…</div>
-                <div style={{ fontSize: 13, color: 'var(--avd-fg-muted)' }}>
+            <div className={cardClass}>
+              <div className="flex flex-col items-center gap-[14px] px-6 py-12 text-center">
+                <div className="w-10 h-10 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
+                <div className="text-[16px] font-bold text-avd-fg">Importando fotos desde CRM…</div>
+                <div className="text-[13px] text-avd-fg-muted">
                   Descargando {importedCandidates.length} fotos. Puede tardar unos segundos.
                 </div>
               </div>
@@ -638,44 +606,44 @@ export function ComunicaImport() {
 
           {/* ── PASO 5: Hecho ── */}
           {step === 'done' && importResult && (
-            <div style={cardStyle}>
-              <div style={sectionHeadStyle}>
-                <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--avd-ok)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <div className={cardClass}>
+              <div className={sectionHeadClass}>
+                <div className="w-[22px] h-[22px] rounded-full bg-[var(--avd-ok)] grid place-items-center flex-shrink-0">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--avd-fg)' }}>Importación completada</div>
-                  <div style={{ fontSize: 12, color: 'var(--avd-fg-muted)' }}>Candidatos añadidos a «{selectedRound?.title}».</div>
+                  <div className="font-bold text-[13px] text-avd-fg">Importación completada</div>
+                  <div className="text-xs text-avd-fg-muted">Candidatos añadidos a «{selectedRound?.title}».</div>
                 </div>
               </div>
-              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: importResult.skipped > 0 ? '1fr 1fr' : '1fr', gap: 10 }}>
-                  <div style={{ background: 'var(--avd-ok-bg)', border: '1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)', borderRadius: 'var(--avd-radius-sm)', padding: '16px 20px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--avd-ok)', letterSpacing: '-0.03em' }}>{importResult.inserted}</div>
-                    <div style={{ fontSize: 12.5, color: 'var(--avd-fg-muted)', marginTop: 4 }}>Candidatos añadidos</div>
+              <div className="px-5 py-4 flex flex-col gap-4">
+                <div className={`grid gap-[10px] ${importResult.skipped > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  <div className="bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] rounded-avd-sm p-[16px_20px] text-center">
+                    <div className="text-[32px] font-extrabold text-[var(--avd-ok)] tracking-[-0.03em]">{importResult.inserted}</div>
+                    <div className="text-[12.5px] text-avd-fg-muted mt-1">Candidatos añadidos</div>
                   </div>
                   {importResult.skipped > 0 && (
-                    <div style={{ background: 'var(--avd-bg-sunken)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', padding: '16px 20px', textAlign: 'center' }}>
-                      <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--avd-fg-muted)', letterSpacing: '-0.03em' }}>{importResult.skipped}</div>
-                      <div style={{ fontSize: 12.5, color: 'var(--avd-fg-muted)', marginTop: 4 }}>Ya existían (omitidos)</div>
+                    <div className="bg-avd-bg-sunken border border-avd-border rounded-avd-sm p-[16px_20px] text-center">
+                      <div className="text-[32px] font-extrabold text-avd-fg-muted tracking-[-0.03em]">{importResult.skipped}</div>
+                      <div className="text-[12.5px] text-avd-fg-muted mt-1">Ya existían (omitidos)</div>
                     </div>
                   )}
                 </div>
 
                 {photoResult !== null && (
-                  <div style={{ background: 'var(--avd-bg-sunken)', border: '1px solid var(--avd-border)', borderRadius: 'var(--avd-radius-sm)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 18 }}>📷</span>
-                    <div style={{ fontSize: 13, color: 'var(--avd-fg)' }}>
+                  <div className="bg-avd-bg-sunken border border-avd-border rounded-avd-sm p-[12px_16px] flex items-center gap-[10px]">
+                    <span className="text-[18px]">📷</span>
+                    <div className="text-[13px] text-avd-fg">
                       <strong>{photoResult.uploaded}</strong> foto{photoResult.uploaded !== 1 ? 's' : ''} importada{photoResult.uploaded !== 1 ? 's' : ''}
-                      {photoResult.failed > 0 && <span style={{ color: 'var(--avd-fg-muted)' }}> · {photoResult.failed} sin foto en CRM</span>}
+                      {photoResult.failed > 0 && <span className="text-avd-fg-muted"> · {photoResult.failed} sin foto en CRM</span>}
                     </div>
                   </div>
                 )}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="avd-btn" style={{ flex: 1, justifyContent: 'center' }} onClick={resetWizard}>
+                <div className="flex gap-2">
+                  <button className="avd-btn flex-1 justify-center" onClick={resetWizard}>
                     Importar a otra votación
                   </button>
-                  <button className="avd-btn avd-btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => navigate(selectedRoundId ? `/admin/votaciones/${selectedRoundId}` : '/admin/dashboard?tab=votaciones')}>
+                  <button className="avd-btn avd-btn-primary flex-1 justify-center" onClick={() => navigate(selectedRoundId ? `/admin/votaciones/${selectedRoundId}` : '/admin/dashboard?tab=votaciones')}>
                     Volver a la votación
                   </button>
                 </div>
@@ -688,7 +656,7 @@ export function ComunicaImport() {
       {/* Confirm dialog */}
       {confirmOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmOpen(false); }}>
-          <div className="avd-dialog" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[440px]" onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head">
               <h2>¿Confirmar importación?</h2>
               <p>

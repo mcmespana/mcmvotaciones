@@ -69,34 +69,33 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
 
   return (
     <div className="adm-round-card">
-      <div style={{height:2.5, background:accentColor, opacity: round.is_closed || round.is_active ? 1 : 0.35}} />
+      <div className={`h-[2.5px] ${round.is_closed || round.is_active ? 'opacity-100' : 'opacity-35'}`} style={{background:accentColor}} />
 
-      <div style={{padding:"14px 16px 12px", flex:1}}>
+      <div className="px-4 pt-[14px] pb-3 flex-1">
         {/* Header */}
-        <div style={{display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:10, marginBottom:10}}>
-          <div style={{flex:1, minWidth:0}}>
-            <div style={{fontSize:15, fontWeight:700, letterSpacing:"-0.01em", lineHeight:1.3, color:"var(--avd-fg)", marginBottom:6, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as const}}>{round.title}</div>
-            <div style={{display:"flex", flexWrap:"wrap", gap:5, alignItems:"center"}}>
+        <div className="flex items-start justify-between gap-[10px] mb-[10px]">
+          <div className="flex-1 min-w-0">
+            <div className="text-[15px] font-bold tracking-[-0.01em] leading-[1.3] text-[var(--avd-fg)] mb-1.5 line-clamp-2">{round.title}</div>
+            <div className="flex flex-wrap gap-[5px] items-center">
               <TeamChip label={round.voting_type_name || round.team} />
               <span className="avd-chip avd-chip-muted">{round.year}</span>
-              <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5}}>
+              <span className={`avd-chip ${chip.cls} flex items-center gap-[5px]`}>
                 {chip.pulse && <span className="avd-pulse-dot" />}
                 {chip.txt}
               </span>
               {round.public_candidates_enabled && (
-                <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, display:'inline-flex', alignItems:'center', gap:3}}><Users size={9} /> Lista pública</span>
+                <span className="avd-chip avd-chip-ok text-[10px] h-[18px] inline-flex items-center gap-[3px]"><Users size={9} /> Lista pública</span>
               )}
               {round.show_final_gallery_projection && (
-                <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, display:'inline-flex', alignItems:'center', gap:3}}><Image size={9} /> Galería activa</span>
+                <span className="avd-chip avd-chip-brand text-[10px] h-[18px] inline-flex items-center gap-[3px]"><Image size={9} /> Galería activa</span>
               )}
             </div>
           </div>
           {isSuperAdmin && (
             <button
-              className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+              className="avd-btn avd-btn-ghost avd-btn-icon-sm shrink-0 border-none text-[var(--avd-fg-faint)]"
               onClick={e => { e.stopPropagation(); onDelete(round); }}
               title="Eliminar"
-              style={{flexShrink:0, border:"none", color:"var(--avd-fg-faint)"}}
               onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
             >
@@ -106,42 +105,42 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
         </div>
 
         {round.description && (
-          <p style={{fontSize:12.5, color:"var(--avd-fg-muted)", marginBottom:12, lineHeight:1.5, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as const, borderLeft:"2px solid var(--avd-border)", paddingLeft:10, margin:"0 0 12px"}}>{round.description}</p>
+          <p className="text-[12.5px] text-[var(--avd-fg-muted)] mb-3 leading-[1.5] line-clamp-2 border-l-2 border-[var(--avd-border)] pl-[10px]">{round.description}</p>
         )}
 
         {/* Metrics grid */}
-        <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:6, marginTop:"auto"}}>
+        <div className="grid grid-cols-3 gap-1.5 mt-auto">
           {[
             { l: "Ronda", v: round.current_round_number, type: "n" },
             { l: "Cupo",  v: `${round.votes_current_round}/${round.max_votantes}`, type: "s" },
           ].map(m => (
-            <div key={m.l} style={{padding:"8px 10px", borderRadius:"var(--avd-radius-sm)", background:"var(--avd-bg-sunken)", border:"1px solid var(--avd-border-soft)", textAlign:"center"}}>
-              <div style={{fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", marginBottom:4}}>{m.l}</div>
-              <div style={{fontSize: m.type === "n" ? 18 : 14, fontWeight:700, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)", lineHeight:1}}>{m.v}</div>
+            <div key={m.l} className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
+              <div className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">{m.l}</div>
+              <div className={`font-bold tabular-nums text-[var(--avd-fg)] leading-none ${m.type === "n" ? "text-[18px]" : "text-[14px]"}`}>{m.v}</div>
             </div>
           ))}
-          <div style={{padding:"8px 10px", borderRadius:"var(--avd-radius-sm)", background:"var(--avd-bg-sunken)", border:"1px solid var(--avd-border-soft)", textAlign:"center"}}>
-            <div style={{fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", marginBottom:4}}>Entrada</div>
-            <span className={`avd-chip ${entryStatus.cls}`} style={{fontSize:11, height:20}}>{entryStatus.txt}</span>
+          <div className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
+            <div className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">Entrada</div>
+            <span className={`avd-chip ${entryStatus.cls} text-[11px] h-5`}>{entryStatus.txt}</span>
           </div>
         </div>
 
         {/* Vote progress */}
         {round.is_active && (
-          <div style={{marginTop:10}}>
-            <div style={{display:"flex", justifyContent:"space-between", fontSize:11, color:"var(--avd-fg-muted)", marginBottom:4, fontWeight:500}}>
+          <div className="mt-[10px]">
+            <div className="flex justify-between text-[11px] text-[var(--avd-fg-muted)] mb-1 font-medium">
               <span>Votos ronda {round.current_round_number}</span>
-              <span style={{fontWeight:700, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{votePct}%</span>
+              <span className="font-bold tabular-nums text-[var(--avd-fg)]">{votePct}%</span>
             </div>
-            <div className="avd-meter" style={{height:4}}>
+            <div className="avd-meter h-1">
               <div className="avd-meter-fill avd-ok" style={{width:`${votePct}%`}} />
             </div>
           </div>
         )}
       </div>
 
-      <div style={{padding:"10px 16px", borderTop:"1px solid var(--avd-border-soft)", background:"var(--avd-bg-sunken)"}}>
-        <button className="avd-btn avd-btn-primary avd-btn-block" style={{height:36, fontSize:13, justifyContent:"center"}} onClick={() => onOpen(round)}>
+      <div className="px-4 py-[10px] border-t border-[var(--avd-border-soft)] bg-[var(--avd-bg-sunken)]">
+        <button className="avd-btn avd-btn-primary avd-btn-block h-9 text-[13px] justify-center" onClick={() => onOpen(round)}>
           Gestionar votación
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
         </button>
@@ -156,10 +155,10 @@ function DeleteConfirm({ round, onClose, onConfirm }: DeleteConfirmProps) {
   if (!round) return null;
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="avd-dialog" style={{maxWidth:420}} onClick={e => e.stopPropagation()}>
+      <div className="avd-dialog max-w-[420px]" onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head"><h2>¿Eliminar votación?</h2><p>Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.</p></div>
         <div className="avd-dialog-body">
-          <div style={{padding:"12px 14px", borderRadius:"var(--avd-radius-sm)", background:"var(--avd-bad-bg)", border:"1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", fontSize:13, fontWeight:600, color:"var(--avd-bad-fg)"}}>{round.title}</div>
+          <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-[13px] font-semibold text-[var(--avd-bad-fg)]">{round.title}</div>
         </div>
         <div className="avd-dialog-foot">
           <button className="avd-btn" onClick={onClose}>Cancelar</button>
@@ -311,27 +310,26 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
 
   if (loading) {
     return (
-      <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:40, background:"var(--avd-bg)"}}>
-        <div style={{width:28, height:28, border:"2px solid var(--avd-border)", borderTopColor:"var(--avd-brand)", borderRadius:"50%", animation:"spin 0.7s linear infinite"}} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div className="flex-1 flex items-center justify-center p-10 bg-[var(--avd-bg)]">
+        <div className="w-7 h-7 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin [animation-duration:0.7s]" />
       </div>
     );
   }
 
   return (
-    <div style={{flex:1, display:"flex", flexDirection:"column", background:"var(--avd-bg)", fontFamily:"var(--avd-font-sans)"}}>
+    <div className="flex-1 flex flex-col bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
       {/* Toolbar */}
       <div className="adm-toolbar">
-        <div style={{display:"flex", alignItems:"center", gap:8}}>
-          <span style={{fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--avd-fg-subtle)"}}>Votaciones</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-subtle)]">Votaciones</span>
           <span className="avd-chip avd-chip-brand">{totalActive} activas</span>
           <span className="avd-chip avd-chip-muted">{rounds.length} total</span>
         </div>
-        <div style={{flex:1}} />
+        <div className="flex-1" />
         {/* Search */}
-        <div className="avd-search-wrap" style={{width:200}}>
+        <div className="avd-search-wrap w-[200px]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input className="avd-input" style={{paddingLeft:30}} placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <input className="avd-input pl-[30px]" placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         {/* Type filter */}
         <select
@@ -364,22 +362,22 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
       </div>
 
       {/* Content */}
-      <div className="adm-scroll" style={{flex:1, padding:20}}>
+      <div className="adm-scroll flex-1 p-5">
         {filteredRounds.length === 0 ? (
-          <div className="avd-empty" style={{paddingTop:80}}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.3}}><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <div className="avd-empty pt-20">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             <p className="avd-empty-title">Sin votaciones</p>
             <p className="avd-empty-sub">Crea una nueva votación para comenzar.</p>
           </div>
         ) : view === "grid" ? (
-          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:14}}>
+          <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {filteredRounds.map(r => (
               <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} isSuperAdmin={isSuperAdmin} />
             ))}
           </div>
         ) : (
-          <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
-            <div style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px", padding:"8px 14px", background:"var(--avd-bg-sunken)", fontSize:10.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", color:"var(--avd-fg-subtle)", gap:12, alignItems:"center"}}>
+          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
+            <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}>
               <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div>{isSuperAdmin && <div></div>}
             </div>
             {filteredRounds.map(r => {
@@ -387,34 +385,33 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
               return (
                 <div
                   key={r.id}
-                  style={{display:"grid", gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px", padding:"11px 14px", borderTop:"1px solid var(--avd-border-soft)", alignItems:"center", gap:12, fontSize:13, cursor:"pointer", transition:"background 0.12s"}}
+                  className={`px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
                 >
-                  <div style={{minWidth:0, overflow:"hidden"}}>
-                    <div style={{fontWeight:600, letterSpacing:"-0.005em", color:"var(--avd-fg)", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>{r.title}</div>
-                    {r.description && <div style={{fontSize:11.5, color:"var(--avd-fg-muted)", marginTop:2, overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis"}}>{r.description}</div>}
+                  <div className="min-w-0 overflow-hidden">
+                    <div className="font-semibold tracking-[-0.005em] text-[var(--avd-fg)] truncate">{r.title}</div>
+                    {r.description && <div className="text-[11.5px] text-[var(--avd-fg-muted)] mt-0.5 truncate">{r.description}</div>}
                   </div>
-                  <div style={{fontWeight:700, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.current_round_number}</div>
-                  <div style={{fontWeight:600, fontVariantNumeric:"tabular-nums", color:"var(--avd-fg)"}}>{r.votes_current_round}/{r.max_votantes}</div>
-                  <div style={{display:"flex", flexDirection:"column", gap:3}}>
-                    <span className={`avd-chip ${chip.cls}`} style={{display:"flex", alignItems:"center", gap:5, width:"fit-content"}}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
+                  <div className="font-bold tabular-nums text-[var(--avd-fg)]">{r.current_round_number}</div>
+                  <div className="font-semibold tabular-nums text-[var(--avd-fg)]">{r.votes_current_round}/{r.max_votantes}</div>
+                  <div className="flex flex-col gap-[3px]">
+                    <span className={`avd-chip ${chip.cls} flex items-center gap-[5px] w-fit`}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
                   </div>
-                  <div style={{display:"flex", flexDirection:"column", gap:3}}>
-                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok" style={{fontSize:10, height:18, width:"fit-content", display:'inline-flex', alignItems:'center', gap:3}}><Users size={9} /> Lista pública</span>}
-                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand" style={{fontSize:10, height:18, width:"fit-content", display:'inline-flex', alignItems:'center', gap:3}}><Image size={9} /> Galería activa</span>}
+                  <div className="flex flex-col gap-[3px]">
+                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok text-[10px] h-[18px] w-fit inline-flex items-center gap-[3px]"><Users size={9} /> Lista pública</span>}
+                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand text-[10px] h-[18px] w-fit inline-flex items-center gap-[3px]"><Image size={9} /> Galería activa</span>}
                   </div>
                   <div>
                     <TeamChip label={r.voting_type_name || r.team} />
                   </div>
                   {isSuperAdmin && (
-                    <div style={{display:"flex", justifyContent:"center"}}>
+                    <div className="flex justify-center">
                       <button
-                        className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                        className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
                         onClick={e => { e.stopPropagation(); setDeleteTarget(r); }}
                         title="Eliminar"
-                        style={{border:"none", color:"var(--avd-fg-faint)"}}
                         onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
                         onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
                       >
@@ -477,7 +474,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                 </div>
 
                 {/* Config fields — shown always, pre-filled from type */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                <div className="grid grid-cols-3 gap-2">
                   <div className="avd-form-field">
                     <label className="avd-label">Total seleccionadas</label>
                     <input className="avd-input" type="number" min={1} max={100}
@@ -491,7 +488,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                       value={form.max_votes_per_round}
                       onChange={e => setForm(p => ({ ...p, max_votes_per_round: Math.max(0, parseInt(e.target.value) || 0), voting_type_id: null, voting_type_name: "" }))}
                     />
-                    <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", marginTop: 2 }}>0 = auto (máx. 3)</p>
+                    <p className="text-[11px] text-[var(--avd-fg-faint)] mt-0.5">0 = auto (máx. 3)</p>
                   </div>
                   <div className="avd-form-field">
                     <label className="avd-label">Modo censo</label>

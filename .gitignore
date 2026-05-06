@@ -28,3 +28,4 @@ dist-ssr
 # graphify
 .graphify_python
 graphify-out/
+.claude/settings.local.json

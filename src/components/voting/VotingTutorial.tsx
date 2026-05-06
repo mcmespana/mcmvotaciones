@@ -107,18 +107,16 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         type="button"
         onClick={() => { setStep(0); setOpen(true); }}
         aria-label="Abrir guía de votación"
-        className="avd-btn avd-btn-icon"
         title="¿Cómo votar?"
-        style={compactTrigger ? { width: 42, height: 42 } : { width: "auto", padding: "0 10px", gap: 6 }}
+        className={`avd-btn avd-btn-icon${compactTrigger ? ' w-[42px] h-[42px]' : ' w-auto px-[10px] gap-[6px]'}`}
       >
-        <HelpCircle style={{ width: 18, height: 18 }} />
+        <HelpCircle className="w-[18px] h-[18px]" />
         {!compactTrigger && <span>¿Cómo votar?</span>}
       </button>
 
       {open && (
         <div
-          className="avd-dialog-overlay"
-          style={{ zIndex: 110 }}
+          className="avd-dialog-overlay z-[110]"
           onMouseDown={(e) => { if (e.target === e.currentTarget) handleClose(); }}
         >
           <style>{`
@@ -145,25 +143,19 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
             }
           `}</style>
           <div
-            className="avd-dialog"
-            style={{ maxWidth: 420, padding: 0 }}
+            className="avd-dialog max-w-[420px] p-0"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top accent bar */}
             <div
-              className="vtu-shimmer-bar"
-              style={{
-                height: 4,
-                width: "100%",
-                backgroundImage: current.topBar,
-                transition: "background-image 450ms",
-              }}
+              className="vtu-shimmer-bar h-1 w-full transition-[background-image] duration-[450ms]"
+              style={{ backgroundImage: current.topBar }}
             />
 
             {/* Icon area */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "32px 32px 24px" }}>
+            <div className="flex flex-col items-center gap-5 px-8 pt-8 pb-6">
               {/* Step dots */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className="flex items-center gap-2">
                 {STEPS.map((_, i) => (
                   <div
                     key={i}
@@ -181,65 +173,43 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
               {/* Icon bubble */}
               <div
                 key={iconKey}
-                className="relative"
-                style={{ width: 84, height: 84, animation: "vtu-pop 520ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+                className="relative w-[84px] h-[84px] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
               >
                 <span
                   aria-hidden
                   className="absolute inset-0 rounded-2xl"
-                  style={{ border: `2px solid ${current.color}`, animation: "vtu-ring 1.6s ease-out infinite" }}
+                  className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite]"
+                  style={{ border: `2px solid ${current.color}` }}
                 />
                 <span
                   aria-hidden
-                  className="absolute inset-0 rounded-2xl"
-                  style={{ border: `2px solid ${current.color}`, animation: "vtu-ring 1.6s ease-out infinite", animationDelay: "0.55s" }}
+                  className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
+                  style={{ border: `2px solid ${current.color}` }}
                 />
-                <div
-                  className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300`}
-                  style={{ margin: "2px" }}
-                >
+                <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[2px]`}>
                   <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div style={{ padding: "0 32px 24px" }}>
-              <h3
-                style={{
-                  fontSize: 22,
-                  fontWeight: 800,
-                  letterSpacing: "-0.02em",
-                  color: "var(--avd-fg)",
-                  marginBottom: 12,
-                  lineHeight: 1.2,
-                }}
-              >
+            <div className="px-8 pb-6">
+              <h3 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
                 {current.title}
               </h3>
-              <p style={{ fontSize: 14, color: "var(--avd-fg-muted)", lineHeight: 1.6, fontWeight: 500 }}>
+              <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
                 {current.description}
               </p>
             </div>
 
             {/* Footer */}
-            <div
-              style={{
-                padding: "12px 24px",
-                borderTop: "1px solid var(--avd-border-soft)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                background: "var(--avd-bg-sunken)",
-              }}
-            >
+            <div className="px-6 py-3 border-t border-[var(--avd-border-soft)] flex items-center justify-between gap-2 bg-[var(--avd-bg-sunken)]">
               <button
                 onClick={handlePrev}
                 disabled={step === 0}
                 className="avd-btn"
               >
-                <ChevronLeft style={{ width: 13, height: 13 }} />
+                <ChevronLeft className="w-[13px] h-[13px]" />
                 Anterior
               </button>
 
@@ -247,7 +217,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 onClick={handleClose}
                 className="avd-btn avd-btn-ghost"
               >
-                <X style={{ width: 12, height: 12 }} />
+                <X className="w-3 h-3" />
                 Saltar
               </button>
 
@@ -256,7 +226,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-[13px] font-bold transition-all ${current.nextBg}`}
               >
                 {isLast ? "¡Entendido!" : "Siguiente"}
-                {!isLast && <ChevronRight style={{ width: 13, height: 13 }} />}
+                {!isLast && <ChevronRight className="w-[13px] h-[13px]" />}
               </button>
             </div>
           </div>
