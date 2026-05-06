@@ -52,7 +52,13 @@ export function ControlsAside({
             <div className="avd-proj-toggle">
               <div className="avd-label-row">
                 <Globe size={14} />
-                <div>Lista pública</div>
+                {publicCandidatesUrl ? (
+                  <a href={publicCandidatesUrl} target="_blank" rel="noreferrer" className="hover:underline text-[var(--avd-fg)]">
+                    Lista pública
+                  </a>
+                ) : (
+                  <div>Lista pública</div>
+                )}
               </div>
               <div className="flex items-center gap-1.5">
                 <button

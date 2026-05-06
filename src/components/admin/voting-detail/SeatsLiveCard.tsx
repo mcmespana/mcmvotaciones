@@ -2,9 +2,6 @@ import type { RoundDetail, SeatRow, SeatStatus } from "./hooks/useRoundDetail";
 
 interface Props {
   round: RoundDetail;
-  activeCandidatesCount: number;
-  isProjectingSomething: boolean;
-  projLabel: string;
   seats: SeatRow[];
   seatStatus: SeatStatus | null;
   currentRoundVotes: number;
@@ -13,8 +10,7 @@ interface Props {
 }
 
 export function SeatsLiveCard({
-  round, activeCandidatesCount, isProjectingSomething, projLabel,
-  seats, seatStatus, currentRoundVotes, occupiedPct, votesPct,
+  round, seats, seatStatus, currentRoundVotes, occupiedPct, votesPct,
 }: Props) {
   return (
     <aside className="avd-col avd-col-left">
@@ -48,18 +44,18 @@ export function SeatsLiveCard({
               </div>
             </div>
           )}
-          <div className="flex gap-2">
-            <div className="avd-seat-stat flex-1">
-              <div className="avd-n avd-ok">{seatStatus?.occupied_seats ?? 0}</div>
-              <div className="avd-l">Ocupados</div>
+          <div className="flex flex-col gap-1.5 text-[12.5px]">
+            <div className="flex justify-between items-center">
+              <span className="text-[var(--avd-fg-muted)]">Ocupados</span>
+              <span className="font-bold tabular-nums text-[var(--avd-ok)]">{seatStatus?.occupied_seats ?? 0}</span>
             </div>
-            <div className="avd-seat-stat flex-1">
-              <div className="avd-n avd-warn">{seatStatus?.expired_seats ?? 0}</div>
-              <div className="avd-l">Expirados</div>
+            <div className="flex justify-between items-center">
+              <span className="text-[var(--avd-fg-muted)]">Expirados</span>
+              <span className="font-bold tabular-nums text-[var(--avd-warn)]">{seatStatus?.expired_seats ?? 0}</span>
             </div>
-            <div className="avd-seat-stat flex-1">
-              <div className="avd-n">{seatStatus?.available_seats ?? 0}</div>
-              <div className="avd-l">Libres</div>
+            <div className="flex justify-between items-center">
+              <span className="text-[var(--avd-fg-muted)]">Libres</span>
+              <span className="font-bold tabular-nums text-[var(--avd-fg-muted)]">{seatStatus?.available_seats ?? 0}</span>
             </div>
           </div>
           <div>
@@ -92,26 +88,6 @@ export function SeatsLiveCard({
         </div>
       </div>
 
-      {/* ── Info compacta (abajo) ── */}
-      <div className="px-4 py-3 flex flex-col gap-2 text-[12.5px]">
-        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
-          <span>Candidatas</span>
-          <span className="font-semibold text-[var(--avd-fg)] tabular-nums">{activeCandidatesCount}</span>
-        </div>
-        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
-          <span>Censo</span>
-          <span className="font-semibold text-[var(--avd-fg)] tabular-nums">
-            {round.max_votantes}
-            <span className="font-normal text-[11px] ml-1">{round.census_mode === "exact" ? "exacto" : "máx"}</span>
-          </span>
-        </div>
-        <div className="flex justify-between items-center text-[var(--avd-fg-muted)]">
-          <span>Proyección</span>
-          <span className={`font-semibold tabular-nums ${isProjectingSomething ? "text-[var(--avd-brand)]" : "text-[var(--avd-fg)]"}`}>
-            {projLabel}
-          </span>
-        </div>
-      </div>
 
     </aside>
   );

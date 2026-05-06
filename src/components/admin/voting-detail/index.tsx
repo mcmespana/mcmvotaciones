@@ -218,6 +218,7 @@ export function AdminVotingDetail() {
         exportBallotsCsv={exportBallotsCsv} setIsSettingsOpen={setIsSettingsOpen}
         stage={stage} workflowActionLabel={workflowActionLabel} workflowActionDisabled={workflowActionDisabled}
         isWorkflowRunning={isWorkflowRunning} runProjectionWorkflowStep={runProjectionWorkflowStep}
+        activeCandidatesCount={activeCandidatesCount}
       />
 
       <InlineResultsPanel
@@ -232,10 +233,8 @@ export function AdminVotingDetail() {
       <div className="avd-page-main">
 
         <SeatsLiveCard
-          round={round} activeCandidatesCount={activeCandidatesCount}
-          isProjectingSomething={isProjectingSomething} projLabel={projLabel}
-          seats={seats} seatStatus={seatStatus} currentRoundVotes={currentRoundVotes}
-          occupiedPct={occupiedPct} votesPct={votesPct}
+          round={round} seats={seats} seatStatus={seatStatus}
+          currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
         />
 
         <CandidatesPane

@@ -20,12 +20,14 @@ interface Props {
   workflowActionDisabled: boolean;
   isWorkflowRunning: boolean;
   runProjectionWorkflowStep: () => void;
+  activeCandidatesCount: number;
 }
 
 export function PageHeader({
   round, now, theme, setTheme, statusChip, copyText,
   openAnalyticsDialog, openBallotsDialog, exportBallotsCsv, setIsSettingsOpen,
   stage, workflowActionLabel, workflowActionDisabled, isWorkflowRunning, runProjectionWorkflowStep,
+  activeCandidatesCount,
 }: Props) {
   const navigate = useNavigate();
 
@@ -100,6 +102,10 @@ export function PageHeader({
             >
               <Copy size={10} />
             </button>
+          </span>
+          <span className="avd-chip avd-chip-muted" title="Candidatas activas">{activeCandidatesCount} cand.</span>
+          <span className="avd-chip avd-chip-muted" title={`Censo ${round.census_mode === 'exact' ? 'exacto' : 'máximo'}`}>
+            {round.max_votantes} {round.census_mode === "exact" ? "exacto" : "máx"}
           </span>
           {round.description && (
             <span className="text-[12px] text-[var(--avd-fg-muted)] ml-0.5">· {round.description}</span>
