@@ -117,10 +117,10 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
     setInlineResults(results);
   }, [roundId]);
 
-  const loadRound = useCallback(async () => {
+  const loadRound = useCallback(async (options?: { silent?: boolean }) => {
     if (!roundId) return;
     try {
-      setLoading(true);
+      if (!options?.silent) setLoading(true);
       const [
         { data: roundData, error: roundError },
         { data: candidateData, error: candidateError },
@@ -161,7 +161,7 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
     } catch {
       toast({ title: "Error", description: "No se pudo cargar el detalle de la votacion", variant: "destructive" });
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, [roundId, toast, loadCurrentRoundVotes, loadInlineResults]);
 
@@ -172,14 +172,18 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
       .on("postgres_changes", { event: "*", schema: "public", table: "rounds", filter: `id=eq.${roundId}` }, () => loadRound())
       .on("postgres_changes", { event: "*", schema: "public", table: "candidates", filter: `round_id=eq.${roundId}` }, () => loadCandidates())
       .on("postgres_changes", { event: "*", schema: "public", table: "seats", filter: `round_id=eq.${roundId}` }, () => loadSeatsAndStatus())
-      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `round_id=eq.${roundId}` }, () => loadCurrentRoundVotes(currentRoundNumberRef.current))
+      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `round_id=eq.${roundId}` }, () => {
+        loadCurrentRoundVotes(currentRoundNumberRef.current);
+        loadRound({ silent: true });
+      })
       .subscribe();
     const metricsInterval = window.setInterval(() => {
       loadSeatsAndStatus();
       loadCurrentRoundVotes(currentRoundNumberRef.current);
-    }, 300_000);
+      loadRound({ silent: true });
+    }, 15_000);
     return () => { window.clearInterval(metricsInterval); supabase.removeChannel(channel); };
-  }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes, loadCandidates]);
+  }, [loadRound, roundId, loadSeatsAndStatus, loadCurrentRoundVotes, loadCandidates, loadInlineResults]);
 
   return {
     round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,

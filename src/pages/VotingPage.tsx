@@ -1,6 +1,5 @@
-import { Vote, Trash2, ShieldCheck, Trophy, BarChart2, MapPin, Users } from 'lucide-react';
+import { Vote, Trash2, ShieldCheck } from 'lucide-react';
 import { flushSync } from 'react-dom';
-import { formatSurname } from '@/lib/candidateFormat';
 import { useState } from 'react';
 import { isVotingAvailable } from '@/lib/device';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +28,6 @@ export function VotingPage() {
 
   const {
     activeRound: activeRoundFromHook, candidates, loading,
-    results, loadingResults,
     selectedCandidates, voting, hasVoted,
     showSubmitAnimation, voteHashCode, voteReceipt,
     accessCodeVerified, accessCodeError, accessCodeLoading,
@@ -273,7 +271,7 @@ export function VotingPage() {
     );
   }
 
-  if ((activeRound.is_closed || !activeRound.is_active || activeRound.round_finalized) && !hasVoted && !(activeRound.show_results_to_voters && activeRound.round_finalized)) {
+  if ((activeRound.is_closed || !activeRound.is_active || activeRound.round_finalized) && !hasVoted) {
     const label = activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada';
     return (
       <div className="pub-page flex items-center justify-center p-5">
@@ -296,109 +294,6 @@ export function VotingPage() {
             {(activeRound.is_closed || activeRound.round_finalized) && (
               <div className="bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] rounded-[var(--avd-radius-sm)] px-4 py-2.5 text-[13px] text-[var(--avd-warn-fg)] font-semibold flex items-center justify-center gap-2">
                 <span>⏳</span> Las urnas ya no aceptan respuestas.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeRound?.show_results_to_voters && activeRound?.round_finalized && !hasVoted) {
-    return (
-      <div className="pub-page px-4 pt-4 pb-16">
-        <div className="max-w-[768px] mx-auto flex flex-col gap-4">
-          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] overflow-hidden text-center">
-            <div className="h-[3px] bg-gradient-to-r from-[var(--avd-brand-400)] to-[var(--avd-brand-600)]" />
-            <div className="px-8 pt-8 pb-6">
-              <div className="mx-auto mb-5 w-[60px] h-[60px] flex items-center justify-center rounded-full bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] text-[var(--avd-brand)]">
-                <Vote className="w-7 h-7" />
-              </div>
-              <h1 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2">Resumen de Votación</h1>
-              <p className="text-[var(--avd-fg-muted)] text-[13px] font-medium mb-4">Resultados finales — "{activeRound.title}"</p>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="avd-chip avd-chip-warn h-6 text-[11px]">🏆 {activeRound.team}</span>
-                <span className="avd-chip avd-chip-brand h-6 text-[11px]">Ronda {activeRound.current_round_number}</span>
-              </div>
-            </div>
-          </div>
-
-          {candidates.some(c => c.is_selected) && (
-            <div className="bg-[var(--avd-surface)] border border-[color-mix(in_oklch,var(--avd-ok)_35%,transparent)] rounded-[var(--avd-radius-lg)] p-6">
-              <h2 className="flex items-center gap-2 text-[18px] font-bold text-[var(--avd-ok-fg)] mb-1.5">
-                <Trophy size={20} />Candidatos Seleccionados
-              </h2>
-              <p className="mb-4 text-[13px] text-[var(--avd-fg-muted)]">Mayoría absoluta (&gt;50% de los votos)</p>
-              <div className="grid gap-2.5 grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
-                {candidates.filter(c => c.is_selected).map((candidate) => (
-                  <div key={candidate.id} className="flex items-center gap-3 bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_25%,transparent)] rounded-[var(--avd-radius-md)] p-[14px]">
-                    <div className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-[var(--avd-ok)] text-white font-bold">✓</div>
-                    <div>
-                      <div className="font-bold text-[var(--avd-ok-fg)] text-sm flex items-center gap-1.5 flex-wrap">
-                        {candidate.name} {formatSurname(candidate.surname)}
-                        {candidate.selected_in_round != null && (
-                          <span className="avd-chip avd-chip-brand h-[18px] text-[10px] px-[7px]">R{candidate.selected_in_round}</span>
-                        )}
-                      </div>
-                      {candidate.location && <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5">{candidate.location}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] p-6">
-            <h2 className="text-[18px] font-bold mb-1 flex items-center gap-2 text-[var(--avd-fg)]">
-              <BarChart2 size={22} />Resultados de Ronda {activeRound.current_round_number}
-            </h2>
-            <p className="text-[13px] text-[var(--avd-fg-muted)] mb-5">Votación finalizada</p>
-            {loadingResults ? (
-              <div className="flex items-center justify-center py-8">
-                <Spinner size="sm" />
-              </div>
-            ) : results.length === 0 ? (
-              <p className="text-center text-[var(--avd-fg-muted)] py-8">Aún no hay resultados disponibles.</p>
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {results.map((result, index) => {
-                  const candidate = candidates.find(c => c.id === result.candidate_id);
-                  if (!candidate) return null;
-                  const isSelected = candidate.is_selected;
-                  const hasMajority = result.percentage > 50;
-                  return (
-                    <div key={result.candidate_id} className={`flex items-center gap-3 p-4 rounded-[var(--avd-radius-md)] ${isSelected ? 'border border-[color-mix(in_oklch,var(--avd-ok)_40%,transparent)] bg-[var(--avd-ok-bg)]' : hasMajority ? 'border border-[var(--avd-brand-border)] bg-[var(--avd-brand-bg)]' : 'border border-[var(--avd-border)] bg-[var(--avd-bg-sunken)]'}`}>
-                      <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base ${isSelected ? 'bg-[var(--avd-ok)] text-white' : 'bg-[var(--avd-brand-bg)] text-[var(--avd-brand)]'}`}>
-                        {isSelected ? '✓' : index + 1}
-                      </div>
-                      <div className="grow">
-                        <div className="font-bold text-base flex items-center gap-2 flex-wrap text-[var(--avd-fg)]">
-                          {candidate.name} {formatSurname(candidate.surname)}
-                          {isSelected && <span className="avd-chip avd-chip-ok h-[18px] text-[10px] px-[7px]">SELECCIONADO</span>}
-                          {isSelected && candidate.selected_in_round != null && <span className="avd-chip avd-chip-brand h-[18px] text-[10px] px-[7px]">R{candidate.selected_in_round}</span>}
-                          {hasMajority && !isSelected && <span className="avd-chip avd-chip-brand h-[18px] text-[10px] px-[7px]">+50%</span>}
-                        </div>
-                        {(candidate.location || candidate.group_name) && (
-                          <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5 flex items-center gap-1 flex-wrap">
-                            {candidate.location && <><MapPin size={10} />{candidate.location}</>}
-                            {candidate.location && candidate.group_name && <span> • </span>}
-                            {candidate.group_name && <><Users size={10} />{candidate.group_name}</>}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="grow bg-[var(--avd-border-soft)] rounded-full h-2.5 overflow-hidden">
-                            <div className={`h-full rounded-full transition-[width] duration-1000 ease-out ${isSelected ? 'bg-[var(--avd-ok)]' : 'bg-[var(--avd-brand)]'}`} style={{ width: `${Math.min(Math.max(result.percentage, 0), 100)}%` }} />
-                          </div>
-                          <span className="text-sm font-semibold min-w-[56px] text-right text-[var(--avd-fg)]">{result.percentage.toFixed(1)}%</span>
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className="text-[22px] font-bold text-[var(--avd-fg)]">{result.vote_count}</div>
-                        <div className="text-[11px] text-[var(--avd-fg-muted)] uppercase">votos</div>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             )}
           </div>
