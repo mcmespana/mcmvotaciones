@@ -69,8 +69,7 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
 
   return (
     <div className="adm-round-card">
-      {/* dynamic: accentColor computed from round status */}
-      <div className="h-[2.5px]" style={{background:accentColor, opacity: round.is_closed || round.is_active ? 1 : 0.35}} />
+      <div className={`h-[2.5px] ${round.is_closed || round.is_active ? 'opacity-100' : 'opacity-35'}`} style={{background:accentColor}} />
 
       <div className="px-4 pt-[14px] pb-3 flex-1">
         {/* Header */}
@@ -117,8 +116,7 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
           ].map(m => (
             <div key={m.l} className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
               <div className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">{m.l}</div>
-              {/* dynamic: font size varies by metric type */}
-              <div className="font-bold tabular-nums text-[var(--avd-fg)] leading-none" style={{fontSize: m.type === "n" ? 18 : 14}}>{m.v}</div>
+              <div className={`font-bold tabular-nums text-[var(--avd-fg)] leading-none ${m.type === "n" ? "text-[18px]" : "text-[14px]"}`}>{m.v}</div>
             </div>
           ))}
           <div className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
@@ -135,7 +133,6 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
               <span className="font-bold tabular-nums text-[var(--avd-fg)]">{votePct}%</span>
             </div>
             <div className="avd-meter h-1">
-              {/* dynamic: width set from computed votePct */}
               <div className="avd-meter-fill avd-ok" style={{width:`${votePct}%`}} />
             </div>
           </div>
@@ -301,7 +298,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-10 bg-[var(--avd-bg)]">
-        <div className="w-7 h-7 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin" style={{animationDuration:"0.7s"}} />
+        <div className="w-7 h-7 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin [animation-duration:0.7s]" />
       </div>
     );
   }
@@ -355,15 +352,14 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
             <p className="avd-empty-sub">Crea una nueva votación para comenzar.</p>
           </div>
         ) : view === "grid" ? (
-          <div className="grid gap-[14px]" style={{gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))"}}>
+          <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {filteredRounds.map(r => (
               <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} isSuperAdmin={isSuperAdmin} />
             ))}
           </div>
         ) : (
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
-            {/* dynamic: grid columns depend on isSuperAdmin */}
-            <div className="px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center" style={{gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px"}}>
+            <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}>
               <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div>{isSuperAdmin && <div></div>}
             </div>
             {filteredRounds.map(r => {
@@ -371,8 +367,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
               return (
                 <div
                   key={r.id}
-                  className="px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s]"
-                  style={{gridTemplateColumns: isSuperAdmin ? "1fr 90px 90px 110px 110px 100px 40px" : "1fr 90px 90px 110px 110px 100px"}}
+                  className={`px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}

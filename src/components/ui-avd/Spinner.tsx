@@ -15,8 +15,8 @@ const SIZE_CLASS: Record<NonNullable<SpinnerProps['size']>, string> = {
 export function Spinner({ size = 'md', className, style }: SpinnerProps) {
   return (
     <div
-      className={`shrink-0 rounded-full border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin ${SIZE_CLASS[size]}${className ? ` ${className}` : ''}`}
-      style={{ animationDuration: '0.7s', ...style }}
+      className={`shrink-0 rounded-full border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin [animation-duration:0.7s] ${SIZE_CLASS[size]}${className ? ` ${className}` : ''}`}
+      style={style}
     />
   );
 }

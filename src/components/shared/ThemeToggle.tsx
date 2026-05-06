@@ -62,8 +62,7 @@ export function ThemeToggle({ mode = "floating", className, buttonClassName }: T
 
   return createPortal(
     <div
-      className={cn("pointer-events-auto fixed right-4 z-[90] md:right-6", className)}
-      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}{/* dynamic: env() safe-area cannot be expressed in Tailwind */}
+      className={cn("pointer-events-auto fixed right-4 z-[90] md:right-6 bottom-[calc(1rem+env(safe-area-inset-bottom))]", className)}
     >
       {toggleButton}
     </div>,

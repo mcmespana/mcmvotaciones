@@ -101,7 +101,7 @@ export function ProjectionWaiting({
 
           {/* Access code */}
           {normalizedCode && shouldShowJoinQr && (
-            <div className="avd-card" style={{ padding: "32px 36px", animation: "proj-code-pulse 3s ease-in-out infinite" }}>
+            <div className="avd-card px-9 py-8 [animation:proj-code-pulse_3s_ease-in-out_infinite]">
               <AccentBar />
               <div className="proj-overline mb-5">Código de acceso</div>
               <div className="proj-code-chars">

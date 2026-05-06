@@ -43,8 +43,7 @@ export function CandidateAvatar({ name, surname, imageUrl, size = "md", classNam
       <img
         src={imageUrl}
         alt={`${name} ${surname}`}
-        className={`${sizeClass} rounded-full object-cover flex-shrink-0 bg-gray-50 border border-gray-100 ${className}`}
-        style={{ objectPosition: "top" }}
+        className={`${sizeClass} rounded-full object-cover object-top flex-shrink-0 bg-gray-50 border border-gray-100 ${className}`}
         onError={() => setFailed(true)}
       />
     );

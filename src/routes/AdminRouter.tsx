@@ -23,7 +23,7 @@ export function AdminRouter() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
         <div className="text-center flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin" style={{ animationDuration: "0.7s" }} />
+          <div className="w-10 h-10 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin [animation-duration:0.7s]" />
           <div className="text-sm text-[var(--avd-fg-muted)] font-medium">Verificando credenciales…</div>
         </div>
       </div>

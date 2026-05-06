@@ -89,7 +89,7 @@ export function ProjectionResults({
   );
 
   return (
-    <div className="proj-page" style={{ overflow: "unset" }}>
+    <div className="proj-page overflow-visible">
       {/* Header */}
       <div className="proj-header">
         <h1 className="proj-header-title">{roundTitle}</h1>
@@ -158,7 +158,7 @@ export function ProjectionResults({
               <div className="proj-sidebar-empty">
                 <div className="text-center p-6">
                   <div className="text-base font-bold text-avd-fg-muted">Sin seleccionados</div>
-                  <div style={{ fontSize: 13, color: "var(--avd-fg-faint)", marginTop: 6 }}>Ningún candidato superó el 50%.</div>
+                  <div className="text-[13px] text-[var(--avd-fg-faint)] mt-[6px]">Ningún candidato superó el 50%.</div>
                 </div>
               </div>
             )}

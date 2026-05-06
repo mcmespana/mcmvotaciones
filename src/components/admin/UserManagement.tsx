@@ -38,15 +38,15 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
 
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="avd-dialog" style={{maxWidth:440}} onClick={e => e.stopPropagation()}>
+      <div className="avd-dialog max-w-[440px]" onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
-          <div style={{display:"flex", alignItems:"center", gap:10}}>
-            <div style={{width:34, height:34, borderRadius:"50%", background:"var(--avd-brand-bg)", border:"1px solid var(--avd-brand-border)", display:"grid", placeItems:"center", flexShrink:0}}>
+          <div className="flex items-center gap-[10px]">
+            <div className="w-[34px] h-[34px] rounded-full bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] grid place-items-center shrink-0">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="18" y1="5" x2="20" y2="7"/><line x1="15" y1="8" x2="17" y2="10"/></svg>
             </div>
             <div>
-              <h2 style={{margin:0}}>Cambiar contraseña</h2>
-              <p style={{margin:0}}>Credenciales de <strong>{user.name}</strong> (@{user.username}).</p>
+              <h2 className="m-0">Cambiar contraseña</h2>
+              <p className="m-0">Credenciales de <strong>{user.name}</strong> (@{user.username}).</p>
             </div>
           </div>
         </div>
@@ -55,11 +55,11 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
             <div className="avd-form-field">
               <label className="avd-label">Nueva contraseña</label>
               <input className="avd-input" type="password" placeholder="Mínimo 6 caracteres" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} disabled={loading} />
-              <div style={{fontSize:11.5, color:"var(--avd-fg-muted)", marginTop:4}}>La contraseña debe tener al menos 6 caracteres.</div>
+              <div className="text-[11.5px] text-[var(--avd-fg-muted)] mt-1">La contraseña debe tener al menos 6 caracteres.</div>
             </div>
             {error && (
-              <div style={{display:"flex", alignItems:"center", gap:8, padding:"9px 12px", borderRadius:"var(--avd-radius-sm)", background:"var(--avd-bad-bg)", border:"1px solid color-mix(in oklch, var(--avd-bad) 30%, transparent)", color:"var(--avd-bad-fg)", fontSize:12.5}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div className="flex items-center gap-2 px-3 py-[9px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-[12.5px]">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 {error}
               </div>
             )}
@@ -68,8 +68,8 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
             <button type="button" className="avd-btn" onClick={onClose} disabled={loading}>Cancelar</button>
             <button type="submit" className="avd-btn avd-btn-primary" disabled={pw.length < 6 || loading}>
               {loading ? (
-                <span style={{display:"flex", alignItems:"center", gap:6}}>
-                  <svg style={{animation:"spin 0.8s linear infinite"}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
+                <span className="flex items-center gap-[6px]">
+                  <svg className="[animation:spin_0.8s_linear_infinite]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
                   Guardando...
                 </span>
               ) : "Guardar contraseña"}
@@ -154,14 +154,14 @@ export function UserManagement() {
 
   if (!isSuperAdmin) {
     return (
-      <div style={{padding:24}}>
-        <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", padding:24, display:"flex", alignItems:"center", gap:14}}>
-          <div style={{width:40, height:40, borderRadius:"50%", background:"var(--avd-bad-bg)", border:"1px solid color-mix(in oklch, var(--avd-bad) 25%, transparent)", display:"grid", placeItems:"center", flexShrink:0}}>
+      <div className="p-6">
+        <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-6 flex items-center gap-[14px]">
+          <div className="w-10 h-10 rounded-full bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] grid place-items-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-bad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
           </div>
           <div>
-            <div style={{fontWeight:700, marginBottom:3, color:"var(--avd-fg)"}}>Acceso restringido</div>
-            <div style={{fontSize:13, color:"var(--avd-fg-muted)"}}>Solo los super administradores pueden gestionar usuarios.</div>
+            <div className="font-bold mb-[3px] text-[var(--avd-fg)]">Acceso restringido</div>
+            <div className="text-[13px] text-[var(--avd-fg-muted)]">Solo los super administradores pueden gestionar usuarios.</div>
           </div>
         </div>
       </div>
@@ -169,20 +169,20 @@ export function UserManagement() {
   }
 
   return (
-    <div style={{flex:1, display:"flex", flexDirection:"column"}}>
+    <div className="flex-1 flex flex-col">
       {/* Toolbar */}
-      <div style={{padding:"14px 20px", borderBottom:"1px solid var(--avd-border)", background:"var(--avd-bg-elev)", display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}>
-        <div style={{display:"flex", alignItems:"center", gap:8}}>
-          <span style={{fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--avd-fg-muted)"}}>Usuarios</span>
+      <div className="px-5 py-[14px] border-b border-[var(--avd-border)] bg-[var(--avd-bg-elev)] flex items-center gap-[10px] flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-muted)]">Usuarios</span>
           <span className="avd-chip">{users.length} total</span>
-          <span className="avd-chip" style={{background:"color-mix(in oklch, oklch(0.55 0.18 280) 12%, transparent)", color:"oklch(0.45 0.18 280)", borderColor:"color-mix(in oklch, oklch(0.55 0.18 280) 30%, transparent)"}}>
+          <span className="avd-chip bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_12%,transparent)] text-[oklch(0.45_0.18_280)] border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]">
             {users.filter(u => u.role === 'super_admin').length} super admin
           </span>
         </div>
-        <div style={{flex:1}} />
-        <div className="avd-search-wrap" style={{width:200, position:"relative"}}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"var(--avd-fg-faint)", pointerEvents:"none"}}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input className="avd-input" style={{paddingLeft:30}} placeholder="Buscar usuario..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        <div className="flex-1" />
+        <div className="avd-search-wrap w-[200px] relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[9px] top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input className="avd-input pl-[30px]" placeholder="Buscar usuario..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
         <div className="avd-segmented">
           <button className={roleFilter === 'all' ? 'active' : ''} onClick={() => setRoleFilter('all')}>Todos</button>
@@ -195,16 +195,16 @@ export function UserManagement() {
         </button>
       </div>
 
-      <div style={{flex:1, padding:20, overflowY:"auto", display:"flex", flexDirection:"column", gap:16}}>
+      <div className="flex-1 p-5 overflow-y-auto flex flex-col gap-4">
         {/* Create form */}
         {showCreateForm && (
-          <div style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
-            <div style={{padding:"12px 16px", borderBottom:"1px solid var(--avd-border-soft)", display:"flex", alignItems:"center", gap:10}}>
-              <div style={{width:3, height:20, borderRadius:2, background:"linear-gradient(180deg, var(--avd-brand-400), var(--avd-brand-600))"}} />
-              <span style={{fontWeight:700, fontSize:13, color:"var(--avd-fg)"}}>Crear nuevo usuario</span>
-              <span style={{fontSize:12, color:"var(--avd-fg-muted)"}}>Completa todos los campos.</span>
+          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--avd-border-soft)] flex items-center gap-[10px]">
+              <div className="w-[3px] h-5 rounded-[2px] bg-gradient-to-b from-[var(--avd-brand-400)] to-[var(--avd-brand-600)]" />
+              <span className="font-bold text-[13px] text-[var(--avd-fg)]">Crear nuevo usuario</span>
+              <span className="text-[12px] text-[var(--avd-fg-muted)]">Completa todos los campos.</span>
             </div>
-            <div style={{padding:"14px 16px"}}>
+            <div className="px-4 py-[14px]">
               <form onSubmit={handleCreateUser}>
                 <div className="avd-form-grid">
                   <div className="avd-form-grid-2">
@@ -227,7 +227,7 @@ export function UserManagement() {
                       <input className="avd-input" type="password" placeholder="Mín. 6 caracteres" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} disabled={creating} />
                     </div>
                   </div>
-                  <div className="avd-form-field" style={{maxWidth:220}}>
+                  <div className="avd-form-field max-w-[220px]">
                     <label className="avd-label">Rol</label>
                     <select className="avd-select" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value as 'admin' | 'super_admin'})} disabled={creating}>
                       <option value="admin">Administrador</option>
@@ -235,17 +235,17 @@ export function UserManagement() {
                     </select>
                   </div>
                   {createError && (
-                    <div style={{display:"flex", alignItems:"center", gap:8, padding:"9px 12px", borderRadius:"var(--avd-radius-sm)", background:"var(--avd-bad-bg)", border:"1px solid color-mix(in oklch, var(--avd-bad) 30%, transparent)", color:"var(--avd-bad-fg)", fontSize:12.5}}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <div className="flex items-center gap-2 px-3 py-[9px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-[12.5px]">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       {createError}
                     </div>
                   )}
-                  <div style={{display:"flex", justifyContent:"flex-end", gap:8}}>
+                  <div className="flex justify-end gap-2">
                     <button type="button" className="avd-btn" onClick={() => { setShowCreateForm(false); setCreateError(''); }} disabled={creating}>Cancelar</button>
                     <button type="submit" className="avd-btn avd-btn-primary" disabled={creating}>
                       {creating ? (
-                        <span style={{display:"flex", alignItems:"center", gap:6}}>
-                          <svg style={{animation:"spin 0.8s linear infinite"}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
+                        <span className="flex items-center gap-[6px]">
+                          <svg className="[animation:spin_0.8s_linear_infinite]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
                           Creando...
                         </span>
                       ) : "Crear usuario"}
@@ -259,53 +259,46 @@ export function UserManagement() {
 
         {/* Users grid */}
         {loading ? (
-          <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 0", gap:12}}>
-            <div style={{width:32, height:32, border:"2.5px solid var(--avd-border)", borderTopColor:"var(--avd-brand)", borderRadius:"50%", animation:"spin 0.7s linear infinite"}} />
-            <span style={{fontSize:13, color:"var(--avd-fg-muted)"}}>Cargando usuarios...</span>
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <div className="w-8 h-8 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
+            <span className="text-[13px] text-[var(--avd-fg-muted)]">Cargando usuarios...</span>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="avd-empty">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.3}}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <p className="avd-empty-title">Sin usuarios</p>
             <p className="avd-empty-sub">Crea el primer usuario desde el formulario.</p>
           </div>
         ) : (
-          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px,1fr))", gap:10}}>
+          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))] gap-[10px]">
             {filteredUsers.map(u => {
               const isRoot = u.role === 'super_admin';
               return (
-                <div key={u.id} style={{background:"var(--avd-surface)", border:"1px solid var(--avd-border)", borderRadius:"var(--avd-radius-md)", overflow:"hidden"}}>
-                  <div style={{padding:"12px 14px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid var(--avd-border-soft)"}}>
-                    <div style={{
-                      width:38, height:38, borderRadius:"50%", flexShrink:0, display:"grid", placeItems:"center",
-                      background: isRoot ? "color-mix(in oklch, oklch(0.55 0.18 280) 14%, transparent)" : "var(--avd-brand-bg)",
-                      border: `1px solid ${isRoot ? "color-mix(in oklch, oklch(0.55 0.18 280) 30%, transparent)" : "var(--avd-brand-border)"}`,
-                    }}>
+                <div key={u.id} className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
+                  <div className="px-[14px] py-3 flex items-center gap-3 border-b border-[var(--avd-border-soft)]">
+                    <div className={`w-[38px] h-[38px] rounded-full shrink-0 grid place-items-center ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_14%,transparent)] border border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : 'bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)]'}`}>
                       {isRoot
                         ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.5 0.18 280)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                       }
                     </div>
-                    <div style={{flex:1, minWidth:0}}>
-                      <div style={{fontWeight:700, fontSize:14, letterSpacing:"-0.005em", color:"var(--avd-fg)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{u.name}</div>
-                      <div style={{fontSize:12, color:"var(--avd-fg-muted)", fontFamily:"var(--avd-font-mono)", marginTop:1}}>@{u.username}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-[14px] tracking-[-0.005em] text-[var(--avd-fg)] overflow-hidden text-ellipsis whitespace-nowrap">{u.name}</div>
+                      <div className="text-[12px] text-[var(--avd-fg-muted)] font-[var(--avd-font-mono)] mt-px">@{u.username}</div>
                     </div>
-                    <span className="avd-chip" style={isRoot
-                      ? {background:"color-mix(in oklch, oklch(0.55 0.18 280) 12%, transparent)", color:"oklch(0.45 0.18 280)", borderColor:"color-mix(in oklch, oklch(0.55 0.18 280) 30%, transparent)"}
-                      : {}
-                    }>
+                    <span className={`avd-chip ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_12%,transparent)] text-[oklch(0.45_0.18_280)] border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : ''}`}>
                       {isRoot ? 'Super Admin' : 'Admin'}
                     </span>
                   </div>
-                  <div style={{padding:"10px 14px", display:"flex", alignItems:"center", gap:10, justifyContent:"space-between"}}>
-                    <div style={{display:"flex", alignItems:"center", gap:6, fontSize:12.5, color:"var(--avd-fg-muted)", minWidth:0}}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                      <span style={{overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{u.email}</span>
+                  <div className="px-[14px] py-[10px] flex items-center gap-[10px] justify-between">
+                    <div className="flex items-center gap-[6px] text-[12.5px] text-[var(--avd-fg-muted)] min-w-0">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{u.email}</span>
                     </div>
-                    <div style={{display:"flex", alignItems:"center", gap:6, flexShrink:0}}>
-                      <span style={{fontSize:11, color:"var(--avd-fg-faint)"}}>{new Date(u.created_at).toLocaleDateString('es-ES')}</span>
-                      <button className="avd-btn avd-btn-sm" onClick={() => setPasswordTargetUser(u)} style={{gap:5}}>
+                    <div className="flex items-center gap-[6px] shrink-0">
+                      <span className="text-[11px] text-[var(--avd-fg-faint)]">{new Date(u.created_at).toLocaleDateString('es-ES')}</span>
+                      <button className="avd-btn avd-btn-sm gap-[5px]" onClick={() => setPasswordTargetUser(u)}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="18" y1="5" x2="20" y2="7"/><line x1="15" y1="8" x2="17" y2="10"/></svg>
                         Contraseña
                       </button>

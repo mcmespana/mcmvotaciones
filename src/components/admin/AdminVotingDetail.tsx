@@ -502,7 +502,7 @@ export function AdminVotingDetail() {
     return (
       <div className="avd-app items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin" style={{animationDuration:"0.8s"}} />
+          <div className="w-8 h-8 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin [animation-duration:0.8s]" />
           <span className="text-[13px] text-[var(--avd-fg-muted)] font-[var(--avd-font-sans)]">Cargando votación...</span>
         </div>
       </div>
@@ -652,10 +652,7 @@ export function AdminVotingDetail() {
         return (
           <section className="px-[var(--avd-page-px,24px)] mb-4">
             {/* dynamic: border/bg depend on nobodyHasMajority */}
-            <div className="rounded-[var(--avd-radius-lg,14px)] overflow-hidden" style={{
-              border: nobodyHasMajority ? "1px solid color-mix(in oklch, var(--avd-warn) 40%, transparent)" : "1px solid color-mix(in oklch, var(--avd-ok) 40%, transparent)",
-              background: nobodyHasMajority ? "color-mix(in oklch, var(--avd-warn) 6%, var(--avd-bg))" : "color-mix(in oklch, var(--avd-ok) 6%, var(--avd-bg))",
-            }}>
+            <div className={`rounded-[var(--avd-radius-lg,14px)] overflow-hidden ${nobodyHasMajority ? 'border border-[color-mix(in_oklch,var(--avd-warn)_40%,transparent)] bg-[color-mix(in_oklch,var(--avd-warn)_6%,var(--avd-bg))]' : 'border border-[color-mix(in_oklch,var(--avd-ok)_40%,transparent)] bg-[color-mix(in_oklch,var(--avd-ok)_6%,var(--avd-bg))]'}`}>
               {/* Header */}
               <div className="px-[18px] py-[14px] border-b border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)] flex items-center gap-[10px]">
                 {nobodyHasMajority ? <AlertTriangle size={18} className="text-[var(--avd-warn)] shrink-0" /> : <CheckCircle size={18} className="text-[var(--avd-ok)] shrink-0" />}
@@ -678,10 +675,7 @@ export function AdminVotingDetail() {
               {/* Candidate rows */}
               <div className="px-[14px] py-[10px] flex flex-col gap-1.5">
                 {inlineResults.map((r) => (
-                  <div key={r.candidate_id} className="flex items-center gap-3 px-[14px] py-[10px] rounded-[var(--avd-radius-md,10px)]" style={{ /* dynamic: bg/border depend on r.is_selected */
-                    background: r.is_selected ? "color-mix(in oklch, var(--avd-ok) 10%, transparent)" : "color-mix(in oklch, var(--avd-bg) 80%, transparent)",
-                    border: r.is_selected ? "1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent)" : "1px solid var(--avd-border-soft)",
-                  }}>
+                  <div key={r.candidate_id} className={`flex items-center gap-3 px-[14px] py-[10px] rounded-[var(--avd-radius-md,10px)] ${r.is_selected ? 'bg-[color-mix(in_oklch,var(--avd-ok)_10%,transparent)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-bg)_80%,transparent)] border border-[var(--avd-border-soft)]'}`}>
                     <div className="flex-grow">
                       <div className="font-semibold text-[14px] text-[var(--avd-fg)] flex items-center gap-2">
                         {formatCandidateName({ name: r.candidate_name, surname: r.candidate_surname })}
@@ -1136,7 +1130,7 @@ export function AdminVotingDetail() {
             </div>
             <div className="avd-dialog-body">
               <div className="flex flex-col gap-[14px]">
-                <div className="grid gap-3" style={{gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"}}>
+                <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
 
                 <div className="avd-form-field">
                   <label className="avd-label">Código de acceso</label>
@@ -1169,7 +1163,7 @@ export function AdminVotingDetail() {
                   </div>
                 )}
 
-                <div className="grid gap-3 items-start" style={{gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))"}}>
+                <div className="grid gap-3 items-start [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
                   <div className="avd-form-field">
                     <label className="avd-label">Nº máx. votantes {isMaxVotantesLocked && <span className="avd-chip avd-chip-muted ml-1.5">Bloqueado</span>}</label>
                     <input
@@ -1391,7 +1385,7 @@ export function AdminVotingDetail() {
               <div className="avd-form-grid">
                 {importingFile && (
                   <div className="flex items-center gap-2 text-[13px] text-[var(--avd-fg-muted)]">
-                    <div className="w-3.5 h-3.5 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin shrink-0" style={{animationDuration:"0.7s"}} />
+                    <div className="w-3.5 h-3.5 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin shrink-0 [animation-duration:0.7s]" />
                     Importando candidatos...
                   </div>
                 )}

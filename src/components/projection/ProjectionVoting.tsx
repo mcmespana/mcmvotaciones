@@ -59,8 +59,8 @@ export function ProjectionVoting({
   return (
     <div className="proj-page">
       {/* Ambient orbs */}
-      <div className="proj-orb" style={{ width: 500, height: 500, background: flash ? "color-mix(in oklch, var(--avd-ok) 7%, transparent)" : "color-mix(in oklch, var(--avd-brand) 5%, transparent)", filter: "blur(90px)", top: "-10%", right: "5%", animation: "proj-orb-slow-a 20s ease-in-out infinite", transition: "background 0.6s ease" }} />
-      <div className="proj-orb" style={{ width: 400, height: 400, background: "color-mix(in oklch, var(--avd-brand) 4%, transparent)", filter: "blur(70px)", bottom: "0%", left: "-5%", animation: "proj-orb-slow-b 26s ease-in-out infinite" }} />
+      <div className={`proj-orb w-[500px] h-[500px] blur-[90px] top-[-10%] right-[5%] [animation:proj-orb-slow-a_20s_ease-in-out_infinite] transition-[background] duration-[0.6s] ${flash ? 'bg-[color-mix(in_oklch,var(--avd-ok)_7%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_5%,transparent)]'}`} />
+      <div className="proj-orb w-[400px] h-[400px] bg-[color-mix(in_oklch,var(--avd-brand)_4%,transparent)] blur-[70px] bottom-0 left-[-5%] [animation:proj-orb-slow-b_26s_ease-in-out_infinite]" />
 
       {/* Header */}
       <div className="proj-header">
@@ -82,13 +82,13 @@ export function ProjectionVoting({
       </div>
 
       {/* Body */}
-      <div className="proj-body" style={{ display: "grid", gridTemplateColumns: showBallotSummary ? "1fr" : "1.6fr 1fr", position: "relative", zIndex: 1 }}>
+      <div className={`proj-body grid relative z-[1] ${showBallotSummary ? 'grid-cols-1' : '[grid-template-columns:1.6fr_1fr]'}`}>
         {!showBallotSummary ? (
           <>
             {/* Left: vote count */}
             <div className="proj-panel-left">
               <div className="proj-label">Votos recibidos</div>
-              <div className="proj-vote-count-row" style={{ transform: flash ? "scale(1.04)" : "scale(1)" }}>
+              <div className={`proj-vote-count-row ${flash ? 'scale-[1.04]' : 'scale-100'} transition-transform`}>
                 <span className={`proj-vote-num${flash ? " proj-vote-num--flash" : ""}`}>
                   {voteCount}
                 </span>

@@ -59,141 +59,73 @@ export function AccessCodeInput({
   };
 
   return (
-    <div
-      className="pub-page"
-      style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-    >
-      <div
-        style={{
-          background: "var(--avd-surface)",
-          border: "1px solid var(--avd-border)",
-          borderRadius: "var(--avd-radius-lg)",
-          boxShadow: "var(--avd-shadow-lg)",
-          width: "100%",
-          maxWidth: 420,
-          overflow: "hidden",
-        }}
-      >
+    <div className="pub-page flex items-center justify-center p-5">
+      <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] overflow-hidden">
         {/* Top accent bar */}
-        <div
-          style={{
-            height: 4,
-            background: "linear-gradient(90deg, var(--avd-brand-600), var(--avd-brand-400))",
-          }}
-        />
+        <div className="h-1 bg-gradient-to-r from-[var(--avd-brand-600)] to-[var(--avd-brand-400)]" />
 
-        <div style={{ padding: "40px 40px 32px" }}>
+        <div className="px-10 pt-10 pb-8">
           {/* Icon */}
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                background: "var(--avd-brand-50, hsl(var(--primary) / 0.1))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 20px",
-              }}
-            >
-              <KeyRound style={{ width: 28, height: 28, color: "var(--avd-brand-600)" }} />
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-[var(--avd-brand-50,hsl(var(--primary)/0.1))] flex items-center justify-center mx-auto mb-5">
+              <KeyRound className="w-7 h-7 text-[var(--avd-brand-600)]" />
             </div>
-            <h1
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "var(--avd-fg)",
-                marginBottom: 8,
-                fontFamily: "var(--avd-font-sans)",
-              }}
-            >
+            <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2 font-[var(--avd-font-sans)]">
               Código de Acceso
             </h1>
-            <p style={{ fontSize: 13, color: "var(--avd-fg-muted)", lineHeight: 1.5 }}>
+            <p className="text-[13px] text-[var(--avd-fg-muted)] leading-[1.5]">
               {roundTitle
                 ? `Introduce el código para acceder a "${roundTitle}"`
                 : "Introduce el código proporcionado para acceder a la votación"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <div className="flex flex-col gap-[6px]">
               <input
                 ref={inputRef}
                 type="text"
                 value={code}
                 onChange={handleChange}
                 placeholder="ABCD"
-                className="avd-input"
+                className="avd-input text-center text-[30px] font-mono tracking-[0.5em] uppercase h-16 pl-[0.5em]"
                 disabled={loading}
                 maxLength={4}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
-                style={{
-                  textAlign: "center",
-                  fontSize: 30,
-                  fontFamily: "monospace",
-                  letterSpacing: "0.5em",
-                  textTransform: "uppercase",
-                  height: 64,
-                  paddingLeft: "0.5em",
-                }}
               />
-              <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", textAlign: "center" }}>
+              <p className="text-[11px] text-[var(--avd-fg-faint)] text-center">
                 Código alfanumérico de 4 caracteres
               </p>
             </div>
 
             {error && (
-              <div
-                style={{
-                  background: "var(--avd-bad-bg, hsl(0 84% 50% / 0.08))",
-                  border: "1px solid var(--avd-bad, hsl(0 84% 50% / 0.3))",
-                  borderRadius: "var(--avd-radius-sm)",
-                  padding: "10px 14px",
-                  textAlign: "center",
-                  fontSize: 13,
-                  color: "var(--avd-bad, hsl(0 72% 50%))",
-                  fontWeight: 600,
-                }}
-              >
+              <div className="bg-[var(--avd-bad-bg,hsl(0_84%_50%/0.08))] border border-[var(--avd-bad,hsl(0_84%_50%/0.3))] rounded-[var(--avd-radius-sm)] px-[14px] py-[10px] text-center text-[13px] text-[var(--avd-bad,hsl(0_72%_50%))] font-semibold">
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              className="avd-btn avd-btn-primary avd-btn-primary-lg"
+              className="avd-btn avd-btn-primary avd-btn-primary-lg w-full justify-center mt-1"
               disabled={loading || code.length < 4}
-              style={{ width: "100%", justifyContent: "center", marginTop: 4 }}
             >
               {loading ? (
                 <>
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      border: "2px solid white",
-                      borderTopColor: "transparent",
-                      borderRadius: "50%",
-                      animation: "spin 0.7s linear infinite",
-                    }}
-                  />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full [animation:spin_0.7s_linear_infinite]" />
                   Verificando...
                 </>
               ) : (
                 <>
                   Acceder
-                  <ArrowRight style={{ width: 15, height: 15 }} />
+                  <ArrowRight className="w-[15px] h-[15px]" />
                 </>
               )}
             </button>
           </form>
 
-          <p style={{ fontSize: 11, color: "var(--avd-fg-faint)", textAlign: "center", marginTop: 20 }}>
+          <p className="text-[11px] text-[var(--avd-fg-faint)] text-center mt-5">
             El código se muestra en la pantalla de proyección
           </p>
         </div>

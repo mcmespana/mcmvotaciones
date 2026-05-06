@@ -20,11 +20,7 @@ const DEFAULT_RELATIONSHIP_TYPES = ['grupo', 'monitor'];
 
 function StepBadge({ n }: { n: number }) {
   return (
-    <span className="w-[22px] h-[22px]" style={{
-      borderRadius: '50%',
-      background: 'var(--avd-brand)', color: '#fff',
-      fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center', flexShrink: 0,
-    }}>{n}</span>
+    <span className="w-[22px] h-[22px] rounded-full bg-[var(--avd-brand)] text-white text-[11px] font-extrabold grid place-items-center shrink-0">{n}</span>
   );
 }
 
@@ -285,7 +281,7 @@ export function ComunicaImport() {
               <div className="px-5 py-4 flex flex-col gap-4">
                 {roundsLoading ? (
                   <div className="flex items-center gap-2 text-[13px] text-avd-fg-muted py-3">
-                    <div style={{ width: 16, height: 16, border: '2px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+                    <div className="w-4 h-4 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full shrink-0 [animation:spin_0.7s_linear_infinite]" />
                     Cargando votaciones...
                   </div>
                 ) : rounds.length === 0 ? (
@@ -355,7 +351,7 @@ export function ComunicaImport() {
                                 type="checkbox"
                                 checked={selectedRelTypes.includes(type)}
                                 onChange={() => toggleRelType(type)}
-                                style={{ width: 14, height: 14, accentColor: 'var(--avd-brand)', cursor: 'pointer' }}
+                                className="w-[14px] h-[14px] accent-[var(--avd-brand)] cursor-pointer"
                               />
                               <span className="text-avd-fg capitalize">{type}</span>
                               {!DEFAULT_RELATIONSHIP_TYPES.includes(type) && (
@@ -418,7 +414,7 @@ export function ComunicaImport() {
               <div className="p-5">
                 {fetchLoading ? (
                   <div className="flex flex-col items-center gap-3 py-6 text-center">
-                    <div style={{ width: 32, height: 32, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                    <div className="w-8 h-8 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
                     <div>
                       <div className="font-semibold text-sm text-avd-fg">Conectando con SinergiaCRM...</div>
                       <div className="text-xs text-avd-fg-muted mt-1">Esto puede tardar 15–30 s si hay muchos registros.</div>
@@ -490,13 +486,12 @@ export function ComunicaImport() {
                           <div key={group.location} className="border border-avd-border rounded-avd-sm overflow-hidden">
                             <button
                               onClick={() => toggleGroup(group.location)}
-                              className="w-full flex items-center gap-[10px] px-3 py-[9px] bg-[var(--avd-bg-elev)] border-none cursor-pointer text-left"
-                              style={{ borderBottom: isOpen ? '1px solid var(--avd-border-soft)' : 'none' }}
+                              className={`w-full flex items-center gap-[10px] px-3 py-[9px] bg-[var(--avd-bg-elev)] border-none cursor-pointer text-left ${isOpen ? 'border-b border-[var(--avd-border-soft)]' : ''}`}
                             >
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-avd-fg-muted flex-shrink-0"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                               <span className="font-semibold text-[13px] text-avd-fg flex-1">{group.location}</span>
                               <span className="avd-chip text-[11px]">{groupSelected}/{group.contacts.length}</span>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-avd-fg-muted transition-transform duration-150" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6"/></svg>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`text-avd-fg-muted transition-transform duration-150${isOpen ? ' rotate-180' : ''}`}><path d="M6 9l6 6 6-6"/></svg>
                             </button>
                             {isOpen && (
                               <div className="overflow-x-auto">
@@ -522,15 +517,7 @@ export function ComunicaImport() {
                                         <tr
                                           key={c.crm_id}
                                           onClick={() => toggleContact(c.crm_id)}
-                                          className="cursor-pointer border-b border-avd-border-soft"
-                                          style={{
-                                            opacity: alreadyIn ? 0.6 : 1,
-                                            background: isSelected
-                                              ? 'color-mix(in oklch, var(--avd-brand) 6%, transparent)'
-                                              : isNoRelType
-                                              ? 'color-mix(in oklch, var(--avd-warn) 10%, transparent)'
-                                              : (idx % 2 === 0 ? 'transparent' : 'var(--avd-bg-sunken)'),
-                                          }}
+                                          className={`cursor-pointer border-b border-avd-border-soft ${alreadyIn ? 'opacity-60' : 'opacity-100'} ${isSelected ? 'bg-[color-mix(in_oklch,var(--avd-brand)_6%,transparent)]' : isNoRelType ? 'bg-[color-mix(in_oklch,var(--avd-warn)_10%,transparent)]' : idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--avd-bg-sunken)]'}`}
                                         >
                                           <td className="px-[10px] py-[7px]">
                                             <input
@@ -538,7 +525,7 @@ export function ComunicaImport() {
                                               checked={isSelected}
                                               onChange={() => toggleContact(c.crm_id)}
                                               onClick={e => e.stopPropagation()}
-                                              style={{ width: 13, height: 13, accentColor: 'var(--avd-brand)', cursor: 'pointer' }}
+                                              className="w-[13px] h-[13px] accent-[var(--avd-brand)] cursor-pointer"
                                             />
                                           </td>
                                           <td className="px-[10px] py-[7px] text-avd-fg whitespace-nowrap">
@@ -597,7 +584,7 @@ export function ComunicaImport() {
           {step === 'importing' && (
             <div className={cardClass}>
               <div className="flex flex-col items-center gap-[14px] px-6 py-12 text-center">
-                <div style={{ width: 40, height: 40, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <div className="w-10 h-10 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
                 <div className="text-[16px] font-bold text-avd-fg">Importando candidatos…</div>
                 <div className="text-[13px] text-avd-fg-muted">Por favor espera.</div>
               </div>
@@ -608,7 +595,7 @@ export function ComunicaImport() {
           {step === 'photos' && (
             <div className={cardClass}>
               <div className="flex flex-col items-center gap-[14px] px-6 py-12 text-center">
-                <div style={{ width: 40, height: 40, border: '2.5px solid var(--avd-border)', borderTopColor: 'var(--avd-brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <div className="w-10 h-10 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
                 <div className="text-[16px] font-bold text-avd-fg">Importando fotos desde CRM…</div>
                 <div className="text-[13px] text-avd-fg-muted">
                   Descargando {importedCandidates.length} fotos. Puede tardar unos segundos.
@@ -630,7 +617,7 @@ export function ComunicaImport() {
                 </div>
               </div>
               <div className="px-5 py-4 flex flex-col gap-4">
-                <div className="grid gap-[10px]" style={{ gridTemplateColumns: importResult.skipped > 0 ? '1fr 1fr' : '1fr' }}>
+                <div className={`grid gap-[10px] ${importResult.skipped > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div className="bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] rounded-avd-sm p-[16px_20px] text-center">
                     <div className="text-[32px] font-extrabold text-[var(--avd-ok)] tracking-[-0.03em]">{importResult.inserted}</div>
                     <div className="text-[12.5px] text-avd-fg-muted mt-1">Candidatos añadidos</div>

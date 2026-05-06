@@ -233,49 +233,20 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
       `}</style>
 
       {/* Overlay */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[49] backdrop-blur-[3px] transition-opacity duration-300"
-        style={{ background: "rgba(2, 6, 23, 0.66)" }}
-      />
+      <div className="pointer-events-none fixed inset-0 z-[49] backdrop-blur-[3px] transition-opacity duration-300 bg-[rgba(2,6,23,0.66)]" />
 
       {/* Dialog wrapper */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 50,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 20,
-        }}
-      >
-        <div
-          style={{
-            background: "var(--avd-surface)",
-            border: "1px solid var(--avd-border)",
-            borderRadius: "var(--avd-radius-lg)",
-            boxShadow: "var(--avd-shadow-lg)",
-            maxWidth: 420,
-            width: "100%",
-            overflow: "hidden",
-            animation: "vsa-dialog-in 320ms cubic-bezier(0.22, 1, 0.36, 1)",
-          }}
-        >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+        <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] max-w-[420px] w-full overflow-hidden [animation:vsa-dialog-in_320ms_cubic-bezier(0.22,1,0.36,1)]">
           {/* Top accent bar — gradient + shimmer */}
           <div
-            className="vsa-shimmer-bar"
-            style={{
-              height: 4,
-              width: "100%",
-              backgroundImage: step.topBar,
-              transition: "background-image 500ms",
-            }}
+            className="vsa-shimmer-bar h-1 w-full transition-[background-image] duration-500"
+            style={{ backgroundImage: step.topBar }}
           />
 
-          <div style={{ padding: "32px", textAlign: "center" }}>
+          <div className="p-8 text-center">
             {/* Step dots (tutorial style) */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 22 }}>
+            <div className="flex items-center justify-center gap-2 mb-[22px]">
               {STEPS.map((s, i) => {
                 const active = i === currentStep && !isFinal;
                 const done = i < currentStep || isFinal;
@@ -297,62 +268,42 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
             {/* Icon bubble — tutorial-style rounded-2xl + extras */}
             <div
               key={iconKey}
-              className="relative mx-auto mb-6"
-              style={{ width: 112, height: 112, animation: "vsa-pop 520ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+              className="relative mx-auto mb-6 w-[112px] h-[112px] [animation:vsa-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
             >
               {/* Pulsing rings */}
               <span
                 aria-hidden
-                className="absolute inset-0 rounded-2xl"
-                style={{
-                  border: `2px solid ${step.color}`,
-                  animation: "vsa-ring 1.6s ease-out infinite",
-                }}
+                className="absolute inset-0 rounded-2xl [animation:vsa-ring_1.6s_ease-out_infinite]"
+                style={{ border: `2px solid ${step.color}` }}
               />
               <span
                 aria-hidden
-                className="absolute inset-0 rounded-2xl"
-                style={{
-                  border: `2px solid ${step.color}`,
-                  animation: "vsa-ring 1.6s ease-out infinite",
-                  animationDelay: "0.55s",
-                }}
+                className="absolute inset-0 rounded-2xl [animation:vsa-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
+                style={{ border: `2px solid ${step.color}` }}
               />
 
               {/* Bubble */}
               <div
-                className={`relative w-28 h-28 rounded-2xl ${step.bgColor} ring-1 ${step.ringColor} flex items-center justify-center`}
-                style={{
-                  boxShadow: step.glow,
-                  transition: "box-shadow 500ms, transform 500ms",
-                  transform: isFinal ? "scale(1.06)" : "scale(1)",
-                }}
+                className={`relative w-28 h-28 rounded-2xl ${step.bgColor} ring-1 ${step.ringColor} flex items-center justify-center transition-[box-shadow,transform] duration-500 ${isFinal ? 'scale-[1.06]' : 'scale-100'}`}
+                style={{ boxShadow: step.glow }}
               >
                 <Icon
-                  className={`w-14 h-14 ${step.iconColor}`}
+                  className={`w-14 h-14 ${step.iconColor}${isFinal ? ' [animation:vsa-success-burst_600ms_cubic-bezier(0.22,1,0.36,1)]' : ''}`}
                   strokeWidth={1.7}
-                  style={{
-                    animation: isFinal
-                      ? "vsa-success-burst 600ms cubic-bezier(0.22, 1, 0.36, 1)"
-                      : undefined,
-                  }}
                 />
               </div>
             </div>
 
             {/* Text — re-mount per step to fade-up */}
-            <div key={`txt-${iconKey}`} style={{ animation: "vsa-fade-up 360ms ease-out" }}>
+            <div key={`txt-${iconKey}`} className="[animation:vsa-fade-up_360ms_ease-out]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 mb-2">
                 Paso {Math.min(currentStep + 1, STEPS.length)} de {STEPS.length}
               </p>
-              <h3
-                className={`text-xl font-extrabold mb-2 tracking-tight ${step.accentText}`}
-                style={{ letterSpacing: "-0.02em", lineHeight: 1.2 }}
-              >
+              <h3 className={`text-xl font-extrabold mb-2 tracking-[-0.02em] leading-[1.2] ${step.accentText}`}>
                 {step.text}
               </h3>
               {step.subtext && (
-                <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.55 }}>
+                <p className="text-sm text-muted-foreground leading-[1.55]">
                   {step.subtext}
                 </p>
               )}

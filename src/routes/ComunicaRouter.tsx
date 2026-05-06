@@ -25,7 +25,7 @@ export function ComunicaRouter() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
         <div className="text-center flex flex-col items-center gap-[14px]">
-          <div className="w-9 h-9 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin" style={{ animationDuration: "0.7s" }} />
+          <div className="w-9 h-9 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin [animation-duration:0.7s]" />
           <div className="text-[13px] text-[var(--avd-fg-muted)] font-medium">Cargando...</div>
         </div>
       </div>

@@ -71,7 +71,6 @@ function PubAvatar({ name, surname, imageUrl }: { name: string; surname: string;
     );
   }
   return (
-    {/* dynamic: background/color are computed from candidate name chars */}
     <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 font-extrabold text-[15px] select-none" style={{ background: bg, color }}>
       {initials}
     </div>
@@ -165,7 +164,7 @@ export function PublicCandidates() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-avd-bg">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin" style={{ animationDuration: "0.7s" }} />
+          <div className="w-8 h-8 rounded-full border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] animate-spin [animation-duration:0.7s]" />
           <span className="text-[13px] text-[var(--avd-fg-muted)] font-[var(--avd-font-sans)]">Cargando...</span>
         </div>
       </div>
@@ -230,8 +229,7 @@ export function PublicCandidates() {
             <div className="flex-auto max-w-[260px] relative">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
               <input
-                className="avd-input h-[42px] pl-[38px] text-[15px]"
-                style={{ paddingRight: search ? 38 : 12 }} /* dynamic: changes when search is non-empty */
+                className={`avd-input h-[42px] pl-[38px] text-[15px] ${search ? 'pr-[38px]' : 'pr-3'}`}
                 placeholder="Buscar candidato..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -252,7 +250,7 @@ export function PublicCandidates() {
               onClick={() => setIndexOpen(p => !p)}
               title={indexOpen ? "Ocultar índice" : "Mostrar índice de lugares"}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200" style={{ transform: indexOpen ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200${indexOpen ? " rotate-180" : ""}`}><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
             {/* Theme toggle: light → dark → system → light */}
@@ -321,8 +319,7 @@ export function PublicCandidates() {
                 <span className="avd-chip text-[11px]">{group.candidates.length}</span>
                 <svg
                   width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-                  className="shrink-0 text-[var(--avd-fg-muted)] transition-transform duration-[180ms]"
-                  style={{ transform: isOpen ? "rotate(180deg)" : "none" }}
+                  className={`shrink-0 text-[var(--avd-fg-muted)] transition-transform duration-[180ms]${isOpen ? " rotate-180" : ""}`}
                 >
                   <path d="M6 9l6 6 6-6"/>
                 </svg>

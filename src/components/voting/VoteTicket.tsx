@@ -103,7 +103,7 @@ interface VoteTicketProps {
 
 export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt, onCopy }: VoteTicketProps) {
   return (
-    <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: 14 }}>
+    <div className="w-full max-w-[400px] flex flex-col gap-[14px]">
       {/* ═══ Main ticket card ═══ */}
       <div className="tkt-card-wrapper">
         {/* Spinning conic-gradient border */}
@@ -112,7 +112,7 @@ export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt,
         <div className="tkt-card-inner">
           <div className="tkt-shimmer-bar" />
 
-          <div style={{ padding: "36px 32px 28px", textAlign: "center" }}>
+          <div className="px-8 pt-9 pb-7 text-center">
             {/* Icon with pulsing rings */}
             <div className="tkt-icon-wrap">
               <span className="tkt-ring" />
@@ -122,11 +122,11 @@ export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt,
               </div>
             </div>
 
-            <div className="tkt-fade-up" style={{ animationDelay: "0.2s" }}>
+            <div className="tkt-fade-up [animation-delay:0.2s]">
               <h1 className="tkt-title">Voto registrado</h1>
             </div>
 
-            <div className="tkt-fade-up" style={{ animationDelay: "0.35s" }}>
+            <div className="tkt-fade-up [animation-delay:0.35s]">
               <p className="tkt-round-title">{roundTitle}</p>
               <div className="tkt-round-badge">
                 <span className="tkt-round-dot" />
@@ -136,7 +136,7 @@ export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt,
           </div>
 
           {/* Bottom verification footer */}
-          <div className="tkt-footer tkt-fade-up" style={{ animationDelay: "0.5s" }}>
+          <div className="tkt-footer tkt-fade-up [animation-delay:0.5s]">
             <p className="tkt-footer-text">
               Muestra esta pantalla para verificar que has votado correctamente.
             </p>
