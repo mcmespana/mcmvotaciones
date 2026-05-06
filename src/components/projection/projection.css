@@ -108,14 +108,14 @@
 .proj-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 32px;
+  gap: 16px;
+  padding: 22px 40px;
   background: var(--avd-bg-elev);
   border-bottom: 1px solid var(--avd-border);
   flex-shrink: 0;
   flex-wrap: wrap;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 .proj-header::before {
   content: "";
@@ -146,6 +146,10 @@
 }
 
 .proj-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
   font-size: 14px;
   color: var(--avd-fg-muted);
   font-weight: 600;
@@ -493,10 +497,14 @@
 
 .proj-timer {
   font-family: var(--avd-font-mono);
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--avd-fg);
+  background: var(--avd-bg-sunken);
+  border: 1px solid var(--avd-border-soft);
+  border-radius: 10px;
+  padding: 6px 14px;
 }
 
 .proj-flash-overlay {
@@ -511,7 +519,11 @@
 .proj-ballots-panel {
   flex: 1;
   padding: 28px 36px;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .proj-ballots-label {
@@ -521,6 +533,128 @@
   letter-spacing: 0.08em;
   color: var(--avd-fg-subtle);
   margin-bottom: 20px;
+}
+
+.proj-ballots-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+.proj-ballots-main {
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow: hidden;
+}
+.proj-ballots-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.proj-ballots-count {
+  font-size: 14px;
+  color: var(--avd-fg-muted);
+  font-weight: 600;
+}
+.proj-ballots-count strong { color: var(--avd-fg); font-weight: 800; }
+.proj-ballots-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+.proj-ballots-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  animation: ballots-scroll 60s linear infinite;
+}
+.proj-ballots-track:hover { animation-play-state: paused; }
+@keyframes ballots-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+.proj-ballot {
+  background: var(--avd-surface);
+  border: 1px solid var(--avd-border);
+  border-radius: 14px;
+  padding: 14px 16px 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px -4px rgba(0,0,0,0.08);
+}
+.proj-ballot::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--proj-blue), var(--proj-emerald));
+}
+.proj-ballot-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.proj-ballot-code {
+  font-family: var(--avd-font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--proj-blue-600);
+}
+.proj-ballot-round {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--proj-blue-50);
+  color: var(--proj-blue-600);
+  border: 1px solid color-mix(in oklch, var(--proj-blue) 25%, transparent);
+}
+.proj-ballot-sep {
+  height: 1px;
+  background: var(--avd-border-soft);
+  margin-bottom: 10px;
+}
+.proj-ballot-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.proj-ballot-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--avd-fg);
+  font-weight: 500;
+  line-height: 1.3;
+}
+.proj-ballot-list .n {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--avd-fg-faint);
+  font-variant-numeric: tabular-nums;
+  min-width: 14px;
+}
+.proj-ballot-list .nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Results: main area ── */
@@ -704,12 +838,13 @@
 
 /* ── Results: selected candidates sidebar ── */
 .proj-sidebar {
-  width: 320px;
+  width: 400px;
   flex-shrink: 0;
   background: var(--avd-bg-elev);
   border-left: 1px solid var(--avd-border);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .proj-sidebar-header {
@@ -776,7 +911,7 @@
 }
 
 .proj-sidebar-empty {
-  width: 280px;
+  width: 400px;
   flex-shrink: 0;
   background: var(--avd-bg-elev);
   border-left: 1px solid var(--avd-border);

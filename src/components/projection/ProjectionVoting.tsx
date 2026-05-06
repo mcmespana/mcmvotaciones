@@ -82,7 +82,7 @@ export function ProjectionVoting({
       </div>
 
       {/* Body */}
-      <div className={`proj-body grid relative z-[1] ${showBallotSummary ? 'grid-cols-1' : '[grid-template-columns:1.6fr_1fr]'}`}>
+      <div className={`proj-body grid relative z-[1] ${showBallotSummary ? '[grid-template-columns:1fr_400px]' : '[grid-template-columns:1.6fr_1fr]'}`}>
         {!showBallotSummary ? (
           <>
             {/* Left: vote count */}
@@ -118,13 +118,22 @@ export function ProjectionVoting({
             </div>
           </>
         ) : (
-          /* Ballot summary view */
-          <div className="px-10 py-8 flex flex-col gap-6">
-            <div className="proj-label mb-0">Papeletas registradas</div>
-            <div ref={ballotsRef}>
-              <BallotsGrid summaries={ballotSummaries} />
+          <>
+            <div className="proj-ballots-panel">
+              <div className="proj-ballots-meta">
+                <div className="proj-ballots-label mb-0">Papeletas registradas</div>
+                <div className="proj-ballots-count">
+                  <strong>{ballotSummaries.length}</strong> emitidas
+                </div>
+              </div>
+              <div ref={ballotsRef} className="flex-1 min-h-0 flex flex-col">
+                <BallotsGrid summaries={ballotSummaries} />
+              </div>
             </div>
-          </div>
+            <div className="border-l border-avd-border">
+              <SelectedCandidatesSidebar candidates={previouslySelected} />
+            </div>
+          </>
         )}
       </div>
 

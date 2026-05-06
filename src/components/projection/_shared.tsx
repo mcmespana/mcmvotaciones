@@ -144,32 +144,54 @@ export function SelectedCandidatesSidebar({ candidates }: { candidates: Selected
 
 /* ── BallotsGrid ── */
 
+function BallotCard({ ballot }: { ballot: BallotSummary }) {
+  return (
+    <div className="proj-ballot">
+      <div className="proj-ballot-top">
+        <span className="proj-ballot-code">{ballot.voteCode}</span>
+        <span className="proj-ballot-round">R{ballot.roundNumber}</span>
+      </div>
+      <div className="proj-ballot-sep" />
+      <ul className="proj-ballot-list">
+        {[0, 1, 2].map((i) => (
+          <li key={i}>
+            <span className="n">{i + 1}.</span>
+            <span className="nm">{ballot.votes[i] || "—"}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
     return (
-      <div className="avd-ballots-grid-loading">
+      <div className="grid grid-cols-3 gap-[14px]">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="avd-ballots-grid-skeleton" />
+          <div key={i} className="h-[140px] rounded-[14px] bg-[var(--avd-bg-sunken)] animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+  // Marquee: render twice for infinite loop. Disable animation if too few.
+  const enableMarquee = summaries.length >= 6;
+  if (!enableMarquee) {
+    return (
+      <div className="grid grid-cols-3 gap-[14px]">
+        {summaries.map((b) => (
+          <BallotCard key={`${b.roundNumber}-${b.voteCode}-${b.timestamp}`} ballot={b} />
         ))}
       </div>
     );
   }
   return (
-    <div className="avd-ballots-grid">
-      {summaries.map((ballot) => (
-        <div key={`${ballot.roundNumber}-${ballot.voteCode}-${ballot.timestamp}`} className="avd-card avd-ballot-card">
-          <AccentBar />
-          <div className="avd-ballot-card-header">
-            <span className="avd-ballot-code">{ballot.voteCode}</span>
-            <span className="avd-ballot-round-chip">R{ballot.roundNumber}</span>
-          </div>
-          <div className="avd-ballot-votes">
-            <span><span className="avd-ballot-vote-num">1.</span>{ballot.votes[0] || "—"}</span>
-            <span><span className="avd-ballot-vote-num">2.</span>{ballot.votes[1] || "—"}</span>
-            <span><span className="avd-ballot-vote-num">3.</span>{ballot.votes[2] || "—"}</span>
-          </div>
-        </div>
-      ))}
+    <div className="proj-ballots-scroll">
+      <div className="proj-ballots-track">
+        {[...summaries, ...summaries].map((b, i) => (
+          <BallotCard key={`${b.roundNumber}-${b.voteCode}-${b.timestamp}-${i}`} ballot={b} />
+        ))}
+      </div>
     </div>
   );
 }

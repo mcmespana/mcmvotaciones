@@ -152,8 +152,13 @@ export function ProjectionResults({
         ) : (
           <>
             <div className="proj-ballots-panel">
-              <div className="proj-ballots-label">Papeletas registradas</div>
-              <div ref={ballotsRef}>
+              <div className="proj-ballots-meta">
+                <div className="proj-ballots-label mb-0">Papeletas registradas</div>
+                <div className="proj-ballots-count">
+                  <strong>{ballotSummaries.length}</strong> emitidas
+                </div>
+              </div>
+              <div ref={ballotsRef} className="flex-1 min-h-0 flex flex-col">
                 <BallotsGrid summaries={ballotSummaries} />
               </div>
             </div>
