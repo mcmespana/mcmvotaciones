@@ -1271,3 +1271,234 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.5; }
 }
+
+/* ─────────────────────────────────────────────────────────
+   FANCY ANIMATIONS
+   ───────────────────────────────────────────────────────── */
+
+/* ── Final card: gradient border + shimmer sweep + reveal ── */
+.proj-finalist-card {
+  border: 1.5px solid color-mix(in oklch, var(--proj-emerald) 30%, transparent);
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.05),
+    0 8px 28px -10px color-mix(in oklch, var(--proj-emerald) 35%, transparent);
+  animation: proj-final-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.proj-finalist-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    color-mix(in oklch, var(--proj-emerald) 28%, transparent) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: proj-shimmer 2.4s ease-out 0.45s both;
+  pointer-events: none;
+}
+@keyframes proj-final-rise {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-4px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes proj-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(120%); }
+}
+
+/* Avatar glow ring on final cards */
+.proj-finalist-card .proj-avatar {
+  box-shadow:
+    0 0 0 3px var(--avd-surface),
+    0 0 0 5px color-mix(in oklch, var(--proj-emerald) 50%, transparent);
+  animation: proj-avatar-glow 3s ease-in-out infinite;
+}
+@keyframes proj-avatar-glow {
+  0%, 100% { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, var(--proj-emerald) 50%, transparent), 0 0 0 6px transparent; }
+  50%      { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, var(--proj-emerald) 70%, transparent), 0 0 22px 6px color-mix(in oklch, var(--proj-emerald) 35%, transparent); }
+}
+
+/* Final check bounce */
+.proj-finalist-check {
+  animation: proj-check-pop 0.6s cubic-bezier(0.4, 1.6, 0.6, 1) 0.3s both;
+}
+@keyframes proj-check-pop {
+  0%   { transform: scale(0) rotate(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Stagger tags */
+.proj-finalist-tags .proj-finalist-tag {
+  animation: proj-tag-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.proj-finalist-tags .proj-finalist-tag:nth-child(1) { animation-delay: 0.40s; }
+.proj-finalist-tags .proj-finalist-tag:nth-child(2) { animation-delay: 0.50s; }
+.proj-finalist-tags .proj-finalist-tag:nth-child(3) { animation-delay: 0.60s; }
+.proj-finalist-tags .proj-finalist-tag:nth-child(4) { animation-delay: 0.70s; }
+@keyframes proj-tag-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Star icon pulse */
+.proj-star-pulse { animation: proj-star-pulse 2.4s ease-in-out infinite; transform-origin: center; }
+@keyframes proj-star-pulse {
+  0%, 100% { transform: scale(1) rotate(0); filter: drop-shadow(0 0 0 transparent); }
+  50%      { transform: scale(1.18) rotate(8deg); filter: drop-shadow(0 0 8px color-mix(in oklch, var(--proj-yellow) 80%, transparent)); }
+}
+
+/* ── Confetti (CSS only) ── */
+.proj-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.proj-confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px; height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: proj-confetti-fall 4.5s linear infinite;
+}
+@keyframes proj-confetti-fall {
+  0%   { transform: translate3d(0, -20px, 0) rotate(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate3d(var(--dx, 30px), 110vh, 0) rotate(720deg); opacity: 0.9; }
+}
+
+/* ── Result row enhancements ── */
+.proj-row {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s;
+}
+.proj-row--top {
+  box-shadow: 0 4px 18px -8px color-mix(in oklch, var(--proj-emerald) 45%, transparent);
+}
+.proj-row--top::before {
+  background: linear-gradient(180deg, var(--proj-emerald), var(--proj-blue));
+  animation: proj-accent-shimmer 2.6s ease-in-out infinite;
+}
+@keyframes proj-accent-shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+/* Rank badge bounce-in */
+.proj-rank-num {
+  animation: proj-rank-pop 0.5s cubic-bezier(0.4, 1.6, 0.5, 1) both;
+}
+@keyframes proj-rank-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Bar fill animated stripe */
+.proj-row-bar-fill {
+  background: linear-gradient(
+    90deg,
+    var(--proj-blue) 0%,
+    color-mix(in oklch, var(--proj-blue) 60%, white) 50%,
+    var(--proj-blue) 100%
+  );
+  background-size: 200% 100%;
+  animation: proj-bar-stripe 2.5s linear infinite;
+}
+.proj-row--top .proj-row-bar-fill {
+  background: linear-gradient(
+    90deg,
+    var(--proj-emerald) 0%,
+    color-mix(in oklch, var(--proj-emerald) 60%, white) 50%,
+    var(--proj-emerald) 100%
+  );
+  background-size: 200% 100%;
+}
+@keyframes proj-bar-stripe {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Selected badge subtle pulse */
+.proj-selected-badge {
+  animation: proj-badge-in 0.4s cubic-bezier(0.4, 1.6, 0.5, 1) 0.2s both;
+}
+@keyframes proj-badge-in {
+  0%   { opacity: 0; transform: scale(0) rotate(-12deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* ── Voting screen vote-num count flash ── */
+.proj-vote-num--flash {
+  animation: proj-vote-flash 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes proj-vote-flash {
+  0%   { transform: scale(1); color: var(--avd-fg); }
+  35%  { transform: scale(1.12); color: var(--proj-emerald-600); text-shadow: 0 0 20px color-mix(in oklch, var(--proj-emerald) 50%, transparent); }
+  100% { transform: scale(1); color: var(--avd-fg); text-shadow: none; }
+}
+
+/* Progress bar shimmer */
+.proj-progress-fill {
+  background-image: linear-gradient(
+    90deg,
+    var(--proj-blue) 0%,
+    var(--proj-emerald) 50%,
+    var(--proj-blue) 100%
+  );
+  background-size: 200% 100%;
+  animation: proj-progress-shimmer 3s linear infinite;
+}
+@keyframes proj-progress-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Topbar title shimmer on enter ── */
+.proj-topbar-title {
+  animation: proj-fade-slide 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes proj-fade-slide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── pchip enter ── */
+.proj-topbar .pchip,
+.proj-header .pchip {
+  animation: proj-chip-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.proj-topbar .pchip:nth-of-type(1),
+.proj-header .pchip:nth-of-type(1) { animation-delay: 0.06s; }
+.proj-topbar .pchip:nth-of-type(2),
+.proj-header .pchip:nth-of-type(2) { animation-delay: 0.12s; }
+.proj-topbar .pchip:nth-of-type(3),
+.proj-header .pchip:nth-of-type(3) { animation-delay: 0.18s; }
+.proj-topbar .pchip:nth-of-type(4),
+.proj-header .pchip:nth-of-type(4) { animation-delay: 0.24s; }
+@keyframes proj-chip-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.85); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Reduced motion respects */
+@media (prefers-reduced-motion: reduce) {
+  .proj-finalist-card,
+  .proj-finalist-card::after,
+  .proj-finalist-check,
+  .proj-finalist-card .proj-avatar,
+  .proj-confetti-piece,
+  .proj-star-pulse,
+  .proj-rank-num,
+  .proj-row-bar-fill,
+  .proj-progress-fill,
+  .proj-row--top::before,
+  .proj-topbar-title,
+  .proj-topbar .pchip,
+  .proj-header .pchip,
+  .proj-finalist-tags .proj-finalist-tag {
+    animation: none !important;
+  }
+}

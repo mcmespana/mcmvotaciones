@@ -92,7 +92,10 @@ export function ProjectionResults({
   );
 
   return (
-    <div className="proj-page overflow-visible">
+    <div className="proj-page overflow-visible relative">
+      {/* Ambient orbs */}
+      <div className="proj-orb proj-orb-a" />
+      <div className="proj-orb proj-orb-b" />
       {/* Header */}
       <header className="proj-topbar">
         <div className="proj-logo">C</div>

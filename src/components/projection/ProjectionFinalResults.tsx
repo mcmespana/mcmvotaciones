@@ -1,8 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Check, MapPin } from "lucide-react";
 import type { CandidateRow } from "@/types/db";
 import { formatCandidateName, getRoundTeamLabel } from "@/lib/candidateFormat";
 import { PChip, ProjAvatar } from "./_shared";
+
+const CONFETTI_COLORS = [
+  "var(--proj-emerald)",
+  "var(--proj-blue)",
+  "var(--proj-yellow)",
+  "var(--proj-red)",
+];
+
+function Confetti({ pieces = 80 }: { pieces?: number }) {
+  const items = useMemo(
+    () =>
+      Array.from({ length: pieces }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        dx: (Math.random() - 0.5) * 240,
+        delay: Math.random() * 4,
+        duration: 3.5 + Math.random() * 3,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        rotate: Math.random() * 360,
+        scale: 0.6 + Math.random() * 0.9,
+      })),
+    [pieces],
+  );
+  return (
+    <div className="proj-confetti" aria-hidden>
+      {items.map((p) => (
+        <span
+          key={p.id}
+          className="proj-confetti-piece"
+          style={{
+            left: `${p.left}%`,
+            background: p.color,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            transform: `scale(${p.scale}) rotate(${p.rotate}deg)`,
+            ['--dx' as string]: `${p.dx}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 type Candidate = CandidateRow;
 
@@ -33,6 +75,7 @@ export function ProjectionFinalResults({
   }, [selectedCandidates.length]);
 
   const isCompact = selectedCandidates.length > 3;
+  const allRevealed = revealedCount >= selectedCandidates.length && selectedCandidates.length > 0;
 
   const gridCols =
     selectedCandidates.length <= 3
@@ -42,7 +85,12 @@ export function ProjectionFinalResults({
       : "repeat(3, minmax(0, 1fr))";
 
   return (
-    <div className="proj-page overflow-visible">
+    <div className="proj-page overflow-visible relative">
+      {/* Ambient orbs */}
+      <div className="proj-orb proj-orb-a" />
+      <div className="proj-orb proj-orb-b" />
+      <div className="proj-orb proj-orb-c" />
+      {allRevealed && <Confetti pieces={90} />}
       {/* Header */}
       <header className="proj-topbar">
         <div className="proj-logo">C</div>
@@ -50,7 +98,7 @@ export function ProjectionFinalResults({
         <div className="proj-topbar-divider" />
         <h1 className="proj-topbar-title proj-topbar-title--lg">
           Resultados Finales
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--proj-yellow)" stroke="none" aria-hidden>
+          <svg className="proj-star-pulse" width="22" height="22" viewBox="0 0 24 24" fill="var(--proj-yellow)" stroke="none" aria-hidden>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         </h1>
