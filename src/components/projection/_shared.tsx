@@ -167,7 +167,7 @@ function BallotCard({ ballot }: { ballot: BallotSummary }) {
 export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
     return (
-      <div className="grid grid-cols-3 gap-[14px]">
+      <div className="grid grid-cols-4 gap-[12px]">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-[140px] rounded-[14px] bg-[var(--avd-bg-sunken)] animate-pulse" />
         ))}
@@ -175,10 +175,10 @@ export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
     );
   }
   // Marquee: render twice for infinite loop. Disable animation if too few.
-  const enableMarquee = summaries.length >= 6;
+  const enableMarquee = summaries.length >= 8;
   if (!enableMarquee) {
     return (
-      <div className="grid grid-cols-3 gap-[14px]">
+      <div className="grid grid-cols-4 gap-[12px]">
         {summaries.map((b) => (
           <BallotCard key={`${b.roundNumber}-${b.voteCode}-${b.timestamp}`} ballot={b} />
         ))}

@@ -94,16 +94,15 @@ export function ProjectionResults({
   return (
     <div className="proj-page overflow-visible">
       {/* Header */}
-      <div className="proj-header">
+      <header className="proj-header">
         <h1 className="proj-header-title">{roundTitle}</h1>
-        <div className="flex items-center gap-2 ml-1">
-          <PChip kind="yellow" label={getRoundTeamLabel(team)} />
-          <PChip kind="blue" label={`Ronda ${roundNumber}`} />
-          {selectedCandidates.length > 0 && <PChip kind="emerald" label={`${selectedCandidates.length} seleccionados`} />}
+        <PChip kind="yellow" label={getRoundTeamLabel(team)} />
+        <PChip kind="blue" label={`Ronda ${roundNumber}`} />
+        {selectedCandidates.length > 0 && <PChip kind="emerald" label={`${selectedCandidates.length} seleccionados`} />}
+        <div className="proj-header-meta">
+          <span className="proj-header-side">{displayResults.length} candidatos votados</span>
         </div>
-        <div className="proj-spacer" />
-        <div className="proj-header-meta">{displayResults.length} candidatos votados</div>
-      </div>
+      </header>
 
       {/* Body */}
       <div className="proj-body">

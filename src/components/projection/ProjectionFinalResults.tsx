@@ -44,22 +44,20 @@ export function ProjectionFinalResults({
   return (
     <div className="proj-page overflow-visible">
       {/* Header */}
-      <div className="proj-header">
-        <div className="proj-final-header-accent" />
-        <h1 className="proj-final-title">
+      <header className="proj-header">
+        <h1 className="proj-header-title proj-header-title--flex">
           Resultados Finales
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--avd-warn)" stroke="none" aria-hidden>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--proj-yellow)" stroke="none" aria-hidden>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         </h1>
-        <p className="proj-final-subtitle">{roundTitle}</p>
-        <div className="proj-spacer" />
-        <div className="flex items-center gap-2">
+        <span className="proj-header-subtitle">{roundTitle}</span>
+        <div className="proj-header-meta">
           <PChip kind="yellow" label={getRoundTeamLabel(team)} />
           <PChip kind="blue" label={`Ronda ${roundNumber}`} />
           <PChip kind="emerald" label={`${selectedCandidates.length} elegidos`} />
         </div>
-      </div>
+      </header>
 
       {/* Candidates grid */}
       <div className={`flex-1 flex items-center justify-center overflow-auto ${isCompact ? 'px-8 py-6' : 'px-12 py-10'}`}>

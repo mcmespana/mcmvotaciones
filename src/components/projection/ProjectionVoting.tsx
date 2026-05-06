@@ -63,23 +63,19 @@ export function ProjectionVoting({
       <div className="proj-orb proj-orb-b" />
 
       {/* Header */}
-      <div className="proj-header">
-        <div>
-          <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
-        </div>
-        <div className="flex items-center gap-[10px] ml-2">
-          <PChip kind="yellow" label={getRoundTeamLabel(team)} />
-          <PChip kind="blue" label={`Ronda ${roundNumber}`} />
-        </div>
-        <div className="proj-spacer" />
-        <div className="proj-header-actions">
-          <div className="proj-connected">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            {connectedCount} conectados
+      <header className="proj-header">
+        <h1 className="proj-header-title">{roundTitle}</h1>
+        <PChip kind="yellow" label={getRoundTeamLabel(team)} />
+        <PChip kind="blue" label={`Ronda ${roundNumber}`} />
+        <PChip kind="emerald" label="En curso" pulse />
+        <div className="proj-header-meta">
+          <div className="proj-conn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span className="tabular-nums">{connectedCount} conectados</span>
           </div>
           <div className="proj-timer">{formatTime(elapsedSeconds)}</div>
         </div>
-      </div>
+      </header>
 
       {/* Body */}
       <div className={`proj-body grid relative z-[1] ${showBallotSummary ? '[grid-template-columns:1fr_400px]' : '[grid-template-columns:1.6fr_1fr]'}`}>
