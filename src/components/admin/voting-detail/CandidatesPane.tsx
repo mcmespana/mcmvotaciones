@@ -1,0 +1,212 @@
+import { ArrowUpRight, Download, Grid, List, Pencil, Search, Trash2, Undo2, Upload, UserPlus } from "lucide-react";
+import { formatCandidateName } from "@/lib/candidateFormat";
+import type { Candidate } from "./hooks/useRoundDetail";
+
+interface Props {
+  candidates: Candidate[];
+  filteredCandidates: Candidate[];
+  selectedCandidatesCount: number;
+  activeCandidatesCount: number;
+  hasCandidates: boolean;
+  isVotingStarted: boolean;
+  candidateView: "list" | "grid";
+  setCandidateView: (v: "list" | "grid") => void;
+  candidateSearch: string;
+  setCandidateSearch: (v: string) => void;
+  openAddCandidateDialog: () => void;
+  setIsImportOpen: (v: boolean) => void;
+  openComunicaImport: () => void;
+  setIsDeleteAllCandidatesOpen: (v: boolean) => void;
+  setIsDatasetOpen: (v: boolean) => void;
+  openEditCandidateDialog: (c: Candidate) => void;
+  setCandidateToSelect: (c: Candidate | null) => void;
+  setCandidateToUnselect: (c: Candidate | null) => void;
+  setCandidateToDelete: (c: Candidate | null) => void;
+  candidatesRef: React.RefObject<HTMLDivElement> | ((node: HTMLDivElement | null) => void);
+  initials: (c: Candidate) => string;
+}
+
+export function CandidatesPane({
+  filteredCandidates, selectedCandidatesCount, activeCandidatesCount, hasCandidates, isVotingStarted,
+  candidateView, setCandidateView, candidateSearch, setCandidateSearch,
+  openAddCandidateDialog, setIsImportOpen, openComunicaImport, setIsDeleteAllCandidatesOpen, setIsDatasetOpen,
+  openEditCandidateDialog, setCandidateToSelect, setCandidateToUnselect, setCandidateToDelete,
+  candidatesRef, initials,
+}: Props) {
+  return (
+    <main className="avd-col avd-col-main">
+      <div className="avd-col-inner">
+        <div className="avd-candidates-pane">
+          <div className="avd-candidates-head">
+              <div className="avd-candidates-head-left">
+                <h2>Candidatas</h2>
+                <span className="avd-counts">
+                  {selectedCandidatesCount} seleccionadas · {activeCandidatesCount} activas
+                </span>
+              </div>
+              <div className="avd-candidates-head-right">
+                <div className="avd-segmented">
+                  <button className={candidateView === "list" ? "active" : ""} onClick={() => setCandidateView("list")}>
+                    <List size={13} /> Lista
+                  </button>
+                  <button className={candidateView === "grid" ? "active" : ""} onClick={() => setCandidateView("grid")}>
+                    <Grid size={13} /> Tarjetas
+                  </button>
+                </div>
+                <div className="avd-search-wrap w-[180px]">
+                  <Search size={14} />
+                  <input
+                    className="avd-input"
+                    placeholder="Buscar candidata..."
+                    value={candidateSearch}
+                    onChange={(e) => setCandidateSearch(e.target.value)}
+                  />
+                </div>
+                {!isVotingStarted && (
+                  <>
+                    <button className="avd-btn avd-btn-sm" onClick={openAddCandidateDialog}>
+                      <UserPlus size={14} /> Añadir
+                    </button>
+                    <button className="avd-btn avd-btn-sm" onClick={() => setIsImportOpen(true)}>
+                      <Upload size={14} /> Importar
+                    </button>
+                    <button className="avd-btn avd-btn-sm" onClick={openComunicaImport}>
+                      <ArrowUpRight size={14} /> Comunica
+                    </button>
+                    {hasCandidates && (
+                      <button
+                        className="avd-btn avd-btn-sm avd-btn-danger"
+                        onClick={() => setIsDeleteAllCandidatesOpen(true)}
+                      >
+                        <Trash2 size={14} /> Eliminar todos
+                      </button>
+                    )}
+                    <button className="avd-btn avd-btn-sm" onClick={() => setIsDatasetOpen(true)}>
+                      <Download size={14} /> Dataset
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="avd-candidates-shell" ref={candidatesRef as React.RefObject<HTMLDivElement>}>
+              {filteredCandidates.length === 0 ? (
+                <div className="avd-empty">
+                  <UserPlus size={28} />
+                  <p className="avd-empty-title">Sin candidatas</p>
+                  <p className="avd-empty-sub">Usa Añadir o Importar para comenzar.</p>
+                </div>
+              ) : candidateView === "list" ? (
+                filteredCandidates.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`avd-cand-row ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
+                  >
+                    <div className="avd-cand-avatar">{initials(c)}</div>
+                    <div className="avd-cand-info">
+                      <div className="avd-cand-name">{formatCandidateName(c)}</div>
+                      <div className="avd-cand-meta">
+                        {c.location || "Sin ubicación"}
+                        {c.group_name && <> · {c.group_name}</>}
+                        {c.age && <> · {c.age} años</>}
+                      </div>
+                    </div>
+                    <div className="avd-cand-badges">
+                      {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
+                      {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
+                    </div>
+                    <div className="avd-cand-actions">
+                      <button
+                        className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                        onClick={() => openEditCandidateDialog(c)}
+                        title="Editar"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      {!c.is_selected && !c.is_eliminated && (
+                        <button
+                          className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                          onClick={() => setCandidateToSelect(c)}
+                          title="Añadir a seleccionados directamente"
+                        >
+                          <UserPlus size={13} />
+                        </button>
+                      )}
+                      {c.is_selected && (
+                        <button
+                          className="avd-btn avd-btn-ghost avd-btn-icon-sm"
+                          onClick={() => setCandidateToUnselect(c)}
+                          title="Deshacer selección"
+                        >
+                          <Undo2 size={13} />
+                        </button>
+                      )}
+                      {!isVotingStarted && (
+                        <button
+                          className="avd-btn avd-btn-ghost avd-btn-icon-sm text-[var(--avd-fg-faint)]"
+                          onClick={() => setCandidateToDelete(c)}
+                          title="Eliminar"
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--avd-bad)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="avd-cand-grid">
+                  {filteredCandidates.map((c) => (
+                    <div
+                      key={c.id}
+                      className={`avd-cand-card ${c.is_selected ? "avd-is-selected" : ""} ${c.is_eliminated ? "avd-is-eliminated" : ""}`}
+                    >
+                      <div className="avd-cand-card-head">
+                        <div className="avd-cand-card-avatar">{initials(c)}</div>
+                        <div className="avd-cand-card-body">
+                          <div className="avd-cand-card-name">{formatCandidateName(c)}</div>
+                          <div className="avd-cand-card-meta">
+                            {c.location}{c.age && ` · ${c.age}a`}
+                          </div>
+                        </div>
+                      </div>
+                      {c.group_name && (
+                        <div className="text-[11.5px] text-[var(--avd-fg-muted)]">{c.group_name}</div>
+                      )}
+                      <div className="avd-cand-card-foot">
+                        <div className="flex gap-1">
+                          {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
+                          {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
+                        </div>
+                        <div className="flex gap-0.5">
+                          <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)} title="Editar">
+                            <Pencil size={13} />
+                          </button>
+                          {!c.is_selected && !c.is_eliminated && (
+                            <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToSelect(c)} title="Añadir a seleccionados directamente">
+                              <UserPlus size={13} />
+                            </button>
+                          )}
+                          {c.is_selected && (
+                            <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToUnselect(c)} title="Deshacer selección">
+                              <Undo2 size={13} />
+                            </button>
+                          )}
+                          {!isVotingStarted && (
+                            <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => setCandidateToDelete(c)} title="Eliminar">
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+    </main>
+  );
+}
