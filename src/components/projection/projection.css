@@ -1308,16 +1308,16 @@
   100% { transform: translateX(120%); }
 }
 
-/* Avatar glow ring on final cards */
+/* Avatar glow ring on final cards — color follows avatar (currentColor) */
 .proj-finalist-card .proj-avatar {
   box-shadow:
     0 0 0 3px var(--avd-surface),
-    0 0 0 5px color-mix(in oklch, var(--proj-emerald) 50%, transparent);
+    0 0 0 5px color-mix(in oklch, currentColor 50%, transparent);
   animation: proj-avatar-glow 3s ease-in-out infinite;
 }
 @keyframes proj-avatar-glow {
-  0%, 100% { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, var(--proj-emerald) 50%, transparent), 0 0 0 6px transparent; }
-  50%      { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, var(--proj-emerald) 70%, transparent), 0 0 22px 6px color-mix(in oklch, var(--proj-emerald) 35%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, currentColor 50%, transparent), 0 0 0 6px transparent; }
+  50%      { box-shadow: 0 0 0 3px var(--avd-surface), 0 0 0 5px color-mix(in oklch, currentColor 75%, transparent), 0 0 22px 6px color-mix(in oklch, currentColor 35%, transparent); }
 }
 
 /* Final check bounce */

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Check } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import type { BallotSummary } from "@/hooks/useProjectionData";
@@ -47,16 +48,18 @@ export function ProjAvatar({
   size?: "xl" | "lg" | "md" | "sm";
   colorOverride?: AvatarColor;
 }) {
+  const [failed, setFailed] = useState(false);
   const color = colorOverride ?? pickAvatarColor(name + surname);
   const initials = ((name.trim()[0] ?? "") + (surname.trim()[0] ?? "")).toUpperCase();
-  if (imageUrl) {
+  const cls = `proj-avatar proj-avatar-${size} proj-avatar-${color}`;
+  if (imageUrl && !failed) {
     return (
-      <div className={`proj-avatar proj-avatar-${size} proj-avatar-${color}`}>
-        <img src={imageUrl} alt={name} />
+      <div className={cls}>
+        <img src={imageUrl} alt={`${name} ${surname}`.trim()} onError={() => setFailed(true)} />
       </div>
     );
   }
-  return <div className={`proj-avatar proj-avatar-${size} proj-avatar-${color}`}>{initials}</div>;
+  return <div className={cls}>{initials}</div>;
 }
 
 /* ── PChip ── */
