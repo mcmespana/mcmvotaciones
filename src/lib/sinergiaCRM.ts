@@ -137,13 +137,17 @@ export async function fetchCRMPhotos(
   roundId: string,
   credentials?: CRMCredentials,
 ): Promise<FetchPhotosResult> {
-  const batchSize = 15;
+  const batchSize = 20;
   let uploaded = 0;
   let failed = 0;
   const results: Record<string, string | null> = {};
 
+  const batches: Array<typeof candidates> = [];
   for (let i = 0; i < candidates.length; i += batchSize) {
-    const batch = candidates.slice(i, i + batchSize);
+    batches.push(candidates.slice(i, i + batchSize));
+  }
+
+  const invokeBatch = async (batch: typeof candidates) => {
     const body: Record<string, unknown> = {
       action: 'fetch-photos',
       crm_ids: batch.map(c => c.crm_id),
@@ -158,7 +162,11 @@ export async function fetchCRMPhotos(
 
     const result = data as { ok: boolean; uploaded?: number; failed?: number; results?: Record<string, string | null>; error?: string };
     if (!result?.ok) throw new Error(result?.error ?? 'Error desconocido al obtener fotos');
+    return result;
+  };
 
+  const batchResults = await Promise.all(batches.map(invokeBatch));
+  for (const result of batchResults) {
     uploaded += result.uploaded ?? 0;
     failed += result.failed ?? 0;
     Object.assign(results, result.results ?? {});

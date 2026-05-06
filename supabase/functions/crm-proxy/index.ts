@@ -161,17 +161,17 @@ async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array
   return `${SUPABASE_URL}/storage/v1/object/public/candidate-photos/${path}`;
 }
 
-async function updateCandidateImageUrl(candidateId: string, imageUrl: string, authHeader: string, apiKey: string): Promise<void> {
-  if (!SUPABASE_URL) return;
-  await fetch(`${SUPABASE_URL}/rest/v1/candidates?id=eq.${candidateId}`, {
-    method: 'PATCH',
+async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_url: string }>, authHeader: string, apiKey: string): Promise<void> {
+  if (!SUPABASE_URL || !updates.length) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/candidates`, {
+    method: 'POST',
     headers: {
       'Authorization': authHeader,
       'apikey': apiKey,
       'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
     },
-    body: JSON.stringify({ image_url: imageUrl }),
+    body: JSON.stringify(updates),
   });
 }
 
@@ -181,13 +181,15 @@ async function processPhotosInChunks(
   session: string,
   authHeader: string,
   apiKey: string,
-  chunkSize = 5,
+  chunkSize = 10,
 ): Promise<{ uploaded: number; failed: number; skipped: number; details: Record<string, string> }> {
   let uploaded = 0, failed = 0, skipped = 0;
   const details: Record<string, string> = {};
 
   for (let i = 0; i < candidates.length; i += chunkSize) {
     const chunk = candidates.slice(i, i + chunkSize);
+    const dbUpdates: Array<{ id: string; image_url: string }> = [];
+
     await Promise.all(chunk.map(async ({ id, crm_id }) => {
       const photoRes = await fetchPhotoBytes(crm_id, session);
 
@@ -199,7 +201,7 @@ async function processPhotosInChunks(
 
       try {
         const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType, authHeader, apiKey);
-        await updateCandidateImageUrl(id, publicUrl, authHeader, apiKey);
+        dbUpdates.push({ id, image_url: publicUrl });
         details[crm_id] = 'OK';
         uploaded++;
       } catch (err) {
@@ -207,6 +209,8 @@ async function processPhotosInChunks(
         failed++;
       }
     }));
+
+    await batchUpdateCandidateImageUrls(dbUpdates, authHeader, apiKey);
   }
 
   return { uploaded, failed, skipped, details };

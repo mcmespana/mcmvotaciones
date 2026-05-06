@@ -454,17 +454,17 @@ export function VotingPage() {
       </div>
 
       {!showSubmitAnimation && (
-        <div className="fixed inset-x-0 bottom-0 z-[60] border-t-2 border-outline-variant bg-surface-container-lowest shadow-[0_-8px_24px_-12px_hsl(var(--outline-variant)/0.45)] dark:border-outline-variant dark:bg-surface-container-low px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">{/* env() safe-area used in pb */}
+        <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-[var(--avd-border)] bg-[var(--avd-surface)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.18)] px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">{/* env() safe-area used in pb */}
           <div className="mx-auto max-w-4xl space-y-2">
             <div className="min-w-0">
               {selectedCandidates.length > 0 ? (
-                <p className="truncate text-sm font-semibold text-foreground">{selectedCandidateShortNames.join(' · ')}</p>
+                <p className="truncate text-sm font-semibold text-[var(--avd-fg)]">{selectedCandidateShortNames.join(' · ')}</p>
               ) : (
-                <p className="text-sm text-muted-foreground/55">Selecciona candidatos</p>
+                <p className="text-sm text-[var(--avd-fg-faint)]">Selecciona candidatos</p>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-xs font-semibold text-muted-foreground">Ronda {activeRound.current_round_number} - Máx. {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}</p>
+              <p className="text-xs font-semibold text-[var(--avd-fg-muted)]">Ronda {activeRound.current_round_number} - Máx. {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}</p>
               <div className="flex-1" />
               <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger w-[42px] h-[42px] p-0">
                 <Trash2 className="w-[18px] h-[18px]" />

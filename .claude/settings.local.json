@@ -41,7 +41,8 @@
       "mcp__ide__getDiagnostics",
       "mcp__332567f4-df56-4efc-8f8c-72671296cff1__apply_migration",
       "Bash(git checkout *)",
-      "Bash(git merge refactor/css-inline-styles --no-ff -m 'refactor: unify CSS — replace inline styles with Tailwind across 34 files *)"
+      "Bash(git merge refactor/css-inline-styles --no-ff -m 'refactor: unify CSS — replace inline styles with Tailwind across 34 files *)",
+      "Bash(git *)"
     ]
   }
 }

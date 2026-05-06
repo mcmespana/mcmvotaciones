@@ -103,7 +103,7 @@ export function ProjectionResults({
       </div>
 
       {/* Body */}
-      <div className="proj-body">
+      <div className="proj-body flex">
         {!showBallotSummary ? (
           <>
             <div className="proj-results-main">
