@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Check, MapPin } from "lucide-react";
-import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import type { CandidateRow } from "@/types/db";
 import { formatCandidateName, getRoundTeamLabel } from "@/lib/candidateFormat";
-import { Chip } from "./_shared";
+import { PChip, ProjAvatar } from "./_shared";
 
 type Candidate = CandidateRow;
 
@@ -56,9 +55,9 @@ export function ProjectionFinalResults({
         <p className="proj-final-subtitle">{roundTitle}</p>
         <div className="proj-spacer" />
         <div className="flex items-center gap-2">
-          <Chip kind="warn" label={getRoundTeamLabel(team)} />
-          <Chip kind="brand" label={`Ronda ${roundNumber}`} />
-          <Chip kind="ok" label={`${selectedCandidates.length} elegidos`} />
+          <PChip kind="yellow" label={getRoundTeamLabel(team)} />
+          <PChip kind="blue" label={`Ronda ${roundNumber}`} />
+          <PChip kind="emerald" label={`${selectedCandidates.length} elegidos`} />
         </div>
       </div>
 
@@ -90,13 +89,12 @@ export function ProjectionFinalResults({
                     <Check size={16} color="white" strokeWidth={3} />
                   </div>
 
-                  <div className={`proj-finalist-avatar ${isCompact ? 'w-[100px] h-[100px] mb-4' : 'w-[140px] h-[140px] mb-6'}`}>
-                    <CandidateAvatar
+                  <div className={isCompact ? 'mb-4' : 'mb-6'}>
+                    <ProjAvatar
                       name={candidate.name}
                       surname={candidate.surname}
                       imageUrl={candidate.image_url}
                       size={isCompact ? "lg" : "xl"}
-                      className="w-full h-full rounded-none"
                     />
                   </div>
 

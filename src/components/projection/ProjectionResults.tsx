@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import type { CandidateRow, RoundResultRow } from "@/types/db";
 import { formatCandidateName, getRoundTeamLabel } from "@/lib/candidateFormat";
-import { Chip, BallotsGrid } from "./_shared";
+import { PChip, ProjAvatar, BallotsGrid } from "./_shared";
 
 type Candidate = CandidateRow;
 type RoundResult = Pick<RoundResultRow, 'candidate_id' | 'vote_count' | 'percentage'>;
@@ -75,13 +75,16 @@ export function ProjectionResults({
       <div className="proj-sidebar-body">
         {selectedCandidates.map((c) => (
           <div key={c.id} className="proj-sidebar-item">
-            <div className="proj-sidebar-item-row">
-              <div className="proj-sidebar-name">{formatCandidateName(c)}</div>
-              {c.selected_in_round != null && (
-                <span className="proj-sidebar-round">R{c.selected_in_round}</span>
-              )}
+            <ProjAvatar name={c.name} surname={c.surname} imageUrl={c.image_url} size="sm" />
+            <div className="min-w-0 flex-1">
+              <div className="proj-sidebar-item-row">
+                <div className="proj-sidebar-name">{formatCandidateName(c)}</div>
+                {c.selected_in_round != null && (
+                  <span className="proj-sidebar-round">R{c.selected_in_round}</span>
+                )}
+              </div>
+              {c.location && <div className="proj-sidebar-loc">{c.location}</div>}
             </div>
-            {c.location && <div className="proj-sidebar-loc">{c.location}</div>}
           </div>
         ))}
       </div>
@@ -92,18 +95,18 @@ export function ProjectionResults({
     <div className="proj-page overflow-visible">
       {/* Header */}
       <div className="proj-header">
-        <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
+        <h1 className="proj-header-title">{roundTitle}</h1>
         <div className="flex items-center gap-2 ml-1">
-          <Chip kind="warn" label={getRoundTeamLabel(team)} />
-          <Chip kind="brand" label={`Ronda ${roundNumber}`} />
-          {(showSelected || showBallotSummary) && selectedCandidates.length > 0 && <Chip kind="ok" label={`${selectedCandidates.length} seleccionados`} />}
+          <PChip kind="yellow" label={getRoundTeamLabel(team)} />
+          <PChip kind="blue" label={`Ronda ${roundNumber}`} />
+          {selectedCandidates.length > 0 && <PChip kind="emerald" label={`${selectedCandidates.length} seleccionados`} />}
         </div>
         <div className="proj-spacer" />
         <div className="proj-header-meta">{displayResults.length} candidatos votados</div>
       </div>
 
       {/* Body */}
-      <div className="proj-body flex">
+      <div className="proj-body">
         {!showBallotSummary ? (
           <>
             <div className="proj-results-main">
@@ -121,7 +124,7 @@ export function ProjectionResults({
                   const rank = rankById.get(result.candidate_id) ?? 0;
                   const pct = Math.min(Math.max(result.percentage, 0), 100);
                   if (!isRevealed) {
-                    return <div key={result.candidate_id} className="proj-skeleton" />;
+                    return <div key={result.candidate_id} className="proj-row-skeleton" />;
                   }
                   return <ResultRow key={result.candidate_id} cand={cand} result={result} rank={rank} isTop={isTop} pct={pct} animated />;
                 })}
@@ -177,7 +180,7 @@ function ResultRow({
   pct,
   animated,
 }: {
-  cand: { name: string; surname: string; location: string | null };
+  cand: { name: string; surname: string; location: string | null; image_url?: string | null };
   result: RoundResult;
   rank: number;
   isTop: boolean;
@@ -185,30 +188,29 @@ function ResultRow({
   animated: boolean;
 }) {
   return (
-    <div className={`proj-result-row${isTop ? " proj-result-row--top" : ""}${!animated ? " proj-result-row--static" : ""}`}>
-      <div className={`proj-result-accent${isTop ? " proj-result-accent--top" : ""}`} />
-
-      <div className={`proj-rank-bubble${isTop ? " proj-rank-bubble--top" : ""}`}>
-        {isTop ? <Check size={20} strokeWidth={3} /> : rank}
+    <div className={`proj-row${isTop ? " proj-row--top" : ""}${!animated ? " proj-row--static" : ""}`}>
+      <div className="proj-avatar-wrap">
+        <ProjAvatar name={cand.name} surname={cand.surname} imageUrl={cand.image_url} size="md" />
+        <div className={`proj-rank-num${isTop ? " proj-rank-num--top" : ""}`}>
+          {isTop ? "✓" : rank}
+        </div>
       </div>
-
-      <div className="flex-1 min-w-0">
-        <div className={`proj-result-name${isTop ? " proj-result-name--top" : ""}`}>
+      <div className="min-w-0">
+        <div className="proj-row-name">
           {formatCandidateName(cand)}
-          {isTop && <span className="proj-selected-badge">SELECCIONADO</span>}
+          {isTop && <span className="proj-selected-badge">Seleccionado</span>}
         </div>
-        {cand.location && <div className="proj-result-location">{cand.location}</div>}
-        <div className="proj-result-bar-row">
-          <div className="proj-result-bar">
-            <div className={`proj-result-bar-fill${isTop ? " proj-result-bar-fill--top" : ""}`} style={{ width: `${pct}%` }} />
+        {cand.location && <div className="proj-row-loc">{cand.location}</div>}
+        <div className="proj-row-bar-wrap">
+          <div className="proj-row-bar">
+            <div className="proj-row-bar-fill" style={{ width: `${pct}%` }} />
           </div>
-          <span className="proj-result-pct">{result.percentage.toFixed(1)}%</span>
+          <span className="proj-row-pct">{result.percentage.toFixed(1)}%</span>
         </div>
       </div>
-
-      <div className="proj-result-vote-block">
-        <div className="proj-result-votes-num">{result.vote_count}</div>
-        <div className="proj-result-votes-unit">votos</div>
+      <div className="proj-row-votes">
+        <div className="proj-row-votes-num">{result.vote_count}</div>
+        <div className="proj-row-votes-unit">votos</div>
       </div>
     </div>
   );

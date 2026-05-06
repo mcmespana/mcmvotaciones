@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { MapPin, Users, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { AnimatePresence, motion, useAnimation, type PanInfo } from "framer-motion";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import type { CandidateRow } from "@/types/db";
 import { formatCandidateName } from "@/lib/candidateFormat";
@@ -15,7 +15,7 @@ interface Props {
   onPrev?: () => void;
 }
 
-const ZOOM_STEPS = [1, 1.5, 2];
+const ZOOM_STEPS = [1, 2];
 const SWIPE_THRESHOLD = 55;
 const SWIPE_VELOCITY_THRESHOLD = 300;
 
@@ -53,6 +53,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
   const [zoomIdx, setZoomIdx] = useState(0);
   const [imgFailed, setImgFailed] = useState(false);
   const [direction, setDirection] = useState(0);
+  const controls = useAnimation();
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -62,17 +63,25 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
     setImgFailed(false);
   }, [candidate?.id, initialZoom]);
 
+  // Animate to center on each new card; controls is stable across key changes
+  useEffect(() => {
+    void controls.start("center");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidate?.id]);
+
   const handleNext = useCallback(() => {
     if (!onNext) return;
+    void controls.stop(); // freeze drag position so snap-back doesn't conflict with exit
     setDirection(1);
     Promise.resolve().then(onNext);
-  }, [onNext]);
+  }, [onNext, controls]);
 
   const handlePrev = useCallback(() => {
     if (!onPrev) return;
+    void controls.stop();
     setDirection(-1);
     Promise.resolve().then(onPrev);
-  }, [onPrev]);
+  }, [onPrev, controls]);
 
   const handleDragEnd = useCallback(
     (_: unknown, info: PanInfo) => {
@@ -81,9 +90,12 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
         handleNext();
       } else if (offset.x > SWIPE_THRESHOLD || velocity.x > SWIPE_VELOCITY_THRESHOLD) {
         handlePrev();
+      } else {
+        // Not a nav swipe — spring back to center
+        void controls.start({ x: 0, transition: { type: "spring", stiffness: 500, damping: 36 } });
       }
     },
-    [handleNext, handlePrev],
+    [handleNext, handlePrev, controls],
   );
 
   useEffect(() => {
@@ -107,6 +119,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
   if (!candidate) return null;
 
   const zoom = ZOOM_STEPS[zoomIdx];
+  const isZoomed = zoom > 1;
   const hasImage = !!candidate.image_url && !imgFailed;
   const hasNav = !!(onNext || onPrev);
 
@@ -124,16 +137,17 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             custom={direction}
             variants={cardVariants}
             initial="enter"
-            animate="center"
+            animate={controls}
             exit="exit"
-            drag="x"
+            drag={isZoomed ? false : "x"}
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.12}
+            dragElastic={0.15}
             dragMomentum={false}
+            dragTransition={{ bounceStiffness: 0, bounceDamping: 0 }}
             onDragEnd={handleDragEnd}
             whileDrag={{ cursor: "grabbing" }}
             className="avd-dialog max-w-full w-full p-0 overflow-hidden relative shadow-[0_20px_40px_-8px_rgba(0,0,0,0.22),0_8px_16px_-4px_rgba(0,0,0,0.1)]"
-            style={{ willChange: "transform, opacity", cursor: "grab" }}
+            style={{ willChange: "transform, opacity", cursor: isZoomed ? "default" : "grab" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close */}
@@ -146,15 +160,15 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
 
             {/* Image */}
             <div ref={imageContainerRef} className="relative h-60 bg-[var(--avd-bg-sunken)]">
-              <div className={`overflow-auto h-full w-full flex relative ${zoom > 1 ? 'items-start justify-start' : 'items-center justify-center'}`}>
+              <div className={`h-full w-full flex relative ${isZoomed ? 'overflow-auto touch-pan-x touch-pan-y items-start justify-start' : 'overflow-hidden touch-none items-center justify-center'}`}>
                 {hasImage ? (
                   <img
                     src={candidate.image_url!}
                     alt={formatCandidateName(candidate)}
                     onError={() => setImgFailed(true)}
-                    className={`object-contain max-w-none min-w-full min-h-full bg-[#f8f9fa] transition-[width,height] duration-[0.25s] select-none ${zoom > 1 ? 'cursor-zoom-out' : 'cursor-zoom-in touch-none'}`}
+                    className={`object-contain max-w-none min-w-full min-h-full bg-[#f8f9fa] transition-[width,height] duration-[0.25s] select-none ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
                     style={{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }}
-                    onClick={() => setZoomIdx((i) => (i + 1) % ZOOM_STEPS.length)}
+                    onClick={() => setZoomIdx((i) => i === 0 ? 1 : 0)}
                   />
                 ) : (
                   <CandidateAvatar
@@ -168,22 +182,13 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               </div>
 
               {hasImage && (
-                <div className="absolute bottom-[10px] right-[10px] flex gap-1">
-                  <button
-                    onClick={() => setZoomIdx((i) => Math.max(0, i - 1))}
-                    disabled={zoomIdx === 0}
-                    className={`bg-[rgba(0,0,0,0.55)] border-none rounded-[6px] w-[30px] h-[30px] text-white flex items-center justify-center cursor-pointer ${zoomIdx === 0 ? 'opacity-40' : 'opacity-100'}`}
-                  >
-                    <ZoomOut size={14} />
-                  </button>
-                  <button
-                    onClick={() => setZoomIdx((i) => Math.min(ZOOM_STEPS.length - 1, i + 1))}
-                    disabled={zoomIdx === ZOOM_STEPS.length - 1}
-                    className={`bg-[rgba(0,0,0,0.55)] border-none rounded-[6px] w-[30px] h-[30px] text-white flex items-center justify-center cursor-pointer ${zoomIdx === ZOOM_STEPS.length - 1 ? 'opacity-40' : 'opacity-100'}`}
-                  >
-                    <ZoomIn size={14} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => setZoomIdx((i) => i === 0 ? 1 : 0)}
+                  className="absolute bottom-[10px] right-[10px] bg-[rgba(0,0,0,0.55)] border-none rounded-[6px] w-[30px] h-[30px] text-white flex items-center justify-center cursor-pointer"
+                  title={isZoomed ? "Reducir" : "Ampliar"}
+                >
+                  {isZoomed ? <ZoomOut size={14} /> : <ZoomIn size={14} />}
+                </button>
               )}
             </div>
 
@@ -261,7 +266,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             ) : <div className="w-14" />}
 
             <p className="text-white text-[13px] font-semibold [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
-              Desliza para navegar
+              {isZoomed ? "Toca la foto para reducir" : "Desliza para navegar"}
             </p>
 
             {onNext ? (

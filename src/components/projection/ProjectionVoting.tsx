@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { getRoundTeamLabel } from "@/lib/candidateFormat";
-import { Chip, SelectedCandidatesSidebar, BallotTicker } from "./_shared";
+import { PChip, AccentBar, SelectedCandidatesSidebar, BallotsGrid } from "./_shared";
 
 interface SelectedCandidate {
   id: string;
@@ -46,6 +47,7 @@ export function ProjectionVoting({
   const percentage = maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
   const [flash, setFlash] = useState(false);
   const [prev, setPrev] = useState(voteCount);
+  const [ballotsRef] = useAutoAnimate();
 
   useEffect(() => {
     let t: number | null = null;
@@ -57,8 +59,8 @@ export function ProjectionVoting({
   return (
     <div className="proj-page">
       {/* Ambient orbs */}
-      <div className={`proj-orb w-[500px] h-[500px] blur-[90px] top-[-10%] right-[5%] [animation:proj-orb-slow-a_20s_ease-in-out_infinite] transition-[background] duration-[0.6s] ${flash ? 'bg-[color-mix(in_oklch,var(--avd-ok)_7%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_5%,transparent)]'}`} />
-      <div className="proj-orb w-[400px] h-[400px] bg-[color-mix(in_oklch,var(--avd-brand)_4%,transparent)] blur-[70px] bottom-0 left-[-5%] [animation:proj-orb-slow-b_26s_ease-in-out_infinite]" />
+      <div className="proj-orb proj-orb-a" style={flash ? { background: 'color-mix(in oklch, var(--proj-emerald) 9%, transparent)' } : undefined} />
+      <div className="proj-orb proj-orb-b" />
 
       {/* Header */}
       <div className="proj-header">
@@ -66,8 +68,8 @@ export function ProjectionVoting({
           <h1 className="proj-header-title proj-header-title--lg">{roundTitle}</h1>
         </div>
         <div className="flex items-center gap-[10px] ml-2">
-          <Chip kind="warn" label={getRoundTeamLabel(team)} />
-          <Chip kind="brand" label={`Ronda ${roundNumber}`} />
+          <PChip kind="yellow" label={getRoundTeamLabel(team)} />
+          <PChip kind="blue" label={`Ronda ${roundNumber}`} />
         </div>
         <div className="proj-spacer" />
         <div className="proj-header-actions">
@@ -116,10 +118,12 @@ export function ProjectionVoting({
             </div>
           </>
         ) : (
-          /* Ballot ticker view */
-          <div className="flex flex-col gap-5 py-10 px-10 min-w-0">
-            <div className="proj-label">Papeletas registradas · {ballotSummaries.length} votos</div>
-            <BallotTicker summaries={ballotSummaries} />
+          /* Ballot summary view */
+          <div className="px-10 py-8 flex flex-col gap-6">
+            <div className="proj-label mb-0">Papeletas registradas</div>
+            <div ref={ballotsRef}>
+              <BallotsGrid summaries={ballotSummaries} />
+            </div>
           </div>
         )}
       </div>

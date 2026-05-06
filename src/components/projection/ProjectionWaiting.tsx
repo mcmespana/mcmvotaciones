@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ProjectionWaitingMode } from "@/hooks/useProjectionData";
-import { Chip, AccentBar, SelectedCandidatesSidebar } from "./_shared";
-import type { ChipKind } from "./_shared";
+import { PChip, AccentBar, SelectedCandidatesSidebar } from "./_shared";
+import type { PChipKind } from "./_shared";
 
 interface SelectedCandidate {
   id: string;
@@ -58,11 +58,11 @@ export function ProjectionWaiting({
     waitingMode === "finalized"  ? "Ronda cerrada"    :
     waitingMode === "room-open"  ? "Sala abierta"     : "Preparando sala";
 
-  const modeKind: ChipKind =
-    waitingMode === "closed"    ? "ok"    :
-    waitingMode === "paused"    ? "warn"  :
-    waitingMode === "finalized" ? "ok"    :
-    waitingMode === "room-open" ? "brand" : "muted";
+  const modeKind: PChipKind =
+    waitingMode === "closed"    ? "emerald" :
+    waitingMode === "paused"    ? "yellow"  :
+    waitingMode === "finalized" ? "emerald" :
+    waitingMode === "room-open" ? "blue"    : "muted";
 
   const shouldShowJoinQr = waitingMode === "paused" || waitingMode === "room-open" || waitingMode === "finalized";
   const normalizedCode = accessCode?.toUpperCase() ?? null;
@@ -70,9 +70,9 @@ export function ProjectionWaiting({
 
   return (
     <div className="proj-page">
-      {/* Ambient background orbs — static colors, keep in CSS class if possible but using inline for filter/animation shorthand */}
-      <div className="proj-orb w-[600px] h-[600px] bg-[color-mix(in_oklch,var(--avd-brand)_5%,transparent)] blur-[100px] -top-[15%] -left-[10%] [animation:proj-orb-slow-a_25s_ease-in-out_infinite]" />
-      <div className="proj-orb w-[500px] h-[500px] bg-[color-mix(in_oklch,var(--avd-brand)_4%,transparent)] blur-[80px] -bottom-[10%] -right-[5%] [animation:proj-orb-slow-b_30s_ease-in-out_infinite]" />
+      {/* Ambient background orbs */}
+      <div className="proj-orb proj-orb-a" />
+      <div className="proj-orb proj-orb-b" />
 
       {/* Topbar */}
       <div className="proj-topbar">
@@ -82,7 +82,7 @@ export function ProjectionWaiting({
         {normalizedCode && (
           <span className="proj-access-badge">{normalizedCode}</span>
         )}
-        <Chip kind={modeKind} label={modeLabel} />
+        <PChip kind={modeKind} label={modeLabel} pulse={waitingMode === 'room-open'} />
         <span className="proj-clock">
           {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </span>
