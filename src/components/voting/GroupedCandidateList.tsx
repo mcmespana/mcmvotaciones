@@ -189,10 +189,10 @@ export function GroupedCandidateList({
         <div className="pub-sticky-card max-w-full">
           <div className="flex items-center gap-[7px]">
             {/* Search */}
-            <div className="flex-auto max-w-[260px] relative">
+            <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--avd-fg-faint)] pointer-events-none" />
               <input
-                className={`avd-input h-[42px] pl-[38px] text-[15px] ${searchQuery ? 'pr-[38px]' : 'pr-3'}`}
+                className={`avd-input h-[42px] !pl-[44px] text-[15px] ${searchQuery ? 'pr-[38px]' : 'pr-3'}`}
                 placeholder="Buscar candidato..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

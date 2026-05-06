@@ -10,7 +10,7 @@ import type { RoundRow, CandidateRow } from "@/types/db";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Round = Pick<RoundRow, 'id' | 'title' | 'team' | 'public_candidates_enabled'>;
+type Round = Pick<RoundRow, 'id' | 'title' | 'team' | 'description' | 'voting_type_name' | 'max_selected_candidates' | 'public_candidates_enabled'>;
 type Candidate = CandidateRow;
 
 interface GroupEntry {
@@ -104,7 +104,7 @@ export function PublicCandidates() {
         const isUuid = UUID_RE.test(votingId!);
         const roundQuery = supabase
           .from("rounds")
-          .select("id, title, team, public_candidates_enabled")
+          .select("id, title, team, description, voting_type_name, max_selected_candidates, public_candidates_enabled")
           .eq(isUuid ? "id" : "slug", votingId!);
         const { data: roundData } = await roundQuery.single();
         if (!roundData || !roundData.public_candidates_enabled) { setNotFound(true); return; }
@@ -214,9 +214,10 @@ export function PublicCandidates() {
 
       {/* Title block (above sticky — not sticky itself) */}
       <div className="max-w-[780px] mx-auto px-4 pt-5 pb-1.5 text-center">
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--avd-fg-muted)] mb-1">{round.team}</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--avd-fg-muted)] mb-1">{round.voting_type_name || round.team}</div>
         <h1 className="text-[clamp(20px,5vw,28px)] font-black tracking-[-0.025em] text-[var(--avd-fg)] m-0">{round.title}</h1>
-        <div className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)]">{filtered.length} candidatos · {groups.length} lugares</div>
+        {round.description && <p className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)] max-w-xl mx-auto">{round.description}</p>}
+        <div className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)]">{filtered.length} candidatos · {groups.length} lugares · {round.max_selected_candidates} a elegir</div>
       </div>
 
       {/* ─── Sticky header ─── */}
@@ -226,10 +227,10 @@ export function PublicCandidates() {
           {/* Search row */}
           <div className="flex items-center gap-[7px]">
             {/* Search */}
-            <div className="flex-auto max-w-[260px] relative">
+            <div className="flex-1 relative">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
               <input
-                className={`avd-input h-[42px] pl-[38px] text-[15px] ${search ? 'pr-[38px]' : 'pr-3'}`}
+                className={`avd-input h-[42px] !pl-[44px] text-[15px] ${search ? 'pr-[38px]' : 'pr-3'}`}
                 placeholder="Buscar candidato..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}

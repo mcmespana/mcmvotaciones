@@ -435,11 +435,13 @@ export function VotingPage() {
       )}
 
       <div className="max-w-4xl mx-auto">
-        <div className="mb-5 pt-1 text-center sm:mb-7 space-y-1.5">
-          <h1 className="font-headline text-3xl font-black tracking-tight sm:text-5xl pb-0.5">{activeRound.title}</h1>
+        <div className="mb-5 pt-4 text-center sm:mb-7">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--avd-fg-muted)] mb-1">{activeRound.voting_type_name || activeRound.team}</div>
+          <h1 className="text-[clamp(20px,5vw,28px)] font-black tracking-[-0.025em] text-[var(--avd-fg)] m-0">{activeRound.title}</h1>
           {activeRound.description && (
-            <p className="mx-auto max-w-2xl text-sm text-muted-foreground sm:text-base">{activeRound.description}</p>
+            <p className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)] max-w-xl mx-auto">{activeRound.description}</p>
           )}
+          <div className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)]">{candidates.length} candidatos · {activeRound.max_selected_candidates} a elegir</div>
         </div>
         <div className="mb-6 sm:mb-8">
           <GroupedCandidateList
