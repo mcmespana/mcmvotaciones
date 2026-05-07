@@ -312,7 +312,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               ) : <div className="w-14" />}
 
               <p className="text-white text-[13px] font-semibold [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
-                Desliza para navegar
+                Desliza la foto para navegar
               </p>
 
               {onNext ? (

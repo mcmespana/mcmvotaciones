@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
 import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
-import { useTheme } from "next-themes";
+import { HeaderControls } from "@/components/shared/HeaderControls";
 import type { RoundRow, CandidateRow } from "@/types/db";
 
 /* ── Interfaces ── */
@@ -81,8 +81,6 @@ function PubAvatar({ name, surname, imageUrl }: { name: string; surname: string;
 
 export function PublicCandidates() {
   const { votingId } = useParams<{ votingId: string }>();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   const [round, setRound] = useState<Round | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -94,8 +92,6 @@ export function PublicCandidates() {
   const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
   const initializedRef = useRef(false);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!votingId) return;
@@ -186,10 +182,6 @@ export function PublicCandidates() {
     );
   }
 
-  const NEXT_THEME: Record<string, string> = { light: "dark", dark: "system", system: "light" };
-  const currentTheme = theme ?? "light";
-  const nextTheme = NEXT_THEME[currentTheme] ?? "dark";
-
   const currentDetailIndex = detailCandidate ? filtered.findIndex((c) => c.id === detailCandidate.id) : -1;
   const handleNextCandidate = () => {
     if (currentDetailIndex === -1 || filtered.length <= 1) return;
@@ -254,25 +246,7 @@ export function PublicCandidates() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200${indexOpen ? " rotate-180" : ""}`}><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
-            {/* Theme toggle: light → dark → system → light */}
-            {mounted && (
-              <button
-                className="avd-btn avd-btn-icon w-[42px] h-[42px] shrink-0"
-                onClick={() => setTheme(nextTheme)}
-                title={
-                  currentTheme === "light" ? "Cambiar a modo oscuro"
-                  : currentTheme === "dark" ? "Cambiar a modo automático (dispositivo)"
-                  : "Cambiar a modo claro"
-                }
-              >
-                {currentTheme === "light"
-                  ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                  : currentTheme === "dark"
-                  ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                }
-              </button>
-            )}
+            <HeaderControls mode="inline" className="shrink-0" />
           </div>
 
           {/* Index: location pills */}

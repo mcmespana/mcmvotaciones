@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { VotingPage } from "@/pages/VotingPage";
 import NotFound from "./pages/NotFound";
 
@@ -24,11 +25,17 @@ const Spinner = () => (
   </div>
 );
 
+const VotingPageWithA11y = () => (
+  <AccessibilityProvider>
+    <VotingPage />
+  </AccessibilityProvider>
+);
+
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<VotingPage />} />
+    <Route path="/" element={<VotingPageWithA11y />} />
     <Route path="/proyeccion" element={<ErrorBoundary><Suspense fallback={<Spinner />}><ProjectionPage /></Suspense></ErrorBoundary>} />
-    <Route path="/candidatos/:votingId" element={<ErrorBoundary><Suspense fallback={<Spinner />}><PublicCandidates /></Suspense></ErrorBoundary>} />
+    <Route path="/candidatos/:votingId" element={<ErrorBoundary><Suspense fallback={<Spinner />}><AccessibilityProvider><PublicCandidates /></AccessibilityProvider></Suspense></ErrorBoundary>} />
     <Route path="/admin/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><AdminRouter /></Suspense></ErrorBoundary>} />
     <Route path="/comunica/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><ComunicaRouter /></Suspense></ErrorBoundary>} />
     <Route path="*" element={<NotFound />} />

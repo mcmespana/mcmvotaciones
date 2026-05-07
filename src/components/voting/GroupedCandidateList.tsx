@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
 import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { Search, X, MapPin, Users, ChevronDown } from "lucide-react";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { HeaderControls } from "@/components/shared/HeaderControls";
 import { VotingTutorial } from "@/components/voting/VotingTutorial";
 import type { CandidateRow } from "@/types/db";
 
@@ -219,9 +219,7 @@ export function GroupedCandidateList({
             </button>
 
             <VotingTutorial compactTrigger roundId={tutorialRoundId} />
-            <ThemeToggle
-              mode="inline"
-            />
+            <HeaderControls mode="inline" />
           </div>
 
           {isMobileIndexOpen && locationGroups.length > 0 && (

@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect } from "react";
 import { KeyRound, ArrowRight } from "lucide-react";
+import { HeaderControls } from "@/components/shared/HeaderControls";
 
 interface AccessCodeInputProps {
   onSubmit: (code: string) => void;
@@ -60,6 +61,7 @@ export function AccessCodeInput({
 
   return (
     <div className="pub-page flex items-center justify-center p-5">
+      <HeaderControls mode="floating" />
       <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] overflow-hidden">
         {/* Top accent bar */}
         <div className="h-1 bg-gradient-to-r from-[var(--avd-brand-600)] to-[var(--avd-brand-400)]" />

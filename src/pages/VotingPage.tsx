@@ -7,7 +7,7 @@ import { GroupedCandidateList } from '@/components/voting/GroupedCandidateList';
 import { VoteSubmitAnimation } from '@/components/voting/VoteSubmitAnimation';
 import { VotingTutorial } from '@/components/voting/VotingTutorial';
 import { AccessCodeInput, isAccessCodeVerified } from '@/components/voting/AccessCodeInput';
-import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { HeaderControls } from '@/components/shared/HeaderControls';
 import { VoteTicket } from '@/components/voting/VoteTicket';
 import { useVotingPage } from './voting/hooks/useVotingPage';
 import type { Round } from './voting/hooks/useVotingPage';
@@ -93,7 +93,10 @@ export function VotingPage() {
                 Usa <code>?preview=tutorial</code>, <code>?preview=anim</code> o <code>?preview=ticket</code>.
               </p>
             </div>
-            {previewLinks}
+            <div className="flex items-center gap-2">
+              {previewLinks}
+              <HeaderControls mode="inline" />
+            </div>
           </div>
           <VotingTutorial forceOpen roundId="preview-round" />
         </div>
@@ -110,7 +113,10 @@ export function VotingPage() {
                 Animacion independiente del flujo real de voto.
               </p>
             </div>
-            {previewLinks}
+            <div className="flex items-center gap-2">
+              {previewLinks}
+              <HeaderControls mode="inline" />
+            </div>
           </div>
           <button
             className="avd-btn avd-btn-primary"
@@ -126,7 +132,7 @@ export function VotingPage() {
     // ticket preview
     return (
       <div className="pub-page flex items-center justify-center p-5 relative">
-        <div className="absolute right-4 top-4 z-20"><ThemeToggle mode="inline" /></div>
+        <div className="absolute right-4 top-4 z-20"><HeaderControls mode="inline" /></div>
         <VoteTicket
           roundTitle={activeRound?.title ?? ''}
           roundNumber={activeRound?.current_round_number ?? 0}
@@ -141,6 +147,7 @@ export function VotingPage() {
   if (loading) {
     return (
       <div className="pub-page flex items-center justify-center p-5">
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
           <Spinner size="md" className="mx-auto mb-4" />
           <p className="text-[var(--avd-fg-muted)] text-sm">Cargando votación...</p>
@@ -152,6 +159,7 @@ export function VotingPage() {
   if (!isVotingAvailable()) {
     return (
       <div className="pub-page flex items-center justify-center p-5">
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
           <h1 className="text-[18px] font-bold mb-3 text-[var(--avd-fg)]">Navegador no compatible</h1>
           <p className="text-[var(--avd-fg-muted)] text-sm">
@@ -166,7 +174,7 @@ export function VotingPage() {
   if (!activeRound) {
     return (
       <div className="pub-page flex items-center justify-center p-5 min-h-screen">
-        <ThemeToggle />
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] px-8 py-10 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 shimmer-bar-rainbow" />
           <div className="relative mx-auto mb-6 w-20 h-20">
@@ -196,6 +204,7 @@ export function VotingPage() {
   if (seatLoading) {
     return (
       <div className="pub-page flex items-center justify-center p-5">
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
           <Spinner size="md" className="mx-auto mb-4" />
           <p className="text-[var(--avd-fg-muted)] text-sm">Validando tu asiento...</p>
@@ -207,6 +216,7 @@ export function VotingPage() {
   if (seatError && !hasVoted) {
     return (
       <div className="pub-page flex items-center justify-center p-5">
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
           <h1 className="text-[18px] font-bold mb-2 text-[var(--avd-fg)]">No se pudo acceder a la sala</h1>
           <p className="text-[var(--avd-fg-muted)] text-sm mb-6">{seatError}</p>
@@ -221,6 +231,7 @@ export function VotingPage() {
   if (maxVotesThisRound === 0 && !hasVoted && !activeRound.round_finalized && !activeRound.is_closed) {
     return (
       <div className="pub-page flex items-center justify-center p-5">
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
           <div className="mx-auto mb-5 w-[72px] h-[72px] flex items-center justify-center rounded-full bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] text-[var(--avd-ok)]">
             <Vote className="w-8 h-8" />
@@ -239,7 +250,7 @@ export function VotingPage() {
     const isPaused = activeRound.join_locked;
     return (
       <div className="pub-page flex items-center justify-center p-5 relative overflow-hidden">
-        <div className="absolute top-5 right-5 z-10"><ThemeToggle /></div>
+        <HeaderControls mode="floating" />
         <div className={`absolute w-[280px] h-[280px] rounded-full blur-[60px] top-[10%] -left-[10%] animate-[proj-orb-slow-a_18s_ease-in-out_infinite] pointer-events-none ${isPaused ? 'bg-[color-mix(in_oklch,var(--avd-warn)_8%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_8%,transparent)]'}`} />
         <div className={`absolute w-[220px] h-[220px] rounded-full blur-[50px] bottom-[5%] -right-[5%] animate-[proj-orb-slow-b_22s_ease-in-out_infinite] pointer-events-none ${isPaused ? 'bg-[color-mix(in_oklch,var(--avd-warn)_6%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_6%,transparent)]'}`} />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] overflow-hidden text-center animate-[card-enter_0.4s_cubic-bezier(0.2,0.75,0.2,1)_both] relative z-[1]">
@@ -275,7 +286,7 @@ export function VotingPage() {
     const label = activeRound.is_closed ? 'Votación Cerrada' : activeRound.round_finalized ? 'Ronda Finalizada' : 'Sesión Pausada';
     return (
       <div className="pub-page flex items-center justify-center p-5">
-        <div className="absolute top-5 right-5 z-10"><ThemeToggle /></div>
+        <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[color-mix(in_oklch,var(--avd-warn)_35%,transparent)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-md)] w-full max-w-[420px] overflow-hidden text-center">
           <div className="h-[3px] bg-gradient-to-r from-[var(--avd-warn)] to-[var(--avd-warn-600)]" />
           <div className="p-10">
@@ -305,7 +316,7 @@ export function VotingPage() {
   if (hasVoted) {
     return (
       <div className="pub-page flex items-center justify-center p-5 relative">
-        <div className="absolute right-4 top-4 z-20"><ThemeToggle mode="inline" /></div>
+        <div className="absolute right-4 top-4 z-20"><HeaderControls mode="inline" /></div>
         <VoteTicket
           roundTitle={activeRound?.title ?? ''}
           roundNumber={activeRound?.current_round_number ?? 0}
