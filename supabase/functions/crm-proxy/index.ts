@@ -163,20 +163,23 @@ async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array
 
 async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_url: string }>): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !updates.length) return;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/candidates`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'apikey': SUPABASE_SERVICE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates,return=minimal',
-    },
-    body: JSON.stringify(updates),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`DB update failed ${res.status}: ${text.slice(0, 300)}`);
-  }
+  // PATCH per-row generates UPDATE ... WHERE id = ? — no INSERT risk, no NOT NULL issues
+  await Promise.all(updates.map(async ({ id, image_url }) => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/candidates?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ image_url }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`DB update failed ${res.status}: ${text.slice(0, 300)}`);
+    }
+  }));
 }
 
 async function processPhotosInChunks(
