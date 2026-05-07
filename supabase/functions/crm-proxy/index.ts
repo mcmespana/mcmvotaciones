@@ -142,16 +142,16 @@ async function fetchPhotoBytes(crmId: string, session: string): Promise<PhotoFet
   }
 }
 
-async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array, contentType: string, authHeader: string, apiKey: string): Promise<string> {
-  if (!SUPABASE_URL) throw new Error('Supabase no configurado');
+async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array, contentType: string): Promise<string> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) throw new Error('Supabase no configurado');
   const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
   const path = `${roundId}/${crmId}.${ext}`;
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/candidate-photos/${path}`, {
     method: 'POST',
     headers: {
-      'Authorization': authHeader,
-      'apikey': apiKey,
+      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'apikey': SUPABASE_SERVICE_KEY,
       'Content-Type': contentType,
       'x-upsert': 'true',
     },
@@ -161,26 +161,28 @@ async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array
   return `${SUPABASE_URL}/storage/v1/object/public/candidate-photos/${path}`;
 }
 
-async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_url: string }>, authHeader: string, apiKey: string): Promise<void> {
-  if (!SUPABASE_URL || !updates.length) return;
-  await fetch(`${SUPABASE_URL}/rest/v1/candidates`, {
+async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_url: string }>): Promise<void> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !updates.length) return;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/candidates`, {
     method: 'POST',
     headers: {
-      'Authorization': authHeader,
-      'apikey': apiKey,
+      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'apikey': SUPABASE_SERVICE_KEY,
       'Content-Type': 'application/json',
       'Prefer': 'resolution=merge-duplicates,return=minimal',
     },
     body: JSON.stringify(updates),
   });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`DB update failed ${res.status}: ${text.slice(0, 300)}`);
+  }
 }
 
 async function processPhotosInChunks(
   candidates: Array<{ id: string; crm_id: string }>,
   roundId: string,
   session: string,
-  authHeader: string,
-  apiKey: string,
   chunkSize = 10,
 ): Promise<{ uploaded: number; failed: number; skipped: number; details: Record<string, string> }> {
   let uploaded = 0, failed = 0, skipped = 0;
@@ -189,6 +191,8 @@ async function processPhotosInChunks(
   for (let i = 0; i < candidates.length; i += chunkSize) {
     const chunk = candidates.slice(i, i + chunkSize);
     const dbUpdates: Array<{ id: string; image_url: string }> = [];
+    // id → crm_id mapping so we can set the right status after the batch DB update
+    const idToCrmId: Record<string, string> = {};
 
     await Promise.all(chunk.map(async ({ id, crm_id }) => {
       const photoRes = await fetchPhotoBytes(crm_id, session);
@@ -200,17 +204,30 @@ async function processPhotosInChunks(
       }
 
       try {
-        const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType, authHeader, apiKey);
+        const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType);
         dbUpdates.push({ id, image_url: publicUrl });
-        details[crm_id] = 'OK';
-        uploaded++;
+        idToCrmId[id] = crm_id;
       } catch (err) {
-        details[crm_id] = err instanceof Error ? err.message : String(err);
+        details[crm_id] = `Storage: ${err instanceof Error ? err.message : String(err)}`;
         failed++;
       }
     }));
 
-    await batchUpdateCandidateImageUrls(dbUpdates, authHeader, apiKey);
+    if (dbUpdates.length > 0) {
+      try {
+        await batchUpdateCandidateImageUrls(dbUpdates);
+        for (const { id } of dbUpdates) {
+          details[idToCrmId[id]] = 'OK';
+          uploaded++;
+        }
+      } catch (err) {
+        const msg = `DB: ${err instanceof Error ? err.message : String(err)}`;
+        for (const { id } of dbUpdates) {
+          details[idToCrmId[id]] = msg;
+          failed++;
+        }
+      }
+    }
   }
 
   return { uploaded, failed, skipped, details };
@@ -273,11 +290,7 @@ Deno.serve(async (req: Request) => {
 
       const session = await crmLogin(loginUser, loginPass);
       const candidates = crm_ids.map((crm_id, i) => ({ crm_id, id: candidate_ids[i] }));
-      
-      const authHeader = req.headers.get('Authorization') || `Bearer ${SUPABASE_SERVICE_KEY}`;
-      const apiKey = req.headers.get('apikey') || Deno.env.get('SUPABASE_ANON_KEY') || SUPABASE_SERVICE_KEY;
-      
-      const result = await processPhotosInChunks(candidates, round_id, session, authHeader, apiKey);
+      const result = await processPhotosInChunks(candidates, round_id, session);
       crmCall('logout', { session }).catch(() => {});
 
       return new Response(
