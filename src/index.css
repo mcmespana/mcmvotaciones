@@ -1429,7 +1429,11 @@
   .adm-page-header { padding: 12px 14px 10px; }
   .avd-page-header { padding: 10px 14px; }
   .avd-page-header h1 { font-size: 20px !important; }
-  .avd-header-actions { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; flex-wrap: nowrap; }
+  /* flex-shrink:1 + min-width:0 lets the container shrink so overflow-x:auto actually scrolls */
+  .avd-header-actions { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; flex-wrap: nowrap; flex-shrink: 1; min-width: 0; }
+
+  /* Reduce overlay padding so dialogs reach near-edges */
+  .avd-dialog-overlay { padding: 8px; }
 
   /* Toolbar */
   .adm-toolbar { padding: 10px 14px; }
@@ -1472,9 +1476,10 @@
   .avd-cand-name { font-size: 13px; }
   .avd-cand-meta { font-size: 11px; }
 
-  /* CandidatesPane header */
+  /* CandidatesPane header — search full-width on own row, buttons wrap below */
   .avd-candidates-head { flex-direction: column; align-items: stretch; }
-  .avd-candidates-head-right { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .avd-candidates-head-right { flex-wrap: wrap; gap: 6px; }
+  .avd-candidates-head-right .avd-search-wrap { width: 100% !important; order: -1; }
 }
 
 /* ==========================================================================
