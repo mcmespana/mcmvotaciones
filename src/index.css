@@ -1418,6 +1418,64 @@
   .avd-wf-step + .avd-wf-step::before { display: none; }
   .avd-form-grid-2 { grid-template-columns: 1fr; }
 }
+@media (max-width: 480px) {
+  /* Topbars */
+  .adm-topbar { padding: 8px 12px; gap: 8px; }
+  .adm-brand span { display: none; }
+  .avd-topbar { padding: 8px 12px; gap: 8px; }
+  .avd-topbar-brand span { display: none; }
+
+  /* Page headers */
+  .adm-page-header { padding: 12px 14px 10px; }
+  .avd-page-header { padding: 10px 14px; }
+  .avd-page-header h1 { font-size: 20px !important; }
+  .avd-header-actions { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; flex-wrap: nowrap; }
+
+  /* Toolbar */
+  .adm-toolbar { padding: 10px 14px; }
+  .adm-toolbar .avd-search-wrap { width: 100% !important; order: 10; }
+  .adm-toolbar .avd-segmented { display: none; }
+
+  /* Workflow rail */
+  .avd-wf-steps { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .avd-wf-sub { display: none; }
+
+  /* KPIs */
+  .avd-kpi-stack { grid-template-columns: 1fr !important; }
+  .avd-kpi-strip { grid-template-columns: 1fr !important; }
+
+  /* Meta chips */
+  .avd-page-meta { gap: 4px; }
+  .avd-page-meta .avd-chip { font-size: 11px; height: 22px; }
+
+  /* Dialogs → near fullscreen */
+  .avd-dialog {
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    width: 100% !important;
+    border-radius: var(--avd-radius-md) !important;
+  }
+  .avd-dialog-wide {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    border-radius: 0 !important;
+    max-height: 100dvh !important;
+  }
+
+  /* 3-col form grids → 1 col */
+  .grid-cols-3 { grid-template-columns: 1fr !important; }
+
+  /* Candidate rows — compact */
+  .avd-cand-row { grid-template-columns: 28px 1fr auto; gap: 8px; padding: 6px 10px; }
+  .avd-cand-badges { display: none; }
+  .avd-cand-avatar { width: 28px !important; height: 28px !important; font-size: 10px; }
+  .avd-cand-name { font-size: 13px; }
+  .avd-cand-meta { font-size: 11px; }
+
+  /* CandidatesPane header */
+  .avd-candidates-head { flex-direction: column; align-items: stretch; }
+  .avd-candidates-head-right { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+}
 
 /* ==========================================================================
    Admin Pages Layout — adm-* (Login, Dashboard, VotingList, Users)
