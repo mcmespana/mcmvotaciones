@@ -116,7 +116,7 @@ export function CandidateListCard({
           imageUrl={candidate.image_url}
           candidateId={candidate.id}
           size="md"
-          className="h-14 w-14 border border-outline-variant text-base"
+          className="h-14 w-14 text-base"
         />
       </div>
 

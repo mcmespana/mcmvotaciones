@@ -38,19 +38,20 @@ export function CandidateAvatar({ name, surname, imageUrl, size = "md", classNam
   const [failed, setFailed] = useState(false);
   const sizeClass = sizeMap[size];
 
+  const seed = candidateId || `${name}${surname}`;
+  const color = PALETTE[stableColorIndex(seed)];
+
   if (imageUrl && !failed) {
     return (
       <img
         src={imageUrl}
         alt={`${name} ${surname}`}
-        className={`${sizeClass} rounded-full object-cover object-top flex-shrink-0 bg-gray-50 border border-gray-100 ${className}`}
+        className={`${sizeClass} rounded-full object-cover object-top flex-shrink-0 ${className}`}
+        style={{ border: `2.5px solid ${color.bg}` }}
         onError={() => setFailed(true)}
       />
     );
   }
-
-  const seed = candidateId || `${name}${surname}`;
-  const color = PALETTE[stableColorIndex(seed)];
 
   return (
     <div
