@@ -1410,6 +1410,16 @@
   .avd-wf-rail { grid-template-columns: 1fr; }
   .avd-wf-cta { border-left: none; border-top: 1px dashed var(--avd-border); padding-left: 0; padding-top: 10px; }
   .avd-wf-cta .avd-btn-primary { width: 100%; justify-content: center; }
+
+  /* Unlock fixed-height constraint so all stacked columns are visible */
+  .avd-app { height: auto; min-height: 100dvh; overflow: visible; }
+  .avd-page-main { flex: none; min-height: auto; }
+  .avd-col-left,
+  .avd-col-right { overflow-y: visible; min-height: auto; }
+  .avd-col-main { overflow: visible; }
+  .avd-col-inner { overflow: visible; flex: none; min-height: auto; }
+  .avd-candidates-pane { overflow: visible; }
+  .avd-candidates-shell { overflow-y: visible; flex: none; min-height: auto; }
 }
 @media (max-width: 720px) {
   .avd-kpi-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
