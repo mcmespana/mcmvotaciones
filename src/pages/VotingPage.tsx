@@ -366,7 +366,7 @@ export function VotingPage() {
               {selectedCandidates.length > 0 ? (
                 <p className="truncate text-sm font-semibold text-[var(--avd-fg)]">{selectedCandidateShortNames.join(' · ')}</p>
               ) : (
-                <p className="text-sm text-[var(--avd-fg-faint)]">Selecciona candidatos</p>
+                <p className="text-sm text-[var(--avd-fg-faint)]">Selecciona candidatos o vota en blanco</p>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -375,9 +375,11 @@ export function VotingPage() {
               <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger w-[42px] h-[42px] p-0">
                 <Trash2 className="w-[18px] h-[18px]" />
               </button>
-              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting} className="avd-btn h-[42px] bg-[var(--avd-ok)] text-white border-[var(--avd-ok)] font-bold px-[18px] shrink-0">
+              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || voting} className="avd-btn h-[42px] bg-[var(--avd-ok)] text-white border-[var(--avd-ok)] font-bold px-[18px] shrink-0">
                 {voting ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 [animation-duration:0.7s]" />Votando...</>
+                ) : selectedCandidates.length === 0 ? (
+                  <><Vote className="w-[18px] h-[18px] mr-2" />Votar en blanco</>
                 ) : (
                   <><Vote className="w-[18px] h-[18px] mr-2" />Votar ({selectedCandidates.length})</>
                 )}
@@ -405,7 +407,12 @@ export function VotingPage() {
                   <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--avd-fg-muted)]">Tu selección</p>
                 </div>
                 <div className="px-4 py-3 flex flex-col gap-2">
-                  {selectedCandidateNames.map((name, index) => (
+                  {selectedCandidateNames.length === 0 ? (
+                    <div className="flex items-center gap-3">
+                      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-fg-faint)] text-[10px] font-bold text-white">—</span>
+                      <span className="text-[13px] font-semibold text-[var(--avd-fg-muted)] italic">Voto en blanco</span>
+                    </div>
+                  ) : selectedCandidateNames.map((name, index) => (
                     <div key={`${name}-${index}`} className="flex items-center gap-3">
                       <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-brand-bg)] text-[10px] font-bold text-[var(--avd-brand)]">{index + 1}</span>
                       <span className="text-[13px] font-semibold text-[var(--avd-fg)]">{name}</span>

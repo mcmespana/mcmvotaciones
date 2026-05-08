@@ -155,14 +155,18 @@ function BallotCard({ ballot }: { ballot: BallotSummary }) {
         <span className="proj-ballot-round">R{ballot.roundNumber}</span>
       </div>
       <div className="proj-ballot-sep" />
-      <ul className="proj-ballot-list">
-        {[0, 1, 2].map((i) => (
-          <li key={i}>
-            <span className="n">{i + 1}.</span>
-            <span className="nm">{ballot.votes[i] || "—"}</span>
-          </li>
-        ))}
-      </ul>
+      {ballot.isBlank ? (
+        <div className="proj-ballot-blank">Voto en blanco</div>
+      ) : (
+        <ul className="proj-ballot-list">
+          {[0, 1, 2].map((i) => (
+            <li key={i}>
+              <span className="n">{i + 1}.</span>
+              <span className="nm">{ballot.votes[i] || "—"}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -713,6 +713,15 @@
   flex: 1;
   min-width: 0;
 }
+.proj-ballot-blank {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--avd-fg-faint);
+  text-align: center;
+  padding: 6px 0 2px;
+}
 
 /* ── Results: main area ── */
 .proj-results-main {

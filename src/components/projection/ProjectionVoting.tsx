@@ -81,7 +81,10 @@ export function ProjectionVoting({
       </header>
 
       {/* Body */}
-      <div className={`proj-body grid relative z-[1] ${showBallotSummary ? '[grid-template-columns:1fr_400px]' : '[grid-template-columns:1.6fr_1fr]'}`}>
+      <div
+        className="proj-body relative z-[1]"
+        style={{ display: 'grid', gridTemplateColumns: '1fr 380px' }}
+      >
         {!showBallotSummary ? (
           <>
             {/* Left: vote count */}
@@ -111,10 +114,7 @@ export function ProjectionVoting({
               )}
             </div>
 
-            {/* Right: selected */}
-            <div className="border-l border-avd-border">
-              <SelectedCandidatesSidebar candidates={previouslySelected} />
-            </div>
+            <SelectedCandidatesSidebar candidates={previouslySelected} />
           </>
         ) : (
           <>
@@ -129,9 +129,7 @@ export function ProjectionVoting({
                 <BallotsGrid summaries={ballotSummaries} />
               </div>
             </div>
-            <div className="border-l border-avd-border">
-              <SelectedCandidatesSidebar candidates={previouslySelected} />
-            </div>
+            <SelectedCandidatesSidebar candidates={previouslySelected} />
           </>
         )}
       </div>

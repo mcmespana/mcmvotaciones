@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ArrowUpRight, Download, Grid, ImageUp, List, Pencil, Search, Trash2, Undo2, Upload, UserPlus } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import type { Candidate } from "./hooks/useRoundDetail";
@@ -27,6 +28,7 @@ interface Props {
   setCandidateToDelete: (c: Candidate | null) => void;
   candidatesRef: React.RefObject<HTMLDivElement> | ((node: HTMLDivElement | null) => void);
   initials: (c: Candidate) => string;
+  topPanel?: ReactNode;
 }
 
 export function CandidatesPane({
@@ -35,11 +37,12 @@ export function CandidatesPane({
   openAddCandidateDialog, setIsImportOpen, openComunicaImport, setIsDeleteAllCandidatesOpen, setIsDatasetOpen,
   hasCandidatesWithCrm, refetchingPhotos, onRefetchPhotos,
   openEditCandidateDialog, setCandidateToSelect, setCandidateToUnselect, setCandidateToDelete,
-  candidatesRef, initials,
+  candidatesRef, initials, topPanel,
 }: Props) {
   return (
     <main className="avd-col avd-col-main">
       <div className="avd-col-inner">
+        {topPanel}
         <div className="avd-candidates-pane">
           <div className="avd-candidates-head">
               <div className="avd-candidates-head-left">

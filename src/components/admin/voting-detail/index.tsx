@@ -221,14 +221,6 @@ export function AdminVotingDetail() {
         activeCandidatesCount={activeCandidatesCount}
       />
 
-      <InlineResultsPanel
-        round={round} inlineResults={inlineResults} currentRoundVotes={currentRoundVotes}
-        selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
-        isWorkflowRunning={isWorkflowRunning} forceSelectingId={forceSelectingId}
-        forceSelectCandidate={forceSelectCandidate} unselectCandidate={unselectCandidate}
-        startNextRound={startNextRound}
-      />
-
       {/* ═══ Main grid ═══ */}
       <div className="avd-page-main">
 
@@ -250,6 +242,15 @@ export function AdminVotingDetail() {
           openEditCandidateDialog={openEditCandidateDialog}
           setCandidateToSelect={setCandidateToSelect} setCandidateToUnselect={setCandidateToUnselect}
           setCandidateToDelete={setCandidateToDelete} candidatesRef={candidatesRef} initials={initials}
+          topPanel={
+            <InlineResultsPanel
+              round={round} inlineResults={inlineResults} currentRoundVotes={currentRoundVotes}
+              selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
+              isWorkflowRunning={isWorkflowRunning} forceSelectingId={forceSelectingId}
+              forceSelectCandidate={forceSelectCandidate} unselectCandidate={unselectCandidate}
+              startNextRound={startNextRound} compact
+            />
+          }
         />
 
         <ControlsAside

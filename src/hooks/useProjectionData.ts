@@ -13,6 +13,7 @@ export interface BallotSummary {
   roundNumber: number;
   timestamp: string;
   votes: string[];
+  isBlank?: boolean;
 }
 
 export type ProjectionState = "waiting" | "voting" | "results" | "final-gallery";
@@ -156,9 +157,21 @@ export function useProjectionData(): ProjectionData {
           // Supabase returns a single object for foreign keys if correctly configured, but TypeScript thinks it might be an array
           const candidateData = Array.isArray(row.candidate) ? row.candidate[0] : row.candidate;
 
-          const voteName = candidateData
-            ? `${candidateData.name} ${formatSurname(candidateData.surname)}`.trim()
-            : "-";
+          if (!candidateData) {
+            // Blank vote: one NULL-candidate row — mark as blank, don't push any name
+            if (!grouped.has(hash)) {
+              grouped.set(hash, {
+                voteCode: `VT-${hash.slice(0, 4).toUpperCase()}-${hash.slice(4, 8).toUpperCase()}`,
+                roundNumber: row.round_number,
+                timestamp: row.created_at,
+                votes: [],
+                isBlank: true,
+              });
+            }
+            continue;
+          }
+
+          const voteName = `${candidateData.name} ${formatSurname(candidateData.surname)}`.trim();
 
           if (!grouped.has(hash)) {
             grouped.set(hash, {
@@ -173,10 +186,9 @@ export function useProjectionData(): ProjectionData {
         }
 
         const normalized = Array.from(grouped.values()).map((item) => {
+          if (item.isBlank) return item;
           const votes = [...item.votes];
-          while (votes.length < 3) {
-            votes.push("-");
-          }
+          while (votes.length < 3) votes.push("-");
           return { ...item, votes: votes.slice(0, 3) };
         });
 

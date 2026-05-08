@@ -92,6 +92,7 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
   }, []);
 
   const buildReceiptVotes = useCallback((candidateIds: string[]) => {
+    if (candidateIds.length === 0) return ['Voto en blanco'];
     const names = candidateIds.map((id) => {
       const c = candidates.find((item) => item.id === id);
       return c ? `${c.name} ${formatSurname(c.surname)}`.trim() : '-';
@@ -248,7 +249,7 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
   }, [activeRound, candidates]);
 
   const submitVote = useCallback(async (currentSeatId: string | null, currentSeatError: string) => {
-    if (selectedCandidates.length === 0 || !activeRound) return;
+    if (!activeRound) return;
     if (!activeRound.is_voting_open) {
       toastRef.current({ title: 'Ronda no iniciada', description: 'La sala esta abierta, pero la ronda de voto aun no ha comenzado.', variant: 'destructive' }); return;
     }
@@ -361,9 +362,9 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
   const clearSelection = useCallback(() => setSelectedCandidates([]), []);
 
   const openVoteConfirmation = useCallback((maxVotesThisRound: number) => {
-    if (maxVotesThisRound === 0 || selectedCandidates.length === 0 || voting) return;
+    if (maxVotesThisRound === 0 || voting) return;
     setConfirmVoteOpen(true);
-  }, [selectedCandidates.length, voting]);
+  }, [voting]);
 
   useEffect(() => {
     const adminParam = new URLSearchParams(window.location.search).get('admin');
