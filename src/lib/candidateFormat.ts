@@ -18,3 +18,9 @@ export function getRoundTeamLabel(team: string | null | undefined): string {
   if (!team) return "";
   return team === "ECE" || team === "ECL" ? `🏆 ${team}` : team;
 }
+
+/** True when the candidate has a "monitor" CRM relationship type */
+export function isMonitor(crmRelationshipTypes: string | null | undefined): boolean {
+  if (!crmRelationshipTypes) return false;
+  return crmRelationshipTypes.split(",").map(s => s.trim().toLowerCase()).includes("monitor");
+}

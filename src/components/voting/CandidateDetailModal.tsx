@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { MapPin, Users, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Cake, MapPin, Users, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, type PanInfo } from "framer-motion";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import type { CandidateRow } from "@/types/db";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { formatCandidateName, isMonitor } from "@/lib/candidateFormat";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 type Candidate = CandidateRow;
@@ -241,8 +241,17 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                   </span>
                 )}
                 {candidate.age != null && (
-                  <span className="avd-chip text-[14px] py-[5px] px-3">
-                    {candidate.age} años
+                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                    <Cake size={13} /> {candidate.age} años
+                  </span>
+                )}
+                {isMonitor(candidate.crm_relationship_types) && (
+                  <span
+                    className="avd-chip avd-chip-brand text-[14px] font-bold py-[5px] px-3"
+                    aria-label="Monitor"
+                    title="Monitor"
+                  >
+                    M
                   </span>
                 )}
               </div>

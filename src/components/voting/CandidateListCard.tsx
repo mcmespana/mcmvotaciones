@@ -1,7 +1,7 @@
-import { Check, Info, MapPin } from "lucide-react";
+import { Cake, Check, Info, MapPin } from "lucide-react";
 import { useRef } from "react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
-import { formatCandidateName } from "@/lib/candidateFormat";
+import { formatCandidateName, isMonitor } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
 import { CandidateRow } from "@/types/db";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
@@ -139,8 +139,22 @@ export function CandidateListCard({
             </span>
           )}
           {candidate.age != null && (
-            <span className="avd-chip text-[11px] shrink-0">
-              {candidate.age} a
+            <span
+              className="avd-chip text-[11px] gap-[3px] shrink-0"
+              aria-label={`${candidate.age} años`}
+              title={`${candidate.age} años`}
+            >
+              <Cake className="w-2.5 h-2.5 shrink-0" />
+              {candidate.age}
+            </span>
+          )}
+          {isMonitor(candidate.crm_relationship_types) && (
+            <span
+              className="avd-chip avd-chip-brand text-[11px] font-bold shrink-0 px-[7px]"
+              aria-label="Monitor"
+              title="Monitor"
+            >
+              M
             </span>
           )}
         </div>

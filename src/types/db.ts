@@ -45,6 +45,7 @@ export interface CandidateRow {
   selected_vote_count: number | null;
   asamblea_movimiento_es: string | null;
   asamblea_responsabilidad: string | null;
+  crm_relationship_types: string | null;
   created_at: string;
   updated_at: string;
 }
