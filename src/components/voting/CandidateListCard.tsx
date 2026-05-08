@@ -4,6 +4,7 @@ import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
 import { CandidateRow } from "@/types/db";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 interface CandidateListCardProps {
   candidate: CandidateRow;
@@ -24,6 +25,7 @@ export function CandidateListCard({
   onImageLongPress,
   hideCheckbox = false,
 }: CandidateListCardProps) {
+  const { visionPlus } = useAccessibility();
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imgPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didLongPress = useRef(false);
@@ -155,9 +157,9 @@ export function CandidateListCard({
           type="button"
           aria-label="Ver detalles"
           onClick={(e) => { e.stopPropagation(); onDetailView(candidate); }}
-          className="absolute bottom-2 right-2 bg-transparent border-none cursor-pointer text-[var(--avd-fg-faint)] p-1 rounded-[6px] flex items-center opacity-60 hover:opacity-100 transition-opacity"
+          className={`absolute bottom-2 right-2 bg-transparent border-none cursor-pointer text-[var(--avd-fg-faint)] ${visionPlus ? "p-3" : "p-1"} rounded-[6px] flex items-center opacity-60 hover:opacity-100 transition-opacity`}
         >
-          <Info size={14} />
+          <Info size={visionPlus ? 20 : 14} />
         </button>
       )}
     </div>

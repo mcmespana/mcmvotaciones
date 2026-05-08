@@ -4,6 +4,7 @@ import { motion, type PanInfo } from "framer-motion";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import type { CandidateRow } from "@/types/db";
 import { formatCandidateName } from "@/lib/candidateFormat";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 type Candidate = CandidateRow;
 
@@ -19,6 +20,7 @@ const SWIPE_THRESHOLD = 55;
 const SWIPE_VELOCITY_THRESHOLD = 300;
 
 export function CandidateDetailModal({ candidate, onClose, initialZoom = false, onNext, onPrev }: Props) {
+  const { visionPlus } = useAccessibility();
   const [imgFailed, setImgFailed] = useState(false);
   const [imgFullscreen, setImgFullscreen] = useState(false);
   const [dragEnabled, setDragEnabled] = useState(false);
@@ -257,7 +259,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                   <div
                     ref={questionsRef}
                     className="flex flex-col gap-3 overflow-y-auto"
-                    style={{ maxHeight: "210px" }}
+                    style={{ maxHeight: visionPlus ? "340px" : "210px" }}
                   >
                     {candidate.asamblea_movimiento_es && (
                       <div>

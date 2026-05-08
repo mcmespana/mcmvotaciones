@@ -18,6 +18,7 @@ export interface CRMContact {
   asamblea_responsabilidad: string | null;  // ajmcm_asamblea_responsabilid_c
   monitor_desde: string | null;  // ajmcm_monitor_desde_c
   monitor_de: string | null;     // ajmcm_monitor_de_c
+  grupo: string | null;          // ajmcm_grupotemp_c
   relationship_types: string[];  // stic_relationship_type_c → ej: ["grupo","monitor"]
 }
 
@@ -58,6 +59,7 @@ function normalize(raw: Record<string, string>): CRMContact {
     asamblea_responsabilidad: n(raw['ajmcm_asamblea_responsabilid_c']),
     monitor_desde: n(raw['ajmcm_monitor_desde_c']),
     monitor_de: n(raw['ajmcm_monitor_de_c']),
+    grupo: n(raw['ajmcm_grupotemp_c']),
     relationship_types: parseRelationshipTypes(raw['stic_relationship_type_c']),
   };
 }

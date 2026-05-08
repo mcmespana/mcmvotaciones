@@ -166,6 +166,7 @@ export function ComunicaImport() {
       asamblea_responsabilidad: c.asamblea_responsabilidad,
       monitor_desde: c.monitor_desde,
       monitor_de: c.monitor_de,
+      grupo_mcm: c.grupo,
       crm_relationship_types: c.relationship_types.length > 0 ? c.relationship_types.join(',') : null,
       crm_source: 'sinergiacrm',
       order_index: idx,
@@ -504,6 +505,7 @@ export function ComunicaImport() {
                                       <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-center">Edad</th>
                                       <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">DNI</th>
                                       <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Etapa</th>
+                                      <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Grupo</th>
                                       <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Relación</th>
                                       <th className="px-[10px] py-[6px] font-semibold text-avd-fg-muted text-left">Monitor de</th>
                                     </tr>
@@ -536,6 +538,7 @@ export function ComunicaImport() {
                                           <td className="px-[10px] py-[7px] text-avd-fg-muted text-center">{c.age ?? '—'}</td>
                                           <td className="px-[10px] py-[7px] text-avd-fg-muted font-avd-mono text-[11.5px]">{c.dni ?? '—'}</td>
                                           <td className="px-[10px] py-[7px] text-avd-fg-muted">{c.etapa ?? '—'}</td>
+                                          <td className="px-[10px] py-[7px] text-avd-fg-muted">{c.grupo ?? '—'}</td>
                                           <td className="px-[10px] py-[7px]">
                                             {c.relationship_types.length > 0
                                               ? c.relationship_types.map(rt => (

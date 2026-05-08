@@ -177,7 +177,6 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
               >
                 <span
                   aria-hidden
-                  className="absolute inset-0 rounded-2xl"
                   className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite]"
                   style={{ border: `2px solid ${current.color}` }}
                 />

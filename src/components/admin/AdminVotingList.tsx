@@ -225,6 +225,14 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   }, [toast]);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => { if (e.matches) setView("grid"); };
+    if (mq.matches) setView("grid");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     loadRounds();
     const channel = supabase
