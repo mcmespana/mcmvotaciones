@@ -102,14 +102,15 @@ export function useProjectionData(): ProjectionData {
       if (activeRounds && activeRounds.length > 0) {
         targetRound = activeRounds[0];
       } else {
-        // If no active round, fetch the most recently updated one (e.g. just closed)
-        const { data: latestRounds } = await supabase
+        // If no active round, only show a round that is explicitly projecting
+        const { data: projectingRounds } = await supabase
           .from("rounds")
           .select("*")
+          .or("show_results_to_voters.eq.true,show_final_gallery_projection.eq.true")
           .order("updated_at", { ascending: false })
           .limit(1);
-        if (latestRounds && latestRounds.length > 0) {
-          targetRound = latestRounds[0];
+        if (projectingRounds && projectingRounds.length > 0) {
+          targetRound = projectingRounds[0];
         }
       }
 
