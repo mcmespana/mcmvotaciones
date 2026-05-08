@@ -31,7 +31,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
   // Tracks whether candidate changed due to navigation (skip the 350ms delay)
   const navigatedRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const questionsRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setImgFailed(false);
@@ -55,14 +55,14 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
     if (!candidate) { setDragEnabled(false); setImgFullscreen(false); }
   }, [candidate]);
 
-  // Track whether questions block has overflow and how far it's scrolled
+  // Track whether info block has overflow and how far it's scrolled
   useEffect(() => {
-    const el = questionsRef.current;
+    const el = infoRef.current;
     if (!el) return;
     const check = () => {
       const overflows = el.scrollHeight > el.clientHeight + 2;
       setQuestionsOverflows(overflows);
-      setQuestionsAtBottom(!overflows || el.scrollTop + el.clientHeight >= el.scrollHeight - 4);
+      setQuestionsAtBottom(!overflows || Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight - 4);
     };
     check();
     el.addEventListener("scroll", check, { passive: true });
@@ -185,7 +185,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             </button>
 
             {/* Image */}
-            <div className="relative h-56 bg-[var(--avd-bg-sunken)]">
+            <div className="relative h-56 bg-[var(--avd-bg-sunken)] shrink-0">
               <div className="h-full w-full overflow-hidden flex items-center justify-center">
                 {hasImage ? (
                   <img
@@ -219,14 +219,17 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             </div>
 
             {/* Info — stops drag propagation so scroll & pinch-zoom work */}
-            <div
-              className="px-6 pt-5 pb-6"
-              style={{ touchAction: "pan-y pinch-zoom" }}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
-                {formatCandidateName(candidate)}
-              </h2>
+            <div className="flex-1 relative overflow-hidden flex flex-col">
+              <div
+                ref={infoRef}
+                className="px-6 pt-5 pb-6 overflow-y-auto flex-1 overscroll-contain"
+                style={{ touchAction: "pan-y pinch-zoom" }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+              >
+                <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+                  {formatCandidateName(candidate)}
+                </h2>
 
               {/* Chips — bigger for legibility */}
               <div className="flex flex-wrap gap-[7px] mb-4">
@@ -262,38 +265,23 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 </p>
               )}
 
-              {/* Questions — own scroll container with fade hint */}
+              {/* Questions */}
               {hasQuestions && (
-                <div className="relative mt-4 pt-4 border-t border-[var(--avd-border-soft)]">
-                  <div
-                    ref={questionsRef}
-                    className="flex flex-col gap-3 overflow-y-auto"
-                    style={{ maxHeight: visionPlus ? "340px" : "210px" }}
-                  >
-                    {candidate.asamblea_movimiento_es && (
-                      <div>
-                        <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Para mí el MCM es…</div>
-                        <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
-                      </div>
-                    )}
-                    {candidate.asamblea_responsabilidad && (
-                      <div>
-                        <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Responsabilidades en el MCM</div>
-                        <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
-                      </div>
-                    )}
-                    {/* Bottom padding so last line doesn't sit right against the fade */}
-                    {questionsOverflows && <div className="h-4 shrink-0" />}
-                  </div>
-
-                  {/* Fade gradient — visible only when there's more content below */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none transition-opacity duration-200"
-                    style={{
-                      background: "linear-gradient(to top, var(--avd-surface) 0%, transparent 100%)",
-                      opacity: showScrollFade ? 1 : 0,
-                    }}
-                  />
+                <div className="mt-4 pt-4 border-t border-[var(--avd-border-soft)] flex flex-col gap-3">
+                  {candidate.asamblea_movimiento_es && (
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Para mí el MCM es…</div>
+                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
+                    </div>
+                  )}
+                  {candidate.asamblea_responsabilidad && (
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Responsabilidades en el MCM</div>
+                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
+                    </div>
+                  )}
+                  {/* Bottom padding so last line doesn't sit right against the fade */}
+                  {questionsOverflows && <div className="h-4 shrink-0" />}
                 </div>
               )}
 
@@ -302,6 +290,16 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                   Sin información adicional disponible.
                 </p>
               )}
+              </div>
+
+              {/* Fade gradient — visible only when there's more content below */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none transition-opacity duration-200"
+                style={{
+                  background: "linear-gradient(to top, var(--avd-surface) 0%, transparent 100%)",
+                  opacity: showScrollFade ? 1 : 0,
+                }}
+              />
             </div>
           </motion.div>
         </div>

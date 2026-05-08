@@ -148,61 +148,63 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
           >
             {/* Top accent bar */}
             <div
-              className="vtu-shimmer-bar h-1 w-full transition-[background-image] duration-[450ms]"
+              className="vtu-shimmer-bar shrink-0 h-1 w-full transition-[background-image] duration-[450ms]"
               style={{ backgroundImage: current.topBar }}
             />
 
-            {/* Icon area */}
-            <div className="flex flex-col items-center gap-5 px-8 pt-8 pb-6">
-              {/* Step dots */}
-              <div className="flex items-center gap-2">
-                {STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-full transition-all duration-300 ${
-                      i === step
-                        ? `w-6 h-2 ${current.dotActive}`
-                        : i < step
-                        ? `w-2 h-2 ${current.dotActive} opacity-50`
-                        : "w-2 h-2 bg-muted-foreground/25"
-                    }`}
-                  />
-                ))}
-              </div>
+            <div className="flex-1 overflow-y-auto">
+              {/* Icon area */}
+              <div className="flex flex-col items-center gap-5 px-8 pt-8 pb-6">
+                {/* Step dots */}
+                <div className="flex items-center gap-2">
+                  {STEPS.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === step
+                          ? `w-6 h-2 ${current.dotActive}`
+                          : i < step
+                          ? `w-2 h-2 ${current.dotActive} opacity-50`
+                          : "w-2 h-2 bg-muted-foreground/25"
+                      }`}
+                    />
+                  ))}
+                </div>
 
-              {/* Icon bubble */}
-              <div
-                key={iconKey}
-                className="relative w-[84px] h-[84px] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
-              >
-                <span
-                  aria-hidden
-                  className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite]"
-                  style={{ border: `2px solid ${current.color}` }}
-                />
-                <span
-                  aria-hidden
-                  className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
-                  style={{ border: `2px solid ${current.color}` }}
-                />
-                <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[2px]`}>
-                  <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
+                {/* Icon bubble */}
+                <div
+                  key={iconKey}
+                  className="relative w-[84px] h-[84px] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+                >
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite]"
+                    style={{ border: `2px solid ${current.color}` }}
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
+                    style={{ border: `2px solid ${current.color}` }}
+                  />
+                  <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[2px]`}>
+                    <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Content */}
-            <div className="px-8 pb-6">
-              <h3 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
-                {current.title}
-              </h3>
-              <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
-                {current.description}
-              </p>
+              {/* Content */}
+              <div className="px-8 pb-6">
+                <h3 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+                  {current.title}
+                </h3>
+                <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
+                  {current.description}
+                </p>
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-[var(--avd-border-soft)] flex items-center justify-between gap-2 bg-[var(--avd-bg-sunken)]">
+            <div className="px-6 py-3 border-t border-[var(--avd-border-soft)] flex items-center justify-between gap-2 bg-[var(--avd-bg-sunken)] shrink-0">
               <button
                 onClick={handlePrev}
                 disabled={step === 0}
