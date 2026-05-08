@@ -202,13 +202,23 @@
   padding-inline: 2rem !important;
 }
 
-/* ─── Section 12: Sticky header inputs and buttons ─── */
+/* ─── Section 12: Sticky header (pub-sticky / pub-sticky-card) ─── */
 
-[data-vision-plus="on"] .avd-sticky-header .avd-input {
-  height: 52px !important;
+[data-vision-plus="on"] .pub-sticky-card {
+  padding: 14px 16px !important;
 }
-[data-vision-plus="on"] .avd-sticky-header button {
-  min-height: 52px;
+
+/* ─── Section 12b: Index pills (pub-index-pill) ─── */
+
+[data-vision-plus="on"] .pub-index-pill {
+  height: 36px !important;
+  font-size: 14px !important;
+  padding: 0 14px !important;
+  gap: 6px !important;
+}
+[data-vision-plus="on"] .pub-index {
+  max-height: 180px !important;
+  gap: 8px !important;
 }
 
 /* ─── Section 13: VoteTicket ─── */
@@ -297,6 +307,37 @@
   height: 68px !important;
   min-width: 68px !important;
   min-height: 68px !important;
+}
+
+/* ─── Section 17a: VotingPage status card icons ─── */
+
+/* w-[72px] container (waiting/paused state) → 90px */
+[data-vision-plus="on"] .pub-page .w-\[72px\] {
+  width: 90px !important;
+}
+[data-vision-plus="on"] .pub-page .h-\[72px\] {
+  width: 90px !important;
+  height: 90px !important;
+}
+/* Icon inside w-[72px] container: w-8 h-8 (32px) → 48px */
+[data-vision-plus="on"] .pub-page .w-\[72px\] .w-8 {
+  width: 3rem !important;   /* 48px */
+}
+[data-vision-plus="on"] .pub-page .w-\[72px\] .h-8 {
+  height: 3rem !important;
+}
+
+/* Confirm vote modal icon container: w-16.rounded-2xl → 80px */
+[data-vision-plus="on"] .avd-dialog .w-16.rounded-2xl {
+  width: 5rem !important;   /* 80px */
+  height: 5rem !important;
+}
+/* Icon inside confirm modal container: w-8 h-8 → 44px */
+[data-vision-plus="on"] .avd-dialog .w-16.rounded-2xl .w-8 {
+  width: 2.75rem !important; /* 44px */
+}
+[data-vision-plus="on"] .avd-dialog .w-16.rounded-2xl .h-8 {
+  height: 2.75rem !important;
 }
 
 /* ─── Section 17: AccessCodeInput page ─── */

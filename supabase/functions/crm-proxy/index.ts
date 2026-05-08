@@ -55,7 +55,8 @@ const SELECT_FIELDS = [
   'id', 'first_name', 'last_name', 'birthdate', 'stic_age_c',
   'stic_identification_number_c', 'assigned_user_name', 'ajmcm_etapa_c',
   'ajmcm_asamblea_movimiento_es_c', 'ajmcm_asamblea_responsabilid_c',
-  'ajmcm_monitor_desde_c', 'ajmcm_monitor_de_c', 'stic_relationship_type_c',
+  'ajmcm_monitor_desde_c', 'ajmcm_monitor_de_c', 'ajmcm_grupotemp_c',
+  'stic_relationship_type_c',
 ];
 
 interface CRMEntryList {
