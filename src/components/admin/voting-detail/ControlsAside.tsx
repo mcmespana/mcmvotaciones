@@ -77,17 +77,17 @@ export function ControlsAside({
                 />
               </div>
             </div>
-            {round.round_finalized && round.show_ballot_summary_projection && round.is_closed && (
+            {round.is_closed && round.round_finalized && (
               <div className="avd-proj-toggle">
                 <div className="avd-label-row">
                   <Sparkles size={14} />
                   <div>
                     <div>Galería final</div>
-                    <div className="avd-sub">{round.show_results_to_voters ? "Visible para votantes" : "Oculta"}</div>
+                    <div className="avd-sub">{round.show_final_gallery_projection ? "Proyectándose" : "Oculta"}</div>
                   </div>
                 </div>
                 <button
-                  className={`avd-switch ${round.show_results_to_voters ? "on" : ""}`}
+                  className={`avd-switch ${round.show_final_gallery_projection ? "on" : ""}`}
                   onClick={toggleGallery}
                 />
               </div>
