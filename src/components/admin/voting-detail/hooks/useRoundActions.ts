@@ -125,9 +125,19 @@ export function useRoundActions(opts: Options) {
   const closeVoting = async () => {
     if (!roundId) return;
     setIsCloseRoundConfirmOpen(false);
-    const { error } = await supabase.from("rounds").update({ is_closed: true, is_active: false, is_voting_open: false, join_locked: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+    const { error } = await supabase.from("rounds").update({
+      is_closed: true,
+      is_active: false,
+      is_voting_open: false,
+      join_locked: true,
+      round_finalized: true,
+      show_results_to_voters: false,
+      show_ballot_summary_projection: false,
+      show_final_gallery_projection: false,
+      updated_at: new Date().toISOString(),
+    }).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo cerrar la votación", variant: "destructive" }); return; }
-    toast({ title: "Votación cerrada", description: "Se cerró la votación y se bloqueó la entrada" });
+    toast({ title: "Votación cerrada", description: "Activa la galería final cuando quieras mostrarla" });
     await loadRound();
   };
 
@@ -202,8 +212,8 @@ export function useRoundActions(opts: Options) {
   };
 
   const toggleGallery = async () => {
-    if (!roundId || !round?.round_finalized || !round.show_ballot_summary_projection || !round.is_closed) return;
-    const nextOn = !round.show_results_to_voters;
+    if (!roundId || !round?.round_finalized || !round.is_closed) return;
+    const nextOn = !round.show_final_gallery_projection;
     if (nextOn) {
       const { data: activeGalleries } = await supabase
         .from("rounds")
@@ -212,11 +222,17 @@ export function useRoundActions(opts: Options) {
         .neq("id", roundId)
         .limit(1);
       if (activeGalleries && activeGalleries.length > 0) {
-        await supabase.from("rounds").update({ show_results_to_voters: false, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", activeGalleries[0].id);
+        await supabase.from("rounds").update({ show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", activeGalleries[0].id);
         toast({ title: `Galería de "${activeGalleries[0].title}" cerrada`, description: "No puede haber dos galerías activas simultáneamente." });
       }
     }
-    const { error } = await supabase.from("rounds").update({ show_results_to_voters: nextOn, show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() }).eq("id", roundId);
+    const update: Record<string, unknown> = { show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() };
+    if (nextOn) {
+      // When showing the gallery, stop projecting per-round results to avoid stale projection
+      update.show_results_to_voters = false;
+      update.show_ballot_summary_projection = false;
+    }
+    const { error } = await supabase.from("rounds").update(update).eq("id", roundId);
     if (error) { toast({ title: "Error", description: "No se pudo actualizar la galería", variant: "destructive" }); return; }
     toast({ title: nextOn ? "Galería activada" : "Galería desactivada" });
     await loadRound();
