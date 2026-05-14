@@ -72,7 +72,7 @@ export function AdminDashboard({ section = 'votaciones' }: AdminDashboardProps) 
             </div>
           </div>
           {activeSection === 'votaciones' && isSuperAdmin && (
-            <div className="flex gap-1.5">
+            <div className="flex flex-col sm:flex-row gap-1.5 flex-wrap sm:gap-1">
               <button
                 className="avd-btn avd-btn-sm gap-1.5"
                 onClick={() => setTypesManagerOpen(true)}

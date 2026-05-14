@@ -171,7 +171,7 @@ export function UserManagement() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Toolbar */}
-      <div className="px-5 py-[14px] border-b border-[var(--avd-border)] bg-[var(--avd-bg-elev)] flex items-center gap-[10px] flex-wrap">
+      <div className="px-5 py-[14px] border-b border-[var(--avd-border)] bg-[var(--avd-bg-elev)] flex flex-wrap sm:flex-nowrap items-center gap-[10px]">
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-muted)]">Usuarios</span>
           <span className="avd-chip">{users.length} total</span>
@@ -180,7 +180,7 @@ export function UserManagement() {
           </span>
         </div>
         <div className="flex-1" />
-        <div className="avd-search-wrap w-[200px] relative">
+        <div className="avd-search-wrap w-full sm:w-[200px] relative">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[9px] top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input className="avd-input pl-[30px]" placeholder="Buscar usuario..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
@@ -207,7 +207,7 @@ export function UserManagement() {
             <div className="px-4 py-[14px]">
               <form onSubmit={handleCreateUser}>
                 <div className="avd-form-grid">
-                  <div className="avd-form-grid-2">
+                  <div className="avd-form-grid-2 grid grid-cols-1 md:grid-cols-2">
                     <div className="avd-form-field">
                       <label className="avd-label">Nombre completo</label>
                       <input className="avd-input" placeholder="Hna. María García" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} disabled={creating} />
@@ -217,7 +217,7 @@ export function UserManagement() {
                       <input className="avd-input" placeholder="hna.garcia" value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} disabled={creating} />
                     </div>
                   </div>
-                  <div className="avd-form-grid-2">
+                  <div className="avd-form-grid-2 grid grid-cols-1 md:grid-cols-2">
                     <div className="avd-form-field">
                       <label className="avd-label">Email</label>
                       <input className="avd-input" type="email" placeholder="garcia@consolacion.org" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} disabled={creating} />
@@ -276,7 +276,7 @@ export function UserManagement() {
               const isRoot = u.role === 'super_admin';
               return (
                 <div key={u.id} className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
-                  <div className="px-[14px] py-3 flex items-center gap-3 border-b border-[var(--avd-border-soft)]">
+                  <div className="px-[14px] py-3 flex flex-col sm:flex-row sm:items-center gap-3 border-b border-[var(--avd-border-soft)]">
                     <div className={`w-[38px] h-[38px] rounded-full shrink-0 grid place-items-center ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_14%,transparent)] border border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : 'bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)]'}`}>
                       {isRoot
                         ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.5 0.18 280)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>

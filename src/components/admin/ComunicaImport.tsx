@@ -266,7 +266,7 @@ export function ComunicaImport() {
       </div>
 
       {/* Content */}
-      <div className="adm-scroll p-5 px-6">
+      <div className="adm-scroll p-5 px-4 sm:px-6">
         <div className="max-w-[860px] mx-auto flex flex-col gap-4">
 
           {/* ── PASO 1: Seleccionar votación ── */}
@@ -455,7 +455,7 @@ export function ComunicaImport() {
                 <div className="p-3 px-4 flex flex-col gap-[10px]">
                   {/* Search + actions bar */}
                   <div className="flex gap-2 flex-wrap items-center">
-                    <div className="avd-search-wrap flex-1 min-w-[200px] relative">
+                    <div className="avd-search-wrap flex-1 min-w-[150px] relative">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[9px] top-1/2 -translate-y-1/2 text-avd-fg-faint pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                       <input className="avd-input pl-[30px]" placeholder="Buscar por nombre, DNI o delegación..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>

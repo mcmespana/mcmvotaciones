@@ -1398,8 +1398,8 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
-  .avd-page-main { grid-template-columns: 1fr; }
+@media (max-width: 1023px) {
+  .avd-page-main { grid-template-columns: 1fr; gap: 1rem; }
   .avd-col-left { border-right: none; border-bottom: 1px solid var(--avd-border); }
   .avd-kpi-stack {
     grid-template-columns: repeat(3, minmax(0, 1fr));

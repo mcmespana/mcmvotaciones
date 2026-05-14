@@ -85,8 +85,21 @@ export function useProjectionData(): ProjectionData {
     return "idle";
   })();
 
-  // Selected candidates (from current round results)
-  const selectedCandidates = useMemo(() => candidates.filter((c) => c.is_selected), [candidates]);
+  // Selected candidates ordered by round of selection (ASC); within same round by vote count DESC.
+  // Null/undefined selected_in_round (legacy data) sorted last.
+  const selectedCandidates = useMemo(
+    () =>
+      candidates
+        .filter((c) => c.is_selected)
+        .slice()
+        .sort((a, b) => {
+          const ra = a.selected_in_round ?? Number.POSITIVE_INFINITY;
+          const rb = b.selected_in_round ?? Number.POSITIVE_INFINITY;
+          if (ra !== rb) return ra - rb;
+          return (b.selected_vote_count ?? 0) - (a.selected_vote_count ?? 0);
+        }),
+    [candidates]
+  );
 
   // Load the active round and its data
   const loadActiveRound = useCallback(async () => {

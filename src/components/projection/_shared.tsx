@@ -113,22 +113,25 @@ interface SelectedCandidate {
 }
 
 export function SelectedCandidatesSidebar({ candidates }: { candidates: SelectedCandidate[] }) {
+  const sortedCandidates = [...candidates].sort(
+    (a, b) => (a.selected_in_round ?? 999) - (b.selected_in_round ?? 999),
+  );
   return (
     <div className="avd-selected-sidebar">
       <div className="avd-selected-sidebar-header">
         <Check size={18} color="var(--avd-ok)" strokeWidth={3} />
         <span className="avd-selected-sidebar-label">Seleccionadas</span>
-        {candidates.length > 0 && (
-          <span className="avd-selected-sidebar-count">{candidates.length}</span>
+        {sortedCandidates.length > 0 && (
+          <span className="avd-selected-sidebar-count">{sortedCandidates.length}</span>
         )}
       </div>
       <div className="avd-selected-sidebar-list">
-        {candidates.length === 0 ? (
+        {sortedCandidates.length === 0 ? (
           <div className="avd-selected-sidebar-empty">
             Ninguna candidata<br />seleccionada aún
           </div>
         ) : (
-          candidates.map((c) => (
+          sortedCandidates.map((c) => (
             <div key={c.id} className="avd-selected-sidebar-row">
               <div className="min-w-0">
                 <div className="avd-selected-sidebar-name">{formatCandidateName(c)}</div>
@@ -174,7 +177,7 @@ function BallotCard({ ballot }: { ballot: BallotSummary }) {
 export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
     return (
-      <div className="grid grid-cols-4 gap-[12px]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[12px]">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-[140px] rounded-[14px] bg-[var(--avd-bg-sunken)] animate-pulse" />
         ))}
@@ -185,7 +188,7 @@ export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   const enableMarquee = summaries.length >= 8;
   if (!enableMarquee) {
     return (
-      <div className="grid grid-cols-4 gap-[12px]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[12px]">
         {summaries.map((b) => (
           <BallotCard key={`${b.roundNumber}-${b.voteCode}-${b.timestamp}`} ballot={b} />
         ))}

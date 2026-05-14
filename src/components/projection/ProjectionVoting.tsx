@@ -83,7 +83,7 @@ export function ProjectionVoting({
       {/* Body */}
       <div
         className="proj-body relative z-[1]"
-        style={{ display: 'grid', gridTemplateColumns: '1fr 380px' }}
+        style={{ display: 'grid', gridTemplateColumns: '1fr clamp(280px, 22vw, 420px)' }}
       >
         {!showBallotSummary ? (
           <>

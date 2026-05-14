@@ -174,7 +174,7 @@ export function useRoundActions(opts: Options) {
     const { data, error } = await supabase.rpc("start_new_round", { p_round_id: roundId });
     if (error) { toast({ title: "Error", description: "No se pudo iniciar la siguiente ronda", variant: "destructive" }); return; }
     const parsed = data as { round_number?: number };
-    await supabase.from("rounds").update({ is_active: true, round_finalized: false, is_voting_open: true, join_locked: true, show_results_to_voters: false, show_ballot_summary_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
+    await supabase.from("rounds").update({ is_active: true, is_closed: false, round_finalized: false, is_voting_open: true, join_locked: true, show_results_to_voters: false, show_ballot_summary_projection: false, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
     toast({ title: "Siguiente ronda iniciada", description: `Ronda ${parsed?.round_number || "nueva"} en curso` });
     await loadRound();
   };
@@ -215,15 +215,15 @@ export function useRoundActions(opts: Options) {
     if (!roundId || !round?.round_finalized || !round.is_closed) return;
     const nextOn = !round.show_final_gallery_projection;
     if (nextOn) {
-      const { data: activeGalleries } = await supabase
+      // Atomic: close any other open galleries in one statement (no TOCTOU race).
+      const { data: closedOthers } = await supabase
         .from("rounds")
-        .select("id, title")
+        .update({ show_final_gallery_projection: false, updated_at: new Date().toISOString() })
         .eq("show_final_gallery_projection", true)
         .neq("id", roundId)
-        .limit(1);
-      if (activeGalleries && activeGalleries.length > 0) {
-        await supabase.from("rounds").update({ show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", activeGalleries[0].id);
-        toast({ title: `Galería de "${activeGalleries[0].title}" cerrada`, description: "No puede haber dos galerías activas simultáneamente." });
+        .select("title");
+      if (closedOthers && closedOthers.length > 0) {
+        toast({ title: `Galería de "${closedOthers[0].title}" cerrada`, description: "No puede haber dos galerías activas simultáneamente." });
       }
     }
     const update: Record<string, unknown> = { show_final_gallery_projection: nextOn, updated_at: new Date().toISOString() };

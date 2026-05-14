@@ -104,7 +104,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
 
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="avd-dialog max-w-[560px]" onClick={e => e.stopPropagation()}>
+      <div className="avd-dialog max-w-[90vw] sm:max-w-[560px]" onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
           <h2>Tipos de votación</h2>
           <p>Los tipos <strong>ECE</strong> y <strong>ECL</strong> son del sistema. Los personalizados pueden crearse y eliminarse libremente.</p>
@@ -123,7 +123,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                       <input className="avd-input" value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
                     </div>
                   )}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <div className="avd-form-field">
                       <label className="avd-label">Seleccionadas</label>
                       <input className="avd-input" type="number" min={1} max={100} value={editForm.max_selected_candidates || ""} onChange={e => { const v = parseInt(e.target.value); setEditForm(p => ({ ...p, max_selected_candidates: isNaN(v) ? 0 : v })); }} />
@@ -186,7 +186,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
             <div className="text-[12px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[10px]">
               Nuevo tipo personalizado
             </div>
-            <div className="grid grid-cols-4 gap-2 mb-[10px]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-[10px]">
               <div className="avd-form-field">
                 <label className="avd-label">Nombre</label>
                 <input className="avd-input" placeholder="Mi tipo" value={newForm.name} onChange={e => setNewForm(p => ({ ...p, name: e.target.value }))} />
