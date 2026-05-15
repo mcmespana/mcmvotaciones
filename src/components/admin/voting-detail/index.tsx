@@ -33,7 +33,7 @@ export function AdminVotingDetail() {
   /* Data (loading, realtime channel, config sync) */
   const {
     round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,
-    liveSeatIds, presenceReady, releaseSeat, releaseGhostSeats,
+    liveSeatIds, presenceChecking, checkPresence, releaseSeat, releaseGhostSeats,
     loadRound, loadCandidates, loadInlineResults,
     configAccessCode, setConfigAccessCode,
     configCensusMode, setConfigCensusMode,
@@ -228,8 +228,8 @@ export function AdminVotingDetail() {
         <SeatsLiveCard
           round={round} seats={seats} seatStatus={seatStatus}
           currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
-          liveSeatIds={liveSeatIds} presenceReady={presenceReady}
-          releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
+          liveSeatIds={liveSeatIds} presenceChecking={presenceChecking}
+          checkPresence={checkPresence} releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
         />
 
         <CandidatesPane

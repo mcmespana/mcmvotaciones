@@ -45,8 +45,8 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
   const [loading, setLoading] = useState(true);
   const [inlineResults, setInlineResults] = useState<InlineResult[]>([]);
   const [now, setNow] = useState(Date.now());
-  const [liveSeatIds, setLiveSeatIds] = useState<Set<string>>(new Set());
-  const [presenceReady, setPresenceReady] = useState(false);
+  const [liveSeatIds, setLiveSeatIds] = useState<Set<string> | null>(null);
+  const [presenceChecking, setPresenceChecking] = useState(false);
 
   // Config form state (synced from round on load)
   const [configAccessCode, setConfigAccessCode] = useState("");
@@ -167,24 +167,30 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
     }
   }, [roundId, toast, loadCurrentRoundVotes, loadInlineResults]);
 
-  // Realtime Presence — observe which seats are still connected
-  useEffect(() => {
-    if (!roundId) return;
-    setPresenceReady(false);
-    const ch = supabase.channel(`round-presence-${roundId}`);
-    ch.on('presence', { event: 'sync' }, () => {
-      const state = ch.presenceState<{ seat_id: string }>();
-      const ids = new Set<string>();
-      for (const presences of Object.values(state)) {
-        for (const p of presences) {
-          if (p.seat_id) ids.add(p.seat_id);
+  // One-shot presence check — subscribes, reads state, unsubscribes
+  const checkPresence = useCallback(async () => {
+    if (!roundId || presenceChecking) return;
+    setPresenceChecking(true);
+    setLiveSeatIds(null);
+    const ch = supabase.channel(`round-presence-check-${crypto.randomUUID()}`);
+    await new Promise<void>((resolve) => {
+      ch.on('presence', { event: 'sync' }, () => {
+        const state = ch.presenceState<{ seat_id: string }>();
+        const ids = new Set<string>();
+        for (const presences of Object.values(state)) {
+          for (const p of presences) {
+            if (p.seat_id) ids.add(p.seat_id);
+          }
         }
-      }
-      setLiveSeatIds(ids);
-      setPresenceReady(true);
-    }).subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [roundId]);
+        setLiveSeatIds(ids);
+        resolve();
+      }).subscribe();
+      // Fallback: resolve after 8s even if no sync event arrives
+      setTimeout(resolve, 8000);
+    });
+    supabase.removeChannel(ch);
+    setPresenceChecking(false);
+  }, [roundId, presenceChecking]);
 
   const releaseSeat = useCallback(async (seatId: string) => {
     await supabase.rpc('release_seat', { p_seat_id: seatId });
@@ -221,8 +227,8 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
   return {
     round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,
     currentRoundNumberRef,
-    liveSeatIds, presenceReady,
-    releaseSeat, releaseGhostSeats,
+    liveSeatIds, presenceChecking,
+    checkPresence, releaseSeat, releaseGhostSeats,
     loadRound, loadCandidates, loadSeatsAndStatus, loadCurrentRoundVotes, loadInlineResults,
     configAccessCode, setConfigAccessCode,
     configCensusMode, setConfigCensusMode,

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Wifi } from "lucide-react";
 import type { RoundDetail, SeatRow, SeatStatus } from "./hooks/useRoundDetail";
 
 interface Props {
@@ -9,21 +9,26 @@ interface Props {
   currentRoundVotes: number;
   occupiedPct: number;
   votesPct: number;
-  liveSeatIds: Set<string>;
-  presenceReady: boolean;
+  liveSeatIds: Set<string> | null;
+  presenceChecking: boolean;
+  checkPresence: () => Promise<void>;
   releaseSeat: (seatId: string) => Promise<void>;
   releaseGhostSeats: (ghostIds: string[]) => Promise<number>;
 }
 
 export function SeatsLiveCard({
   round, seats, seatStatus, currentRoundVotes, occupiedPct, votesPct,
-  liveSeatIds, presenceReady, releaseSeat, releaseGhostSeats,
+  liveSeatIds, presenceChecking, checkPresence, releaseSeat, releaseGhostSeats,
 }: Props) {
   const [releasingId, setReleasingId] = useState<string | null>(null);
   const [releasingAll, setReleasingAll] = useState(false);
 
+  const presenceReady = liveSeatIds !== null;
+
   const ghostIds = useMemo(
-    () => seats.filter(s => s.estado === "ocupado" && presenceReady && !liveSeatIds.has(s.id)).map(s => s.id),
+    () => presenceReady
+      ? seats.filter(s => s.estado === "ocupado" && !liveSeatIds.has(s.id)).map(s => s.id)
+      : [],
     [seats, liveSeatIds, presenceReady],
   );
 
@@ -40,7 +45,7 @@ export function SeatsLiveCard({
   return (
     <aside className="avd-col avd-col-left">
 
-      {/* ── Conexiones (arriba) ── */}
+      {/* ── Conexiones ── */}
       <div className="px-4 pt-[14px] pb-3 border-b border-[var(--avd-border-soft)]">
         <h3 className="avd-section-title m-0 mb-[10px]">
           Conexiones
@@ -84,21 +89,33 @@ export function SeatsLiveCard({
             </div>
           </div>
 
-          {/* Presence summary + bulk release */}
-          {presenceReady && ghostIds.length > 0 && (
-            <div className="flex items-center justify-between gap-2 pt-0.5">
-              <span className="text-[12px] text-[var(--avd-bad)] font-semibold">
-                {ghostIds.length} fantasma{ghostIds.length > 1 ? 's' : ''}
-              </span>
+          {/* Verify presence button */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              className="avd-btn avd-btn-sm w-full"
+              disabled={presenceChecking}
+              onClick={checkPresence}
+            >
+              <Wifi size={13} />
+              {presenceChecking ? 'Verificando…' : presenceReady ? 'Re-verificar' : 'Verificar presencia'}
+            </button>
+            {presenceReady && ghostIds.length > 0 && (
               <button
                 className="avd-btn avd-btn-sm avd-btn-danger"
                 disabled={releasingAll}
                 onClick={handleReleaseAll}
+                title="Liberar todos los asientos fantasma"
               >
-                <Trash2 size={11} />
-                {releasingAll ? 'Liberando…' : 'Liberar todos'}
+                <Trash2 size={13} />
+                {releasingAll ? '…' : ghostIds.length}
               </button>
-            </div>
+            )}
+          </div>
+
+          {presenceReady && ghostIds.length === 0 && (
+            <p className="text-[12px] text-[var(--avd-ok)] font-semibold m-0 text-center">
+              Todos conectados
+            </p>
           )}
 
           <div>
@@ -116,23 +133,19 @@ export function SeatsLiveCard({
               ) : (
                 seats.slice(0, 12).map((s) => {
                   const isOccupied = s.estado === "ocupado";
-                  const isLive = liveSeatIds.has(s.id);
+                  const isLive = liveSeatIds?.has(s.id) ?? false;
                   const isGhost = isOccupied && presenceReady && !isLive;
 
                   return (
                     <div key={s.id} className="avd-seat-row">
-                      {/* Presence indicator dot */}
+                      {/* Presence dot — only shown after a check */}
                       {presenceReady && isOccupied ? (
                         <span
                           title={isLive ? "Conectado" : "Sin señal (fantasma)"}
                           style={{
-                            display: "inline-block",
-                            width: 7, height: 7,
-                            borderRadius: "50%",
-                            flexShrink: 0,
-                            background: isLive
-                              ? "var(--avd-ok)"
-                              : "var(--avd-bad)",
+                            display: "inline-block", width: 7, height: 7,
+                            borderRadius: "50%", flexShrink: 0,
+                            background: isLive ? "var(--avd-ok)" : "var(--avd-bad)",
                           }}
                         />
                       ) : (

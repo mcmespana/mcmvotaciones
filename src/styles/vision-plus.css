@@ -359,3 +359,39 @@
   [data-vision-plus="on"] .avd-btn-icon { width: 46px !important; height: 46px !important; }
   [data-vision-plus="on"] .pub-cand-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ─── Section 19: SeatValidated full-screen ─── */
+
+/* Fix: global svg.lucide rule shrinks .sv-check to 1.35em (~22px). Override explicitly. */
+[data-vision-plus="on"] .sv-check {
+  width: 96px !important;
+  height: 96px !important;
+}
+[data-vision-plus="on"] .sv-icon-wrap {
+  width: 180px !important;
+  height: 180px !important;
+}
+[data-vision-plus="on"] .sv-label {
+  font-size: clamp(60px, 15vw, 88px) !important;
+}
+[data-vision-plus="on"] .sv-sublabel {
+  font-size: 26px !important;
+}
+[data-vision-plus="on"] .sv-badge {
+  font-size: 18px !important;
+  padding: 12px 28px !important;
+}
+[data-vision-plus="on"] .sv-badge svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+[data-vision-plus="on"] .sv-round {
+  font-size: 20px !important;
+}
+[data-vision-plus="on"] .sv-dot {
+  width: 12px !important;
+  height: 12px !important;
+}
+[data-vision-plus="on"] .sv-waiting {
+  gap: 10px !important;
+}
