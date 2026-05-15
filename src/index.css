@@ -916,6 +916,11 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--avd-brand-400) 22%, transparent);
 }
 .avd-input::placeholder { color: var(--avd-fg-faint); }
+
+/* Prevent iOS Safari auto-zoom: inputs must be ≥ 16px on touch screens */
+@media (hover: none) and (pointer: coarse) {
+  .avd-input, .avd-textarea, select { font-size: 16px; }
+}
 .avd-textarea {
   padding: 8px 10px;
   min-height: 80px;
