@@ -75,6 +75,7 @@ export function useRoundActions(opts: Options) {
         .from("rounds")
         .select("id, title")
         .eq("is_active", true)
+        .eq("is_closed", false)
         .neq("id", roundId)
         .limit(1);
       if (activeRooms && activeRooms.length > 0) {
