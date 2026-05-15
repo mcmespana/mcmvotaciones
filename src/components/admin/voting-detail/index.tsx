@@ -225,13 +225,7 @@ export function AdminVotingDetail() {
       {/* ═══ Main grid ═══ */}
       <div className="avd-page-main">
 
-        <SeatsLiveCard
-          round={round} seats={seats} seatStatus={seatStatus}
-          currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
-          liveSeatIds={liveSeatIds} presenceChecking={presenceChecking}
-          checkPresence={checkPresence} releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
-        />
-
+        {/* ── Main: candidates (65%) ── */}
         <CandidatesPane
           candidates={candidates} filteredCandidates={filteredCandidates}
           selectedCandidatesCount={selectedCandidatesCount} activeCandidatesCount={activeCandidatesCount}
@@ -256,15 +250,24 @@ export function AdminVotingDetail() {
           }
         />
 
-        <ControlsAside
-          round={round} canPauseRound={canPauseRound} canResumeRound={canResumeRound} canCloseRoom={canCloseRoom}
-          pauseRound={pauseRound} resumeRound={resumeRound} callCloseRoom={callCloseRoom}
-          publicCandidatesUrl={publicCandidatesUrl} copyPublicCandidatesLink={copyPublicCandidatesLink}
-          togglePublicCandidates={togglePublicCandidates} toggleGallery={toggleGallery}
-          selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
-          startNextRound={startNextRound} isWorkflowRunning={isWorkflowRunning}
-          setIsCloseRoundConfirmOpen={setIsCloseRoundConfirmOpen}
-        />
+        {/* ── Right sidebar (35%): controls + connections ── */}
+        <aside className="avd-col avd-col-right">
+          <ControlsAside
+            round={round} canPauseRound={canPauseRound} canResumeRound={canResumeRound} canCloseRoom={canCloseRoom}
+            pauseRound={pauseRound} resumeRound={resumeRound} callCloseRoom={callCloseRoom}
+            publicCandidatesUrl={publicCandidatesUrl} copyPublicCandidatesLink={copyPublicCandidatesLink}
+            togglePublicCandidates={togglePublicCandidates} toggleGallery={toggleGallery}
+            selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
+            startNextRound={startNextRound} isWorkflowRunning={isWorkflowRunning}
+            setIsCloseRoundConfirmOpen={setIsCloseRoundConfirmOpen}
+          />
+          <SeatsLiveCard
+            round={round} seats={seats} seatStatus={seatStatus}
+            currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
+            liveSeatIds={liveSeatIds} presenceChecking={presenceChecking}
+            checkPresence={checkPresence} releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
+          />
+        </aside>
       </div>
 
       {/* ═══ Dialogs ═══ */}

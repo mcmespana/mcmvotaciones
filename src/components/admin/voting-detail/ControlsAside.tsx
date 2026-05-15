@@ -28,12 +28,12 @@ export function ControlsAside({
   setIsCloseRoundConfirmOpen,
 }: Props) {
   return (
-    <aside className="avd-col avd-col-right">
-      <div className="avd-col-inner">
+    <div className="px-4 pt-[14px] pb-4 border-b border-[var(--avd-border)]">
+      <div className="flex flex-col gap-[14px]">
 
         {/* Operational controls */}
         <div>
-          <h3 className="avd-section-title">Control operativo</h3>
+          <h3 className="avd-section-title m-0 mb-[10px]">Control operativo</h3>
           <div className="avd-live-card">
             {round.is_active && !round.round_finalized && !round.is_closed && (
               <button
@@ -106,6 +106,6 @@ export function ControlsAside({
         </div>
 
       </div>
-    </aside>
+    </div>
   );
 }
