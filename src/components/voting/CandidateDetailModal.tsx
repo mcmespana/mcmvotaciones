@@ -163,7 +163,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
           <div
             className="relative bg-[var(--avd-bg-sunken)] shrink-0 overflow-hidden"
             style={{
-              height: imgExpanded ? "min(65vh, 520px)" : "14rem",
+              height: imgExpanded ? (visionPlus ? "min(48vh, 380px)" : "min(65vh, 520px)") : "14rem",
               transition: "height 0.32s cubic-bezier(0.4,0,0.2,1)",
             }}
           >
@@ -173,7 +173,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                   src={candidate.image_url!}
                   alt={formatCandidateName(candidate)}
                   onError={() => setImgFailed(true)}
-                  className="object-contain w-full h-full bg-transparent select-none"
+                  className={`${imgExpanded ? "object-cover" : "object-contain"} w-full h-full bg-transparent select-none`}
                   style={{
                     touchAction: imgExpanded ? "pinch-zoom" : "manipulation",
                     cursor: imgExpanded ? "zoom-out" : "zoom-in",
