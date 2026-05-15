@@ -355,6 +355,7 @@ export function VotingPage() {
             selectedCandidates={selectedCandidates}
             onToggleCandidate={toggleCandidateSelection}
             tutorialRoundId={activeRound.id}
+            roundId={activeRound.id}
           />
         </div>
       </div>

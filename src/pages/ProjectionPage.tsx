@@ -23,6 +23,8 @@ export function ProjectionPage() {
     );
   }
 
+  const activeCode = data.round && !data.round.is_closed ? (data.round.access_code ?? null) : null;
+
   if (data.state === "results" && data.round) {
     return (
       <ProjectionResults
@@ -34,6 +36,7 @@ export function ProjectionPage() {
         selectedCandidates={data.selectedCandidates}
         showBallotSummary={Boolean(data.round.show_ballot_summary_projection)}
         ballotSummaries={data.ballotSummaries}
+        accessCode={activeCode}
       />
     );
   }
@@ -45,6 +48,7 @@ export function ProjectionPage() {
         roundNumber={data.round.current_round_number}
         team={data.round.voting_type_name || data.round.team}
         selectedCandidates={data.selectedCandidates}
+        accessCode={activeCode}
       />
     );
   }
@@ -62,6 +66,7 @@ export function ProjectionPage() {
         showBallotSummary={Boolean(data.round.show_ballot_summary_projection)}
         ballotSummaries={data.ballotSummaries}
         previouslySelected={data.previouslySelected}
+        accessCode={activeCode}
       />
     );
   }

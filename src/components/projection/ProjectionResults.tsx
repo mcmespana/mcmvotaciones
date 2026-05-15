@@ -18,6 +18,7 @@ interface ProjectionResultsProps {
   selectedCandidates: Candidate[];
   showBallotSummary: boolean;
   ballotSummaries: BallotSummary[];
+  accessCode?: string | null;
 }
 
 const TOP_N = 5;
@@ -32,6 +33,7 @@ export function ProjectionResults({
   selectedCandidates,
   showBallotSummary,
   ballotSummaries,
+  accessCode,
 }: ProjectionResultsProps) {
   const [revealedCount, setRevealedCount] = useState(0);
   const [showSelected, setShowSelected] = useState(false);
@@ -105,6 +107,7 @@ export function ProjectionResults({
         <PChip kind="yellow" label={getRoundTeamLabel(team)} />
         <PChip kind="blue" label={`Ronda ${roundNumber}`} />
         {selectedCandidates.length > 0 && <PChip kind="emerald" label={`${selectedCandidates.length} seleccionados`} />}
+        {accessCode && <span className="proj-access-badge">{accessCode.toUpperCase()}</span>}
         <div className="proj-topbar-meta">
           <span className="proj-header-side">{displayResults.length} candidatos votados</span>
         </div>

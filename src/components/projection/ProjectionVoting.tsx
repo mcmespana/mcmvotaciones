@@ -24,6 +24,7 @@ interface ProjectionVotingProps {
   showBallotSummary: boolean;
   ballotSummaries: BallotSummary[];
   previouslySelected: SelectedCandidate[];
+  accessCode?: string | null;
 }
 
 function formatTime(totalSeconds: number): string {
@@ -43,6 +44,7 @@ export function ProjectionVoting({
   showBallotSummary,
   ballotSummaries,
   previouslySelected,
+  accessCode,
 }: ProjectionVotingProps) {
   const percentage = maxVotantes > 0 ? Math.min((voteCount / maxVotantes) * 100, 100) : 0;
   const [flash, setFlash] = useState(false);
@@ -71,6 +73,7 @@ export function ProjectionVoting({
         <PChip kind="yellow" label={getRoundTeamLabel(team)} />
         <PChip kind="blue" label={`Ronda ${roundNumber}`} />
         <PChip kind="emerald" label="En curso" pulse />
+        {accessCode && <span className="proj-access-badge">{accessCode.toUpperCase()}</span>}
         <div className="proj-topbar-meta">
           <div className="proj-conn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>

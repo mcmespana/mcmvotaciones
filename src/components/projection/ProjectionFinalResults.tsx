@@ -53,6 +53,7 @@ interface ProjectionFinalResultsProps {
   roundNumber: number;
   team: string;
   selectedCandidates: Candidate[];
+  accessCode?: string | null;
 }
 
 export function ProjectionFinalResults({
@@ -60,6 +61,7 @@ export function ProjectionFinalResults({
   roundNumber,
   team,
   selectedCandidates,
+  accessCode,
 }: ProjectionFinalResultsProps) {
   const [revealedCount, setRevealedCount] = useState(0);
 
@@ -105,6 +107,7 @@ export function ProjectionFinalResults({
           <PChip kind="yellow" label={getRoundTeamLabel(team)} />
           <PChip kind="blue" label={`Ronda ${roundNumber}`} />
           <PChip kind="emerald" label={`${selectedCandidates.length} elegidos`} />
+          {accessCode && <span className="proj-access-badge">{accessCode.toUpperCase()}</span>}
         </div>
       </header>
 

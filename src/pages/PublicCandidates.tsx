@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { CandidateListCard } from "@/components/voting/CandidateListCard";
 import { CandidateDetailModal } from "@/components/voting/CandidateDetailModal";
 import { HeaderControls } from "@/components/shared/HeaderControls";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { RoundRow, CandidateRow } from "@/types/db";
 
 /* ── Interfaces ── */
@@ -88,10 +89,12 @@ export function PublicCandidates() {
   const [notFound, setNotFound] = useState(false);
   const [search, setSearch] = useState("");
   const [indexOpen, setIndexOpen] = useState(false);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
   const initializedRef = useRef(false);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const { favorites, toggle: toggleFavorite, isFavorite, count: favCount } = useFavorites(round?.id);
 
   useEffect(() => {
     if (!votingId) return;
@@ -121,12 +124,16 @@ export function PublicCandidates() {
   }, [votingId]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return candidates;
-    const q = normalizeSearch(search);
-    return candidates.filter((c) =>
-      normalizeSearch(`${c.name} ${c.surname} ${c.location ?? ""} ${c.group_name ?? ""} ${c.description ?? ""}`).includes(q)
-    );
-  }, [candidates, search]);
+    let base = candidates;
+    if (search.trim()) {
+      const q = normalizeSearch(search);
+      base = base.filter((c) =>
+        normalizeSearch(`${c.name} ${c.surname} ${c.location ?? ""} ${c.group_name ?? ""} ${c.description ?? ""}`).includes(q)
+      );
+    }
+    if (showOnlyFavorites) base = base.filter((c) => favorites.has(c.id));
+    return base;
+  }, [candidates, search, showOnlyFavorites, favorites]);
 
   const groups = useMemo(() => buildGroups(filtered), [filtered]);
 
@@ -246,6 +253,20 @@ export function PublicCandidates() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200${indexOpen ? " rotate-180" : ""}`}><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
+            <button
+              className={`avd-btn avd-btn-icon w-[42px] h-[42px] relative shrink-0 ${showOnlyFavorites ? 'text-amber-400' : ''}`}
+              onClick={() => setShowOnlyFavorites((p) => !p)}
+              title={showOnlyFavorites ? "Ver todos" : favCount > 0 ? `${favCount} favorito${favCount > 1 ? 's' : ''}` : "Favoritos"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={showOnlyFavorites ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              {favCount > 0 && !showOnlyFavorites && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-amber-400 text-[10px] font-bold text-black flex items-center justify-center px-[3px] leading-none">
+                  {favCount}
+                </span>
+              )}
+            </button>
             <HeaderControls mode="inline" className="shrink-0" />
           </div>
 
@@ -273,8 +294,10 @@ export function PublicCandidates() {
         {groups.length === 0 && (
           <div className="avd-empty py-10">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <p className="avd-empty-title">Sin resultados para «{search}»</p>
-            <p className="avd-empty-sub">Prueba con otro nombre, lugar o grupo.</p>
+            {showOnlyFavorites
+              ? <><p className="avd-empty-title">No tienes favoritos</p><p className="avd-empty-sub">Pulsa la estrella ★ en las candidatas para guardarlas aquí.</p></>
+              : <><p className="avd-empty-title">Sin resultados para «{search}»</p><p className="avd-empty-sub">Prueba con otro nombre, lugar o grupo.</p></>
+            }
           </div>
         )}
 
@@ -311,6 +334,8 @@ export function PublicCandidates() {
                         onClick={() => setDetailCandidate(c)}
                         onDetailView={setDetailCandidate}
                         hideCheckbox={true}
+                        isFavorite={isFavorite(c.id)}
+                        onToggleFavorite={round ? toggleFavorite : undefined}
                       />
                     ))}
                   </div>

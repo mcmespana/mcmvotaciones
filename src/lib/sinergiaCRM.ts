@@ -26,6 +26,16 @@ export interface CRMContact {
 // Parseo de tipos de relación: "^grupo^,^monitor^" → ["grupo","monitor"]
 // ---------------------------------------------------------------------------
 
+function decodeHTML(s: string | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
 function parseRelationshipTypes(raw: string | undefined): string[] {
   if (!raw?.trim()) return [];
   return raw
@@ -39,17 +49,20 @@ function parseRelationshipTypes(raw: string | undefined): string[] {
 // ---------------------------------------------------------------------------
 
 function normalize(raw: Record<string, string>): CRMContact {
-  const n = (s: string | undefined): string | null =>
-    s?.trim() ? s.trim() : null;
+  const d = (s: string | undefined): string => decodeHTML(s);
+  const n = (s: string | undefined): string | null => {
+    const v = decodeHTML(s)?.trim();
+    return v ? v : null;
+  };
 
   const ageRaw = n(raw['stic_age_c']);
   const age = ageRaw ? (Number(ageRaw) || null) : null;
 
   return {
-    crm_id: raw['id'] ?? '',
-    first_name: raw['first_name'] ?? '',
-    last_name: raw['last_name'] ?? '',
-    full_name: `${raw['first_name'] ?? ''} ${raw['last_name'] ?? ''}`.trim(),
+    crm_id: d(raw['id']),
+    first_name: d(raw['first_name']),
+    last_name: d(raw['last_name']),
+    full_name: `${d(raw['first_name'])} ${d(raw['last_name'])}`.trim(),
     dni: n(raw['stic_identification_number_c']),
     birthdate: n(raw['birthdate']),
     age,
