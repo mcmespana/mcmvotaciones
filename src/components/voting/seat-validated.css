@@ -1,4 +1,5 @@
 /* ── SeatValidated full-screen component ── */
+/* Uses --avd-* design tokens from index.css for both light and dark modes. */
 
 .sv-page {
   min-height: 100svh;
@@ -7,9 +8,27 @@
   align-items: center;
   justify-content: center;
   padding: 24px 20px;
-  background: linear-gradient(160deg, #020d1f 0%, #021a10 40%, #0d1a02 70%, #071020 100%);
+  /* Light: soft blue-green atmospheric gradient */
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklch, var(--avd-brand-bg) 60%, var(--avd-bg)) 0%,
+    color-mix(in oklch, var(--avd-ok-bg) 50%, var(--avd-bg)) 40%,
+    var(--avd-bg) 70%,
+    color-mix(in oklch, var(--avd-brand-bg) 40%, var(--avd-bg)) 100%
+  );
   position: relative;
   overflow: hidden;
+}
+
+.dark .sv-page {
+  /* Dark: deep-space near-black */
+  background: linear-gradient(
+    160deg,
+    var(--avd-n-1000) 0%,
+    color-mix(in oklch, var(--avd-ok-bg) 40%, var(--avd-n-1000)) 40%,
+    color-mix(in oklch, var(--avd-brand-bg) 30%, var(--avd-n-1000)) 70%,
+    var(--avd-n-1000) 100%
+  );
 }
 
 /* Ambient orbs */
@@ -22,20 +41,20 @@
 .sv-orb-a {
   width: 400px; height: 400px;
   top: -100px; left: -100px;
-  background: radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%);
+  background: color-mix(in oklch, var(--avd-brand-500) 22%, transparent);
   animation: sv-orb-a 14s ease-in-out infinite;
 }
 .sv-orb-b {
   width: 350px; height: 350px;
   bottom: -80px; right: -80px;
-  background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%);
+  background: color-mix(in oklch, var(--avd-ok-500) 20%, transparent);
   animation: sv-orb-b 18s ease-in-out infinite;
 }
 .sv-orb-c {
   width: 250px; height: 250px;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+  background: color-mix(in oklch, var(--avd-brand-400) 12%, transparent);
   animation: sv-orb-c 10s ease-in-out infinite;
 }
 
@@ -61,11 +80,17 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(16,185,129,0.4);
+  border: 2px solid color-mix(in oklch, var(--avd-ok) 50%, transparent);
   animation: sv-ring 2.4s ease-out infinite;
 }
-.sv-ring-2 { animation-delay: 0.8s; border-color: rgba(59,130,246,0.35); }
-.sv-ring-3 { animation-delay: 1.6s; border-color: rgba(99,102,241,0.3); }
+.sv-ring-2 {
+  animation-delay: 0.8s;
+  border-color: color-mix(in oklch, var(--avd-brand) 45%, transparent);
+}
+.sv-ring-3 {
+  animation-delay: 1.6s;
+  border-color: color-mix(in oklch, var(--avd-brand-400) 35%, transparent);
+}
 
 .sv-icon-bubble {
   position: absolute;
@@ -73,12 +98,11 @@
   border-radius: 50%;
   background: conic-gradient(
     from 135deg,
-    rgba(16,185,129,0.3),
-    rgba(59,130,246,0.3),
-    rgba(99,102,241,0.3),
-    rgba(16,185,129,0.3)
+    color-mix(in oklch, var(--avd-ok) 25%, transparent),
+    color-mix(in oklch, var(--avd-brand) 25%, transparent),
+    color-mix(in oklch, var(--avd-ok) 25%, transparent)
   );
-  border: 2px solid rgba(16,185,129,0.5);
+  border: 2px solid color-mix(in oklch, var(--avd-ok) 55%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,8 +112,8 @@
 .sv-check {
   width: 72px;
   height: 72px;
-  color: #34d399;
-  filter: drop-shadow(0 0 16px rgba(52,211,153,0.7));
+  color: var(--avd-ok);
+  filter: drop-shadow(0 0 14px color-mix(in oklch, var(--avd-ok) 60%, transparent));
   animation: sv-check-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
 }
 
@@ -99,7 +123,7 @@
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1;
-  background: linear-gradient(135deg, #34d399, #60a5fa, #818cf8);
+  background: linear-gradient(135deg, var(--avd-ok), var(--avd-brand), var(--avd-brand-400));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -110,7 +134,7 @@
 .sv-sublabel {
   font-size: 17px;
   font-weight: 700;
-  color: rgba(255,255,255,0.75);
+  color: var(--avd-fg-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 20px;
@@ -122,13 +146,13 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(16,185,129,0.12);
-  border: 1.5px solid rgba(16,185,129,0.4);
+  background: var(--avd-ok-bg);
+  border: 1.5px solid color-mix(in oklch, var(--avd-ok) 40%, transparent);
   border-radius: 999px;
   padding: 8px 20px;
   font-size: 13px;
   font-weight: 700;
-  color: #34d399;
+  color: var(--avd-ok-fg);
   margin-bottom: 24px;
   animation: sv-fade-up 0.5s ease-out 0.6s both, sv-badge-glow 3s ease-in-out infinite;
 }
@@ -137,7 +161,7 @@
 .sv-round {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255,255,255,0.45);
+  color: var(--avd-fg-faint);
   margin-bottom: 24px;
   animation: sv-fade-up 0.5s ease-out 0.65s both;
 }
@@ -153,28 +177,42 @@
 .sv-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: rgba(59,130,246,0.7);
+  background: color-mix(in oklch, var(--avd-brand) 70%, transparent);
 }
 
-/* Paused variant */
-.sv-page--paused .sv-ring { border-color: rgba(245,158,11,0.4); }
-.sv-page--paused .sv-ring-2 { border-color: rgba(239,68,68,0.35); }
-.sv-page--paused .sv-icon-bubble {
-  background: conic-gradient(from 135deg, rgba(245,158,11,0.3), rgba(239,68,68,0.25), rgba(245,158,11,0.3));
-  border-color: rgba(245,158,11,0.5);
+/* ── Paused variant ── */
+.sv-page--paused .sv-ring {
+  border-color: color-mix(in oklch, var(--avd-warn) 50%, transparent);
 }
-.sv-page--paused .sv-check { color: #fbbf24; filter: drop-shadow(0 0 16px rgba(251,191,36,0.7)); }
+.sv-page--paused .sv-ring-2 {
+  border-color: color-mix(in oklch, var(--avd-bad) 45%, transparent);
+}
+.sv-page--paused .sv-icon-bubble {
+  background: conic-gradient(
+    from 135deg,
+    color-mix(in oklch, var(--avd-warn) 28%, transparent),
+    color-mix(in oklch, var(--avd-bad) 22%, transparent),
+    color-mix(in oklch, var(--avd-warn) 28%, transparent)
+  );
+  border-color: color-mix(in oklch, var(--avd-warn) 55%, transparent);
+}
+.sv-page--paused .sv-check {
+  color: var(--avd-warn);
+  filter: drop-shadow(0 0 14px color-mix(in oklch, var(--avd-warn) 60%, transparent));
+}
 .sv-page--paused .sv-label {
-  background: linear-gradient(135deg, #fbbf24, #f87171);
+  background: linear-gradient(135deg, var(--avd-warn), var(--avd-bad));
   -webkit-background-clip: text;
   background-clip: text;
 }
 .sv-page--paused .sv-badge {
-  background: rgba(245,158,11,0.1);
-  border-color: rgba(245,158,11,0.4);
-  color: #fbbf24;
+  background: var(--avd-warn-bg);
+  border-color: color-mix(in oklch, var(--avd-warn) 40%, transparent);
+  color: var(--avd-warn-fg);
 }
-.sv-page--paused .sv-dot { background: rgba(245,158,11,0.7); }
+.sv-page--paused .sv-dot {
+  background: color-mix(in oklch, var(--avd-warn) 70%, transparent);
+}
 
 /* ── Keyframes ── */
 
@@ -184,13 +222,13 @@
 }
 
 @keyframes sv-ring {
-  0%   { transform: scale(0.9); opacity: 0.7; }
+  0%   { transform: scale(0.9); opacity: 0.8; }
   100% { transform: scale(1.8); opacity: 0; }
 }
 
 @keyframes sv-bubble-pulse {
-  0%,100% { box-shadow: 0 0 40px -12px rgba(16,185,129,0.5), 0 0 80px -20px rgba(59,130,246,0.3); }
-  50%     { box-shadow: 0 0 60px -8px rgba(59,130,246,0.5), 0 0 100px -15px rgba(16,185,129,0.3); }
+  0%,100% { box-shadow: 0 0 40px -12px color-mix(in oklch, var(--avd-ok) 40%, transparent); }
+  50%     { box-shadow: 0 0 60px -8px color-mix(in oklch, var(--avd-brand) 40%, transparent); }
 }
 
 @keyframes sv-check-in {
@@ -205,8 +243,8 @@
 }
 
 @keyframes sv-badge-glow {
-  0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
-  50%     { box-shadow: 0 0 16px 2px rgba(52,211,153,0.25); }
+  0%,100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--avd-ok) 0%, transparent); }
+  50%     { box-shadow: 0 0 16px 2px color-mix(in oklch, var(--avd-ok) 22%, transparent); }
 }
 
 @keyframes sv-orb-a {

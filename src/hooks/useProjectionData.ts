@@ -81,7 +81,7 @@ export function useProjectionData(): ProjectionData {
     if (!round.is_active || round.show_final_gallery_projection) return "idle";
     if (round.round_finalized && !round.show_results_to_voters) return "finalized";
     if (!round.is_voting_open && round.join_locked && !round.round_finalized) return "paused";
-    if (!round.is_voting_open && !round.round_finalized) return "room-open";
+    if (!round.is_voting_open && !round.join_locked && !round.round_finalized) return "room-open";
     return "idle";
   })();
 
