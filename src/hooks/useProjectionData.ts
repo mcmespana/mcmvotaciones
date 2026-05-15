@@ -113,7 +113,14 @@ export function useProjectionData(): ProjectionData {
         .limit(1);
 
       if (activeRounds && activeRounds.length > 0) {
-        targetRound = activeRounds[0];
+        const ar = activeRounds[0];
+        // A closed round with nothing to project is treated as idle — don't lock the
+        // projection onto the "closed" state indefinitely after all display flags are off.
+        const hasAnythingToProject =
+          !ar.is_closed ||
+          ar.show_final_gallery_projection ||
+          ar.show_results_to_voters;
+        targetRound = hasAnythingToProject ? ar : null;
       } else {
         // If no active round, only show a round that is explicitly projecting
         const { data: projectingRounds } = await supabase
