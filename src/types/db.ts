@@ -12,6 +12,8 @@ export interface RoundRow {
   census_mode: 'maximum' | 'exact';
   is_active: boolean;
   is_closed: boolean;
+  is_archived: boolean;
+  archived_at: string | null;
   is_voting_open: boolean;
   join_locked: boolean;
   round_finalized: boolean;

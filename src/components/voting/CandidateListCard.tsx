@@ -5,6 +5,7 @@ import { formatCandidateName, isMonitor } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
 import { CandidateRow } from "@/types/db";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
+import { useSwipeRight } from "@/hooks/useSwipeRight";
 
 interface CandidateListCardProps {
   candidate: CandidateRow;
@@ -12,6 +13,7 @@ interface CandidateListCardProps {
   onClick?: () => void;
   onDetailView?: (candidate: CandidateRow) => void;
   onImageLongPress?: (candidate: CandidateRow) => void;
+  onImageTap?: (candidate: CandidateRow) => void;
   hideCheckbox?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
@@ -25,6 +27,7 @@ export function CandidateListCard({
   onClick,
   onDetailView,
   onImageLongPress,
+  onImageTap,
   hideCheckbox = false,
   isFavorite = false,
   onToggleFavorite,
@@ -33,6 +36,10 @@ export function CandidateListCard({
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imgPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didLongPress = useRef(false);
+
+  const { swipeProgress, swipeHandlers } = useSwipeRight({
+    onSwipe: onToggleFavorite ? () => onToggleFavorite(candidate.id) : undefined,
+  });
 
   const startPress = () => {
     if (!onDetailView) return;
@@ -73,16 +80,17 @@ export function CandidateListCard({
   return (
     <div
       className={cn(
-        "pub-cand-card relative outline-none select-none",
+        "pub-cand-card relative outline-none select-none overflow-hidden",
         onClick && "group cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500/35",
         selected && "!border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/25"
       )}
+      style={{ transform: swipeProgress > 0 ? `translateX(${swipeProgress * 14}px)` : undefined, transition: swipeProgress === 0 ? "transform 0.2s ease" : undefined }}
       onClick={handleClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      onTouchMove={cancelPress}
+      onTouchStart={e => { startPress(); swipeHandlers.onTouchStart(e); }}
+      onTouchEnd={e => { cancelPress(); swipeHandlers.onTouchEnd(); }}
+      onTouchMove={e => { cancelPress(); swipeHandlers.onTouchMove(e); }}
       onMouseDown={startPress}
       onMouseUp={cancelPress}
       onMouseLeave={cancelPress}
@@ -94,6 +102,16 @@ export function CandidateListCard({
         }
       }}
     >
+      {swipeProgress > 0 && onToggleFavorite && (
+        <div
+          className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-20"
+          style={{ opacity: swipeProgress }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "none" : "currentColor"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isFavorite ? "text-[var(--avd-fg-muted)]" : "text-amber-400"}>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+      )}
       {!hideCheckbox && onClick && (
         <span
           className={cn(
@@ -126,13 +144,14 @@ export function CandidateListCard({
       )}
 
       <div
-        className="shrink-0 leading-none"
+        className={`shrink-0 leading-none${onImageTap ? " cursor-zoom-in" : ""}`}
         onTouchStart={onImageLongPress ? startImgPress : undefined}
         onTouchEnd={onImageLongPress ? cancelImgPress : undefined}
         onTouchMove={onImageLongPress ? cancelImgPress : undefined}
         onMouseDown={onImageLongPress ? startImgPress : undefined}
         onMouseUp={onImageLongPress ? cancelImgPress : undefined}
         onMouseLeave={onImageLongPress ? cancelImgPress : undefined}
+        onClick={onImageTap ? (e) => { e.stopPropagation(); if (!didLongPress.current) onImageTap(candidate); } : undefined}
       >
         <CandidateAvatar
           name={candidate.name}

@@ -31,6 +31,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
   // Tracks whether candidate changed due to navigation (skip the 350ms delay)
   const navigatedRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const pinchActive = useRef(false);
   const infoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -156,7 +157,10 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
       <div
         ref={overlayRef}
         className="avd-dialog-overlay z-[200] flex flex-col items-center"
-        onMouseDown={(e) => { if (e.target === overlayRef.current) onClose(); }}
+        onTouchStart={(e) => { if (e.touches.length >= 2) { pinchActive.current = true; } }}
+        onTouchEnd={(e) => { if (e.touches.length === 0) pinchActive.current = false; }}
+        onMouseDown={(e) => { if (e.target === overlayRef.current && !pinchActive.current) onClose(); }}
+        onPointerDown={(e) => { if ((e.target as HTMLElement) === overlayRef.current && !pinchActive.current) onClose(); }}
       >
         <div
           className={`w-full max-w-[480px] flex-1 overflow-x-hidden overflow-y-auto flex flex-col justify-center px-4 pt-10 ${hasNav ? 'pb-28' : 'pb-10'}`}

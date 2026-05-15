@@ -492,8 +492,8 @@
 
 /* ── Layout ── */
 .avd-app {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   background: var(--avd-bg);
@@ -504,6 +504,11 @@
 }
 
 /* ── Topbar ── */
+.avd-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
 .avd-topbar {
   display: flex;
   align-items: center;
@@ -511,9 +516,6 @@
   padding: 10px 20px;
   background: var(--avd-bg-elev);
   border-bottom: 1px solid var(--avd-border);
-  position: sticky;
-  top: 0;
-  z-index: 40;
   backdrop-filter: saturate(180%) blur(8px);
   flex-shrink: 0;
 }
@@ -552,6 +554,7 @@
   padding: 20px 24px 14px;
   border-bottom: 1px solid var(--avd-border);
   background: var(--avd-bg-elev);
+  backdrop-filter: saturate(180%) blur(8px);
   flex-shrink: 0;
 }
 .avd-page-header-top {
@@ -769,13 +772,13 @@
 /* ── Main grid ── */
 .avd-page-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 35%, 440px);
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 33%, 420px);
   gap: 0;
-  flex: 1;
-  min-height: 0;
+  align-items: stretch;
 }
-.avd-col-left { border-right: 1px solid var(--avd-border); background: var(--avd-bg-elev); overflow-y: auto; min-height: 0; }
-.avd-col-right { border-left: 1px solid var(--avd-border); background: var(--avd-bg-elev); overflow-y: auto; min-height: 0; }
+.avd-col-left { border-right: 1px solid var(--avd-border); background: var(--avd-bg-elev); }
+.avd-col-right { border-left: 1px solid var(--avd-border); background: var(--avd-bg-elev); }
+.avd-col-right-inner { position: sticky; top: var(--avd-header-h, 0px); }
 .avd-kpi-stack {
   display: grid;
   grid-template-columns: 1fr;
@@ -803,15 +806,12 @@
 }
 .avd-candidates-pane {
   min-width: 0;
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 .avd-col { min-width: 0; display: flex; flex-direction: column; }
-.avd-col-main { background: var(--avd-bg); overflow: hidden; display: flex; flex-direction: column; }
-.avd-col-inner { padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; flex: 1; min-height: 0; overflow: hidden; }
+.avd-col-main { background: var(--avd-bg); display: flex; flex-direction: column; }
+.avd-col-inner { padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; }
 
 /* ── Section title ── */
 .avd-section-title {
@@ -1128,9 +1128,7 @@
   background: var(--avd-surface);
   border: 1px solid var(--avd-border);
   border-radius: var(--avd-radius-md);
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
+  overflow: visible;
 }
 
 /* List row */
@@ -1316,16 +1314,43 @@
   border: 1px solid var(--avd-border-soft);
   background: var(--avd-bg-sunken);
 }
+.avd-presence-ok {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 12px; border-radius: var(--avd-radius-sm);
+  background: color-mix(in oklch, var(--avd-ok) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--avd-ok) 25%, transparent);
+  color: var(--avd-ok); font-size: 12.5px; font-weight: 600;
+}
+.avd-sessions-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; text-align: left; padding: 7px 10px;
+  background: var(--avd-bg-sunken); border: 1px solid var(--avd-border-soft);
+  border-radius: var(--avd-radius-sm); cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--avd-fg-muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  transition: background 120ms;
+}
+.avd-sessions-toggle:hover { background: var(--avd-bg); }
+.avd-sessions-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--avd-border); border-radius: 999px;
+  font-size: 11px; font-weight: 700; color: var(--avd-fg);
+  text-transform: none; letter-spacing: 0;
+}
+.avd-chip-xs { font-size: 10px; padding: 1px 6px; height: 18px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.avd-chip-ok { background: color-mix(in oklch, var(--avd-ok) 15%, transparent); color: var(--avd-ok); border: 1px solid color-mix(in oklch, var(--avd-ok) 30%, transparent); }
 .avd-seat-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 10px;
+  grid-template-columns: 8px 1fr auto auto auto;
+  gap: 8px;
   align-items: center;
   padding: 6px 10px;
   font-size: 11.5px;
   border-top: 1px solid var(--avd-border-soft);
 }
 .avd-seat-row:first-child { border-top: none; }
+.avd-seat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .avd-seat-row .avd-sid { font-family: var(--avd-font-mono); color: var(--avd-fg-muted); font-size: 11px; }
 .avd-seat-row .avd-sst { font-weight: 600; }
 .avd-seat-row .avd-sst.avd-ok   { color: var(--avd-ok); }
@@ -1404,27 +1429,27 @@
 
 /* ── Responsive ── */
 @media (max-width: 1023px) {
-  .avd-page-main { grid-template-columns: 1fr; gap: 1rem; }
+  .avd-page-main { grid-template-columns: 1fr; gap: 0; }
   .avd-col-left { border-right: none; border-bottom: 1px solid var(--avd-border); }
   .avd-kpi-stack {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
-  .avd-col-right { border-left: none; border-top: 1px solid var(--avd-border); }
+  /* Controles encima de candidatos en móvil/tablet */
+  .avd-col-right {
+    border-left: none;
+    border-bottom: 1px solid var(--avd-border);
+    order: -1;
+  }
+  .avd-col-right-inner {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
   .avd-kpi-strip { grid-template-columns: repeat(3, 1fr); }
   .avd-wf-rail { grid-template-columns: 1fr; }
   .avd-wf-cta { border-left: none; border-top: 1px dashed var(--avd-border); padding-left: 0; padding-top: 10px; }
   .avd-wf-cta .avd-btn-primary { width: 100%; justify-content: center; }
-
-  /* Unlock fixed-height constraint so all stacked columns are visible */
-  .avd-app { height: auto; min-height: 100dvh; overflow: visible; }
-  .avd-page-main { flex: none; min-height: auto; }
-  .avd-col-left,
-  .avd-col-right { overflow-y: visible; min-height: auto; }
-  .avd-col-main { overflow: visible; }
-  .avd-col-inner { overflow: visible; flex: none; min-height: auto; }
-  .avd-candidates-pane { overflow: visible; }
-  .avd-candidates-shell { overflow-y: visible; flex: none; min-height: auto; }
 }
 @media (max-width: 720px) {
   .avd-kpi-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }

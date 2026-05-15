@@ -104,7 +104,8 @@ export function PublicCandidates() {
         const roundQuery = supabase
           .from("rounds")
           .select("id, title, team, description, voting_type_name, max_selected_candidates, public_candidates_enabled")
-          .eq(isUuid ? "id" : "slug", votingId!);
+          .eq(isUuid ? "id" : "slug", votingId!)
+          .eq("is_archived", false);
         const { data: roundData } = await roundQuery.single();
         if (!roundData || !roundData.public_candidates_enabled) { setNotFound(true); return; }
         setRound(roundData);

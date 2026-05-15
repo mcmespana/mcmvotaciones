@@ -21,18 +21,19 @@ interface Props {
   isWorkflowRunning: boolean;
   runProjectionWorkflowStep: () => void;
   activeCandidatesCount: number;
+  stickyRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function PageHeader({
   round, now, theme, setTheme, statusChip, copyText,
   openAnalyticsDialog, openBallotsDialog, exportBallotsCsv, setIsSettingsOpen,
   stage, workflowActionLabel, workflowActionDisabled, isWorkflowRunning, runProjectionWorkflowStep,
-  activeCandidatesCount,
+  activeCandidatesCount, stickyRef,
 }: Props) {
   const navigate = useNavigate();
 
   return (
-    <>
+    <div ref={stickyRef} className="avd-sticky-header">
       {/* ═══ Topbar ═══ */}
       <header className="avd-topbar">
         <div className="avd-topbar-brand">
@@ -148,6 +149,6 @@ export function PageHeader({
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

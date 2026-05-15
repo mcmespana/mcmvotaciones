@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "next-themes";
@@ -64,6 +64,44 @@ export function AdminVotingDetail() {
   } = useCandidateActions({ roundId, round, candidates, loadRound, toast });
 
   /* UI state */
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
+
+  // Keep --avd-header-h in sync. Watches for .avd-sticky-header to appear in the DOM
+  // (it only renders after round loads) then attaches a ResizeObserver.
+  useEffect(() => {
+    const setVar = (el: HTMLElement) =>
+      document.documentElement.style.setProperty("--avd-header-h", `${el.offsetHeight}px`);
+
+    const attach = (el: HTMLElement) => {
+      setVar(el);
+      const ro = new ResizeObserver(() => setVar(el));
+      ro.observe(el);
+      return ro;
+    };
+
+    // If already in DOM (e.g. navigating back to page), attach immediately.
+    const existing = document.querySelector(".avd-sticky-header") as HTMLElement | null;
+    if (existing) {
+      const ro = attach(existing);
+      return () => ro.disconnect();
+    }
+
+    // Otherwise wait for it to appear.
+    let ro: ResizeObserver | null = null;
+    const mo = new MutationObserver(() => {
+      const el = document.querySelector(".avd-sticky-header") as HTMLElement | null;
+      if (!el) return;
+      mo.disconnect();
+      ro = attach(el);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mo.disconnect();
+      ro?.disconnect();
+    };
+  }, []);
+
   const [candidateSearch, setCandidateSearch] = useState("");
   const [candidateView, setCandidateView] = useState<"list" | "grid">("list");
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
@@ -220,6 +258,7 @@ export function AdminVotingDetail() {
         stage={stage} workflowActionLabel={workflowActionLabel} workflowActionDisabled={workflowActionDisabled}
         isWorkflowRunning={isWorkflowRunning} runProjectionWorkflowStep={runProjectionWorkflowStep}
         activeCandidatesCount={activeCandidatesCount}
+        stickyRef={stickyHeaderRef}
       />
 
       {/* ═══ Main grid ═══ */}
@@ -252,21 +291,23 @@ export function AdminVotingDetail() {
 
         {/* ── Right sidebar (35%): controls + connections ── */}
         <aside className="avd-col avd-col-right">
-          <ControlsAside
-            round={round} canPauseRound={canPauseRound} canResumeRound={canResumeRound} canCloseRoom={canCloseRoom}
-            pauseRound={pauseRound} resumeRound={resumeRound} callCloseRoom={callCloseRoom}
-            publicCandidatesUrl={publicCandidatesUrl} copyPublicCandidatesLink={copyPublicCandidatesLink}
-            togglePublicCandidates={togglePublicCandidates} toggleGallery={toggleGallery}
-            selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
-            startNextRound={startNextRound} isWorkflowRunning={isWorkflowRunning}
-            setIsCloseRoundConfirmOpen={setIsCloseRoundConfirmOpen}
-          />
-          <SeatsLiveCard
-            round={round} seats={seats} seatStatus={seatStatus}
-            currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
-            liveSeatIds={liveSeatIds} presenceChecking={presenceChecking}
-            checkPresence={checkPresence} releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
-          />
+          <div className="avd-col-right-inner">
+            <ControlsAside
+              round={round} canPauseRound={canPauseRound} canResumeRound={canResumeRound} canCloseRoom={canCloseRoom}
+              pauseRound={pauseRound} resumeRound={resumeRound} callCloseRoom={callCloseRoom}
+              publicCandidatesUrl={publicCandidatesUrl} copyPublicCandidatesLink={copyPublicCandidatesLink}
+              togglePublicCandidates={togglePublicCandidates} toggleGallery={toggleGallery}
+              selectionQuotaReached={selectionQuotaReached} canStartNextRound={canStartNextRound}
+              startNextRound={startNextRound} isWorkflowRunning={isWorkflowRunning}
+              setIsCloseRoundConfirmOpen={setIsCloseRoundConfirmOpen}
+            />
+            <SeatsLiveCard
+              round={round} seats={seats} seatStatus={seatStatus}
+              currentRoundVotes={currentRoundVotes} occupiedPct={occupiedPct} votesPct={votesPct}
+              liveSeatIds={liveSeatIds} presenceChecking={presenceChecking}
+              checkPresence={checkPresence} releaseSeat={releaseSeat} releaseGhostSeats={releaseGhostSeats}
+            />
+          </div>
         </aside>
       </div>
 

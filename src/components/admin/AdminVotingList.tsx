@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState, useId } from "react";
 import { Users, Image } from "lucide-react";
 import { errorLog } from "@/lib/logger";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,9 @@ import { VotingTypesManager, type VotingType } from "@/components/admin/VotingTy
 import { TeamChip } from "@/components/admin/TeamChip";
 import type { RoundRow } from "@/types/db";
 
-type RoundListItem = Pick<RoundRow, 'id' | 'slug' | 'title' | 'description' | 'year' | 'team' | 'max_votantes' | 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'current_round_number' | 'votes_current_round' | 'created_at' | 'voting_type_name' | 'public_candidates_enabled' | 'show_final_gallery_projection'>;
+type RoundListItem = Pick<RoundRow, 'id' | 'slug' | 'title' | 'description' | 'year' | 'team' | 'max_votantes' | 'is_active' | 'is_closed' | 'is_archived' | 'is_voting_open' | 'join_locked' | 'current_round_number' | 'votes_current_round' | 'created_at' | 'voting_type_name' | 'public_candidates_enabled' | 'show_final_gallery_projection'>;
+
+type StatusFilter = 'live' | 'all' | 'archived' | 'draft' | 'finished';
 
 function generateSlug(title: string, id: string): string {
   const base = title
@@ -36,13 +38,15 @@ interface NewRoundForm {
 }
 
 function getStatusChip(r: RoundListItem) {
-  if (r.is_closed) return { cls: "avd-chip-bad", txt: "Cerrada" };
+  if (r.is_archived) return { cls: "avd-chip-muted", txt: "Archivada" };
+  if (r.is_closed) return { cls: "avd-chip-bad", txt: "Finalizada" };
   if (r.is_active && r.is_voting_open) return { cls: "avd-chip-ok", txt: "En curso", pulse: true };
   if (r.is_active && !r.is_voting_open) return { cls: "avd-chip-warn", txt: "Sala abierta" };
-  return { cls: "avd-chip-muted", txt: "En espera" };
+  return { cls: "avd-chip-muted", txt: "Borrador" };
 }
 
 function getAccentColor(r: RoundListItem) {
+  if (r.is_archived) return "var(--avd-border)";
   if (r.is_closed) return "var(--avd-bad-500)";
   if (r.is_active && r.is_voting_open) return "var(--avd-ok-500)";
   if (r.is_active) return "var(--avd-warn-500)";
@@ -53,10 +57,11 @@ interface RoundCardProps {
   round: RoundListItem;
   onOpen: (r: RoundListItem) => void;
   onDelete: (r: RoundListItem) => void;
+  onArchive: (r: RoundListItem, archived: boolean) => void;
   isSuperAdmin: boolean;
 }
 
-function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
+function RoundCard({ round, onOpen, onDelete, onArchive, isSuperAdmin }: RoundCardProps) {
   const chip = getStatusChip(round);
   const votePct = round.max_votantes > 0 ? Math.round((round.votes_current_round / round.max_votantes) * 100) : 0;
   const accentColor = getAccentColor(round);
@@ -91,17 +96,31 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
               )}
             </div>
           </div>
-          {isSuperAdmin && (
+          <div className="flex items-center gap-1 shrink-0">
             <button
-              className="avd-btn avd-btn-ghost avd-btn-icon-sm shrink-0 border-none text-[var(--avd-fg-faint)]"
-              onClick={e => { e.stopPropagation(); onDelete(round); }}
-              title="Eliminar"
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
+              className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
+              onClick={e => { e.stopPropagation(); onArchive(round, !round.is_archived); }}
+              title={round.is_archived ? "Restaurar" : "Archivar"}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-warn)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              {round.is_archived
+                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              }
             </button>
-          )}
+            {isSuperAdmin && (
+              <button
+                className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
+                onClick={e => { e.stopPropagation(); onDelete(round); }}
+                title="Eliminar permanentemente"
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {round.description && (
@@ -152,17 +171,44 @@ function RoundCard({ round, onOpen, onDelete, isSuperAdmin }: RoundCardProps) {
 interface DeleteConfirmProps { round: RoundListItem | null; onClose: () => void; onConfirm: () => void; }
 
 function DeleteConfirm({ round, onClose, onConfirm }: DeleteConfirmProps) {
+  const [typed, setTyped] = useState("");
+  const inputId = useId();
+
+  useEffect(() => { if (!round) setTyped(""); }, [round]);
+
   if (!round) return null;
+  const confirmed = typed === round.title;
+
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="avd-dialog max-w-[420px]" onClick={e => e.stopPropagation()}>
-        <div className="avd-dialog-head"><h2>¿Eliminar votación?</h2><p>Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.</p></div>
-        <div className="avd-dialog-body">
+      <div className="avd-dialog max-w-[440px]" onClick={e => e.stopPropagation()}>
+        <div className="avd-dialog-head">
+          <h2>Eliminar votación</h2>
+          <p>Esta acción es <strong>permanente e irreversible</strong>. Se eliminarán todos los datos, votos y candidatos asociados.</p>
+        </div>
+        <div className="avd-dialog-body flex flex-col gap-3">
           <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-[13px] font-semibold text-[var(--avd-bad-fg)]">{round.title}</div>
+          <div className="avd-form-field">
+            <label className="avd-label" htmlFor={inputId}>Escribe el nombre exacto para confirmar</label>
+            <input
+              id={inputId}
+              className="avd-input"
+              placeholder={round.title}
+              value={typed}
+              onChange={e => setTyped(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
         </div>
         <div className="avd-dialog-foot">
           <button className="avd-btn" onClick={onClose}>Cancelar</button>
-          <button className="avd-btn avd-btn-danger" onClick={() => { onConfirm(); onClose(); }}>Eliminar votación</button>
+          <button
+            className="avd-btn avd-btn-danger"
+            disabled={!confirmed}
+            onClick={() => { onConfirm(); onClose(); }}
+          >
+            Eliminar permanentemente
+          </button>
         </div>
       </div>
     </div>
@@ -181,6 +227,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   const [rounds, setRounds] = useState<RoundListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("live");
   const [view, setView] = useState<"grid" | "list">("list");
   const [loading, setLoading] = useState(true);
   const [creatingRound, setCreatingRound] = useState(false);
@@ -213,7 +260,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
       setLoading(true);
       const { data, error } = await supabase
         .from("rounds")
-        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_voting_open,join_locked,current_round_number,votes_current_round,created_at,voting_type_name,public_candidates_enabled,show_final_gallery_projection")
+        .select("id,slug,title,description,year,team,max_votantes,is_active,is_closed,is_archived,is_voting_open,join_locked,current_round_number,votes_current_round,created_at,voting_type_name,public_candidates_enabled,show_final_gallery_projection")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setRounds((data || []) as RoundListItem[]);
@@ -242,20 +289,32 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
     return () => { mounted = false; supabase.removeChannel(channel); };
   }, [loadRounds]);
 
+  const handleArchiveRound = async (round: RoundListItem, archived: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('rounds')
+        .update({ is_archived: archived, archived_at: archived ? new Date().toISOString() : null })
+        .eq('id', round.id);
+      if (error) throw error;
+      setRounds(rs => rs.map(r => r.id === round.id ? { ...r, is_archived: archived } : r));
+      toast({ title: archived ? "Votación archivada" : "Votación restaurada", description: round.title });
+    } catch (err) {
+      errorLog("Error archivando round:", err);
+      const msg = err instanceof Error ? err.message : (typeof err === 'object' && err !== null && 'message' in err ? String((err as {message:unknown}).message) : "Error desconocido");
+      toast({ title: "Error", description: msg || "No se pudo archivar la votación.", variant: "destructive" });
+    }
+  };
+
   const handleDeleteRound = async (id: string, title: string) => {
     try {
-      // 1. Delete associated photos in Storage (candidate-photos/roundId folder)
       const { data: files } = await supabase.storage.from('candidate-photos').list(id);
       if (files && files.length > 0) {
-        const filePaths = files.map(file => `${id}/${file.name}`);
-        await supabase.storage.from('candidate-photos').remove(filePaths);
+        await supabase.storage.from('candidate-photos').remove(files.map(f => `${id}/${f.name}`));
       }
-
-      // 2. Delete round
       const { error } = await supabase.from('rounds').delete().eq('id', id);
       if (error) throw error;
       setRounds(rs => rs.filter(r => r.id !== id));
-      toast({ title: "Votación eliminada", description: `"${title}" y sus recursos fueron eliminados.` });
+      toast({ title: "Votación eliminada", description: `"${title}" eliminada permanentemente.` });
     } catch (err) {
       errorLog("Error eliminando voting round:", err);
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : "No se pudo eliminar.", variant: "destructive" });
@@ -312,9 +371,15 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
       const matchesType =
         typeFilter === "ALL" ||
         (typeFilter === "CUSTOM" ? !systemTypeNames.has(typeName) : typeName === typeFilter);
-      return matchesSearch && matchesType;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "live"     && !r.is_archived) ||
+        (statusFilter === "archived" && r.is_archived) ||
+        (statusFilter === "draft"    && !r.is_active && !r.is_closed && !r.is_archived) ||
+        (statusFilter === "finished" && r.is_closed && !r.is_archived);
+      return matchesSearch && matchesType && matchesStatus;
     });
-  }, [rounds, searchTerm, typeFilter, systemTypeNames]);
+  }, [rounds, searchTerm, typeFilter, statusFilter, systemTypeNames]);
 
   if (loading) {
     return (
@@ -339,6 +404,19 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input className="avd-input pl-[30px]" placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
+        {/* Status filter */}
+        <select
+          className="avd-select"
+          style={{ height: 30, fontSize: 12, padding: "0 24px 0 8px", minWidth: 0, width: "auto" }}
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value as StatusFilter)}
+        >
+          <option value="live">Activas</option>
+          <option value="draft">Borradores</option>
+          <option value="finished">Finalizadas</option>
+          <option value="archived">Archivadas</option>
+          <option value="all">Todas</option>
+        </select>
         {/* Type filter */}
         <select
           className="avd-select"
@@ -380,21 +458,21 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
         ) : view === "grid" ? (
           <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {filteredRounds.map(r => (
-              <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} isSuperAdmin={isSuperAdmin} />
+              <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} onArchive={handleArchiveRound} isSuperAdmin={isSuperAdmin} />
             ))}
           </div>
         ) : (
           <div className="overflow-x-auto">
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden min-w-[720px]">
-            <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}>
-              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div>{isSuperAdmin && <div></div>}
+            <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}>
+              <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div><div></div>
             </div>
             {filteredRounds.map(r => {
               const chip = getStatusChip(r);
               return (
                 <div
                   key={r.id}
-                  className={`px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}
+                  className={`px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
@@ -415,19 +493,28 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                   <div>
                     <TeamChip label={r.voting_type_name || r.team} />
                   </div>
-                  {isSuperAdmin && (
-                    <div className="flex justify-center">
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
+                      onClick={e => { e.stopPropagation(); handleArchiveRound(r, !r.is_archived); }}
+                      title={r.is_archived ? "Restaurar" : "Archivar"}
+                      onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-warn)")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                    </button>
+                    {isSuperAdmin && (
                       <button
                         className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
                         onClick={e => { e.stopPropagation(); setDeleteTarget(r); }}
-                        title="Eliminar"
+                        title="Eliminar permanentemente"
                         onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-bad)")}
                         onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               );
             })}

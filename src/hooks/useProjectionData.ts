@@ -110,6 +110,7 @@ export function useProjectionData(): ProjectionData {
         .from("rounds")
         .select("*")
         .eq("is_active", true)
+        .eq("is_archived", false)
         .limit(1);
 
       if (activeRounds && activeRounds.length > 0) {
@@ -127,6 +128,7 @@ export function useProjectionData(): ProjectionData {
           .from("rounds")
           .select("*")
           .or("show_results_to_voters.eq.true,show_final_gallery_projection.eq.true")
+          .eq("is_archived", false)
           .order("updated_at", { ascending: false })
           .limit(1);
         if (projectingRounds && projectingRounds.length > 0) {

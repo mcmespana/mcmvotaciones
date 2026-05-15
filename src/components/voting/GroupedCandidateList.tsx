@@ -301,6 +301,7 @@ export function GroupedCandidateList({
                     onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                     onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                     onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
+                    onImageTap={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                     isFavorite={true}
                     onToggleFavorite={roundId ? toggleFavorite : undefined}
                   />
@@ -320,6 +321,7 @@ export function GroupedCandidateList({
                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
+                    onImageTap={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                 isFavorite={isFavorite(c.id)}
                 onToggleFavorite={roundId ? toggleFavorite : undefined}
               />
@@ -388,6 +390,7 @@ export function GroupedCandidateList({
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
+                    onImageTap={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                                 isFavorite={isFavorite(c.id)}
                                 onToggleFavorite={roundId ? toggleFavorite : undefined}
                               />
@@ -414,6 +417,7 @@ export function GroupedCandidateList({
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
+                    onImageTap={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                                 isFavorite={isFavorite(c.id)}
                                 onToggleFavorite={roundId ? toggleFavorite : undefined}
                               />
