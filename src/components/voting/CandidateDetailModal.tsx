@@ -192,16 +192,6 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               )}
             </div>
 
-            {/* Tap hint — fades out when expanded */}
-            {hasImage && (
-              <div
-                className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] text-white/70 bg-black/35 px-2.5 py-0.5 rounded-full pointer-events-none select-none transition-opacity duration-200"
-                style={{ opacity: imgExpanded ? 0 : 1 }}
-              >
-                {visionPlus ? "Toca la imagen para ampliar" : "Toca para ampliar"}
-              </div>
-            )}
-
             {/* Collapse hint — visible when expanded */}
             {hasImage && imgExpanded && (
               <button
