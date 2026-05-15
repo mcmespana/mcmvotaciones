@@ -122,19 +122,8 @@ export function useProjectionData(): ProjectionData {
           ar.show_final_gallery_projection ||
           ar.show_results_to_voters;
         targetRound = hasAnythingToProject ? ar : null;
-      } else {
-        // If no active round, only show a round that is explicitly projecting
-        const { data: projectingRounds } = await supabase
-          .from("rounds")
-          .select("*")
-          .or("show_results_to_voters.eq.true,show_final_gallery_projection.eq.true")
-          .eq("is_archived", false)
-          .order("updated_at", { ascending: false })
-          .limit(1);
-        if (projectingRounds && projectingRounds.length > 0) {
-          targetRound = projectingRounds[0];
-        }
       }
+      // If no active round → targetRound stays null → projection shows idle/waiting
 
       if (!targetRound) {
         setRound(null);
