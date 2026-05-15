@@ -916,6 +916,11 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--avd-brand-400) 22%, transparent);
 }
 .avd-input::placeholder { color: var(--avd-fg-faint); }
+
+/* Prevent iOS Safari auto-zoom: inputs must be ≥ 16px on touch screens */
+@media (hover: none) and (pointer: coarse) {
+  .avd-input, .avd-textarea, select { font-size: 16px; }
+}
 .avd-textarea {
   padding: 8px 10px;
   min-height: 80px;
@@ -1398,8 +1403,8 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
-  .avd-page-main { grid-template-columns: 1fr; }
+@media (max-width: 1023px) {
+  .avd-page-main { grid-template-columns: 1fr; gap: 1rem; }
   .avd-col-left { border-right: none; border-bottom: 1px solid var(--avd-border); }
   .avd-kpi-stack {
     grid-template-columns: repeat(3, minmax(0, 1fr));

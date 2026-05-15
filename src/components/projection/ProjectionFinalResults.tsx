@@ -53,6 +53,7 @@ interface ProjectionFinalResultsProps {
   roundNumber: number;
   team: string;
   selectedCandidates: Candidate[];
+  accessCode?: string | null;
 }
 
 export function ProjectionFinalResults({
@@ -60,6 +61,7 @@ export function ProjectionFinalResults({
   roundNumber,
   team,
   selectedCandidates,
+  accessCode,
 }: ProjectionFinalResultsProps) {
   const [revealedCount, setRevealedCount] = useState(0);
 
@@ -79,10 +81,8 @@ export function ProjectionFinalResults({
 
   const gridCols =
     selectedCandidates.length <= 3
-      ? `repeat(${selectedCandidates.length}, minmax(0, 1fr))`
-      : selectedCandidates.length <= 4
-      ? "repeat(2, minmax(0, 1fr))"
-      : "repeat(3, minmax(0, 1fr))";
+      ? `repeat(auto-fit, minmax(clamp(220px, 18vw, 320px), 1fr))`
+      : "repeat(auto-fit, minmax(clamp(220px, 18vw, 320px), 1fr))";
 
   return (
     <div className="proj-page overflow-visible relative">
@@ -107,6 +107,7 @@ export function ProjectionFinalResults({
           <PChip kind="yellow" label={getRoundTeamLabel(team)} />
           <PChip kind="blue" label={`Ronda ${roundNumber}`} />
           <PChip kind="emerald" label={`${selectedCandidates.length} elegidos`} />
+          {accessCode && <span className="proj-access-badge">{accessCode.toUpperCase()}</span>}
         </div>
       </header>
 
@@ -147,7 +148,7 @@ export function ProjectionFinalResults({
                     />
                   </div>
 
-                  <h2 className={`font-extrabold tracking-[-0.015em] text-[var(--avd-fg)] leading-[1.2] mb-3 ${isCompact ? 'text-[20px]' : 'text-[26px]'}`}>
+                  <h2 className={`font-extrabold tracking-[-0.015em] text-[var(--avd-fg)] leading-[1.2] mb-3 text-[clamp(18px,1.4vw,28px)]`}>
                     {formatCandidateName(candidate)}
                   </h2>
 

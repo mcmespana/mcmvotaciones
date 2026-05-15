@@ -13,6 +13,8 @@ interface CandidateListCardProps {
   onDetailView?: (candidate: CandidateRow) => void;
   onImageLongPress?: (candidate: CandidateRow) => void;
   hideCheckbox?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: string) => void;
 }
 
 const LONG_PRESS_MS = 500;
@@ -24,6 +26,8 @@ export function CandidateListCard({
   onDetailView,
   onImageLongPress,
   hideCheckbox = false,
+  isFavorite = false,
+  onToggleFavorite,
 }: CandidateListCardProps) {
   const { visionPlus } = useAccessibility();
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,6 +105,24 @@ export function CandidateListCard({
         >
           <Check className="h-4 w-4" strokeWidth={3} />
         </span>
+      )}
+
+      {onToggleFavorite && (
+        <button
+          type="button"
+          aria-label={isFavorite ? "Quitar de favoritos" : "Guardar en favoritos"}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
+          className={cn(
+            "absolute left-1.5 top-1.5 p-1.5 rounded-full border transition-all z-10",
+            isFavorite
+              ? "text-amber-400 border-amber-400/40 bg-amber-400/10 opacity-100"
+              : "text-[var(--avd-fg-faint)] border-transparent bg-transparent opacity-0 group-hover:opacity-70 group-focus-within:opacity-70"
+          )}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
       )}
 
       <div

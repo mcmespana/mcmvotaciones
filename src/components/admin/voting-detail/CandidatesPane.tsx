@@ -60,7 +60,7 @@ export function CandidatesPane({
                     <Grid size={13} /> Tarjetas
                   </button>
                 </div>
-                <div className="avd-search-wrap w-[180px]">
+                <div className="avd-search-wrap w-full sm:w-[180px]">
                   <Search size={14} />
                   <input
                     className="avd-input"
@@ -71,25 +71,24 @@ export function CandidatesPane({
                 </div>
                 {!isVotingStarted && (
                   <>
-                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openAddCandidateDialog} title="Añadir candidata">
+                    <button className="avd-btn avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7" style={{width:28,height:28}} onClick={openAddCandidateDialog} title="Añadir candidata">
                       <UserPlus size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsDatasetOpen(true)} title="Cargar dataset de prueba">
+                    <button className="avd-btn avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7" style={{width:28,height:28}} onClick={() => setIsDatasetOpen(true)} title="Cargar dataset de prueba">
                       <Download size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={() => setIsImportOpen(true)} title="Importar CSV">
+                    <button className="avd-btn avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7" style={{width:28,height:28}} onClick={() => setIsImportOpen(true)} title="Importar CSV">
                       <Upload size={14} />
                     </button>
-                    <button className="avd-btn avd-btn-icon-sm" style={{width:28,height:28}} onClick={openComunicaImport} title="Importar desde Comunica">
+                    <button className="avd-btn avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7" style={{width:28,height:28}} onClick={openComunicaImport} title="Importar desde Comunica">
                       <ArrowUpRight size={14} />
                     </button>
                   </>
                 )}
                 {hasCandidatesWithCrm && (
                   <button
-                    className="avd-btn avd-btn-icon-sm"
-                    style={{width:28,height:28}}
-                    onClick={onRefetchPhotos}
+                    className="avd-btn avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7"
+                                       onClick={onRefetchPhotos}
                     disabled={refetchingPhotos}
                     title={refetchingPhotos ? "Importando fotos..." : "Actualizar fotos desde CRM"}
                   >
@@ -98,9 +97,8 @@ export function CandidatesPane({
                 )}
                 {!isVotingStarted && hasCandidates && (
                   <button
-                    className="avd-btn avd-btn-danger avd-btn-icon-sm"
-                    style={{width:28,height:28}}
-                    onClick={() => setIsDeleteAllCandidatesOpen(true)}
+                    className="avd-btn avd-btn-danger avd-btn-icon-sm w-6 h-6 sm:w-7 sm:h-7"
+                                       onClick={() => setIsDeleteAllCandidatesOpen(true)}
                     title="Eliminar todas las candidatas"
                   >
                     <Trash2 size={14} />

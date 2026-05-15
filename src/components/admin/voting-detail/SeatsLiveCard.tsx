@@ -1,3 +1,5 @@
+import { useState, useMemo } from "react";
+import { Trash2, Wifi } from "lucide-react";
 import type { RoundDetail, SeatRow, SeatStatus } from "./hooks/useRoundDetail";
 
 interface Props {
@@ -7,15 +9,43 @@ interface Props {
   currentRoundVotes: number;
   occupiedPct: number;
   votesPct: number;
+  liveSeatIds: Set<string> | null;
+  presenceChecking: boolean;
+  checkPresence: () => Promise<void>;
+  releaseSeat: (seatId: string) => Promise<void>;
+  releaseGhostSeats: (ghostIds: string[]) => Promise<number>;
 }
 
 export function SeatsLiveCard({
   round, seats, seatStatus, currentRoundVotes, occupiedPct, votesPct,
+  liveSeatIds, presenceChecking, checkPresence, releaseSeat, releaseGhostSeats,
 }: Props) {
+  const [releasingId, setReleasingId] = useState<string | null>(null);
+  const [releasingAll, setReleasingAll] = useState(false);
+
+  const presenceReady = liveSeatIds !== null;
+
+  const ghostIds = useMemo(
+    () => presenceReady
+      ? seats.filter(s => s.estado === "ocupado" && !liveSeatIds.has(s.id)).map(s => s.id)
+      : [],
+    [seats, liveSeatIds, presenceReady],
+  );
+
+  const handleReleaseSeat = async (seatId: string) => {
+    setReleasingId(seatId);
+    try { await releaseSeat(seatId); } finally { setReleasingId(null); }
+  };
+
+  const handleReleaseAll = async () => {
+    setReleasingAll(true);
+    try { await releaseGhostSeats(ghostIds); } finally { setReleasingAll(false); }
+  };
+
   return (
     <aside className="avd-col avd-col-left">
 
-      {/* ── Conexiones (arriba) ── */}
+      {/* ── Conexiones ── */}
       <div className="px-4 pt-[14px] pb-3 border-b border-[var(--avd-border-soft)]">
         <h3 className="avd-section-title m-0 mb-[10px]">
           Conexiones
@@ -58,6 +88,36 @@ export function SeatsLiveCard({
               <span className="font-bold tabular-nums text-[var(--avd-fg-muted)]">{seatStatus?.available_seats ?? 0}</span>
             </div>
           </div>
+
+          {/* Verify presence button */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              className="avd-btn avd-btn-sm w-full"
+              disabled={presenceChecking}
+              onClick={checkPresence}
+            >
+              <Wifi size={13} />
+              {presenceChecking ? 'Verificando…' : presenceReady ? 'Re-verificar' : 'Verificar presencia'}
+            </button>
+            {presenceReady && ghostIds.length > 0 && (
+              <button
+                className="avd-btn avd-btn-sm avd-btn-danger"
+                disabled={releasingAll}
+                onClick={handleReleaseAll}
+                title="Liberar todos los asientos fantasma"
+              >
+                <Trash2 size={13} />
+                {releasingAll ? '…' : ghostIds.length}
+              </button>
+            )}
+          </div>
+
+          {presenceReady && ghostIds.length === 0 && (
+            <p className="text-[12px] text-[var(--avd-ok)] font-semibold m-0 text-center">
+              Todos conectados
+            </p>
+          )}
+
           <div>
             <div className="avd-meter-label mb-1.5">
               <span>Sesiones ({seats.length})</span>
@@ -71,23 +131,51 @@ export function SeatsLiveCard({
                   Sin conexiones.
                 </p>
               ) : (
-                seats.slice(0, 12).map((s) => (
-                  <div key={s.id} className="avd-seat-row">
-                    <span className="avd-sid">{s.browser_instance_id.slice(0, 10)}</span>
-                    <span className={`avd-sst ${s.estado === "ocupado" ? "avd-ok" : s.estado === "expirado" ? "avd-exp" : "avd-free"}`}>
-                      {s.estado}
-                    </span>
-                    <span className="avd-st">
-                      {new Date(s.last_seen_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </div>
-                ))
+                seats.slice(0, 12).map((s) => {
+                  const isOccupied = s.estado === "ocupado";
+                  const isLive = liveSeatIds?.has(s.id) ?? false;
+                  const isGhost = isOccupied && presenceReady && !isLive;
+
+                  return (
+                    <div key={s.id} className="avd-seat-row">
+                      {/* Presence dot — only shown after a check */}
+                      {presenceReady && isOccupied ? (
+                        <span
+                          title={isLive ? "Conectado" : "Sin señal (fantasma)"}
+                          style={{
+                            display: "inline-block", width: 7, height: 7,
+                            borderRadius: "50%", flexShrink: 0,
+                            background: isLive ? "var(--avd-ok)" : "var(--avd-bad)",
+                          }}
+                        />
+                      ) : (
+                        <span style={{ display: "inline-block", width: 7, height: 7, flexShrink: 0 }} />
+                      )}
+                      <span className="avd-sid">{s.browser_instance_id.slice(0, 10)}</span>
+                      <span className={`avd-sst ${s.estado === "ocupado" ? "avd-ok" : s.estado === "expirado" ? "avd-exp" : "avd-free"}`}>
+                        {s.estado}
+                      </span>
+                      <span className="avd-st">
+                        {new Date(s.last_seen_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      {isGhost && (
+                        <button
+                          className="avd-btn avd-btn-xs avd-btn-danger ml-auto"
+                          disabled={releasingId === s.id}
+                          onClick={() => handleReleaseSeat(s.id)}
+                          title="Liberar asiento fantasma"
+                        >
+                          {releasingId === s.id ? '…' : <Trash2 size={10} />}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
         </div>
       </div>
-
 
     </aside>
   );

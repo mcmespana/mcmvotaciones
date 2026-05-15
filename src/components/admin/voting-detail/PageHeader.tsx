@@ -60,14 +60,14 @@ export function PageHeader({
           <button className="avd-btn avd-btn-sm avd-btn-ghost" onClick={() => navigate("/admin/votaciones")}>
             <ArrowLeft size={13} /> Volver a votaciones
           </button>
-          <div className="avd-header-actions">
+          <div className="avd-header-actions flex-wrap sm:flex-nowrap">
             <button className="avd-btn avd-btn-sm" onClick={openAnalyticsDialog}>
               <BarChart2 size={14} /> Análisis
             </button>
             <button className="avd-btn avd-btn-sm" onClick={openBallotsDialog}>
               <Download size={14} /> Papeletas
             </button>
-            <button className="avd-btn avd-btn-sm" onClick={exportBallotsCsv}>
+            <button className="avd-btn avd-btn-sm hidden sm:inline-flex" onClick={exportBallotsCsv}>
               <Download size={14} /> CSV
             </button>
             <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(true)}>

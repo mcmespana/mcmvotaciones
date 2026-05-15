@@ -1,0 +1,261 @@
+/* ── SeatValidated full-screen component ── */
+/* Uses --avd-* design tokens from index.css for both light and dark modes. */
+
+.sv-page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  /* Light: soft blue-green atmospheric gradient */
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklch, var(--avd-brand-bg) 60%, var(--avd-bg)) 0%,
+    color-mix(in oklch, var(--avd-ok-bg) 50%, var(--avd-bg)) 40%,
+    var(--avd-bg) 70%,
+    color-mix(in oklch, var(--avd-brand-bg) 40%, var(--avd-bg)) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .sv-page {
+  /* Dark: deep-space near-black */
+  background: linear-gradient(
+    160deg,
+    var(--avd-n-1000) 0%,
+    color-mix(in oklch, var(--avd-ok-bg) 40%, var(--avd-n-1000)) 40%,
+    color-mix(in oklch, var(--avd-brand-bg) 30%, var(--avd-n-1000)) 70%,
+    var(--avd-n-1000) 100%
+  );
+}
+
+/* Ambient orbs */
+.sv-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.sv-orb-a {
+  width: 400px; height: 400px;
+  top: -100px; left: -100px;
+  background: color-mix(in oklch, var(--avd-brand-500) 22%, transparent);
+  animation: sv-orb-a 14s ease-in-out infinite;
+}
+.sv-orb-b {
+  width: 350px; height: 350px;
+  bottom: -80px; right: -80px;
+  background: color-mix(in oklch, var(--avd-ok-500) 20%, transparent);
+  animation: sv-orb-b 18s ease-in-out infinite;
+}
+.sv-orb-c {
+  width: 250px; height: 250px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: color-mix(in oklch, var(--avd-brand-400) 12%, transparent);
+  animation: sv-orb-c 10s ease-in-out infinite;
+}
+
+/* Main card */
+.sv-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  animation: sv-card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Big icon */
+.sv-icon-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 28px;
+}
+
+.sv-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklch, var(--avd-ok) 50%, transparent);
+  animation: sv-ring 2.4s ease-out infinite;
+}
+.sv-ring-2 {
+  animation-delay: 0.8s;
+  border-color: color-mix(in oklch, var(--avd-brand) 45%, transparent);
+}
+.sv-ring-3 {
+  animation-delay: 1.6s;
+  border-color: color-mix(in oklch, var(--avd-brand-400) 35%, transparent);
+}
+
+.sv-icon-bubble {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 135deg,
+    color-mix(in oklch, var(--avd-ok) 25%, transparent),
+    color-mix(in oklch, var(--avd-brand) 25%, transparent),
+    color-mix(in oklch, var(--avd-ok) 25%, transparent)
+  );
+  border: 2px solid color-mix(in oklch, var(--avd-ok) 55%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: sv-bubble-pulse 3s ease-in-out infinite;
+}
+
+.sv-check {
+  width: 72px;
+  height: 72px;
+  color: var(--avd-ok);
+  filter: drop-shadow(0 0 14px color-mix(in oklch, var(--avd-ok) 60%, transparent));
+  animation: sv-check-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* Validated label */
+.sv-label {
+  font-size: clamp(42px, 10vw, 64px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--avd-ok), var(--avd-brand), var(--avd-brand-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  animation: sv-fade-up 0.5s ease-out 0.4s both;
+}
+
+.sv-sublabel {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--avd-fg-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: sv-fade-up 0.5s ease-out 0.5s both;
+}
+
+/* Shield badge */
+.sv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--avd-ok-bg);
+  border: 1.5px solid color-mix(in oklch, var(--avd-ok) 40%, transparent);
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--avd-ok-fg);
+  margin-bottom: 24px;
+  animation: sv-fade-up 0.5s ease-out 0.6s both, sv-badge-glow 3s ease-in-out infinite;
+}
+
+/* Round title */
+.sv-round {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--avd-fg-faint);
+  margin-bottom: 24px;
+  animation: sv-fade-up 0.5s ease-out 0.65s both;
+}
+
+/* Waiting dots */
+.sv-waiting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  animation: sv-fade-up 0.5s ease-out 0.7s both;
+}
+.sv-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--avd-brand) 70%, transparent);
+}
+
+/* ── Paused variant ── */
+.sv-page--paused .sv-ring {
+  border-color: color-mix(in oklch, var(--avd-warn) 50%, transparent);
+}
+.sv-page--paused .sv-ring-2 {
+  border-color: color-mix(in oklch, var(--avd-bad) 45%, transparent);
+}
+.sv-page--paused .sv-icon-bubble {
+  background: conic-gradient(
+    from 135deg,
+    color-mix(in oklch, var(--avd-warn) 28%, transparent),
+    color-mix(in oklch, var(--avd-bad) 22%, transparent),
+    color-mix(in oklch, var(--avd-warn) 28%, transparent)
+  );
+  border-color: color-mix(in oklch, var(--avd-warn) 55%, transparent);
+}
+.sv-page--paused .sv-check {
+  color: var(--avd-warn);
+  filter: drop-shadow(0 0 14px color-mix(in oklch, var(--avd-warn) 60%, transparent));
+}
+.sv-page--paused .sv-label {
+  background: linear-gradient(135deg, var(--avd-warn), var(--avd-bad));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.sv-page--paused .sv-badge {
+  background: var(--avd-warn-bg);
+  border-color: color-mix(in oklch, var(--avd-warn) 40%, transparent);
+  color: var(--avd-warn-fg);
+}
+.sv-page--paused .sv-dot {
+  background: color-mix(in oklch, var(--avd-warn) 70%, transparent);
+}
+
+/* ── Keyframes ── */
+
+@keyframes sv-card-in {
+  0%   { transform: translateY(24px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes sv-ring {
+  0%   { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes sv-bubble-pulse {
+  0%,100% { box-shadow: 0 0 40px -12px color-mix(in oklch, var(--avd-ok) 40%, transparent); }
+  50%     { box-shadow: 0 0 60px -8px color-mix(in oklch, var(--avd-brand) 40%, transparent); }
+}
+
+@keyframes sv-check-in {
+  0%   { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes sv-fade-up {
+  0%   { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes sv-badge-glow {
+  0%,100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--avd-ok) 0%, transparent); }
+  50%     { box-shadow: 0 0 16px 2px color-mix(in oklch, var(--avd-ok) 22%, transparent); }
+}
+
+@keyframes sv-orb-a {
+  0%,100% { transform: translate(0,0); }
+  50%     { transform: translate(40px, 30px); }
+}
+@keyframes sv-orb-b {
+  0%,100% { transform: translate(0,0); }
+  50%     { transform: translate(-30px, -20px); }
+}
+@keyframes sv-orb-c {
+  0%,100% { transform: translate(-50%,-50%) scale(1); }
+  50%     { transform: translate(-50%,-50%) scale(1.3); }
+}

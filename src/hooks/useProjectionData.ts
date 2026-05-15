@@ -81,12 +81,25 @@ export function useProjectionData(): ProjectionData {
     if (!round.is_active || round.show_final_gallery_projection) return "idle";
     if (round.round_finalized && !round.show_results_to_voters) return "finalized";
     if (!round.is_voting_open && round.join_locked && !round.round_finalized) return "paused";
-    if (!round.is_voting_open && !round.round_finalized) return "room-open";
+    if (!round.is_voting_open && !round.join_locked && !round.round_finalized) return "room-open";
     return "idle";
   })();
 
-  // Selected candidates (from current round results)
-  const selectedCandidates = useMemo(() => candidates.filter((c) => c.is_selected), [candidates]);
+  // Selected candidates ordered by round of selection (ASC); within same round by vote count DESC.
+  // Null/undefined selected_in_round (legacy data) sorted last.
+  const selectedCandidates = useMemo(
+    () =>
+      candidates
+        .filter((c) => c.is_selected)
+        .slice()
+        .sort((a, b) => {
+          const ra = a.selected_in_round ?? Number.POSITIVE_INFINITY;
+          const rb = b.selected_in_round ?? Number.POSITIVE_INFINITY;
+          if (ra !== rb) return ra - rb;
+          return (b.selected_vote_count ?? 0) - (a.selected_vote_count ?? 0);
+        }),
+    [candidates]
+  );
 
   // Load the active round and its data
   const loadActiveRound = useCallback(async () => {
@@ -100,7 +113,14 @@ export function useProjectionData(): ProjectionData {
         .limit(1);
 
       if (activeRounds && activeRounds.length > 0) {
-        targetRound = activeRounds[0];
+        const ar = activeRounds[0];
+        // A closed round with nothing to project is treated as idle — don't lock the
+        // projection onto the "closed" state indefinitely after all display flags are off.
+        const hasAnythingToProject =
+          !ar.is_closed ||
+          ar.show_final_gallery_projection ||
+          ar.show_results_to_voters;
+        targetRound = hasAnythingToProject ? ar : null;
       } else {
         // If no active round, only show a round that is explicitly projecting
         const { data: projectingRounds } = await supabase

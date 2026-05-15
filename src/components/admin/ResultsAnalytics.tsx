@@ -21,6 +21,7 @@ import {
   Pie,
 } from "recharts";
 import { BarChart3, ChevronLeft, ChevronRight, TrendingUp, Users, Vote } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ResultsAnalyticsProps {
   lockedRoundId?: string;
@@ -53,6 +54,8 @@ const CHART_COLORS = [
 
 export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const chartHeight = isMobile ? 250 : 350;
   const [rounds, setRounds] = useState<Round[]>([]);
   const [selectedRoundId, setSelectedRoundId] = useState<string>("");
   const [selectedRoundNum, setSelectedRoundNum] = useState<number>(1);
@@ -174,7 +177,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
         <div className="flex items-center gap-3">
           {!lockedRoundId && (
             <Select value={selectedRoundId} onValueChange={(v) => { setSelectedRoundId(v); setSelectedRoundNum(1); }}>
-              <SelectTrigger className="w-64">
+              <SelectTrigger className="w-full md:w-64">
                 <SelectValue placeholder="Seleccionar votación" />
               </SelectTrigger>
               <SelectContent>
@@ -223,7 +226,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Votos</CardTitle>
@@ -279,7 +282,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
           </CardHeader>
           <CardContent>
             {barData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <BarChart data={barData} layout="vertical" margin={{ left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis type="number" />
@@ -316,7 +319,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
           </CardHeader>
           <CardContent>
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
                   <Pie
                     data={pieData}

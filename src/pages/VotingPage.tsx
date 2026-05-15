@@ -1,4 +1,4 @@
-import { Vote, Trash2, ShieldCheck } from 'lucide-react';
+import { Vote, Trash2 } from 'lucide-react';
 import { flushSync } from 'react-dom';
 import { useState } from 'react';
 import { isVotingAvailable } from '@/lib/device';
@@ -9,6 +9,7 @@ import { VotingTutorial } from '@/components/voting/VotingTutorial';
 import { AccessCodeInput, isAccessCodeVerified } from '@/components/voting/AccessCodeInput';
 import { HeaderControls } from '@/components/shared/HeaderControls';
 import { VoteTicket } from '@/components/voting/VoteTicket';
+import { SeatValidated } from '@/components/voting/SeatValidated';
 import { useVotingPage } from './voting/hooks/useVotingPage';
 import type { Round } from './voting/hooks/useVotingPage';
 import { Spinner } from '@/components/ui-avd/Spinner';
@@ -247,38 +248,11 @@ export function VotingPage() {
   }
 
   if (activeRound.is_active && !activeRound.is_voting_open && !activeRound.round_finalized && !activeRound.is_closed && !hasVoted) {
-    const isPaused = activeRound.join_locked;
     return (
-      <div className="pub-page flex items-center justify-center p-5 relative overflow-hidden">
-        <HeaderControls mode="floating" />
-        <div className={`absolute w-[280px] h-[280px] rounded-full blur-[60px] top-[10%] -left-[10%] animate-[proj-orb-slow-a_18s_ease-in-out_infinite] pointer-events-none ${isPaused ? 'bg-[color-mix(in_oklch,var(--avd-warn)_8%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_8%,transparent)]'}`} />
-        <div className={`absolute w-[220px] h-[220px] rounded-full blur-[50px] bottom-[5%] -right-[5%] animate-[proj-orb-slow-b_22s_ease-in-out_infinite] pointer-events-none ${isPaused ? 'bg-[color-mix(in_oklch,var(--avd-warn)_6%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-brand)_6%,transparent)]'}`} />
-        <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] overflow-hidden text-center animate-[card-enter_0.4s_cubic-bezier(0.2,0.75,0.2,1)_both] relative z-[1]">
-          <div className={`h-[3px] ${isPaused ? 'bg-gradient-to-r from-[var(--avd-warn)] to-[var(--avd-warn-600)]' : 'bg-gradient-to-r from-[var(--avd-brand-400)] to-[var(--avd-brand-600)]'}`} />
-          <div className="p-10">
-            <div className={`mx-auto mb-5 w-[72px] h-[72px] flex items-center justify-center rounded-full animate-[breathe_3.5s_ease-in-out_infinite] ${isPaused ? 'bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-[var(--avd-warn)]' : 'bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] text-[var(--avd-brand)]'}`}>
-              <Vote className="w-8 h-8" />
-            </div>
-            <span className={`avd-chip ${isPaused ? 'avd-chip-warn' : 'avd-chip-brand'} mb-5 h-8 text-[13px]`}>
-              {isPaused ? "Ronda en Pausa" : "Sala Abierta"}
-            </span>
-            <p className="text-[var(--avd-fg-muted)] text-[13px] leading-relaxed mb-5 font-medium">
-              {isPaused
-                ? `Sigues conectado con éxito a la sala "${activeRound.title}". Por favor, espera a que la administración reanude la sesión.`
-                : `Has accedido a "${activeRound.title}". Todo está listo, solo espera a que el administrador dé luz verde para comenzar.`}
-            </p>
-            <div className="flex items-center justify-center gap-[5px] mb-5">
-              {[0, 1, 2].map(i => (
-                <span key={i} className={`w-1.5 h-1.5 rounded-full inline-block ${isPaused ? 'bg-[var(--avd-warn)]' : 'bg-[var(--avd-brand)]'}`} style={{ animation: `dot-bounce 1.4s ease-in-out ${i * 0.22}s infinite` }} />
-              ))}
-            </div>
-            <div className="inline-flex items-center gap-1.5 bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] rounded-full px-[14px] py-1.5 text-xs font-semibold text-[var(--avd-ok-fg)] cursor-default select-none animate-[ok-glow_3s_ease-in-out_infinite]">
-              <ShieldCheck className="w-[13px] h-[13px] shrink-0" />
-              Asiento validado y seguro
-            </div>
-          </div>
-        </div>
-      </div>
+      <SeatValidated
+        roundTitle={activeRound.title}
+        isPaused={!!activeRound.join_locked}
+      />
     );
   }
 
@@ -355,6 +329,7 @@ export function VotingPage() {
             selectedCandidates={selectedCandidates}
             onToggleCandidate={toggleCandidateSelection}
             tutorialRoundId={activeRound.id}
+            roundId={activeRound.id}
           />
         </div>
       </div>

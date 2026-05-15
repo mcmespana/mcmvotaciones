@@ -335,7 +335,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
         </div>
         <div className="flex-1" />
         {/* Search */}
-        <div className="avd-search-wrap w-[200px]">
+        <div className="avd-search-wrap w-full sm:w-[200px]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input className="avd-input pl-[30px]" placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
@@ -384,7 +384,8 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
             ))}
           </div>
         ) : (
-          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
+          <div className="overflow-x-auto">
+          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden min-w-[720px]">
             <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_40px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px]'}`}>
               <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div>{isSuperAdmin && <div></div>}
             </div>
@@ -431,13 +432,14 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
               );
             })}
           </div>
+          </div>
         )}
       </div>
 
       {/* Create dialog */}
       {createOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setCreateOpen(false); }}>
-          <div className="avd-dialog" onClick={e => e.stopPropagation()}>
+          <div className="avd-dialog max-w-[90vw] sm:max-w-[560px]" onClick={e => e.stopPropagation()}>
             <div className="avd-dialog-head"><h2>Nueva votación</h2><p>Crea una votación sin salir de la lista.</p></div>
             <div className="avd-dialog-body">
               <div className="avd-form-grid">
@@ -449,7 +451,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                   <label className="avd-label">Descripción</label>
                   <textarea className="avd-textarea" placeholder="Contexto de la votación" rows={2} value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} />
                 </div>
-                <div className="avd-form-grid avd-form-grid-2">
+                <div className="avd-form-grid avd-form-grid-2 grid grid-cols-1 md:grid-cols-2">
                   <div className="avd-form-field">
                     <label className="avd-label">Año</label>
                     <input className="avd-input" type="number" value={form.year} onChange={e => setForm(p => ({...p, year: parseInt(e.target.value) || new Date().getFullYear()}))} />

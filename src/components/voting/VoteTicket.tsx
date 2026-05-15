@@ -117,9 +117,15 @@ export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt,
             <div className="tkt-icon-wrap">
               <span className="tkt-ring" />
               <span className="tkt-ring tkt-ring--delay" />
+              <span className="tkt-ring tkt-ring--delay2" />
               <div className="tkt-icon-bubble">
                 <CheckCircle2 className="tkt-check-icon" strokeWidth={1.5} />
               </div>
+            </div>
+
+            {/* 4-color accent stripe */}
+            <div className="tkt-color-stripe">
+              <span /><span /><span /><span />
             </div>
 
             <div className="tkt-fade-up [animation-delay:0.2s]">
