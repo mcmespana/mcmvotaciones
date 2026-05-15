@@ -44,7 +44,7 @@ Marca `[x]` cada item al completarlo. Items derivados de auditoría realizada el
 - [x] `index.css` — `.avd-page-main` con grid responsive (`max-width: 1023px` → 1 col)
 - [x] `PageHeader.tsx` — `flex-wrap`, "CSV" `hidden sm:inline-flex`
 - [x] `CandidatesPane.tsx` — search `w-full sm:w-[180px]`, botones con Tailwind responsive
-- [ ] `ControlsAside.tsx` — aside stack debajo en mobile (cubierto por CSS `avd-page-main` 1-col)
+- [x] `ControlsAside.tsx` — aside stack debajo en mobile (cubierto por CSS `avd-page-main` 1-col)
 
 ---
 
@@ -83,7 +83,7 @@ Campo BD: `candidates.selected_in_round` (presente desde migración 009).
 - [x] `src/hooks/useProjectionData.ts:89` — sort `selectedCandidates` por `selected_in_round ASC` + tie-break `selected_vote_count DESC`
 - [x] `SelectedCandidatesSidebar` ordena copia sin mutar
 - [x] `ProjectionFinalResults` / `ProjectionResults` consumen `selectedCandidates` ya ordenado (badge "Ronda X" presente)
-- [ ] `SeatsLiveCard.tsx` admin — verificar si consume orden (deferred: read-only de selected)
+- [x] `SeatsLiveCard.tsx` admin — verificar si consume orden (no muestra selectedCandidates, sólo sesiones/asientos — no requiere ordenación)
 
 ---
 
@@ -105,7 +105,7 @@ Campo BD: `candidates.selected_in_round` (presente desde migración 009).
 - [x] `useRoundActions.ts:214-238` — reemplazado select+update por UPDATE atómico con `WHERE show_final_gallery_projection=true AND id<>roundId` (sin TOCTOU)
 
 ### 4.6 Blank votes en galería final
-- [ ] Documentar en `docs/VOTING_SYSTEM_GUIDE.md` (deferred — no es bug, es comportamiento intencionado)
+- [x] Documentar en `docs/VOTING_SYSTEM_GUIDE.md` — sección "Votos en blanco" añadida
 
 ---
 

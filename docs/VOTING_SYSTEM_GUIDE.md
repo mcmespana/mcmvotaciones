@@ -203,6 +203,35 @@ Antes de usar el sistema en una votación real:
 
 ---
 
+## 📝 Votos en blanco
+
+### Qué es un voto en blanco
+
+Un votante puede pulsar **"Votar en blanco"** sin seleccionar ningún candidato. Se trata de participación válida: el votante ha ejercido su derecho, pero no respalda a ninguna persona.
+
+### Cómo se almacena
+
+En la tabla `votes`, un voto en blanco genera **una única fila con `candidate_id = NULL`**. No hay filas de candidato asociadas.
+
+### Qué computa y qué no
+
+| ¿Afecta a…? | Comportamiento |
+|-------------|----------------|
+| Participación (`votes_current_round`) | **Sí** — cuenta como papeleta emitida. |
+| Recuento de candidatos (`vote_count`) | **No** — no suma puntos a nadie. |
+| Umbral Canon 119 | **No** — el umbral se fija con `max_votantes`, no con los votos emitidos. |
+| Papeletas en galería final / proyección | **Sí** — aparece en la lista de papeletas como "Voto en blanco". |
+
+### Comportamiento en rondas sucesivas
+
+Un votante que votó en blanco en la ronda anterior puede votar normalmente en la siguiente: el bloqueo anti-doble-voto usa `(device_hash, round_number)`, por lo que cada ronda es independiente.
+
+### En la exportación CSV
+
+La columna `en_blanco` del CSV de papeletas vale `"TRUE"` para los votos en blanco y `"FALSE"` para los que tienen candidatos.
+
+---
+
 ## 🧯 Problemas frecuentes
 
 | Síntoma | Causa probable | Solución |
