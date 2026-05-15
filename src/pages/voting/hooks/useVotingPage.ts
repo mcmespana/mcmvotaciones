@@ -366,6 +366,25 @@ export function useVotingPage({ toast }: UseVotingPageOptions) {
     setConfirmVoteOpen(true);
   }, [voting]);
 
+  // Realtime Presence — keeps the seat alive so admin can detect ghost seats
+  useEffect(() => {
+    if (!seatId || !activeRound?.id) return;
+    const roundId = activeRound.id;
+    const ch = supabase.channel(`round-presence-${roundId}`);
+
+    const retrack = () => { ch.track({ seat_id: seatId }).catch(() => {}); };
+
+    ch.subscribe((status) => { if (status === 'SUBSCRIBED') retrack(); });
+
+    const handleVisibility = () => { if (!document.hidden) retrack(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      supabase.removeChannel(ch);
+    };
+  }, [seatId, activeRound?.id]);
+
   useEffect(() => {
     const adminParam = new URLSearchParams(window.location.search).get('admin');
     if (adminParam === 'true') { navigate('/admin', { replace: true }); return; }

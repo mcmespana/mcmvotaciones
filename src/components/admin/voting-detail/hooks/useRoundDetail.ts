@@ -45,6 +45,8 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
   const [loading, setLoading] = useState(true);
   const [inlineResults, setInlineResults] = useState<InlineResult[]>([]);
   const [now, setNow] = useState(Date.now());
+  const [liveSeatIds, setLiveSeatIds] = useState<Set<string>>(new Set());
+  const [presenceReady, setPresenceReady] = useState(false);
 
   // Config form state (synced from round on load)
   const [configAccessCode, setConfigAccessCode] = useState("");
@@ -165,6 +167,37 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
     }
   }, [roundId, toast, loadCurrentRoundVotes, loadInlineResults]);
 
+  // Realtime Presence — observe which seats are still connected
+  useEffect(() => {
+    if (!roundId) return;
+    setPresenceReady(false);
+    const ch = supabase.channel(`round-presence-${roundId}`);
+    ch.on('presence', { event: 'sync' }, () => {
+      const state = ch.presenceState<{ seat_id: string }>();
+      const ids = new Set<string>();
+      for (const presences of Object.values(state)) {
+        for (const p of presences) {
+          if (p.seat_id) ids.add(p.seat_id);
+        }
+      }
+      setLiveSeatIds(ids);
+      setPresenceReady(true);
+    }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [roundId]);
+
+  const releaseSeat = useCallback(async (seatId: string) => {
+    await supabase.rpc('release_seat', { p_seat_id: seatId });
+    await loadSeatsAndStatus();
+  }, [loadSeatsAndStatus]);
+
+  const releaseGhostSeats = useCallback(async (ghostIds: string[]) => {
+    if (ghostIds.length === 0) return 0;
+    const { data } = await supabase.rpc('release_ghost_seats', { p_seat_ids: ghostIds });
+    await loadSeatsAndStatus();
+    return (data as number) ?? 0;
+  }, [loadSeatsAndStatus]);
+
   useEffect(() => {
     loadRound();
     const channel = supabase
@@ -188,6 +221,8 @@ export function useRoundDetail({ roundId, toast }: UseRoundDetailOptions) {
   return {
     round, candidates, seats, seatStatus, currentRoundVotes, loading, inlineResults, now,
     currentRoundNumberRef,
+    liveSeatIds, presenceReady,
+    releaseSeat, releaseGhostSeats,
     loadRound, loadCandidates, loadSeatsAndStatus, loadCurrentRoundVotes, loadInlineResults,
     configAccessCode, setConfigAccessCode,
     configCensusMode, setConfigCensusMode,
