@@ -144,6 +144,17 @@
 [data-vision-plus="on"] .pub-cand-card {
   padding: 18px 20px !important;
   gap: 18px !important;
+  align-items: flex-start !important;
+}
+
+/* Pull star/info button out of absolute positioning into the flex flow.
+   Targets the <button> direct child (star or info), not the <span> checkmark. */
+[data-vision-plus="on"] .pub-cand-card > button:last-child {
+  position: static !important;
+  inset: unset !important;
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 [data-vision-plus="on"] .pub-cand-grid {
   gap: 16px !important;
