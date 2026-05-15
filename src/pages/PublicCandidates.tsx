@@ -92,6 +92,7 @@ export function PublicCandidates() {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
+  const [detailZoomed, setDetailZoomed] = useState(false);
   const initializedRef = useRef(false);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
   const { favorites, toggle: toggleFavorite, isFavorite, count: favCount } = useFavorites(round?.id);
@@ -205,9 +206,10 @@ export function PublicCandidates() {
   /* ── Render ── */
   return (
     <div className="pub-page">
-      <CandidateDetailModal 
-        candidate={detailCandidate} 
-        onClose={() => setDetailCandidate(null)}
+      <CandidateDetailModal
+        candidate={detailCandidate}
+        onClose={() => { setDetailCandidate(null); setDetailZoomed(false); }}
+        initialZoom={detailZoomed}
         onNext={handleNextCandidate}
         onPrev={handlePrevCandidate}
       />
@@ -332,8 +334,9 @@ export function PublicCandidates() {
                       <CandidateListCard
                         key={c.id}
                         candidate={c}
-                        onClick={() => setDetailCandidate(c)}
-                        onDetailView={setDetailCandidate}
+                        onClick={() => { setDetailZoomed(false); setDetailCandidate(c); }}
+                        onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
+                        onImageTap={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
                         hideCheckbox={true}
                         isFavorite={isFavorite(c.id)}
                         onToggleFavorite={round ? toggleFavorite : undefined}
