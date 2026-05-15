@@ -69,12 +69,19 @@ export function AdminVotingDetail() {
   // Keep --avd-header-h in sync. Watches for .avd-sticky-header to appear in the DOM
   // (it only renders after round loads) then attaches a ResizeObserver.
   useEffect(() => {
-    const setVar = (el: HTMLElement) =>
-      document.documentElement.style.setProperty("--avd-header-h", `${el.offsetHeight}px`);
+    let raf = 0;
 
-    const attach = (el: HTMLElement) => {
-      setVar(el);
-      const ro = new ResizeObserver(() => setVar(el));
+    const measure = (el: HTMLElement) => {
+      // Cancel any pending frame so we always use the latest value.
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        document.documentElement.style.setProperty("--avd-header-h", `${el.offsetHeight}px`);
+      });
+    };
+
+    const attach = (el: HTMLElement): ResizeObserver => {
+      measure(el);
+      const ro = new ResizeObserver(() => measure(el));
       ro.observe(el);
       return ro;
     };
@@ -83,7 +90,7 @@ export function AdminVotingDetail() {
     const existing = document.querySelector(".avd-sticky-header") as HTMLElement | null;
     if (existing) {
       const ro = attach(existing);
-      return () => ro.disconnect();
+      return () => { ro.disconnect(); cancelAnimationFrame(raf); };
     }
 
     // Otherwise wait for it to appear.
@@ -99,6 +106,7 @@ export function AdminVotingDetail() {
     return () => {
       mo.disconnect();
       ro?.disconnect();
+      cancelAnimationFrame(raf);
     };
   }, []);
 
