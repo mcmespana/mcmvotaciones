@@ -123,11 +123,11 @@ export function TestKitchen() {
               <button className="avd-btn avd-btn-primary" onClick={() => setTutorialKey(k => k + 1)}>
                 Abrir tutorial
               </button>
+              <VotingTutorial key={tutorialKey} forceOpen={tutorialKey > 0} roundId="test-kitchen" />
               <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">
                 Modal de pasos con animaciones y navegación.
               </p>
             </div>
-            <VotingTutorial key={tutorialKey} forceOpen={tutorialKey > 0} roundId="test-kitchen" />
           </Section>
 
           {/* ── VoteSubmitAnimation ── */}

@@ -16,6 +16,18 @@ const STEPS = [
     nextBg: "bg-red-500/10 hover:bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-400",
   },
   {
+    icon: Star,
+    title: "Marca tus favoritos",
+    description: "Desliza cualquier tarjeta hacia la derecha para añadirla a favoritos ⭐. Los favoritos aparecen fijados al principio de la lista para encontrarlos fácilmente.",
+    accent: "text-amber-500 dark:text-amber-400",
+    iconBg: "bg-amber-500/10",
+    iconRing: "ring-amber-500/25",
+    dotActive: "bg-amber-500",
+    topBar: "linear-gradient(90deg, rgba(245,158,11,0.85), rgba(251,191,36,0.55), rgba(245,158,11,0.2))",
+    color: "#f59e0b",
+    nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
+  },
+  {
     icon: CheckCircle2,
     title: "Revisa tu selección",
     description:
@@ -40,18 +52,6 @@ const STEPS = [
     topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
     color: "#eab308",
     nextBg: "bg-yellow-500/10 hover:bg-yellow-500/15 border-yellow-500/30 text-yellow-700 dark:text-yellow-400",
-  },
-  {
-    icon: Star,
-    title: "Marca tus favoritos",
-    description: "Desliza cualquier tarjeta hacia la derecha para añadirla a favoritos ⭐. Los favoritos aparecen fijados al principio de la lista para encontrarlos fácilmente.",
-    accent: "text-amber-500 dark:text-amber-400",
-    iconBg: "bg-amber-500/10",
-    iconRing: "ring-amber-500/25",
-    dotActive: "bg-amber-500",
-    topBar: "linear-gradient(90deg, rgba(245,158,11,0.85), rgba(251,191,36,0.55), rgba(245,158,11,0.2))",
-    color: "#f59e0b",
-    nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
   },
   {
     icon: Shield,
@@ -120,7 +120,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         onClick={() => { setStep(0); setOpen(true); }}
         aria-label="Abrir guía de votación"
         title="¿Cómo votar?"
-        className={`avd-btn avd-btn-icon${compactTrigger ? ' w-[42px] h-[42px]' : ' w-auto px-[10px] gap-[6px]'}`}
+        className={compactTrigger ? 'avd-btn avd-btn-icon w-[42px] h-[42px]' : 'avd-btn px-[10px] gap-[6px]'}
       >
         <HelpCircle className="w-[18px] h-[18px]" />
         {!compactTrigger && <span>¿Cómo votar?</span>}
