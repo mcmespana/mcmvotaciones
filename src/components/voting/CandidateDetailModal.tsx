@@ -165,6 +165,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
         <div
           className={`w-full max-w-[480px] flex-1 overflow-x-hidden overflow-y-auto flex flex-col justify-center px-4 pt-10 ${hasNav ? 'pb-28' : 'pb-10'}`}
           style={{ isolation: "isolate" }}
+          onClick={(e) => { if (!pinchActive.current) onClose(); }}
         >
           <motion.div
             key={candidate.id}

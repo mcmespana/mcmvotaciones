@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, MousePointerClick, Shield, Send, HelpCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { CheckCircle2, MousePointerClick, Shield, Send, Star, HelpCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STEPS = [
   {
@@ -40,6 +40,18 @@ const STEPS = [
     topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
     color: "#eab308",
     nextBg: "bg-yellow-500/10 hover:bg-yellow-500/15 border-yellow-500/30 text-yellow-700 dark:text-yellow-400",
+  },
+  {
+    icon: Star,
+    title: "Marca tus favoritos",
+    description: "Desliza cualquier tarjeta hacia la derecha para añadirla a favoritos ⭐. Los favoritos aparecen fijados al principio de la lista para encontrarlos fácilmente.",
+    accent: "text-amber-500 dark:text-amber-400",
+    iconBg: "bg-amber-500/10",
+    iconRing: "ring-amber-500/25",
+    dotActive: "bg-amber-500",
+    topBar: "linear-gradient(90deg, rgba(245,158,11,0.85), rgba(251,191,36,0.55), rgba(245,158,11,0.2))",
+    color: "#f59e0b",
+    nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
   },
   {
     icon: Shield,

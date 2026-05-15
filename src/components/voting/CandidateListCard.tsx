@@ -1,4 +1,4 @@
-import { Cake, Check, Info, MapPin } from "lucide-react";
+import { Cake, Check, MapPin } from "lucide-react";
 import { useRef } from "react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName, isMonitor } from "@/lib/candidateFormat";
@@ -125,23 +125,6 @@ export function CandidateListCard({
         </span>
       )}
 
-      {onToggleFavorite && (
-        <button
-          type="button"
-          aria-label={isFavorite ? "Quitar de favoritos" : "Guardar en favoritos"}
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
-          className={cn(
-            "absolute left-1.5 top-1.5 p-1.5 rounded-full border transition-all z-10",
-            isFavorite
-              ? "text-amber-400 border-amber-400/40 bg-amber-400/10 opacity-100"
-              : "text-[var(--avd-fg-faint)] border-transparent bg-transparent opacity-0 group-hover:opacity-70 group-focus-within:opacity-70"
-          )}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </button>
-      )}
 
       <div
         className={`shrink-0 leading-none${onImageTap ? " cursor-zoom-in" : ""}`}
@@ -206,17 +189,35 @@ export function CandidateListCard({
         )}
       </div>
 
-      {/* Info button — opens detail modal */}
-      {onDetailView && (
+      {/* Star/favorite button or Info button at bottom-right */}
+      {onToggleFavorite ? (
+        <button
+          type="button"
+          aria-label={isFavorite ? "Quitar de favoritos" : "Guardar en favoritos"}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
+          className={cn(
+            `absolute bottom-2 right-2 rounded-full border transition-all z-10 flex items-center justify-center ${visionPlus ? "p-3" : "p-2"}`,
+            isFavorite
+              ? "text-amber-400 bg-amber-400/10 border-amber-400/40"
+              : "text-[var(--avd-fg-faint)] bg-transparent border-[var(--avd-border)]"
+          )}
+        >
+          <svg width={visionPlus ? 18 : 14} height={visionPlus ? 18 : 14} viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
+      ) : onDetailView ? (
         <button
           type="button"
           aria-label="Ver detalles"
           onClick={(e) => { e.stopPropagation(); onDetailView(candidate); }}
           className={`absolute bottom-2 right-2 bg-transparent border-none cursor-pointer text-[var(--avd-fg-faint)] ${visionPlus ? "p-3" : "p-1"} rounded-[6px] flex items-center opacity-60 hover:opacity-100 transition-opacity`}
         >
-          <Info size={visionPlus ? 20 : 14} />
+          <svg width={visionPlus ? 20 : 14} height={visionPlus ? 20 : 14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
