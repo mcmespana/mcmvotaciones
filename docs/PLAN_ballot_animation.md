@@ -1,16 +1,14 @@
 # Plan: Animación de papeletas → urna → resultados
 
-> Rama: `claude/redo-ballot-animation`  
-> Estado: en planificación
+> Rama: `claude/pedantic-elgamal-12b348`  
+> Estado: **✅ implementado** — commit `9860420`
 
 ## Contexto
 
-El workflow post-ronda actual muestra primero los resultados y luego la rejilla de papeletas.
-Queremos invertirlo: **primero** se ve una animación de papeletas entrando en una urna (una a una,
-framer-motion), y **después** se pasa automáticamente a la proyección de resultados ya existente.
+El workflow post-ronda ahora muestra **primero** una animación de papeletas entrando en una
+urna (una a una, framer-motion) y **después** pasa automáticamente a la proyección de resultados.
 
-La rejilla de papeletas (`show_ballot_summary_projection`) se **conserva** como paso posterior opcional
-(código comentado, listo para reactivar).
+La rejilla de papeletas (`show_ballot_summary_projection`) se **conserva** comentada (fácil de reactivar).
 
 ---
 
@@ -18,146 +16,78 @@ La rejilla de papeletas (`show_ballot_summary_projection`) se **conserva** como 
 
 ### Fase 1 — Base de datos
 
-- [ ] Crear migración `supabase/migrations/YYYYMMDDHHMMSS_ballot_animation_flag.sql`
+- [x] Crear migración `supabase/migrations/20260516000000_ballot_animation_flag.sql`
   - `show_ballot_animation boolean NOT NULL DEFAULT false`
   - `ballot_animation_started_at timestamptz` (para resumir si la proyección se recarga)
-- [ ] Aplicar migración vía Supabase MCP
+- [x] Aplicar migración vía Supabase MCP
 
 ### Fase 2 — Tipos TS
 
-- [ ] Añadir `show_ballot_animation` y `ballot_animation_started_at` al tipo `RoundRow` en `src/types/db.ts`
+- [x] Añadir `show_ballot_animation` y `ballot_animation_started_at` al tipo `RoundRow` en `src/types/db.ts`
 
 ### Fase 3 — Hook de proyección (`useProjectionData.ts`)
 
-Archivo: `src/hooks/useProjectionData.ts:51`
+Archivo: `src/hooks/useProjectionData.ts`
 
-- [ ] Añadir estado `"ballot-animation"` al tipo `ProjectionState`
-- [ ] Insertar la condición **antes** que `"results"` en el switch de estado:
-  ```ts
-  if (round.round_finalized && round.show_ballot_animation) return "ballot-animation";
-  if (round.round_finalized && round.show_results_to_voters) return "results";
-  ```
-- [ ] Añadir `show_ballot_animation` al `Pick<RoundRow, …>` que usa el hook
+- [x] Añadir estado `"ballot-animation"` al tipo `ProjectionState`
+- [x] Insertar la condición **antes** que `"results"` en el switch de estado
+- [x] Cargar `ballotSummaries` también cuando `show_ballot_animation` es true
+- [x] Añadir `show_ballot_animation` a `hasAnythingToProject`
 
 ### Fase 4 — Workflow hook (`useRoundWorkflow.ts`)
 
 Archivo: `src/hooks/useRoundWorkflow.ts`
 
-- [ ] Añadir paso `"ballot-animation"` a `WORKFLOW_STEPS` (entre `close-vote` y `results`):
-  ```ts
-  { id: "ballot-animation", label: "Animación de papeletas", sub: "Papeletas entrando en urna" },
-  ```
-- [ ] Reordenar los stages (añadir stage intermedio):
-  - stage 3 → `show_ballot_animation = true` (nuevo)
-  - stage 4 → `show_results_to_voters = true` (era stage 3)
-  - stage 5 → `show_ballot_summary_projection` (era stage 4, **comentado**)
-  - stage 6 → Finalizar ronda (era stage 5)
-- [ ] Actualizar la lógica de `label` y `disabled` para el nuevo estado
-- [ ] Añadir `show_ballot_animation` al tipo `Round` interno del hook
+- [x] Añadir paso `"ballot-animation"` a `WORKFLOW_STEPS` (entre `close-vote` y `results`)
+- [x] Reordenar los stages:
+  - stage 3 → listo para lanzar animación
+  - stage 4 → animación en curso (`show_ballot_animation = true`)
+  - stage 5 → mostrando resultados
+- [x] Actualizar la lógica de `label` y `disabled` (botón principal bloqueado durante animación)
+- [x] Añadir `show_ballot_animation` al tipo `Round` interno del hook
 
 ### Fase 5 — Acciones admin (`useRoundActions.ts`)
 
-Archivo: `src/components/admin/voting-detail/hooks/useRoundActions.ts:183`
+Archivo: `src/components/admin/voting-detail/hooks/useRoundActions.ts`
 
-- [ ] En `runProjectionWorkflowStep()`, insertar el nuevo primer paso post-finalización:
-  ```ts
-  if (!round.show_ballot_animation) {
-    // Calcula duración total y agenda auto-avance a resultados
-    const totalMs = calcAnimationDuration(ballotCount) + 2000; // buffer 2 s
-    await supabase.from("rounds").update({
-      show_ballot_animation: true,
-      ballot_animation_started_at: new Date().toISOString(),
-    }).eq("id", roundId);
-    scheduleAutoAdvanceToResults(roundId, totalMs);
-    return;
-  }
-  ```
-- [ ] Mover el bloque `show_results_to_voters` al siguiente paso (ya existente, reubicarlo)
-- [ ] Comentar (no borrar) el bloque de `show_ballot_summary_projection`:
-  ```ts
-  // -- Papeletas estáticas (paso opcional, desactivado temporalmente) --
-  // if (!round.show_ballot_summary_projection) { ... }
-  ```
-- [ ] Implementar `calcAnimationDuration(n: number): number`:
-  - Base: 700 ms/papeleta, mínimo 400 ms si hay >30 papeletas, proporcional hasta 1 000
-  - Fórmula sugerida: `Math.max(400, Math.min(700, 700 - (n - 10) * 10))` ms
-- [ ] Implementar `scheduleAutoAdvanceToResults(roundId, ms)`:
-  - `setTimeout` que actualiza `show_ballot_animation = false, show_results_to_voters = true`
-  - Guardar la referencia en un `ref` para poder cancelarla si el admin salta manualmente
-- [ ] Añadir botón "Saltar animación" visible cuando `round.show_ballot_animation`:
-  - Cancela el timeout, hace el update a resultados inmediatamente
-  - Texto: "Saltar a resultados →"
+- [x] Insertar nuevo primer paso post-finalización: activa animación + `ballot_animation_started_at`
+- [x] `calcAnimationDuration(n)`: adaptativo 700→400 ms/papeleta + 2 s buffer
+- [x] `scheduleAutoAdvance(ms)`: `setTimeout` en `useRef`, cancelable
+- [x] `useEffect` de recuperación: si la página recarga con animación activa, retoma el timer
+- [x] `skipBallotAnimation()`: cancela timer, avanza a resultados inmediatamente
+- [x] Comentar (no borrar) el bloque de `show_ballot_summary_projection`
+- [x] Reset de `show_ballot_animation` en `finalizeRound`, `startNextRound`, `closeVoting`
+- [x] Exportar `skipBallotAnimation` desde el hook
 
 ### Fase 6 — Componente de animación (`ProjectionBallotAnimation.tsx`)
 
 Nuevo archivo: `src/components/projection/ProjectionBallotAnimation.tsx`
 
-#### Props
-```ts
-interface Props {
-  ballotSummaries: BallotSummary[];
-  roundTitle: string;
-  roundNumber: number;
-  team: string;
-  startedAt?: string | null; // para resumir si se recarga
-}
-```
-
-#### Estructura visual
-- [ ] Layout: urna SVG centrada en la parte inferior, papeleta activa en el centro superior
-- [ ] Urna SVG: caja con ranura, color `--avd-surface`, borde `--avd-border`, glow `--avd-brand` al recibir papeleta
-- [ ] Papeleta (tarjeta ~480×320 px oscura):
-  - Cabecera: `voteCode` en monospace
-  - 3 líneas de nombres, fuente grande legible
-  - Sello "EN BLANCO" diagonal si `isBlank`
-  - Borde y fondo con tokens `--avd-*`
-- [ ] Contador "X / N papeletas" + barra de progreso (`--avd-brand`)
-- [ ] Pila de papeletas apiladas detrás de la activa (efecto baraja, `z-index`)
-
-#### Animación framer-motion por papeleta
-- [ ] `entry` (200 ms): desde arriba (`y: -120`), `rotate` aleatorio [-3°, 3°], `scale 0.8→1`, `opacity 0→1`
-- [ ] `hold` (variable): los 3 nombres con `staggerChildren` 60 ms (fade-in)
-- [ ] `drop` (250 ms): `y → urna`, `scale 1→0.4`, `rotate→0`, `opacity→0`
-- [ ] Pulse en la urna al recibir: `AnimatePresence` + `boxShadow` de `--avd-brand`
-
-#### Lógica de secuencia
-- [ ] Barajar papeletas con seed determinista (derivado de `roundId`) → misma secuencia en todas las pantallas
-- [ ] `useEffect` encadenado con `setTimeout` (igual que `ProjectionResults`)
-- [ ] Si `startedAt` está presente: calcular offset y arrancar desde la papeleta correcta (skip silencioso)
-- [ ] Al terminar la última papeleta: pausa 1,5 s → fundido negro suave → el estado cambia a `"results"` (por el Supabase listener, no hace falta que el componente llame nada)
-
-#### CSS
-- [ ] Añadir keyframes en `src/components/projection/projection.css`:
-  - `urna-glow` para el pulse de la ranura
-  - `ballot-stack-shift` para que la pila se mueva levemente al entrar cada papeleta
-- [ ] Modo oscuro únicamente (componente de proyección = siempre-oscuro, exento de la regla doble-modo)
+- [x] Props: `ballotSummaries`, `roundTitle`, `roundNumber`, `team`, `startedAt?`
+- [x] Layout: header + stage (papeleta) + urna SVG + barra de progreso
+- [x] Urna SVG: cuerpo, ranura, candado, patas, glow al recibir papeleta
+- [x] Papeleta (tarjeta oscura): `voteCode` en mono, 3 nombres, sello EN BLANCO diagonal
+- [x] Pila de "shadow cards" apiladas detrás con rotación y opacidad decreciente
+- [x] Estado "done" con ✓ animado y texto "Cargando resultados…"
+- [x] `entry` (200 ms): desde `y:-140`, `scale 0.82→1`, `opacity 0→1`
+- [x] `hold`: nombres con `staggerChildren` 60 ms vía framer-motion variants
+- [x] `drop` (260 ms): `y:200`, `scale→0.38`, `opacity→0`
+- [x] Pulse de la ranura al recibir: `urna-glow` CSS keyframe
+- [x] Shuffle con seed determinista (mulberry32 derivado de `roundTitle+roundNumber`)
+- [x] Resume-on-reload: `startedAt` → calcula offset → arranca desde la papeleta correcta
+- [x] Auto-avance lo maneja el admin (Supabase listener → cambia estado a `"results"`)
 
 ### Fase 7 — Página de proyección (`ProjectionPage.tsx`)
 
-Archivo: `src/pages/ProjectionPage.tsx`
+- [x] Importar `ProjectionBallotAnimation`
+- [x] Añadir case `"ballot-animation"` pasando `startedAt={data.round.ballot_animation_started_at}`
 
-- [ ] Importar `ProjectionBallotAnimation`
-- [ ] Añadir case `"ballot-animation"` en el switch/render:
-  ```tsx
-  {data.state === "ballot-animation" && (
-    <ProjectionBallotAnimation
-      ballotSummaries={data.ballotSummaries}
-      roundTitle={data.round.title}
-      roundNumber={data.round.current_round_number}
-      team={data.round.team}
-      startedAt={data.round.ballot_animation_started_at}
-    />
-  )}
-  ```
+### Fase 8 — Admin UI (`PageHeader.tsx` + `index.tsx`)
 
-### Fase 8 — Admin UI (`PageHeader.tsx` y panel de ronda)
-
-Archivo: `src/components/admin/voting-detail/PageHeader.tsx:137`
-
-- [ ] Actualizar el indicador visual de pasos (stepper) para reflejar el nuevo paso "Animación papeletas"
-- [ ] Añadir botón "Saltar a resultados →" visible solo cuando `workflow.stage === 3` (animación activa)
-  - Estilo: outline/secundario, no el botón principal del workflow
-  - Llama a `skipBallotAnimation()` de `useRoundActions`
+- [x] Nueva prop `skipBallotAnimation?` en `PageHeader`
+- [x] Botón "Saltar a resultados →" (con icono `FastForward`) visible solo en `stage === 4`
+- [x] Conectar `skipBallotAnimation` en `index.tsx` → `PageHeader`
+- [x] El stepper ya refleja el nuevo paso automáticamente (lee `WORKFLOW_STEPS`)
 
 ---
 
@@ -167,21 +97,22 @@ Archivo: `src/components/admin/voting-detail/PageHeader.tsx:137`
 |---|---------|
 | 1 | Rejilla de papeletas conservada pero **comentada** (fácil de reactivar) |
 | 2 | Duración **adaptativa**: 700 ms base, baja linealmente hasta 400 ms a partir de >10 papeletas |
-| 3 | Botón "Saltar a resultados →" siempre disponible durante la animación |
-| 4 | Animación con **framer-motion** (ya instalado `^12.38.0`) |
+| 3 | Botón "Saltar a resultados →" siempre disponible durante la animación (stage 4) |
+| 4 | Animación con **framer-motion** `^12.38.0` |
 
 ---
 
-## Archivos a tocar (resumen)
+## Archivos modificados
 
-| Archivo | Tipo de cambio |
-|---------|---------------|
-| `supabase/migrations/…_ballot_animation_flag.sql` | Nuevo |
-| `src/types/db.ts` | Añadir campos |
-| `src/hooks/useProjectionData.ts` | Añadir estado `"ballot-animation"` |
-| `src/hooks/useRoundWorkflow.ts` | Nuevo paso, reordenar stages |
-| `src/components/admin/voting-detail/hooks/useRoundActions.ts` | Reordenar workflow, auto-avance, skip |
-| `src/components/projection/ProjectionBallotAnimation.tsx` | **Nuevo** |
-| `src/components/projection/projection.css` | Nuevos keyframes |
-| `src/pages/ProjectionPage.tsx` | Añadir case nuevo estado |
-| `src/components/admin/voting-detail/PageHeader.tsx` | Stepper + botón skip |
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/migrations/20260516000000_ballot_animation_flag.sql` | Nuevo |
+| `src/types/db.ts` | +2 campos |
+| `src/hooks/useProjectionData.ts` | Estado `"ballot-animation"`, carga ballots |
+| `src/hooks/useRoundWorkflow.ts` | Nuevo paso, stages reordenados |
+| `src/components/admin/voting-detail/hooks/useRoundActions.ts` | Timer, auto-avance, skip |
+| `src/components/projection/ProjectionBallotAnimation.tsx` | **Nuevo** (280 líneas) |
+| `src/components/projection/projection.css` | ~160 líneas nuevas de estilos |
+| `src/pages/ProjectionPage.tsx` | Case `"ballot-animation"` |
+| `src/components/admin/voting-detail/PageHeader.tsx` | Prop + botón skip |
+| `src/components/admin/voting-detail/index.tsx` | Conecta `skipBallotAnimation` |
