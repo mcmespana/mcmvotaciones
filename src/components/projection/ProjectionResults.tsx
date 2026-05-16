@@ -39,7 +39,9 @@ export function ProjectionResults({
   const [showSelected, setShowSelected] = useState(false);
   const [ballotsRef] = useAutoAnimate();
 
-  const displayResults = useMemo(() => [...results].sort((a, b) => b.vote_count - a.vote_count), [results]);
+  const displayResults = useMemo(() =>
+    [...results].filter(r => r.vote_count > 0).sort((a, b) => b.vote_count - a.vote_count),
+  [results]);
   const top5Sorted = useMemo(() => displayResults.slice(0, TOP_N), [displayResults]);
   const restResults = useMemo(() => displayResults.slice(TOP_N), [displayResults]);
   const selectedIds = useMemo(() => new Set(selectedCandidates.map((c) => c.id)), [selectedCandidates]);

@@ -34,6 +34,13 @@
   overflow: hidden;
   border-radius: calc(var(--avd-radius-lg) - 1px);
   background: linear-gradient(160deg,
+    oklch(0.97 0.04 148) 0%,
+    oklch(0.92 0.07 148) 55%,
+    oklch(0.88 0.09 148) 100%
+  );
+}
+.dark .tkt-card-inner {
+  background: linear-gradient(160deg,
     oklch(0.30 0.14 148) 0%,
     oklch(0.24 0.12 148) 50%,
     oklch(0.20 0.10 148) 100%
@@ -65,8 +72,11 @@
   border-radius: 50%;
   top: -70px;
   left: -70px;
-  background: radial-gradient(circle, oklch(0.65 0.22 148 / 0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, oklch(0.55 0.20 148 / 0.09) 0%, transparent 70%);
   pointer-events: none;
+}
+.dark .tkt-card-inner::before {
+  background: radial-gradient(circle, oklch(0.65 0.22 148 / 0.22) 0%, transparent 70%);
 }
 /* Ambient orb — bottom right */
 .tkt-card-inner::after {
@@ -77,8 +87,11 @@
   border-radius: 50%;
   bottom: -50px;
   right: -50px;
-  background: radial-gradient(circle, oklch(0.75 0.20 148 / 0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, oklch(0.60 0.20 148 / 0.07) 0%, transparent 70%);
   pointer-events: none;
+}
+.dark .tkt-card-inner::after {
+  background: radial-gradient(circle, oklch(0.75 0.20 148 / 0.18) 0%, transparent 70%);
 }
 
 /* Icon */
@@ -137,18 +150,23 @@
   font-weight: 900;
   margin-bottom: 16px;
   letter-spacing: -0.025em;
-  color: white;
+  color: oklch(0.15 0.09 148);
   line-height: 1.1;
+  text-shadow: 0 1px 8px oklch(0.55 0.20 148 / 0.15);
+}
+.dark .tkt-title {
+  color: white;
   text-shadow: 0 2px 20px oklch(0.75 0.22 148 / 0.6);
 }
 
 .tkt-round-title {
   font-weight: 800;
   font-size: 16px;
-  color: oklch(0.92 0.08 148);
+  color: oklch(0.28 0.10 148);
   margin-bottom: 4px;
   letter-spacing: -0.01em;
 }
+.dark .tkt-round-title { color: oklch(0.92 0.08 148); }
 
 .tkt-round-badge {
   display: inline-flex;
@@ -156,27 +174,36 @@
   gap: 6px;
   padding: 3px 12px;
   border-radius: 999px;
+  background: oklch(0 0 0 / 0.07);
+  border: 1px solid oklch(0 0 0 / 0.12);
+}
+.dark .tkt-round-badge {
   background: oklch(1 0 0 / 0.12);
-  border: 1px solid oklch(1 0 0 / 0.18);
+  border-color: oklch(1 0 0 / 0.18);
 }
 
 .tkt-round-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: oklch(0.85 0.18 148);
-  box-shadow: 0 0 8px oklch(0.85 0.18 148);
+  background: oklch(0.40 0.18 148);
+  box-shadow: 0 0 8px oklch(0.40 0.18 148);
   display: inline-block;
   animation: tkt-dot-pulse 1.5s ease-in-out infinite;
+}
+.dark .tkt-round-dot {
+  background: oklch(0.85 0.18 148);
+  box-shadow: 0 0 8px oklch(0.85 0.18 148);
 }
 
 .tkt-round-label {
   font-size: 11px;
   font-weight: 700;
-  color: oklch(0.95 0.06 148);
+  color: oklch(0.28 0.10 148);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.dark .tkt-round-label { color: oklch(0.95 0.06 148); }
 
 /* Green accent stripe */
 .tkt-color-stripe {
@@ -199,26 +226,35 @@
 /* Footer */
 .tkt-footer {
   padding: 12px 24px;
-  border-top: 1px solid oklch(1 0 0 / 0.10);
-  background: oklch(0 0 0 / 0.20);
+  border-top: 1px solid oklch(0 0 0 / 0.08);
+  background: oklch(0 0 0 / 0.04);
   text-align: center;
+}
+.dark .tkt-footer {
+  border-top-color: oklch(1 0 0 / 0.10);
+  background: oklch(0 0 0 / 0.20);
 }
 
 .tkt-footer-text {
-  color: oklch(0.92 0.06 148);
+  color: oklch(0.32 0.10 148);
   font-size: 11.5px;
   font-weight: 500;
   margin: 0;
   line-height: 1.5;
 }
+.dark .tkt-footer-text { color: oklch(0.92 0.06 148); }
 
 /* Receipt card */
 .tkt-receipt-card {
   overflow: hidden;
   border-radius: var(--avd-radius-lg);
-  border: 1px solid oklch(0.65 0.18 148 / 0.35);
-  background: oklch(0.26 0.10 148);
+  border: 1px solid oklch(0.55 0.18 148 / 0.22);
+  background: oklch(0.99 0.01 148);
   animation: tkt-receipt-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+.dark .tkt-receipt-card {
+  border-color: oklch(0.65 0.18 148 / 0.35);
+  background: oklch(0.26 0.10 148);
 }
 
 /* ── Keyframes ── */
@@ -269,3 +305,4 @@
   0%,100% { opacity: 1; box-shadow: 0 0 8px oklch(0.85 0.18 148); }
   50%     { opacity: 0.5; box-shadow: 0 0 3px oklch(0.85 0.18 148); }
 }
+

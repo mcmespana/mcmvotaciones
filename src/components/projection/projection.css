@@ -1493,13 +1493,11 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   BALLOT ANIMATION SCREEN  (always-dark — exento de regla doble-modo)
+   BALLOT ANIMATION SCREEN
    ══════════════════════════════════════════════════════════════════════════════ */
 
-.ballot-anim-page {
-  background: var(--avd-n-950, #09090b);
-  min-height: 100vh;
-}
+/* Inherits background from .proj-page (var(--avd-bg)) — adapts to light/dark */
+.ballot-anim-page { min-height: 100vh; }
 
 /* ── Body layout ── */
 .ballot-anim-body {
@@ -1508,8 +1506,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(20px, 3vw, 40px);
-  padding: clamp(20px, 3vw, 48px) clamp(20px, 4vw, 80px);
+  gap: clamp(8px, 1.2vh, 20px);
+  padding: clamp(12px, 2vh, 36px) clamp(20px, 4vw, 80px);
   position: relative;
   z-index: 1;
 }
@@ -1517,8 +1515,9 @@
 /* ── Ballot stage (card + stack area) ── */
 .ballot-anim-stage {
   position: relative;
-  width: clamp(300px, 38vw, 520px);
-  height: clamp(200px, 26vw, 360px);
+  z-index: 1; /* below urna so falling card slides behind it */
+  width: clamp(380px, 58vw, 1200px);
+  height: clamp(240px, 40vh, 620px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1529,26 +1528,25 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  background: var(--avd-n-800, #27272a);
-  border: 1px solid var(--avd-n-700, #3f3f46);
+  background: var(--avd-bg-sunken);
+  border: 1px solid var(--avd-border);
 }
 
 /* ── Active ballot card ── */
 .ballot-anim-card {
   position: absolute;
   inset: 0;
-  background: var(--avd-n-900, #18181b);
-  border: 1.5px solid var(--avd-n-600, #52525b);
+  background: var(--avd-surface);
+  border: 1.5px solid var(--avd-border-strong);
   border-radius: 16px;
   padding: clamp(16px, 2vw, 28px) clamp(18px, 2.2vw, 32px);
   display: flex;
   flex-direction: column;
   gap: 10px;
   box-shadow:
-    0 4px 24px -6px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(255,255,255,0.04);
+    0 4px 24px -6px color-mix(in oklch, var(--avd-fg) 15%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--avd-fg) 3%, transparent);
   overflow: hidden;
-  /* top accent line */
 }
 .ballot-anim-card::before {
   content: "";
@@ -1571,7 +1569,7 @@
   font-size: clamp(13px, 1.3vw, 18px);
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: var(--avd-brand-400, #818cf8);
+  color: var(--avd-brand);
 }
 
 .ballot-anim-round-chip {
@@ -1587,17 +1585,19 @@
 
 .ballot-anim-sep {
   height: 1px;
-  background: var(--avd-n-700, #3f3f46);
+  background: var(--avd-border);
   margin: 2px 0;
 }
 
 .ballot-anim-list {
   list-style: none;
-  margin: 0; padding: 0;
+  margin: 0; padding: clamp(4px, 0.8vw, 14px) 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-around; /* spread names across card height — no wasted space */
   gap: clamp(6px, 0.8vw, 12px);
   flex: 1;
+  min-height: 0;
 }
 
 .ballot-anim-list-item {
@@ -1609,7 +1609,7 @@
 .ballot-anim-num {
   font-size: 11px;
   font-weight: 800;
-  color: var(--avd-n-500, #71717a);
+  color: var(--avd-fg-subtle);
   font-variant-numeric: tabular-nums;
   min-width: 14px;
 }
@@ -1617,7 +1617,7 @@
 .ballot-anim-name {
   font-size: clamp(15px, 1.6vw, 24px);
   font-weight: 700;
-  color: var(--avd-n-100, #f4f4f5);
+  color: var(--avd-fg);
   letter-spacing: -0.01em;
   line-height: 1.25;
   overflow: hidden;
@@ -1627,6 +1627,13 @@
   min-width: 0;
 }
 
+/* Font size scales up as vote count decreases — maximize readability */
+.ballot-anim-list[data-count="2"] .ballot-anim-name { font-size: clamp(26px, 3.4vw, 82px); }
+.ballot-anim-list[data-count="3"] .ballot-anim-name { font-size: clamp(22px, 2.8vw, 64px); }
+.ballot-anim-list[data-count="4"] .ballot-anim-name { font-size: clamp(20px, 2.4vw, 52px); }
+.ballot-anim-list[data-count="5"] .ballot-anim-name { font-size: clamp(18px, 2.1vw, 44px); }
+.ballot-anim-list[data-count="6"] .ballot-anim-name { font-size: clamp(16px, 1.8vw, 36px); }
+
 .ballot-anim-blank {
   flex: 1;
   display: flex;
@@ -1635,7 +1642,7 @@
   font-size: clamp(18px, 2vw, 28px);
   font-weight: 900;
   letter-spacing: 0.12em;
-  color: var(--avd-n-500, #71717a);
+  color: var(--avd-fg-muted);
   text-transform: uppercase;
   position: relative;
 }
@@ -1644,7 +1651,7 @@
   position: absolute;
   width: 70%;
   height: 2px;
-  background: var(--avd-n-600, #52525b);
+  background: var(--avd-border-strong);
   border-radius: 2px;
   transform: rotate(-8deg);
 }
@@ -1680,27 +1687,47 @@
 .ballot-anim-done-text {
   font-size: clamp(16px, 1.6vw, 22px);
   font-weight: 700;
-  color: var(--avd-n-200, #e4e4e7);
+  color: var(--avd-fg);
   margin: 0;
 }
 
 .ballot-anim-done-sub {
   font-size: 14px;
-  color: var(--avd-n-500, #71717a);
+  color: var(--avd-fg-muted);
   margin: 0;
   animation: proj-dot-pulse 1.5s ease-in-out infinite;
 }
 
 /* ── Urna ── */
 .ballot-anim-urna-wrap {
-  width: clamp(120px, 14vw, 200px);
+  width: clamp(160px, 17vw, 320px);
   position: relative;
+  z-index: 5; /* above ballot stage so falling card slides behind */
+  /* Dark mode palette (default) */
+  --urna-surf:   oklch(0.30 0.06 245);
+  --urna-bdr:    oklch(0.40 0.07 245);
+  --urna-mid:    oklch(0.36 0.07 245);
+  --urna-slot:   oklch(0.10 0.04 245);
+  --urna-detail: oklch(0.55 0.08 245);
+  --urna-body:   oklch(0.20 0.05 245);
+  --urna-shine:  color-mix(in oklch, white 12%, transparent);
+}
+/* Light mode palette */
+:root:not(.dark) .ballot-anim-urna-wrap {
+  --urna-surf:   oklch(0.72 0.06 220);
+  --urna-bdr:    oklch(0.55 0.08 220);
+  --urna-mid:    oklch(0.80 0.05 220);
+  --urna-slot:   oklch(0.18 0.05 245);
+  --urna-detail: oklch(0.38 0.08 225);
+  --urna-body:   oklch(0.60 0.08 220);
+  --urna-shine:  color-mix(in oklch, white 30%, transparent);
 }
 
 .ballot-anim-urna-svg {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+  overflow: visible; /* let the opened lid extend above the viewBox without clipping */
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.45));
 }
 
 /* Slot glow when a ballot enters */
@@ -1713,9 +1740,77 @@
   100% { opacity: 0; stroke-width: 2; }
 }
 
+/* Lid stays open during counting, closes on done */
+.urna-lid-group {
+  transform-origin: 14px 56px; /* hinge at left edge of lid */
+  transform: rotate(0deg);
+  transition: transform 0.55s cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+.urna-lid-group.is-open {
+  transform: rotate(-32deg);
+}
+
+/* Urna shakes on ballot entry */
+.ballot-anim-urna-wrap.is-shaking {
+  animation: urna-shake 0.42s ease-out both;
+}
+
+/* Urna celebrates when all ballots are done */
+.ballot-anim-urna-wrap.is-done {
+  animation: urna-celebrate 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) 0.2s both;
+}
+@keyframes urna-celebrate {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); }
+  18%  { transform: translateY(-16px) rotate(-6deg) scale(1.07); }
+  36%  { transform: translateY(-10px) rotate(5deg) scale(1.05); }
+  52%  { transform: translateY(-5px) rotate(-2.5deg) scale(1.02); }
+  68%  { transform: translateY(-2px) rotate(1.5deg) scale(1.01); }
+  84%  { transform: translateY(-1px) rotate(-0.5deg) scale(1); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes urna-shake {
+  0%   { transform: translateX(0) rotate(0deg); }
+  12%  { transform: translateX(-5px) rotate(-1.5deg); }
+  26%  { transform: translateX(5px) rotate(1.5deg); }
+  40%  { transform: translateX(-3px) rotate(-1deg); }
+  55%  { transform: translateX(3px) rotate(1deg); }
+  70%  { transform: translateX(-1.5px) rotate(-0.4deg); }
+  85%  { transform: translateX(1.5px) rotate(0.4deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+/* Particle burst when ballot enters */
+.urna-particles {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.urna-particle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: urna-particle-out 0.55s ease-out both;
+}
+.urna-p0 { background: var(--avd-brand-400, #818cf8); --dx: 0px;   --dy: -42px; }
+.urna-p1 { background: var(--avd-ok, #22c55e);        --dx: 30px;  --dy: -30px; animation-delay: 25ms; }
+.urna-p2 { background: var(--avd-brand-300, #a5b4fc); --dx: 42px;  --dy: 0px;   animation-delay: 10ms; }
+.urna-p3 { background: var(--avd-ok, #22c55e);        --dx: 22px;  --dy: 32px;  animation-delay: 40ms; width: 5px; height: 5px; }
+.urna-p4 { background: var(--avd-brand-400, #818cf8); --dx: -30px; --dy: -30px; animation-delay: 15ms; }
+.urna-p5 { background: var(--avd-brand-300, #a5b4fc); --dx: -42px; --dy: 0px;   animation-delay: 35ms; width: 5px; height: 5px; }
+@keyframes urna-particle-out {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  70%  { opacity: 0.8; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+
 /* ── Progress bar ── */
 .ballot-anim-progress-wrap {
-  width: clamp(300px, 44vw, 600px);
+  width: clamp(380px, 58vw, 1300px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1726,9 +1821,9 @@
   width: 100%;
   height: 8px;
   border-radius: 8px;
-  background: var(--avd-n-800, #27272a);
+  background: var(--avd-bg-sunken);
   overflow: hidden;
-  border: 1px solid var(--avd-n-700, #3f3f46);
+  border: 1px solid var(--avd-border);
 }
 
 .ballot-anim-progress-fill {
@@ -1748,11 +1843,11 @@
 .ballot-anim-progress-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--avd-n-500, #71717a);
+  color: var(--avd-fg-muted);
   font-variant-numeric: tabular-nums;
 }
 .ballot-anim-progress-label strong {
-  color: var(--avd-n-200, #e4e4e7);
+  color: var(--avd-fg);
   font-weight: 800;
 }
 

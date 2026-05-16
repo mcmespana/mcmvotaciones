@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 import { AnimatePresence, motion } from "framer-motion";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { PChip } from "./_shared";
@@ -44,10 +45,10 @@ function strToSeed(s: string): number {
 }
 
 // ── Timing helpers ────────────────────────────────────────────────────────────
-const PER_BALLOT_ENTRY_MS = 200;
-const PER_BALLOT_HOLD_BASE_MS = 320; // names stagger within this window
-const PER_BALLOT_DROP_MS = 260;
-const PER_BALLOT_GAP_MS = 60; // pause between ballots
+const PER_BALLOT_ENTRY_MS = 280;
+const PER_BALLOT_HOLD_BASE_MS = 850; // names stagger within this window; total cycle ~1.67s
+const PER_BALLOT_DROP_MS = 420;
+const PER_BALLOT_GAP_MS = 120; // pause between ballots
 
 function calcPerBallotMs(n: number) {
   return (
@@ -60,66 +61,68 @@ function calcPerBallotMs(n: number) {
 }
 
 // ── Urna SVG ──────────────────────────────────────────────────────────────────
-function UrnaSVG({ glow }: { glow: boolean }) {
+function UrnaSVG({ glow, lidOpen }: { glow: boolean; lidOpen: boolean }) {
   return (
     <svg
-      viewBox="0 0 220 170"
+      viewBox="0 0 220 185"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       className="ballot-anim-urna-svg"
     >
-      {/* Slot (ranura) */}
-      <rect
-        x="80" y="46" width="60" height="14" rx="7"
-        fill="var(--avd-n-800)"
-        stroke="var(--avd-n-600)"
-        strokeWidth="1.5"
-      />
-      {/* Glow on slot when ballot enters */}
-      {glow && (
-        <rect
-          x="80" y="46" width="60" height="14" rx="7"
-          fill="none"
-          stroke="var(--avd-brand)"
-          strokeWidth="3"
-          className="ballot-urna-slot-glow"
-        />
-      )}
-      {/* Body */}
-      <rect
-        x="20" y="58" width="180" height="106" rx="10"
-        fill="var(--avd-n-900)"
-        stroke="var(--avd-n-600)"
-        strokeWidth="1.5"
-      />
-      {/* Inner shadow line */}
-      <line x1="20" y1="82" x2="200" y2="82" stroke="var(--avd-n-700)" strokeWidth="1" />
+      {/* ── Lid group (opens at start, closes when done) ── */}
+      <g className={`urna-lid-group${lidOpen ? " is-open" : ""}`}>
+        {/* Lid body */}
+        <rect x="14" y="44" width="192" height="24" rx="9"
+          fill="var(--urna-surf)" stroke="var(--urna-bdr)" strokeWidth="1.5" />
+        {/* Lid top highlight */}
+        <rect x="16" y="46" width="188" height="5" rx="3"
+          fill="var(--urna-shine)" />
+        {/* Slot */}
+        <rect x="80" y="51" width="60" height="12" rx="6"
+          fill="var(--urna-slot)" stroke="var(--urna-mid)" strokeWidth="1" />
+        {/* Slot glow */}
+        {glow && (
+          <rect x="80" y="51" width="60" height="12" rx="6"
+            fill="none" stroke="var(--avd-brand)" strokeWidth="3"
+            className="ballot-urna-slot-glow" />
+        )}
+        {/* Handle / knob */}
+        <rect x="94" y="28" width="32" height="18" rx="9"
+          fill="var(--urna-mid)" stroke="var(--urna-detail)" strokeWidth="1.5" />
+        <rect x="100" y="32" width="20" height="6" rx="3"
+          fill="var(--urna-shine)" />
+      </g>
+
+      {/* ── Body ── */}
+      <rect x="20" y="66" width="180" height="98" rx="10"
+        fill="var(--urna-body)" stroke="var(--urna-bdr)" strokeWidth="1.5" />
+      {/* Top ridge */}
+      <rect x="21" y="67" width="178" height="7" rx="0"
+        fill="var(--urna-surf)" />
+      {/* Corner bolts */}
+      <circle cx="35" cy="82" r="3.5" fill="var(--urna-mid)" stroke="var(--urna-bdr)" strokeWidth="1" />
+      <line x1="34" y1="82" x2="36" y2="82" stroke="var(--urna-detail)" strokeWidth="0.5" />
+      <line x1="35" y1="81" x2="35" y2="83" stroke="var(--urna-detail)" strokeWidth="0.5" />
+      <circle cx="185" cy="82" r="3.5" fill="var(--urna-mid)" stroke="var(--urna-bdr)" strokeWidth="1" />
+      <line x1="184" y1="82" x2="186" y2="82" stroke="var(--urna-detail)" strokeWidth="0.5" />
+      <line x1="185" y1="81" x2="185" y2="83" stroke="var(--urna-detail)" strokeWidth="0.5" />
       {/* Lock icon */}
-      <rect x="97" y="100" width="26" height="20" rx="4" fill="var(--avd-n-700)" />
-      <path
-        d="M103 100v-6a7 7 0 1114 0v6"
-        stroke="var(--avd-n-600)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle cx="110" cy="110" r="3" fill="var(--avd-n-500)" />
+      <rect x="97" y="102" width="26" height="20" rx="4" fill="var(--urna-mid)" />
+      <path d="M103 102v-6a7 7 0 1114 0v6"
+        stroke="var(--urna-bdr)" strokeWidth="2" strokeLinecap="round" fill="none" />
+      <circle cx="110" cy="112" r="3" fill="var(--urna-detail)" />
       {/* "URNA" label */}
-      <text
-        x="110" y="144"
-        textAnchor="middle"
-        fontFamily="var(--avd-font-mono)"
-        fontSize="11"
-        fontWeight="800"
-        letterSpacing="3"
-        fill="var(--avd-n-500)"
-      >
+      <text x="110" y="148" textAnchor="middle"
+        fontFamily="var(--avd-font-mono)" fontSize="11"
+        fontWeight="800" letterSpacing="3" fill="var(--urna-detail)">
         URNA
       </text>
       {/* Legs */}
-      <rect x="52" y="162" width="14" height="6" rx="3" fill="var(--avd-n-700)" />
-      <rect x="154" y="162" width="14" height="6" rx="3" fill="var(--avd-n-700)" />
+      <rect x="46" y="163" width="18" height="10" rx="5" fill="var(--urna-mid)" />
+      <rect x="156" y="163" width="18" height="10" rx="5" fill="var(--urna-mid)" />
+      <rect x="42" y="171" width="26" height="4" rx="2" fill="var(--urna-surf)" />
+      <rect x="152" y="171" width="26" height="4" rx="2" fill="var(--urna-surf)" />
     </svg>
   );
 }
@@ -147,8 +150,30 @@ export function ProjectionBallotAnimation({
 
   const [index, setIndex] = useState(startIndex);
   const [urnaGlow, setUrnaGlow] = useState(false);
+  const [lidOpen, setLidOpen] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const [phase, setPhase] = useState<"entry" | "hold" | "drop" | "done">("entry");
+  const [dropY, setDropY] = useState(280);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Measure stage height so the ballot's drop ends INSIDE the urna body (not below it).
+  // Empirically 85% of stage height lands the card in the urna body region across viewports.
+  useEffect(() => {
+    const calc = () => {
+      if (stageRef.current) setDropY(Math.round(stageRef.current.offsetHeight * 0.85));
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+
+  // Open the lid shortly after mount so the first ballot has somewhere to land
+  useEffect(() => {
+    if (shuffled.length === 0) return;
+    const t = setTimeout(() => setLidOpen(true), 250);
+    return () => clearTimeout(t);
+  }, [shuffled.length]);
 
   // Advance through the phases for each ballot
   useEffect(() => {
@@ -188,6 +213,31 @@ export function ProjectionBallotAnimation({
   const current = shuffled[index];
   const progress = Math.min(1, index / Math.max(1, shuffled.length));
 
+  // End sequence: close lid → wait for it to close → trigger celebration + confetti
+  useEffect(() => {
+    if (!done || shuffled.length === 0) return;
+    const closeLid = setTimeout(() => setLidOpen(false), 280);
+    const startCelebrate = setTimeout(() => setCelebrate(true), 850);
+
+    const fire = (opts: confetti.Options) => confetti({ disableForReducedMotion: true, ...opts });
+    // Tutorial palette: red, emerald, yellow, blue
+    const PALETTE = ["#ef4444", "#10b981", "#eab308", "#3b82f6"];
+    const t1 = setTimeout(() => {
+      fire({ particleCount: 70, angle: 60, spread: 60, origin: { x: 0, y: 0.65 }, shapes: ["star"], colors: PALETTE, scalar: 1.2, startVelocity: 52, ticks: 260 });
+      fire({ particleCount: 70, angle: 120, spread: 60, origin: { x: 1, y: 0.65 }, shapes: ["star"], colors: PALETTE, scalar: 1.2, startVelocity: 52, ticks: 260 });
+    }, 850);
+    const t2 = setTimeout(() => {
+      fire({ particleCount: 50, angle: 75, spread: 45, origin: { x: 0.15, y: 0.7 }, shapes: ["circle"], colors: PALETTE, scalar: 0.9, startVelocity: 38, gravity: 1.1 });
+      fire({ particleCount: 50, angle: 105, spread: 45, origin: { x: 0.85, y: 0.7 }, shapes: ["circle"], colors: PALETTE, scalar: 0.9, startVelocity: 38, gravity: 1.1 });
+    }, 1200);
+    return () => {
+      clearTimeout(closeLid);
+      clearTimeout(startCelebrate);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [done, shuffled.length]);
+
   // Stack of "waiting" cards visible behind the active one
   const stackCount = Math.min(3, shuffled.length - index - 1);
 
@@ -214,20 +264,8 @@ export function ProjectionBallotAnimation({
       <div className="ballot-anim-body">
 
         {/* ── Ballot stage ── */}
-        <div className="ballot-anim-stage">
+        <div className="ballot-anim-stage" ref={stageRef}>
 
-          {/* Pila (shadow cards behind the active ballot) */}
-          {!done && Array.from({ length: stackCount }).map((_, i) => (
-            <div
-              key={i}
-              className="ballot-anim-stack-card"
-              style={{
-                transform: `translateY(${(stackCount - i) * -8}px) rotate(${(i % 2 === 0 ? 1 : -1) * (1.5 + i * 0.8)}deg) scale(${0.96 - i * 0.02})`,
-                zIndex: stackCount - i,
-                opacity: 0.4 - i * 0.1,
-              }}
-            />
-          ))}
 
           {/* Active ballot */}
           <AnimatePresence mode="wait">
@@ -235,18 +273,23 @@ export function ProjectionBallotAnimation({
               <motion.div
                 key={`${index}-${current.voteCode}`}
                 className="ballot-anim-card"
-                style={{ zIndex: 10 }}
-                initial={{ y: -140, rotate: 0, scale: 0.82, opacity: 0 }}
+                style={{ zIndex: 4 }}
+                initial={{ y: -200, rotate: 0, scaleX: 0.82, scaleY: 0.82, opacity: 0 }}
                 animate={
                   phase === "entry"
-                    ? { y: 0, rotate: (seed % 7) - 3, scale: 1, opacity: 1 }
+                    ? { y: 0, rotate: (seed % 7) - 3, scaleX: 1, scaleY: 1, opacity: 1 }
                     : phase === "hold"
-                    ? { y: 0, rotate: (seed % 7) - 3, scale: 1, opacity: 1 }
-                    : { y: 200, rotate: 0, scale: 0.38, opacity: 0 }
+                    ? { y: 0, rotate: (seed % 7) - 3, scaleX: 1, scaleY: 1, opacity: 1 }
+                    : { y: dropY, rotate: 0, scaleX: 0.05, scaleY: 0.025, opacity: 1 }
                 }
                 transition={
                   phase === "drop"
-                    ? { duration: PER_BALLOT_DROP_MS / 1000, ease: [0.4, 0, 0.6, 1] }
+                    ? {
+                        y: { duration: PER_BALLOT_DROP_MS / 1000, ease: [0.3, 0, 0.8, 0.9] },
+                        scaleX: { duration: PER_BALLOT_DROP_MS / 1000 * 0.65, ease: [0.5, 0, 1, 1] },
+                        scaleY: { duration: PER_BALLOT_DROP_MS / 1000 * 0.8, ease: [0.5, 0, 1, 1] },
+                        opacity: { duration: 0.05, delay: PER_BALLOT_DROP_MS / 1000 * 0.85 },
+                      }
                     : { duration: PER_BALLOT_ENTRY_MS / 1000, ease: [0.2, 0.8, 0.2, 1] }
                 }
               >
@@ -263,6 +306,7 @@ export function ProjectionBallotAnimation({
                 ) : (
                   <motion.ul
                     className="ballot-anim-list"
+                    data-count={current.votes.length}
                     initial="hidden"
                     animate={phase === "hold" ? "visible" : "hidden"}
                     variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
@@ -307,8 +351,15 @@ export function ProjectionBallotAnimation({
         </div>
 
         {/* ── Urna ── */}
-        <div className="ballot-anim-urna-wrap">
-          <UrnaSVG glow={urnaGlow} />
+        <div className={`ballot-anim-urna-wrap${urnaGlow ? " is-shaking" : ""}${celebrate ? " is-done" : ""}`}>
+          {urnaGlow && (
+            <div className="urna-particles" aria-hidden="true">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className={`urna-particle urna-p${i}`} />
+              ))}
+            </div>
+          )}
+          <UrnaSVG glow={urnaGlow} lidOpen={lidOpen} />
         </div>
 
         {/* ── Progress bar ── */}

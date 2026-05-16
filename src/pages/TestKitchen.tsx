@@ -4,6 +4,7 @@ import { VoteTicket } from "@/components/voting/VoteTicket";
 import { SeatValidated } from "@/components/voting/SeatValidated";
 import { VotingTutorial } from "@/components/voting/VotingTutorial";
 import { VoteSubmitAnimation } from "@/components/voting/VoteSubmitAnimation";
+import { ProjectionBallotAnimation } from "@/components/projection/ProjectionBallotAnimation";
 
 const MOCK_RECEIPT = {
   roundId: "test-round",
@@ -38,15 +39,35 @@ function FullscreenPreview({ children, onClose }: { children: React.ReactNode; o
   );
 }
 
+const MOCK_BALLOTS = [
+  { voteCode: "VT-AC4E-792B", roundNumber: 1, votes: ["Encarna Herrera", "Pilar Díaz", "Teresa Pérez"], isBlank: false },
+  { voteCode: "VT-B3F1-881A", roundNumber: 1, votes: ["Carmen Rodríguez", "Ana García López", "Lucía Jiménez"], isBlank: false },
+  { voteCode: "VT-C7D2-993E", roundNumber: 1, votes: ["María Sánchez Torres", "Pilar Díaz", "Encarna Herrera"], isBlank: false },
+  { voteCode: "VT-D5E6-774F", roundNumber: 1, votes: [], isBlank: true },
+  { voteCode: "VT-E1A9-556B", roundNumber: 1, votes: ["Ana García López", "Teresa Pérez", "Carmen Rodríguez"], isBlank: false },
+  { voteCode: "VT-F2B8-447C", roundNumber: 1, votes: ["Pilar Díaz", "María Sánchez Torres", "Lucía Jiménez"], isBlank: false },
+  { voteCode: "VT-G4C3-338D", roundNumber: 1, votes: ["Encarna Herrera", "Ana García López", "Teresa Pérez"], isBlank: false },
+  { voteCode: "VT-H6D4-229E", roundNumber: 1, votes: ["Carmen Rodríguez", "Pilar Díaz", "María Sánchez Torres"], isBlank: false },
+];
+
 export function TestKitchen() {
   const [seatPreview, setSeatPreview] = useState<null | "normal" | "paused">(null);
   const [animVisible, setAnimVisible] = useState(false);
   const [tutorialKey, setTutorialKey] = useState(0);
+  const [ballotAnimKey, setBallotAnimKey] = useState(0);
+  const [ballotPreview, setBallotPreview] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   // Prevent VotingTutorial from auto-opening on mount (it opens for first-time viewers)
   useEffect(() => {
     try { localStorage.setItem("mcm_voting_tutorial_seen", "1"); } catch { /* ignore */ }
   }, []);
+
+  function toggleDark() {
+    const next = !isDark;
+    document.documentElement.classList.toggle("dark", next);
+    setIsDark(next);
+  }
 
   return (
     <AccessibilityProvider>
@@ -58,12 +79,19 @@ export function TestKitchen() {
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--avd-warn-bg)] text-[var(--avd-warn)] text-[13px] font-black">
               T
             </span>
-            <div>
+            <div className="flex-1">
               <h1 className="m-0 text-[20px] font-black text-[var(--avd-fg)]">Test Kitchen</h1>
               <p className="m-0 text-[12px] text-[var(--avd-fg-muted)]">
                 Solo visible en <code className="text-[var(--avd-brand)]">DEV</code> — previews de componentes voter
               </p>
             </div>
+            <button
+              className="avd-btn avd-btn-sm"
+              onClick={toggleDark}
+              title="Cambiar modo claro/oscuro"
+            >
+              {isDark ? "☀ Claro" : "☾ Oscuro"}
+            </button>
           </div>
 
           {/* ── VoteTicket ── */}
@@ -130,6 +158,21 @@ export function TestKitchen() {
             </div>
           </Section>
 
+          {/* ── ProjectionBallotAnimation ── */}
+          <Section title="ProjectionBallotAnimation — revisión de papeletas">
+            <div className="flex items-center gap-4">
+              <button
+                className="avd-btn avd-btn-primary"
+                onClick={() => { setBallotAnimKey(k => k + 1); setBallotPreview(true); }}
+              >
+                Ver animación
+              </button>
+              <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">
+                Pantalla completa. La urna se abre y tiembla con cada papeleta.
+              </p>
+            </div>
+          </Section>
+
           {/* ── VoteSubmitAnimation ── */}
           <Section title="VoteSubmitAnimation — animación de envío">
             <div className="flex items-center gap-4">
@@ -164,6 +207,18 @@ export function TestKitchen() {
         onComplete={() => setAnimVisible(false)}
         voteHash="VT-A3F2-9B17"
       />
+
+      {ballotPreview && (
+        <FullscreenPreview onClose={() => setBallotPreview(false)}>
+          <ProjectionBallotAnimation
+            key={ballotAnimKey}
+            ballotSummaries={MOCK_BALLOTS}
+            roundTitle="Votación MCM Europa 2026"
+            roundNumber={1}
+            team="ECE"
+          />
+        </FullscreenPreview>
+      )}
     </AccessibilityProvider>
   );
 }
