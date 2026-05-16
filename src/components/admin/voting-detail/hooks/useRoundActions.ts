@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ACCESS_CODE_REGEX, generateAccessCode } from "@/lib/accessCode";
 import { errorLog } from "@/lib/logger";
@@ -59,6 +59,59 @@ export function useRoundActions(opts: Options) {
   const [savingConfig, setSavingConfig] = useState(false);
   const [salaConflict, setSalaConflict] = useState<{ id: string; title: string } | null>(null);
   const [loadingDataset, setLoadingDataset] = useState(false);
+
+  // Timer for auto-advancing from ballot-animation → results
+  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** ms per ballot: adaptive 700 → 400 ms as count grows. */
+  const calcPerBallotMs = (n: number): number =>
+    Math.max(400, Math.min(700, 700 - (n - 10) * 10));
+
+  const calcAnimationDuration = useCallback((n: number): number =>
+    n * calcPerBallotMs(n) + 2000, // 2 s buffer after last ballot
+  []);
+
+  /** Clears any pending auto-advance and sets a new one. */
+  const scheduleAutoAdvance = useCallback((remainingMs: number) => {
+    if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+    autoAdvanceRef.current = setTimeout(async () => {
+      if (!roundId) return;
+      await supabase.from("rounds").update({
+        show_ballot_animation: false,
+        show_results_to_voters: true,
+        updated_at: new Date().toISOString(),
+      }).eq("id", roundId);
+      await loadRound();
+    }, remainingMs);
+  }, [roundId, loadRound]);
+
+  /** Restart the timer if the admin panel reloads while the animation is running. */
+  useEffect(() => {
+    if (!round?.show_ballot_animation || !round.ballot_animation_started_at || !roundId) return;
+    const elapsed = Date.now() - new Date(round.ballot_animation_started_at).getTime();
+    const ballotCount = Math.max(1,
+      Math.ceil((round.votes_current_round || 0) / Math.max(1, round.max_votes_per_round || 3))
+    );
+    const totalMs = calcAnimationDuration(ballotCount);
+    const remaining = totalMs - elapsed;
+    if (remaining <= 0) {
+      // Animation window already passed — advance immediately
+      (async () => {
+        await supabase.from("rounds").update({
+          show_ballot_animation: false,
+          show_results_to_voters: true,
+          updated_at: new Date().toISOString(),
+        }).eq("id", roundId);
+        await loadRound();
+      })();
+    } else {
+      scheduleAutoAdvance(remaining);
+    }
+    return () => {
+      if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round?.show_ballot_animation, round?.ballot_animation_started_at]);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(testDatasets[0]?.id ?? "");
   const [isCloseRoundConfirmOpen, setIsCloseRoundConfirmOpen] = useState(false);
   const [isDeleteAllCandidatesOpen, setIsDeleteAllCandidatesOpen] = useState(false);
@@ -134,6 +187,8 @@ export function useRoundActions(opts: Options) {
       round_finalized: true,
       show_results_to_voters: false,
       show_ballot_summary_projection: false,
+      show_ballot_animation: false,
+      ballot_animation_started_at: null,
       show_final_gallery_projection: false,
       updated_at: new Date().toISOString(),
     }).eq("id", roundId);
@@ -163,7 +218,7 @@ export function useRoundActions(opts: Options) {
     }
     const { error: processError } = await supabase.rpc("process_round_results", { p_round_id: roundId, p_round_number: round.current_round_number });
     if (processError) { toast({ title: "Error", description: "No se pudo finalizar la ronda", variant: "destructive" }); return; }
-    const { error: updateError } = await supabase.from("rounds").update({ round_finalized: true, show_results_to_voters: false, show_ballot_summary_projection: false, is_voting_open: false, updated_at: new Date().toISOString() }).eq("id", roundId);
+    const { error: updateError } = await supabase.from("rounds").update({ round_finalized: true, show_results_to_voters: false, show_ballot_summary_projection: false, show_ballot_animation: false, ballot_animation_started_at: null, is_voting_open: false, updated_at: new Date().toISOString() }).eq("id", roundId);
     if (updateError) { toast({ title: "Error", description: "No se pudo cerrar la ronda", variant: "destructive" }); return; }
     toast({ title: "Ronda finalizada", description: "Ya puedes publicar resultados o iniciar la siguiente ronda" });
     await loadRound();
@@ -175,10 +230,24 @@ export function useRoundActions(opts: Options) {
     const { data, error } = await supabase.rpc("start_new_round", { p_round_id: roundId });
     if (error) { toast({ title: "Error", description: "No se pudo iniciar la siguiente ronda", variant: "destructive" }); return; }
     const parsed = data as { round_number?: number };
-    await supabase.from("rounds").update({ is_active: true, is_closed: false, round_finalized: false, is_voting_open: true, join_locked: true, show_results_to_voters: false, show_ballot_summary_projection: false, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
+    await supabase.from("rounds").update({ is_active: true, is_closed: false, round_finalized: false, is_voting_open: true, join_locked: true, show_results_to_voters: false, show_ballot_summary_projection: false, show_ballot_animation: false, ballot_animation_started_at: null, show_final_gallery_projection: false, updated_at: new Date().toISOString() }).eq("id", roundId);
     toast({ title: "Siguiente ronda iniciada", description: `Ronda ${parsed?.round_number || "nueva"} en curso` });
     await loadRound();
   };
+
+  /** Cancels the auto-advance timer and jumps straight to results. */
+  const skipBallotAnimation = useCallback(async () => {
+    if (!roundId) return;
+    if (autoAdvanceRef.current) { clearTimeout(autoAdvanceRef.current); autoAdvanceRef.current = null; }
+    const { error } = await supabase.from("rounds").update({
+      show_ballot_animation: false,
+      show_results_to_voters: true,
+      updated_at: new Date().toISOString(),
+    }).eq("id", roundId);
+    if (error) { toast({ title: "Error", description: "No se pudo saltar la animación", variant: "destructive" }); return; }
+    toast({ title: "Animación saltada", description: "Proyectando resultados" });
+    await loadRound();
+  }, [roundId, loadRound, toast]);
 
   const runProjectionWorkflowStep = async () => {
     if (!round || isWorkflowRunning) return;
@@ -193,18 +262,44 @@ export function useRoundActions(opts: Options) {
         if (!canFinalizeRound) return;
         await finalizeRound(); return;
       }
+
+      // ── Nuevo primer paso post-finalización: animación de papeletas ──
+      if (!round.show_ballot_animation && !round.show_results_to_voters) {
+        const ballotCount = Math.max(1,
+          Math.ceil((round.votes_current_round || 0) / Math.max(1, round.max_votes_per_round || 3))
+        );
+        const totalMs = calcAnimationDuration(ballotCount);
+        const { error } = await supabase.from("rounds").update({
+          show_ballot_animation: true,
+          ballot_animation_started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", roundId);
+        if (error) { toast({ title: "Error", description: "No se pudo iniciar la animación de papeletas", variant: "destructive" }); return; }
+        scheduleAutoAdvance(totalMs);
+        toast({ title: "Animación iniciada", description: `~${Math.round(totalMs / 1000)} s hasta los resultados` });
+        await loadRound();
+        return;
+      }
+
+      // Durante la animación el botón principal está deshabilitado (usa "Saltar →")
+      if (round.show_ballot_animation) return;
+
+      // Resultados (auto-activado por la animación, pero también alcanzable si se salta)
       if (!round.show_results_to_voters) {
         const { error } = await supabase.from("rounds").update({ show_results_to_voters: true, updated_at: new Date().toISOString() }).eq("id", roundId);
         if (error) { toast({ title: "Error", description: "No se pudo activar proyección de resultados", variant: "destructive" }); return; }
         await loadRound();
         return;
       }
-      if (!round.show_ballot_summary_projection) {
-        const { error } = await supabase.from("rounds").update({ show_ballot_summary_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
-        if (error) { toast({ title: "Error", description: "No se pudo activar proyección de papeletas", variant: "destructive" }); return; }
-        await loadRound();
-        return;
-      }
+
+      // -- Papeletas estáticas (paso opcional, desactivado temporalmente) --
+      // if (!round.show_ballot_summary_projection) {
+      //   const { error } = await supabase.from("rounds").update({ show_ballot_summary_projection: true, updated_at: new Date().toISOString() }).eq("id", roundId);
+      //   if (error) { toast({ title: "Error", description: "No se pudo activar proyección de papeletas", variant: "destructive" }); return; }
+      //   await loadRound();
+      //   return;
+      // }
+
       if (selectionQuotaReached) { await confirmSelection(); return; }
       if (canStartNextRound) { await startNextRound(); return; }
     } finally {
@@ -411,7 +506,8 @@ export function useRoundActions(opts: Options) {
     isDatasetOpen, setIsDatasetOpen,
     // actions
     callOpenRoom, callStartRound, resolveRoomConflict, callCloseRoom, closeVoting, confirmSelection,
-    finalizeRound, startNextRound, runProjectionWorkflowStep, toggleGallery, togglePublicCandidates,
+    finalizeRound, startNextRound, runProjectionWorkflowStep, skipBallotAnimation,
+    toggleGallery, togglePublicCandidates,
     pauseRound, resumeRound, forceSelectCandidate, saveConfig, exportBallotsCsv,
     copyText, handleFileImport, loadDataset, openComunicaImport, handleDeleteAllCandidates,
   };

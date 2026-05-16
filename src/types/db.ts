@@ -19,6 +19,8 @@ export interface RoundRow {
   round_finalized: boolean;
   show_results_to_voters: boolean;
   show_ballot_summary_projection: boolean;
+  show_ballot_animation: boolean;
+  ballot_animation_started_at: string | null;
   show_final_gallery_projection: boolean;
   public_candidates_enabled: boolean;
   current_round_number: number;

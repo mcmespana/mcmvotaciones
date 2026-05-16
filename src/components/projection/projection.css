@@ -1492,6 +1492,270 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   BALLOT ANIMATION SCREEN  (always-dark — exento de regla doble-modo)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.ballot-anim-page {
+  background: var(--avd-n-950, #09090b);
+  min-height: 100vh;
+}
+
+/* ── Body layout ── */
+.ballot-anim-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 40px);
+  padding: clamp(20px, 3vw, 48px) clamp(20px, 4vw, 80px);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ballot stage (card + stack area) ── */
+.ballot-anim-stage {
+  position: relative;
+  width: clamp(300px, 38vw, 520px);
+  height: clamp(200px, 26vw, 360px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Shadow cards in the stack ── */
+.ballot-anim-stack-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: var(--avd-n-800, #27272a);
+  border: 1px solid var(--avd-n-700, #3f3f46);
+}
+
+/* ── Active ballot card ── */
+.ballot-anim-card {
+  position: absolute;
+  inset: 0;
+  background: var(--avd-n-900, #18181b);
+  border: 1.5px solid var(--avd-n-600, #52525b);
+  border-radius: 16px;
+  padding: clamp(16px, 2vw, 28px) clamp(18px, 2.2vw, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow:
+    0 4px 24px -6px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.04);
+  overflow: hidden;
+  /* top accent line */
+}
+.ballot-anim-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--avd-brand-400, #818cf8), var(--avd-brand-600, #4f46e5));
+  border-radius: 16px 16px 0 0;
+}
+
+.ballot-anim-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ballot-anim-code {
+  font-family: var(--avd-font-mono);
+  font-size: clamp(13px, 1.3vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--avd-brand-400, #818cf8);
+}
+
+.ballot-anim-round-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--proj-blue) 18%, transparent);
+  color: var(--proj-blue);
+  border: 1px solid color-mix(in oklch, var(--proj-blue) 30%, transparent);
+  white-space: nowrap;
+}
+
+.ballot-anim-sep {
+  height: 1px;
+  background: var(--avd-n-700, #3f3f46);
+  margin: 2px 0;
+}
+
+.ballot-anim-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.8vw, 12px);
+  flex: 1;
+}
+
+.ballot-anim-list-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ballot-anim-num {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--avd-n-500, #71717a);
+  font-variant-numeric: tabular-nums;
+  min-width: 14px;
+}
+
+.ballot-anim-name {
+  font-size: clamp(15px, 1.6vw, 24px);
+  font-weight: 700;
+  color: var(--avd-n-100, #f4f4f5);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.ballot-anim-blank {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--avd-n-500, #71717a);
+  text-transform: uppercase;
+  position: relative;
+}
+.ballot-anim-blank::after {
+  content: "";
+  position: absolute;
+  width: 70%;
+  height: 2px;
+  background: var(--avd-n-600, #52525b);
+  border-radius: 2px;
+  transform: rotate(-8deg);
+}
+
+/* ── Done state ── */
+.ballot-anim-done {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.ballot-anim-done-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--avd-ok) 20%, transparent);
+  border: 2px solid var(--avd-ok);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  color: var(--avd-ok);
+  animation: ballot-done-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes ballot-done-pop {
+  0%   { transform: scale(0) rotate(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.ballot-anim-done-text {
+  font-size: clamp(16px, 1.6vw, 22px);
+  font-weight: 700;
+  color: var(--avd-n-200, #e4e4e7);
+  margin: 0;
+}
+
+.ballot-anim-done-sub {
+  font-size: 14px;
+  color: var(--avd-n-500, #71717a);
+  margin: 0;
+  animation: proj-dot-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Urna ── */
+.ballot-anim-urna-wrap {
+  width: clamp(120px, 14vw, 200px);
+  position: relative;
+}
+
+.ballot-anim-urna-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+}
+
+/* Slot glow when a ballot enters */
+.ballot-urna-slot-glow {
+  animation: urna-glow 0.5s ease-out both;
+}
+@keyframes urna-glow {
+  0%   { opacity: 0; stroke-width: 6; }
+  30%  { opacity: 1; stroke-width: 4; }
+  100% { opacity: 0; stroke-width: 2; }
+}
+
+/* ── Progress bar ── */
+.ballot-anim-progress-wrap {
+  width: clamp(300px, 44vw, 600px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.ballot-anim-progress-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--avd-n-800, #27272a);
+  overflow: hidden;
+  border: 1px solid var(--avd-n-700, #3f3f46);
+}
+
+.ballot-anim-progress-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--avd-brand-400, #818cf8) 0%,
+    var(--avd-brand-600, #4f46e5) 50%,
+    var(--avd-brand-400, #818cf8) 100%
+  );
+  background-size: 200% 100%;
+  animation: proj-bar-stripe 2.5s linear infinite;
+  min-width: 4px;
+}
+
+.ballot-anim-progress-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--avd-n-500, #71717a);
+  font-variant-numeric: tabular-nums;
+}
+.ballot-anim-progress-label strong {
+  color: var(--avd-n-200, #e4e4e7);
+  font-weight: 800;
+}
+
 /* Reduced motion respects */
 @media (prefers-reduced-motion: reduce) {
   .proj-finalist-card,

@@ -16,7 +16,7 @@ export interface BallotSummary {
   isBlank?: boolean;
 }
 
-export type ProjectionState = "waiting" | "voting" | "results" | "final-gallery";
+export type ProjectionState = "waiting" | "voting" | "ballot-animation" | "results" | "final-gallery";
 export type ProjectionWaitingMode = "idle" | "room-open" | "paused" | "finalized" | "closed";
 
 export interface ProjectionData {
@@ -52,9 +52,11 @@ export function useProjectionData(): ProjectionData {
     if (!round) return "waiting";
     // Si la ronda está proyectando ganadores, se muestra aunque no esté activa o esté cerrada
     if (round.show_final_gallery_projection) return "final-gallery";
+    // Animación de papeletas (antes de mostrar resultados)
+    if (round.round_finalized && round.show_ballot_animation) return "ballot-animation";
     // Si la ronda está proyectando resultados o papeletas, se muestra aunque no esté activa o esté cerrada
     if (round.round_finalized && round.show_results_to_voters) return "results";
-    
+
     // De lo contrario, usamos logica normal
     if (!round.is_active || round.is_closed) return "waiting";
     if (round.is_voting_open) return "voting";
@@ -120,6 +122,7 @@ export function useProjectionData(): ProjectionData {
         const hasAnythingToProject =
           !ar.is_closed ||
           ar.show_final_gallery_projection ||
+          ar.show_ballot_animation ||
           ar.show_results_to_voters;
         targetRound = hasAnythingToProject ? ar : null;
       }
@@ -147,7 +150,7 @@ export function useProjectionData(): ProjectionData {
 
       if (candidateData) setCandidates(candidateData);
 
-      if (activeRound.show_ballot_summary_projection) {
+      if (activeRound.show_ballot_summary_projection || activeRound.show_ballot_animation) {
         const { data: voteRows } = await supabase
           .from("votes")
           .select(`
