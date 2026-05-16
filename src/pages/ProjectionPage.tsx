@@ -3,6 +3,7 @@ import { ProjectionWaiting } from "@/components/projection/ProjectionWaiting";
 import { ProjectionVoting } from "@/components/projection/ProjectionVoting";
 import { ProjectionResults } from "@/components/projection/ProjectionResults";
 import { ProjectionFinalResults } from "@/components/projection/ProjectionFinalResults";
+import { ProjectionBallotAnimation } from "@/components/projection/ProjectionBallotAnimation";
 
 export function ProjectionPage() {
   const data = useProjectionData();
@@ -24,6 +25,18 @@ export function ProjectionPage() {
   }
 
   const activeCode = data.round && !data.round.is_closed ? (data.round.access_code ?? null) : null;
+
+  if (data.state === "ballot-animation" && data.round) {
+    return (
+      <ProjectionBallotAnimation
+        ballotSummaries={data.ballotSummaries}
+        roundTitle={data.round.title}
+        roundNumber={data.round.current_round_number}
+        team={data.round.voting_type_name || data.round.team}
+        startedAt={data.round.ballot_animation_started_at}
+      />
+    );
+  }
 
   if (data.state === "results" && data.round) {
     return (

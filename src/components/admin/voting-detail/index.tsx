@@ -157,7 +157,7 @@ export function AdminVotingDetail() {
     deletingAllCandidates,
     isDatasetOpen, setIsDatasetOpen,
     resolveRoomConflict, callCloseRoom, closeVoting,
-    startNextRound, runProjectionWorkflowStep, toggleGallery, togglePublicCandidates,
+    startNextRound, runProjectionWorkflowStep, skipBallotAnimation, toggleGallery, togglePublicCandidates,
     pauseRound, resumeRound, forceSelectCandidate, saveConfig, exportBallotsCsv,
     copyText, handleFileImport, loadDataset, openComunicaImport, handleDeleteAllCandidates,
   } = useRoundActions({
@@ -265,6 +265,7 @@ export function AdminVotingDetail() {
         exportBallotsCsv={exportBallotsCsv} setIsSettingsOpen={setIsSettingsOpen}
         stage={stage} workflowActionLabel={workflowActionLabel} workflowActionDisabled={workflowActionDisabled}
         isWorkflowRunning={isWorkflowRunning} runProjectionWorkflowStep={runProjectionWorkflowStep}
+        skipBallotAnimation={skipBallotAnimation}
         activeCandidatesCount={activeCandidatesCount}
         stickyRef={stickyHeaderRef}
       />

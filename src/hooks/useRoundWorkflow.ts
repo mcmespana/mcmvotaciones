@@ -2,15 +2,16 @@ import { useMemo } from "react";
 import type { RoundRow } from "@/types/db";
 
 export const WORKFLOW_STEPS = [
-  { id: "open-room",   label: "Abrir sala",           sub: "Sala de espera abierta" },
-  { id: "start",       label: "Iniciar votación",      sub: "Empieza el voto" },
-  { id: "close-vote",  label: "Finalizar votación",    sub: "Cierra y procesa" },
-  { id: "results",     label: "Ver resultados ronda",  sub: "Se proyectan los resultados" },
-  { id: "ballots",     label: "Ver papeletas",         sub: "Se proyectan las papeletas" },
-  { id: "finish",      label: "Finalizar ronda",       sub: "Siguiente ronda o cierre" },
+  { id: "open-room",        label: "Abrir sala",             sub: "Sala de espera abierta" },
+  { id: "start",            label: "Iniciar votación",        sub: "Empieza el voto" },
+  { id: "close-vote",       label: "Finalizar votación",      sub: "Cierra y procesa" },
+  { id: "ballot-animation", label: "Animación papeletas",     sub: "Papeletas entrando en urna" },
+  { id: "results",          label: "Ver resultados ronda",    sub: "Se proyectan los resultados" },
+  // { id: "ballots",       label: "Ver papeletas",           sub: "Rejilla estática de papeletas" }, // desactivado temporalmente
+  { id: "finish",           label: "Finalizar ronda",         sub: "Siguiente ronda o cierre" },
 ];
 
-type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection' | 'current_round_number'>;
+type Round = Pick<RoundRow, 'is_active' | 'is_closed' | 'is_voting_open' | 'join_locked' | 'round_finalized' | 'show_results_to_voters' | 'show_ballot_summary_projection' | 'show_ballot_animation' | 'current_round_number'>;
 
 interface UseRoundWorkflowInput {
   round: Round | null;
@@ -61,9 +62,11 @@ export function useRoundWorkflow({
         else if (round.is_active) stage = 1;
         else stage = 0;
       } else {
-        if (!round.show_results_to_voters) stage = 3;
-        else if (!round.show_ballot_summary_projection) stage = 4;
-        else stage = 5;
+        // Post-finalization stages (nuevo orden: animación → resultados → finalizar)
+        if (!round.show_ballot_animation && !round.show_results_to_voters) stage = 3; // listo para lanzar animación
+        else if (round.show_ballot_animation) stage = 4;  // animación en curso
+        // -- Papeletas estáticas desactivadas temporalmente (era stage 4 / show_ballot_summary_projection) --
+        else stage = 5; // mostrando resultados, listo para finalizar
       }
     }
 
@@ -73,8 +76,10 @@ export function useRoundWorkflow({
       : canOpenRoom ? "Abrir sala"
       : canStartRound ? "Iniciar votación"
       : !round.round_finalized ? "Finalizar votación"
-      : !round.show_results_to_voters ? "Ver resultados ronda"
-      : !round.show_ballot_summary_projection ? "Ver papeletas"
+      : (!round.show_ballot_animation && !round.show_results_to_voters) ? "Iniciar animación papeletas"
+      : round.show_ballot_animation ? "Animación en curso…"
+      // -- Papeletas estáticas desactivadas temporalmente --
+      // : !round.show_ballot_summary_projection ? "Ver papeletas"
       : selectionQuotaReached ? "Confirmar selección"
       : canStartNextRound ? "Finalizar ronda"
       : "Votación completada";
@@ -84,7 +89,11 @@ export function useRoundWorkflow({
       !round ||
       round.is_closed ||
       (!round.round_finalized && !canOpenRoom && !canFinalizeRound && !canStartRound) ||
-      (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound),
+      // Bloquear botón principal mientras la animación está activa (usar botón "Saltar" para avanzar)
+      (round.round_finalized && round.show_ballot_animation) ||
+      // -- Papeletas estáticas desactivadas temporalmente --
+      // (round.round_finalized && round.show_ballot_summary_projection && !selectionQuotaReached && !canStartNextRound),
+      (round.round_finalized && round.show_results_to_voters && !selectionQuotaReached && !canStartNextRound),
     );
 
     const votingStarted = Boolean(

@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download, Moon, Play, Settings2, StepForward, Sun } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download, FastForward, Moon, Play, Settings2, StepForward, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TeamChip } from "@/components/admin/TeamChip";
 import { WORKFLOW_STEPS } from "@/hooks/useRoundWorkflow";
@@ -20,6 +20,7 @@ interface Props {
   workflowActionDisabled: boolean;
   isWorkflowRunning: boolean;
   runProjectionWorkflowStep: () => void;
+  skipBallotAnimation?: () => void;
   activeCandidatesCount: number;
   stickyRef?: React.RefObject<HTMLDivElement>;
 }
@@ -28,6 +29,7 @@ export function PageHeader({
   round, now, theme, setTheme, statusChip, copyText,
   openAnalyticsDialog, openBallotsDialog, exportBallotsCsv, setIsSettingsOpen,
   stage, workflowActionLabel, workflowActionDisabled, isWorkflowRunning, runProjectionWorkflowStep,
+  skipBallotAnimation,
   activeCandidatesCount, stickyRef,
 }: Props) {
   const navigate = useNavigate();
@@ -133,7 +135,7 @@ export function PageHeader({
               );
             })}
           </div>
-          <div className="avd-wf-cta">
+          <div className="avd-wf-cta" style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "stretch" }}>
             <button
               className="avd-btn avd-btn-primary avd-btn-primary-lg"
               onClick={runProjectionWorkflowStep}
@@ -146,6 +148,17 @@ export function PageHeader({
                 : <StepForward size={16} />}
               {isWorkflowRunning ? "Procesando..." : workflowActionLabel}
             </button>
+            {/* Botón "Saltar animación" — visible solo cuando la animación está en curso (stage 4) */}
+            {stage === 4 && skipBallotAnimation && (
+              <button
+                className="avd-btn avd-btn-sm avd-btn-ghost"
+                onClick={skipBallotAnimation}
+                title="Saltar la animación e ir directamente a los resultados"
+              >
+                <FastForward size={13} />
+                Saltar a resultados →
+              </button>
+            )}
           </div>
         </div>
       </section>
