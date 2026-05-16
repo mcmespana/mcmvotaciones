@@ -46,13 +46,15 @@ export function useRoundWorkflow({
 }: UseRoundWorkflowInput): RoundWorkflow {
   return useMemo(() => {
     const roomIsOpen = Boolean(round && round.is_active && !round.is_voting_open && !round.is_closed);
-    const canOpenRoom = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active);
+    // canOpenRoom only applies pre-finalization — after round_finalized the path is canStartNextRound
+    const canOpenRoom = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && !round.is_voting_open && !round.is_active && !round.round_finalized);
     const canCloseRoom = Boolean(round && roomIsOpen);
     const canStartRound = Boolean(round && hasCandidates && !selectionQuotaReached && !round.is_closed && round.is_active && !round.is_voting_open && !round.round_finalized && !round.join_locked);
     const canPauseRound = Boolean(round && round.is_active && round.is_voting_open && !round.round_finalized && !round.is_closed);
     const canResumeRound = Boolean(round && round.is_active && !round.is_voting_open && round.join_locked && !round.round_finalized && !round.is_closed);
     const canFinalizeRound = Boolean(round && round.is_active && (round.is_voting_open || round.join_locked) && currentRoundVotes > 0 && !round.round_finalized && !round.is_closed);
-    const canStartNextRound = Boolean(round && !selectionQuotaReached && round.is_active && round.round_finalized && !round.is_closed);
+    // is_active not required — startNextRound sets it to true regardless, and closing sala after finalization shouldn't block progression
+    const canStartNextRound = Boolean(round && !selectionQuotaReached && round.round_finalized && !round.is_closed);
 
     let stage = 0;
     if (round) {
