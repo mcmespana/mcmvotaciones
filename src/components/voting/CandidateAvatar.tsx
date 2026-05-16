@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { getInitials } from "@/lib/candidateFormat";
 
 interface Props {
@@ -34,7 +34,7 @@ function stableColorIndex(id: string): number {
   return Math.abs(hash) % PALETTE.length;
 }
 
-export function CandidateAvatar({ name, surname, imageUrl, size = "md", className = "", candidateId }: Props) {
+export const CandidateAvatar = memo(function CandidateAvatar({ name, surname, imageUrl, size = "md", className = "", candidateId }: Props) {
   const [failed, setFailed] = useState(false);
   const sizeClass = sizeMap[size];
 
@@ -61,4 +61,4 @@ export function CandidateAvatar({ name, surname, imageUrl, size = "md", classNam
       {getInitials(name, surname)}
     </div>
   );
-}
+});

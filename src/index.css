@@ -1737,8 +1737,12 @@
   border: 1px solid var(--avd-border-soft);
   border-radius: var(--avd-radius-sm);
   transition: box-shadow 0.12s, transform 0.1s;
+  touch-action: manipulation;
+  contain: layout style;
 }
-.pub-cand-card:hover { box-shadow: var(--avd-shadow-sm); transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+  .pub-cand-card:hover { box-shadow: var(--avd-shadow-sm); transform: translateY(-1px); }
+}
 
 /* ─── Projection screens (always-dark design) ────────────────────── */
 .proj-root {

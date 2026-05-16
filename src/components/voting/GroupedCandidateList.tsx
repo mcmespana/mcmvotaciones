@@ -11,7 +11,7 @@ type Candidate = CandidateRow;
 
 interface GroupedCandidateListProps {
   candidates: Candidate[];
-  selectedCandidates: string[];
+  selectedCandidates: string[] | Set<string>;
   onToggleCandidate: (id: string) => void;
   disabled?: boolean;
   tutorialRoundId?: string;
@@ -100,6 +100,11 @@ export function GroupedCandidateList({
   roundId,
 }: GroupedCandidateListProps) {
   const { favorites, toggle: toggleFavorite, isFavorite, count: favCount } = useFavorites(roundId);
+
+  const selectedSet = useMemo(
+    () => (selectedCandidates instanceof Set ? selectedCandidates : new Set(selectedCandidates)),
+    [selectedCandidates],
+  );
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [detailCandidate, setDetailCandidate] = useState<Candidate | null>(null);
@@ -297,7 +302,7 @@ export function GroupedCandidateList({
                   <CandidateListCard
                     key={c.id}
                     candidate={c}
-                    selected={selectedCandidates.includes(c.id)}
+                    selected={selectedSet.has(c.id)}
                     onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                     onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                     onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
@@ -317,7 +322,7 @@ export function GroupedCandidateList({
               <CandidateListCard
                 key={c.id}
                 candidate={c}
-                selected={selectedCandidates.includes(c.id)}
+                selected={selectedSet.has(c.id)}
                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
@@ -386,7 +391,7 @@ export function GroupedCandidateList({
                               <CandidateListCard
                                 key={c.id}
                                 candidate={c}
-                                selected={selectedCandidates.includes(c.id)}
+                                selected={selectedSet.has(c.id)}
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}
@@ -413,7 +418,7 @@ export function GroupedCandidateList({
                               <CandidateListCard
                                 key={c.id}
                                 candidate={c}
-                                selected={selectedCandidates.includes(c.id)}
+                                selected={selectedSet.has(c.id)}
                                 onClick={disabled ? undefined : () => onToggleCandidate(c.id)}
                                 onDetailView={(cand) => { setDetailZoomed(false); setDetailCandidate(cand); }}
                                 onImageLongPress={(cand) => { setDetailZoomed(true); setDetailCandidate(cand); }}

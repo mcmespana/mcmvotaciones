@@ -1,5 +1,5 @@
 import { Cake, Check, MapPin } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { CandidateAvatar } from "@/components/voting/CandidateAvatar";
 import { formatCandidateName, isMonitor } from "@/lib/candidateFormat";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ interface CandidateListCardProps {
 
 const LONG_PRESS_MS = 500;
 
-export function CandidateListCard({
+function CandidateListCardBase({
   candidate,
   selected = false,
   onClick,
@@ -221,3 +221,15 @@ export function CandidateListCard({
     </div>
   );
 }
+
+export const CandidateListCard = memo(
+  CandidateListCardBase,
+  (prev, next) =>
+    prev.candidate === next.candidate &&
+    prev.selected === next.selected &&
+    prev.isFavorite === next.isFavorite &&
+    prev.hideCheckbox === next.hideCheckbox &&
+    // Track whether handlers are defined (disabled state), not their identity
+    !!prev.onClick === !!next.onClick &&
+    !!prev.onToggleFavorite === !!next.onToggleFavorite,
+);
