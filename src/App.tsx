@@ -11,9 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { VotingPage } from "@/pages/VotingPage";
 import NotFound from "./pages/NotFound";
-const TestKitchen = import.meta.env.DEV
-  ? lazy(() => import("@/pages/TestKitchen").then(m => ({ default: m.TestKitchen })))
-  : null;
+const TestKitchen = lazy(() => import("@/pages/TestKitchen").then(m => ({ default: m.TestKitchen })));
 
 const AdminRouter     = lazy(() => import("@/routes/AdminRouter").then(m => ({ default: m.AdminRouter })));
 const ComunicaRouter  = lazy(() => import("@/routes/ComunicaRouter").then(m => ({ default: m.ComunicaRouter })));
@@ -41,7 +39,7 @@ const AppRoutes = () => (
     <Route path="/candidatos/:votingId" element={<ErrorBoundary><Suspense fallback={<Spinner />}><AccessibilityProvider><PublicCandidates /></AccessibilityProvider></Suspense></ErrorBoundary>} />
     <Route path="/admin/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><AdminRouter /></Suspense></ErrorBoundary>} />
     <Route path="/comunica/*" element={<ErrorBoundary><Suspense fallback={<Spinner />}><ComunicaRouter /></Suspense></ErrorBoundary>} />
-    {TestKitchen && <Route path="/test" element={<Suspense fallback={<Spinner />}><TestKitchen /></Suspense>} />}
+    <Route path="/test" element={<Suspense fallback={<Spinner />}><TestKitchen /></Suspense>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
