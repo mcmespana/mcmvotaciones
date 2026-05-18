@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { VotingTypesManager, type VotingType } from "@/components/admin/VotingTypesManager";
 import { TeamChip } from "@/components/admin/TeamChip";
+import { DuplicateVotingModal } from "@/components/admin/DuplicateVotingModal";
 import type { RoundRow } from "@/types/db";
 
 type RoundListItem = Pick<RoundRow, 'id' | 'slug' | 'title' | 'description' | 'year' | 'team' | 'max_votantes' | 'is_active' | 'is_closed' | 'is_archived' | 'is_voting_open' | 'join_locked' | 'current_round_number' | 'votes_current_round' | 'created_at' | 'voting_type_name' | 'public_candidates_enabled' | 'show_final_gallery_projection'>;
@@ -58,10 +59,11 @@ interface RoundCardProps {
   onOpen: (r: RoundListItem) => void;
   onDelete: (r: RoundListItem) => void;
   onArchive: (r: RoundListItem, archived: boolean) => void;
+  onDuplicate: (r: RoundListItem) => void;
   isSuperAdmin: boolean;
 }
 
-function RoundCard({ round, onOpen, onDelete, onArchive, isSuperAdmin }: RoundCardProps) {
+function RoundCard({ round, onOpen, onDelete, onArchive, onDuplicate, isSuperAdmin }: RoundCardProps) {
   const chip = getStatusChip(round);
   const votePct = round.max_votantes > 0 ? Math.round((round.votes_current_round / round.max_votantes) * 100) : 0;
   const accentColor = getAccentColor(round);
@@ -97,6 +99,15 @@ function RoundCard({ round, onOpen, onDelete, onArchive, isSuperAdmin }: RoundCa
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <button
+              className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
+              onClick={e => { e.stopPropagation(); onDuplicate(round); }}
+              title="Duplicar votación"
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-brand)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
             <button
               className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
               onClick={e => { e.stopPropagation(); onArchive(round, !round.is_archived); }}
@@ -233,6 +244,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
   const [creatingRound, setCreatingRound] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RoundListItem | null>(null);
+  const [duplicateTarget, setDuplicateTarget] = useState<RoundListItem | null>(null);
   const [votingTypes, setVotingTypes] = useState<VotingType[]>([]);
   const [form, setForm] = useState<NewRoundForm>({ title: "", description: "", year: new Date().getFullYear(), team: "ECE", max_votantes: 100, census_mode: "maximum", voting_type_id: null, voting_type_name: "", max_selected_candidates: 1, max_votes_per_round: 0 });
 
@@ -458,7 +470,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
         ) : view === "grid" ? (
           <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {filteredRounds.map(r => (
-              <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} onArchive={handleArchiveRound} isSuperAdmin={isSuperAdmin} />
+              <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} onArchive={handleArchiveRound} onDuplicate={setDuplicateTarget} isSuperAdmin={isSuperAdmin} />
             ))}
           </div>
         ) : (
@@ -494,6 +506,15 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                     <TeamChip label={r.voting_type_name || r.team} />
                   </div>
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
+                      onClick={e => { e.stopPropagation(); setDuplicateTarget(r); }}
+                      title="Duplicar votación"
+                      onMouseEnter={e => (e.currentTarget.style.color = "var(--avd-brand)")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "var(--avd-fg-faint)")}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
                     <button
                       className="avd-btn avd-btn-ghost avd-btn-icon-sm border-none text-[var(--avd-fg-faint)]"
                       onClick={e => { e.stopPropagation(); handleArchiveRound(r, !r.is_archived); }}
@@ -614,6 +635,12 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
         round={deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => { if (deleteTarget) handleDeleteRound(deleteTarget.id, deleteTarget.title); }}
+      />
+
+      {/* Duplicate modal */}
+      <DuplicateVotingModal
+        source={duplicateTarget}
+        onClose={() => setDuplicateTarget(null)}
       />
 
     </div>

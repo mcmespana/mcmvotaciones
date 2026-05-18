@@ -143,10 +143,30 @@ async function fetchPhotoBytes(crmId: string, session: string): Promise<PhotoFet
   }
 }
 
-async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array, contentType: string): Promise<string> {
+// Checks if a shared photo already exists in storage for this crm_id.
+// Returns the public URL if found, null otherwise.
+async function findSharedPhotoUrl(crmId: string): Promise<string | null> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/candidate-photos`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'apikey': SUPABASE_SERVICE_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prefix: 'shared/', search: crmId, limit: 1 }),
+  });
+  if (!res.ok) return null;
+  const files = await res.json() as Array<{ name: string }>;
+  if (!files.length) return null;
+  return `${SUPABASE_URL}/storage/v1/object/public/candidate-photos/shared/${files[0].name}`;
+}
+
+// Uploads to shared/{crmId}.ext — path is independent of any round.
+async function uploadToStorage(crmId: string, bytes: Uint8Array, contentType: string): Promise<string> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) throw new Error('Supabase no configurado');
   const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
-  const path = `${roundId}/${crmId}.${ext}`;
+  const path = `shared/${crmId}.${ext}`;
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/candidate-photos/${path}`, {
     method: 'POST',
@@ -162,20 +182,23 @@ async function uploadToStorage(roundId: string, crmId: string, bytes: Uint8Array
   return `${SUPABASE_URL}/storage/v1/object/public/candidate-photos/${path}`;
 }
 
-async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_url: string }>): Promise<void> {
+// Updates image_url for ALL candidates with this crm_id across all rounds.
+async function batchUpdateCandidateImageUrls(updates: Array<{ crm_id: string; image_url: string }>): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !updates.length) return;
-  // PATCH per-row generates UPDATE ... WHERE id = ? — no INSERT risk, no NOT NULL issues
-  await Promise.all(updates.map(async ({ id, image_url }) => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/candidates?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
+  await Promise.all(updates.map(async ({ crm_id, image_url }) => {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/candidates?crm_id=eq.${encodeURIComponent(crm_id)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ image_url }),
       },
-      body: JSON.stringify({ image_url }),
-    });
+    );
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`DB update failed ${res.status}: ${text.slice(0, 300)}`);
@@ -185,7 +208,6 @@ async function batchUpdateCandidateImageUrls(updates: Array<{ id: string; image_
 
 async function processPhotosInChunks(
   candidates: Array<{ id: string; crm_id: string }>,
-  roundId: string,
   session: string,
   chunkSize = 10,
 ): Promise<{ uploaded: number; failed: number; skipped: number; details: Record<string, string> }> {
@@ -194,13 +216,18 @@ async function processPhotosInChunks(
 
   for (let i = 0; i < candidates.length; i += chunkSize) {
     const chunk = candidates.slice(i, i + chunkSize);
-    const dbUpdates: Array<{ id: string; image_url: string }> = [];
-    // id → crm_id mapping so we can set the right status after the batch DB update
-    const idToCrmId: Record<string, string> = {};
+    const dbUpdates: Array<{ crm_id: string; image_url: string }> = [];
 
-    await Promise.all(chunk.map(async ({ id, crm_id }) => {
+    await Promise.all(chunk.map(async ({ crm_id }) => {
+      // 1. Reuse shared photo if it already exists — skip CRM download entirely
+      const existing = await findSharedPhotoUrl(crm_id);
+      if (existing) {
+        dbUpdates.push({ crm_id, image_url: existing });
+        return;
+      }
+
+      // 2. Not cached yet — fetch from CRM and upload to shared/
       const photoRes = await fetchPhotoBytes(crm_id, session);
-
       if (photoRes.status !== 'success') {
         details[crm_id] = photoRes.reason;
         photoRes.status === 'skipped' ? skipped++ : failed++;
@@ -208,9 +235,8 @@ async function processPhotosInChunks(
       }
 
       try {
-        const publicUrl = await uploadToStorage(roundId, crm_id, photoRes.bytes, photoRes.contentType);
-        dbUpdates.push({ id, image_url: publicUrl });
-        idToCrmId[id] = crm_id;
+        const publicUrl = await uploadToStorage(crm_id, photoRes.bytes, photoRes.contentType);
+        dbUpdates.push({ crm_id, image_url: publicUrl });
       } catch (err) {
         details[crm_id] = `Storage: ${err instanceof Error ? err.message : String(err)}`;
         failed++;
@@ -220,14 +246,14 @@ async function processPhotosInChunks(
     if (dbUpdates.length > 0) {
       try {
         await batchUpdateCandidateImageUrls(dbUpdates);
-        for (const { id } of dbUpdates) {
-          details[idToCrmId[id]] = 'OK';
+        for (const { crm_id } of dbUpdates) {
+          details[crm_id] = 'OK';
           uploaded++;
         }
       } catch (err) {
         const msg = `DB: ${err instanceof Error ? err.message : String(err)}`;
-        for (const { id } of dbUpdates) {
-          details[idToCrmId[id]] = msg;
+        for (const { crm_id } of dbUpdates) {
+          details[crm_id] = msg;
           failed++;
         }
       }
@@ -294,7 +320,7 @@ Deno.serve(async (req: Request) => {
 
       const session = await crmLogin(loginUser, loginPass);
       const candidates = crm_ids.map((crm_id, i) => ({ crm_id, id: candidate_ids[i] }));
-      const result = await processPhotosInChunks(candidates, round_id, session);
+      const result = await processPhotosInChunks(candidates, session);
       crmCall('logout', { session }).catch(() => {});
 
       return new Response(

@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, Download, FastForward, Moon, Play, Settings2, StepForward, Sun } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BarChart2, Check, Copy, CopyPlus, Download, FastForward, Moon, Play, Settings2, StepForward, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TeamChip } from "@/components/admin/TeamChip";
 import { WORKFLOW_STEPS } from "@/hooks/useRoundWorkflow";
@@ -15,6 +15,7 @@ interface Props {
   openBallotsDialog: () => void;
   exportBallotsCsv: () => void;
   setIsSettingsOpen: (v: boolean) => void;
+  onDuplicate: () => void;
   stage: number;
   workflowActionLabel: string;
   workflowActionDisabled: boolean;
@@ -28,6 +29,7 @@ interface Props {
 export function PageHeader({
   round, now, theme, setTheme, statusChip, copyText,
   openAnalyticsDialog, openBallotsDialog, exportBallotsCsv, setIsSettingsOpen,
+  onDuplicate,
   stage, workflowActionLabel, workflowActionDisabled, isWorkflowRunning, runProjectionWorkflowStep,
   skipBallotAnimation,
   activeCandidatesCount, stickyRef,
@@ -72,6 +74,9 @@ export function PageHeader({
             </button>
             <button className="avd-btn avd-btn-sm hidden sm:inline-flex" onClick={exportBallotsCsv}>
               <Download size={14} /> CSV
+            </button>
+            <button className="avd-btn avd-btn-sm" onClick={onDuplicate} title="Duplicar esta votación">
+              <CopyPlus size={14} /> Duplicar
             </button>
             <button className="avd-btn avd-btn-sm" onClick={() => setIsSettingsOpen(true)}>
               <Settings2 size={14} /> Ajustes

@@ -1566,7 +1566,7 @@
 
 .ballot-anim-code {
   font-family: var(--avd-font-mono);
-  font-size: clamp(13px, 1.3vw, 18px);
+  font-size: clamp(17px, 1.8vw, 26px);
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--avd-brand);

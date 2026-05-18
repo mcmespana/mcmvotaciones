@@ -23,6 +23,7 @@ import { ImportDialog } from "./dialogs/ImportDialog";
 import { DatasetDialog } from "./dialogs/DatasetDialog";
 import { CandidateFormDialog } from "./dialogs/CandidateFormDialog";
 import { CloseRoundConfirm } from "./dialogs/CloseRoundConfirm";
+import { DuplicateVotingModal } from "@/components/admin/DuplicateVotingModal";
 
 export function AdminVotingDetail() {
   const { roundId } = useParams();
@@ -115,6 +116,7 @@ export function AdminVotingDetail() {
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
   const [refetchingPhotos, setRefetchingPhotos] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isBallotsOpen, setIsBallotsOpen] = useState(false);
   const [candidatesRef] = useAutoAnimate();
@@ -263,6 +265,7 @@ export function AdminVotingDetail() {
         round={round} now={now} theme={theme} setTheme={setTheme} statusChip={statusChip} copyText={copyText}
         openAnalyticsDialog={openAnalyticsDialog} openBallotsDialog={openBallotsDialog}
         exportBallotsCsv={exportBallotsCsv} setIsSettingsOpen={setIsSettingsOpen}
+        onDuplicate={() => setIsDuplicateOpen(true)}
         stage={stage} workflowActionLabel={workflowActionLabel} workflowActionDisabled={workflowActionDisabled}
         isWorkflowRunning={isWorkflowRunning} runProjectionWorkflowStep={runProjectionWorkflowStep}
         skipBallotAnimation={skipBallotAnimation}
@@ -410,6 +413,11 @@ export function AdminVotingDetail() {
         isDeleteAllCandidatesOpen={isDeleteAllCandidatesOpen} setIsDeleteAllCandidatesOpen={setIsDeleteAllCandidatesOpen}
         deletingAllCandidates={deletingAllCandidates} handleDeleteAllCandidates={handleDeleteAllCandidates}
         candidates={candidates} round={round}
+      />
+
+      <DuplicateVotingModal
+        source={isDuplicateOpen ? { id: round.id, title: round.title } : null}
+        onClose={() => setIsDuplicateOpen(false)}
       />
 
     </div>
