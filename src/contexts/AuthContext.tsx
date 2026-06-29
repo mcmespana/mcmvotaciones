@@ -100,29 +100,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .insert({
-          username,
-          password_hash: password, // Will be hashed by trigger
-          name,
-          email,
-          role
-        })
-        .select()
-        .single();
+      const { error } = await supabase.rpc('admin_create_user', {
+        p_actor_id: adminUser?.id ?? null,
+        p_username: username,
+        p_password: password, // Will be hashed by trigger
+        p_name: name,
+        p_email: email,
+        p_role: role,
+      });
 
       if (error) {
-        // Error creating admin user
-        if (error.code === '23505') {
-          const constraint = (error as { constraint?: string }).constraint;
-          if (constraint?.includes('username')) {
-            return { error: { message: 'El nombre de usuario ya existe' } };
-          } else if (constraint?.includes('email')) {
-            return { error: { message: 'El email ya existe' } };
-          }
+        const msg = error.message || '';
+        if (msg.includes('username_taken')) {
+          return { error: { message: 'El nombre de usuario ya existe' } };
+        } else if (msg.includes('email_taken')) {
+          return { error: { message: 'El email ya existe' } };
+        } else if (msg.includes('not_authorized')) {
+          return { error: { message: 'Acceso denegado. Solo los super administradores pueden crear usuarios.' } };
         }
-        return { error: { message: `Error creating admin user: ${error.message}` } };
+        return { error: { message: `Error creating admin user: ${msg}` } };
       }
 
       return { error: undefined };
@@ -141,15 +137,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .update({
-          password_hash: newPassword
-        })
-        .eq('id', targetUserId);
+      const { error } = await supabase.rpc('admin_change_password', {
+        p_actor_id: adminUser?.id ?? null,
+        p_target_id: targetUserId,
+        p_new_password: newPassword,
+      });
 
       if (error) {
-        return { error: { message: `Error cambiando la contraseña: ${error.message}` } };
+        const msg = error.message || '';
+        if (msg.includes('not_authorized')) {
+          return { error: { message: 'Acceso denegado. Solo los super administradores pueden cambiar contraseñas.' } };
+        }
+        return { error: { message: `Error cambiando la contraseña: ${msg}` } };
       }
 
       return { error: undefined };

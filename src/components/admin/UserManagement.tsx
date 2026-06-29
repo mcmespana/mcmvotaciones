@@ -93,14 +93,13 @@ export function UserManagement() {
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'super_admin'>('all');
   const [passwordTargetUser, setPasswordTargetUser] = useState<AdminUser | null>(null);
 
-  const { isSuperAdmin, createAdminUser, changeUserPassword } = useAuth();
+  const { adminUser, isSuperAdmin, createAdminUser, changeUserPassword } = useAuth();
 
   const loadUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('id, username, email, name, role, created_at')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('admin_list_users', {
+        p_actor_id: adminUser?.id ?? null,
+      });
       if (!error) setUsers(data || []);
     } catch (err) {
       errorLog(err);
