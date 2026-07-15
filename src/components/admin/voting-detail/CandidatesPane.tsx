@@ -122,7 +122,7 @@ export function CandidatesPane({
                   >
                     <div className="avd-cand-avatar overflow-hidden">
                       {c.image_url
-                        ? <img src={c.image_url} alt="" className="w-full h-full object-cover rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!).dataset.initials = initials(c); (e.currentTarget.parentElement!).textContent = initials(c); }} />
+                        ? <img src={c.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-full" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!).dataset.initials = initials(c); (e.currentTarget.parentElement!).textContent = initials(c); }} />
                         : initials(c)}
                     </div>
                     <div className="avd-cand-info">
@@ -187,7 +187,7 @@ export function CandidatesPane({
                       <div className="avd-cand-card-head">
                         <div className="avd-cand-card-avatar overflow-hidden">
                           {c.image_url
-                            ? <img src={c.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; e.currentTarget.parentElement!.textContent = initials(c); }} />
+                            ? <img src={c.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; e.currentTarget.parentElement!.textContent = initials(c); }} />
                             : initials(c)}
                         </div>
                         <div className="avd-cand-card-body">

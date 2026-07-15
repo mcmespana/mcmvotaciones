@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { errorLog } from "@/lib/logger";
+import { uploadCandidateImage, removeCandidateImage } from "@/lib/candidateImage";
 import type { useToast } from "@/hooks/use-toast";
 import type { RoundDetail, Candidate } from "./useRoundDetail";
 
@@ -29,6 +30,8 @@ interface UseCandidateActionsOptions {
 export function useCandidateActions({ roundId, round, candidates, loadRound, toast }: UseCandidateActionsOptions) {
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
   const [candidateForm, setCandidateForm] = useState<CandidateFormState>(EMPTY_FORM);
+  const [candidateImageFile, setCandidateImageFile] = useState<File | null>(null);
+  const [savingCandidate, setSavingCandidate] = useState(false);
   const [isAddCandidateOpen, setIsAddCandidateOpen] = useState(false);
   const [isEditCandidateOpen, setIsEditCandidateOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -38,56 +41,93 @@ export function useCandidateActions({ roundId, round, candidates, loadRound, toa
   const [importingFile, setImportingFile] = useState(false);
   const [forceSelectingId, setForceSelectingId] = useState<string | null>(null);
 
-  const resetCandidateForm = () => setCandidateForm(EMPTY_FORM);
+  const resetCandidateForm = () => { setCandidateForm(EMPTY_FORM); setCandidateImageFile(null); };
 
   const openAddCandidateDialog = () => { setEditingCandidate(null); resetCandidateForm(); setIsAddCandidateOpen(true); };
 
   const openEditCandidateDialog = (candidate: Candidate) => {
     setEditingCandidate(candidate);
     setCandidateForm({ name: candidate.name, surname: candidate.surname, location: candidate.location || "", group_name: candidate.group_name || "", age: candidate.age || "", description: candidate.description || "", image_url: candidate.image_url || "" });
+    setCandidateImageFile(null);
     setIsEditCandidateOpen(true);
   };
 
   const addCandidate = async () => {
-    if (!round) return;
+    if (!round || savingCandidate) return;
     if (!candidateForm.name.trim() || !candidateForm.surname.trim()) {
       toast({ title: "Campos obligatorios", description: "El nombre y apellido son obligatorios", variant: "destructive" });
       return;
     }
-    const maxOrderIndex = Math.max(0, ...candidates.map((c) => c.order_index || 0));
-    const { error } = await supabase.from("candidates").insert([{
-      round_id: round.id, name: candidateForm.name.trim(), surname: candidateForm.surname.trim(),
-      location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null,
-      age: typeof candidateForm.age === "number" ? candidateForm.age : null,
-      description: candidateForm.description.trim() || null, image_url: candidateForm.image_url.trim() || null,
-      order_index: maxOrderIndex + 1,
-    }]);
-    if (error) { toast({ title: "Error", description: "No se pudo añadir el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato añadido" });
-    setIsAddCandidateOpen(false);
-    resetCandidateForm();
-    await loadRound();
+    setSavingCandidate(true);
+    try {
+      let imageUrl = candidateForm.image_url.trim() || null;
+      if (candidateImageFile) {
+        try {
+          imageUrl = await uploadCandidateImage(candidateImageFile, round.id);
+        } catch (e) {
+          errorLog(e);
+          toast({ title: "Error", description: "No se pudo subir la imagen", variant: "destructive" });
+          return;
+        }
+      }
+      const maxOrderIndex = Math.max(0, ...candidates.map((c) => c.order_index || 0));
+      const { error } = await supabase.from("candidates").insert([{
+        round_id: round.id, name: candidateForm.name.trim(), surname: candidateForm.surname.trim(),
+        location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null,
+        age: typeof candidateForm.age === "number" ? candidateForm.age : null,
+        description: candidateForm.description.trim() || null, image_url: imageUrl,
+        order_index: maxOrderIndex + 1,
+      }]);
+      if (error) {
+        if (candidateImageFile && imageUrl) await removeCandidateImage(imageUrl);
+        toast({ title: "Error", description: "No se pudo añadir el candidato", variant: "destructive" });
+        return;
+      }
+      toast({ title: "Candidato añadido" });
+      setIsAddCandidateOpen(false);
+      resetCandidateForm();
+      await loadRound();
+    } finally { setSavingCandidate(false); }
   };
 
   const updateCandidate = async () => {
-    if (!editingCandidate) return;
+    if (!editingCandidate || savingCandidate) return;
     if (!candidateForm.name.trim() || !candidateForm.surname.trim()) {
       toast({ title: "Campos obligatorios", description: "El nombre y apellido son obligatorios", variant: "destructive" });
       return;
     }
-    const { error } = await supabase.from("candidates").update({
-      name: candidateForm.name.trim(), surname: candidateForm.surname.trim(),
-      location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null,
-      age: typeof candidateForm.age === "number" ? candidateForm.age : null,
-      description: candidateForm.description.trim() || null, image_url: candidateForm.image_url.trim() || null,
-      updated_at: new Date().toISOString(),
-    }).eq("id", editingCandidate.id);
-    if (error) { toast({ title: "Error", description: "No se pudo editar el candidato", variant: "destructive" }); return; }
-    toast({ title: "Candidato actualizado" });
-    setIsEditCandidateOpen(false);
-    setEditingCandidate(null);
-    resetCandidateForm();
-    await loadRound();
+    setSavingCandidate(true);
+    try {
+      const previousImageUrl = editingCandidate.image_url;
+      let imageUrl = candidateForm.image_url.trim() || null;
+      if (candidateImageFile && roundId) {
+        try {
+          imageUrl = await uploadCandidateImage(candidateImageFile, roundId);
+        } catch (e) {
+          errorLog(e);
+          toast({ title: "Error", description: "No se pudo subir la imagen", variant: "destructive" });
+          return;
+        }
+      }
+      const { error } = await supabase.from("candidates").update({
+        name: candidateForm.name.trim(), surname: candidateForm.surname.trim(),
+        location: candidateForm.location.trim() || null, group_name: candidateForm.group_name.trim() || null,
+        age: typeof candidateForm.age === "number" ? candidateForm.age : null,
+        description: candidateForm.description.trim() || null, image_url: imageUrl,
+        updated_at: new Date().toISOString(),
+      }).eq("id", editingCandidate.id);
+      if (error) {
+        if (candidateImageFile && imageUrl) await removeCandidateImage(imageUrl);
+        toast({ title: "Error", description: "No se pudo editar el candidato", variant: "destructive" });
+        return;
+      }
+      if (previousImageUrl && previousImageUrl !== imageUrl) await removeCandidateImage(previousImageUrl);
+      toast({ title: "Candidato actualizado" });
+      setIsEditCandidateOpen(false);
+      setEditingCandidate(null);
+      resetCandidateForm();
+      await loadRound();
+    } finally { setSavingCandidate(false); }
   };
 
   const unselectCandidate = async (candidateId: string) => {
@@ -207,6 +247,8 @@ export function useCandidateActions({ roundId, round, candidates, loadRound, toa
   return {
     editingCandidate, setEditingCandidate,
     candidateForm, setCandidateForm,
+    candidateImageFile, setCandidateImageFile,
+    savingCandidate,
     isAddCandidateOpen, setIsAddCandidateOpen,
     isEditCandidateOpen, setIsEditCandidateOpen,
     isImportOpen, setIsImportOpen,

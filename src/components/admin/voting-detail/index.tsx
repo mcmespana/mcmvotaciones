@@ -46,6 +46,8 @@ export function AdminVotingDetail() {
   /* Candidate CRUD state + actions */
   const {
     candidateForm, setCandidateForm,
+    candidateImageFile, setCandidateImageFile,
+    savingCandidate,
     isAddCandidateOpen, setIsAddCandidateOpen,
     isEditCandidateOpen, setIsEditCandidateOpen,
     isImportOpen, setIsImportOpen,
@@ -387,6 +389,8 @@ export function AdminVotingDetail() {
         isAddCandidateOpen={isAddCandidateOpen} setIsAddCandidateOpen={setIsAddCandidateOpen}
         isEditCandidateOpen={isEditCandidateOpen} setIsEditCandidateOpen={setIsEditCandidateOpen}
         candidateForm={candidateForm} setCandidateForm={setCandidateForm}
+        candidateImageFile={candidateImageFile} setCandidateImageFile={setCandidateImageFile}
+        savingCandidate={savingCandidate}
         addCandidate={addCandidate} updateCandidate={updateCandidate}
         candidateToSelect={candidateToSelect} setCandidateToSelect={setCandidateToSelect}
         quickSelectCandidate={quickSelectCandidate}
