@@ -1,7 +1,87 @@
-import { XCircle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ImagePlus, XCircle, X } from "lucide-react";
 import { formatCandidateName } from "@/lib/candidateFormat";
+import { isImageFile, MAX_IMAGE_INPUT_BYTES } from "@/lib/candidateImage";
 import type { Candidate } from "../hooks/useRoundDetail";
 import type { CandidateFormState } from "../hooks/useCandidateActions";
+
+interface ImageDropFieldProps {
+  imageUrl: string;
+  imageFile: File | null;
+  setImageFile: (f: File | null) => void;
+  clearImageUrl: () => void;
+}
+
+function ImageDropField({ imageUrl, imageFile, setImageFile, clearImageUrl }: ImageDropFieldProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const previewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : null), [imageFile]);
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+  const shownImage = previewUrl || imageUrl || null;
+
+  const handleFiles = (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    if (!isImageFile(file)) { setFileError("Solo se admiten archivos de imagen."); return; }
+    if (file.size > MAX_IMAGE_INPUT_BYTES) { setFileError("La imagen es demasiado grande (máx. 15 MB)."); return; }
+    setFileError(null);
+    setImageFile(file);
+  };
+
+  const removeImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFileError(null);
+    setImageFile(null);
+    clearImageUrl();
+  };
+
+  return (
+    <div className="avd-form-field">
+      <label className="avd-label">Fotografía</label>
+      <div
+        className={`avd-imgdrop ${dragOver ? "avd-imgdrop-over" : ""}`}
+        role="button"
+        tabIndex={0}
+        onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+      >
+        {shownImage ? (
+          <>
+            <img src={shownImage} alt="Foto de la candidata" className="avd-imgdrop-preview" loading="lazy" decoding="async" />
+            <div className="avd-imgdrop-text">
+              <strong>{imageFile ? imageFile.name : "Foto actual"}</strong>
+              Arrastra otra imagen o pulsa para cambiarla.
+            </div>
+            <button type="button" className="avd-btn avd-btn-ghost avd-btn-icon-sm avd-imgdrop-remove" onClick={removeImage} title="Quitar imagen">
+              <X size={13} />
+            </button>
+          </>
+        ) : (
+          <>
+            <ImagePlus size={20} />
+            <div className="avd-imgdrop-text">
+              <strong>Arrastra una imagen aquí</strong>
+              o pulsa para adjuntarla desde tu dispositivo.
+            </div>
+          </>
+        )}
+      </div>
+      {fileError && <p className="avd-imgdrop-error">{fileError}</p>}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
+      />
+    </div>
+  );
+}
 
 interface FormDialogProps {
   open: boolean;
@@ -10,11 +90,14 @@ interface FormDialogProps {
   description: string;
   candidateForm: CandidateFormState;
   setCandidateForm: React.Dispatch<React.SetStateAction<CandidateFormState>>;
+  imageFile: File | null;
+  setImageFile: (f: File | null) => void;
+  saving: boolean;
   onSave: () => void;
   saveLabel: string;
 }
 
-function FormDialog({ open, setOpen, title, description, candidateForm, setCandidateForm, onSave, saveLabel }: FormDialogProps) {
+function FormDialog({ open, setOpen, title, description, candidateForm, setCandidateForm, imageFile, setImageFile, saving, onSave, saveLabel }: FormDialogProps) {
   if (!open) return null;
   return (
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
@@ -54,11 +137,17 @@ function FormDialog({ open, setOpen, title, description, candidateForm, setCandi
               <label className="avd-label">Descripción</label>
               <textarea className="avd-textarea" value={candidateForm.description} onChange={(e) => setCandidateForm((p) => ({ ...p, description: e.target.value }))} />
             </div>
+            <ImageDropField
+              imageUrl={candidateForm.image_url}
+              imageFile={imageFile}
+              setImageFile={setImageFile}
+              clearImageUrl={() => setCandidateForm((p) => ({ ...p, image_url: "" }))}
+            />
           </div>
         </div>
         <div className="avd-dialog-foot">
-          <button className="avd-btn avd-btn-sm" onClick={() => setOpen(false)}>Cancelar</button>
-          <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={onSave}>{saveLabel}</button>
+          <button className="avd-btn avd-btn-sm" onClick={() => setOpen(false)} disabled={saving}>Cancelar</button>
+          <button className="avd-btn avd-btn-sm avd-btn-primary" onClick={onSave} disabled={saving}>{saving ? "Guardando..." : saveLabel}</button>
         </div>
       </div>
     </div>
@@ -72,6 +161,9 @@ interface Props {
   setIsEditCandidateOpen: (v: boolean) => void;
   candidateForm: CandidateFormState;
   setCandidateForm: React.Dispatch<React.SetStateAction<CandidateFormState>>;
+  candidateImageFile: File | null;
+  setCandidateImageFile: (f: File | null) => void;
+  savingCandidate: boolean;
   addCandidate: () => void;
   updateCandidate: () => void;
   candidateToSelect: Candidate | null;
@@ -96,6 +188,9 @@ export function CandidateFormDialog(props: Props) {
         description="Completa los datos principales. Podrás editar después."
         candidateForm={props.candidateForm}
         setCandidateForm={props.setCandidateForm}
+        imageFile={props.candidateImageFile}
+        setImageFile={props.setCandidateImageFile}
+        saving={props.savingCandidate}
         onSave={props.addCandidate}
         saveLabel="Guardar candidata"
       />
@@ -108,6 +203,9 @@ export function CandidateFormDialog(props: Props) {
         description="Actualiza los datos de la candidata seleccionada."
         candidateForm={props.candidateForm}
         setCandidateForm={props.setCandidateForm}
+        imageFile={props.candidateImageFile}
+        setImageFile={props.setCandidateImageFile}
+        saving={props.savingCandidate}
         onSave={props.updateCandidate}
         saveLabel="Guardar cambios"
       />
