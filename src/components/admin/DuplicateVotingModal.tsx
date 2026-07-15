@@ -21,27 +21,30 @@ export function DuplicateVotingModal({ source, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [newTitle, setNewTitle] = useState("");
+  const [defaultTitleReady, setDefaultTitleReady] = useState(false);
   const [preserveState, setPreserveState] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Compute default name when source changes
   useEffect(() => {
     if (!source) return;
+    setDefaultTitleReady(false);
     let cancelled = false;
     fetchRoundTitles().then((titles) => {
       if (cancelled) return;
       setNewTitle(computeDuplicateName(source.title, titles));
+      setDefaultTitleReady(true);
     });
     return () => { cancelled = true; };
   }, [source]);
 
-  // Focus input once name is ready
+  // Focus + select once when the default name is ready, not on every edit
   useEffect(() => {
-    if (newTitle && inputRef.current) {
+    if (defaultTitleReady && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
     }
-  }, [newTitle]);
+  }, [defaultTitleReady]);
 
   if (!source) return null;
 
