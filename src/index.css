@@ -31,7 +31,6 @@
     --primary-container: 221 83% 90%;
     --primary-fixed: 221 83% 95%;
     --primary-fixed-dim: 221 83% 90%;
-    --primary-glow: 221 83% 65%;
 
     --secondary: 195 90% 35%; /* Deep Cyan */
     --secondary-container: 195 90% 92%;
@@ -43,7 +42,6 @@
     --accent: 190 90% 50%; /* Vibrant Cyan/Teal */
     --accent-foreground: 0 0% 10%;
     --accent-soft: 190 90% 94%;
-    --accent-glow: 190 90% 50%;
 
     --destructive: 348 90% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -95,7 +93,6 @@
     --primary-fixed: 221 80% 15%;
     --primary-fixed-dim: 221 80% 20%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 221 90% 65%;
 
     --secondary: 195 100% 40%;
     --secondary-container: 195 100% 15%;
@@ -231,15 +228,6 @@
     background: hsl(var(--surface-container-lowest));
   }
 
-  .tech-glow {
-    box-shadow: var(--shadow-primary);
-    transition: var(--transition-glow);
-  }
-  
-  .tech-glow:hover {
-    box-shadow: var(--shadow-primary), var(--shadow-accent);
-  }
-  
   .gradient-tech {
     background: var(--gradient-tech);
   }
@@ -346,9 +334,6 @@
     border-color: hsl(var(--ticket-accent) / 0.35);
   }
   
-  .animate-pulse-glow {
-    animation: pulse-glow 2s infinite;
-  }
 }
 
 @layer utilities {
@@ -359,15 +344,6 @@
 
     to {
       opacity: 1;
-    }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { 
-      box-shadow: var(--shadow-primary); 
-    }
-    50% {
-      box-shadow: var(--shadow-primary), var(--shadow-accent);
     }
   }
 }
@@ -1859,7 +1835,6 @@
 @keyframes proj-vote-flash { 0%,100%{opacity:0} 20%,80%{opacity:1} }
 @keyframes proj-code-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.6 0.22 250/.7)} 50%{box-shadow:0 0 0 16px oklch(0.6 0.22 250/0)} }
 @keyframes proj-sparkle   { 0%{transform:scale(0) rotate(0);opacity:1} 50%{opacity:1} 100%{transform:scale(1) rotate(180deg);opacity:0} }
-@keyframes proj-win-glow  { 0%,100%{box-shadow:0 0 30px oklch(0.6 0.2 148/.3)} 50%{box-shadow:0 0 60px oklch(0.6 0.2 148/.6),0 0 100px oklch(0.6 0.2 148/.2)} }
 
 /* ── Shared UI building blocks ── */
 
@@ -1959,8 +1934,6 @@
 @keyframes breathe        { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.8} }
 @keyframes card-enter     { from{opacity:0;transform:translateY(14px) scale(0.97)} to{opacity:1;transform:none} }
 @keyframes ok-card-enter  { from{opacity:0;transform:scale(0.9) translateY(20px)} to{opacity:1;transform:none} }
-@keyframes ok-glow        { 0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.16 150/.5)} 50%{box-shadow:0 0 0 18px oklch(0.62 0.16 150/0)} }
-@keyframes brand-glow     { 0%,100%{box-shadow:0 0 0 0 oklch(0.58 0.135 240/.4)} 50%{box-shadow:0 0 0 14px oklch(0.58 0.135 240/0)} }
 @keyframes dot-bounce     { 0%,80%,100%{transform:translateY(0);opacity:0.3} 40%{transform:translateY(-5px);opacity:1} }
 @keyframes proj-orb-slow-a { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(80px,-100px) scale(1.1)} 66%{transform:translate(-60px,60px) scale(0.9)} }
 @keyframes proj-orb-slow-b { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(-90px,70px) scale(0.9)} 70%{transform:translate(50px,-80px) scale(1.1)} }
