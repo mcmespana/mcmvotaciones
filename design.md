@@ -359,7 +359,10 @@ Esta lista está escrita contra cosas que ya están en nuestro código y nos han
 
 1. **Nada de "glassmorphism"**: `backdrop-blur` decorativo, tarjetas semitransparentes,
    bordes blancos al 20 %. Sobre un fondo con contenido, ilegible; en un móvil normal, caro.
-   El `backdrop-filter` se reserva a **una** barra pegajosa por app.
+   El `backdrop-filter` se reserva a dos sitios y solo dos: **una** barra pegajosa por app,
+   y el **velo de un modal** —donde no es adorno, sino lo que separa el diálogo de la página
+   que hay detrás—. Un velo así va a 2 px, no a 24. Cualquier otra superficie va sólida.
+   Y un cristal dentro de otro cristal no es ninguna de las dos cosas.
 2. **Nada de gradientes como fondo de página, de tarjeta o de texto.** Un `bg-clip-text` con
    degradado en un `h1` es de 2022 y baja el contraste. El degradado se admite en una franja
    de acento fina o en un dato, no como material.
