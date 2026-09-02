@@ -51,6 +51,27 @@ rampa `--avd-*`** y luego borrar lo que sobre.
 5. Actualizar `CLAUDE.md`: la regla "usa solo `--avd-*`" pasa a ser cierta, y se añade que
    los nombres semánticos son alias y no fuentes.
 
+## Ojo: la rampa `--avd-brand-*` no es el azul de esta app
+
+Medido al portar MCM Bank a OKLCH (2026-09-02):
+
+| Azul | OKLCH |
+|---|---|
+| Legado *Soft Oceanic* de esta app, `hsl(221 83% 53%)` | L .545 · C .215 · **H 263** |
+| Rampa `--avd-brand-600` | L .50 · C .145 · **H 243** |
+| Azul del logo MCM, `#29abe2` | L .698 · C .133 · H 232 |
+
+Es decir: **el `--avd-*` que estamos adoptando es un azul distinto —más cian— del que la app
+enseña hoy**, aunque los dos se llamen «azul institucional». MCM Bank ya está en el tono 260,
+que es el del legado.
+
+Al hacer el paso 1, **decide esto a propósito y no de rebote**: o se mueve la rampa
+`--avd-brand-*` al tono 260 para que Bank y Votaciones sean de verdad el mismo azul (lo
+recomendado, y lo que dice `design.md` §2), o se deja en 243 y se asume que son dos azules
+distintos. Lo que no vale es que el cambio de tono se cuele dentro de un commit que dice
+«unificar tokens». Si mueves la rampa, conserva las luminosidades: son las que hacen que
+pase AA.
+
 ## Qué NO tocar
 
 `src/components/projection/projection.css` en este plan (siempre oscuro, lo tratan `002` y
