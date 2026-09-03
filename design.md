@@ -478,11 +478,24 @@ voto perdido.
 Los planes ejecutables viven en **`design-plans/`**, numerados y autocontenidos, con su tabla
 de estado en `design-plans/README.md`. Un agente que venga a "arreglar diseño" empieza ahí.
 
-| Plan | Qué |
-|---|---|
-| `001` | **Un solo sistema de color**: dejar `--avd-*` como única fuente y exponer los nombres semánticos (`--background`, `--primary`…) como alias sobre él, para que los componentes de shadcn sigan funcionando. Después borrar los tokens *Soft Oceanic* y el `--gradient-canvas` del `body` |
-| `002` | **Los 54 hex a pelo** de `src/**/*.tsx` → tokens. Empezar por `voting/` y `projection/`, que es donde más se ven |
-| `003` | **Quitar `--primary-glow`, `--shadow-primary`, `--shadow-accent` y `animate-pulse-glow`** (§5.4) |
-| `004` | **Tipografías**: de cuatro familias por CDN a dos autoalojadas por Fontsource (§3.2). Mantener JetBrains Mono para códigos de papeleta |
-| `005` | **Reescribir Visión+ sin `!important`**: hoy son 408 líneas que sobrescriben clase por clase de Tailwind (incluidas las arbitrarias tipo `text-[11.5px]`), así que **cualquier tamaño nuevo se escapa del modo en silencio**. La forma correcta es escalar la raíz y tener toda la tipografía en `rem` (§3.2, §3.7) |
-| `006` | **Subir Recharts a `^3` para igualar con MCM Bank** y poder compartir componentes de gráfica |
+**Hecho el 2026-09-02:**
+
+- **El `003`**, que resultó ser borrado de código muerto: `.tech-glow` y `.animate-pulse-glow`
+  apuntaban a `--shadow-primary`, `--shadow-accent` y `--transition-glow`, que **no estaban
+  definidas en ningún sitio del repo**. No pintaban nada.
+- **Lo primero del `001`, y no era lo que creíamos.** `tailwind.config.ts` **no se estaba
+  cargando**: en Tailwind 4, `@import "tailwindcss"` no lee un config de v3 sin `@config`.
+  Resultado medido sobre el build: **334 usos de 62 clases de color** —`text-muted-foreground`
+  45 veces, `border-outline-variant` 34, `text-foreground` 23— no existían en el CSS. Cada uno
+  heredaba el color del padre. Arreglado con un bloque `@theme` nativo de v4 al principio de
+  `src/index.css`: 334 → 0. **Si añades un color, va ahí**, no en el config.
+- **La rampa `--avd-brand-*` al tono 260**, el mismo azul que MCM Bank, conservando
+  luminosidades y cromas —son los que la hacen pasar AA—. Estaba en 235–250, que en OKLCH sale
+  más cian que el azul que la app enseña de verdad (su legado está en 263) y que el del logo.
+
+**Lo que queda**, por orden: retirar el legado *Soft Oceanic* que sigue conviviendo con
+`--avd-*` (resto del `001`), los hex a pelo (`002`), Recharts a v3 (`006`), las tipografías
+autoalojadas (`004`) y reescribir Visión+ sin `!important` (`005`). Cada uno con su plan.
+
+Y una regla que sale de todo esto: **en esta app, un cambio de color no está comprobado hasta
+que se mira el CSS compilado.** El código fuente puede estar lleno de clases que no existen.
