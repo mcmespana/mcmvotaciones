@@ -1,4 +1,99 @@
 @import "tailwindcss";
+
+/*
+ * Tailwind 4 NO carga `tailwind.config.ts` por su cuenta: hace falta `@config`,
+ * y aun con él no resuelve algunos nombres (`text-foreground`,
+ * `text-muted-foreground`, `border-outline-variant`…). Hasta que esto se
+ * escribió, **ninguna** de las clases de color del config existía en el CSS
+ * compilado: 350 usos repartidos por la app heredaban el color del padre en
+ * vez de aplicar el suyo. No se veía como un fallo —la app tiene mucho CSS
+ * propio en `.avd-*` que sí funciona— pero la jerarquía de texto estaba plana.
+ *
+ * Este bloque es la forma nativa de v4 y no tiene esas sorpresas: define los
+ * mismos colores que el config, apuntando a las mismas variables. `inline`
+ * hace que Tailwind sustituya el valor en la utilidad en vez de encadenar otra
+ * variable, que es lo que permite que `.dark` siga cambiándolos.
+ *
+ * `tailwind.config.ts` se mantiene para `content`, `darkMode`, animaciones y
+ * plugins; sus `colors` quedan aquí. Si añades un color, añádelo en los dos
+ * o, mejor, solo aquí.
+ */
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-avd-bg: var(--avd-bg);
+  --color-avd-bg-elev: var(--avd-bg-elev);
+  --color-avd-bg-sunken: var(--avd-bg-sunken);
+  --color-avd-surface: var(--avd-surface);
+  --color-avd-border: var(--avd-border);
+  --color-avd-border-soft: var(--avd-border-soft);
+  --color-avd-fg: var(--avd-fg);
+  --color-avd-fg-muted: var(--avd-fg-muted);
+  --color-avd-fg-subtle: var(--avd-fg-subtle);
+  --color-avd-fg-faint: var(--avd-fg-faint);
+  --color-avd-brand: var(--avd-brand);
+  --color-avd-brand-fg: var(--avd-brand-fg);
+  --color-avd-brand-bg: var(--avd-brand-bg);
+  --color-avd-brand-border: var(--avd-brand-border);
+  --color-avd-brand-subtle: var(--avd-brand-subtle);
+  --color-avd-ok: var(--avd-ok);
+  --color-avd-ok-fg: var(--avd-ok-fg);
+  --color-avd-ok-bg: var(--avd-ok-bg);
+  --color-avd-warn: var(--avd-warn);
+  --color-avd-warn-fg: var(--avd-warn-fg);
+  --color-avd-warn-bg: var(--avd-warn-bg);
+  --color-avd-bad: var(--avd-bad);
+  --color-avd-bad-fg: var(--avd-bad-fg);
+  --color-avd-bad-bg: var(--avd-bad-bg);
+  --color-voting-blue: hsl(var(--vote-color-blue));
+  --color-voting-red: hsl(var(--vote-color-red));
+  --color-voting-yellow: hsl(var(--vote-color-yellow));
+  --color-voting-green: hsl(var(--vote-color-green));
+  --color-outline-variant: hsl(var(--outline-variant));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-surface: hsl(var(--surface));
+  --color-surface-foreground: hsl(var(--surface-foreground));
+  --color-surface-container-lowest: hsl(var(--surface-container-lowest));
+  --color-surface-container-low: hsl(var(--surface-container-low));
+  --color-surface-container: hsl(var(--surface-container));
+  --color-surface-container-high: hsl(var(--surface-container-high));
+  --color-surface-container-highest: hsl(var(--surface-container-highest));
+  --color-overlay: hsl(var(--overlay));
+  --color-overlay-foreground: hsl(var(--overlay-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-container: hsl(var(--primary-container));
+  --color-primary-fixed: hsl(var(--primary-fixed));
+  --color-primary-fixed-dim: hsl(var(--primary-fixed-dim));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-container: hsl(var(--secondary-container));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --shadow-tech: var(--avd-shadow-md);
+  --shadow-avd-xs: var(--avd-shadow-xs);
+  --shadow-avd-sm: var(--avd-shadow-sm);
+  --shadow-avd-md: var(--avd-shadow-md);
+  --shadow-avd-lg: var(--avd-shadow-lg);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @import url('https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 @import "./styles/vision-plus.css";
 
@@ -31,7 +126,6 @@
     --primary-container: 221 83% 90%;
     --primary-fixed: 221 83% 95%;
     --primary-fixed-dim: 221 83% 90%;
-    --primary-glow: 221 83% 65%;
 
     --secondary: 195 90% 35%; /* Deep Cyan */
     --secondary-container: 195 90% 92%;
@@ -43,7 +137,6 @@
     --accent: 190 90% 50%; /* Vibrant Cyan/Teal */
     --accent-foreground: 0 0% 10%;
     --accent-soft: 190 90% 94%;
-    --accent-glow: 190 90% 50%;
 
     --destructive: 348 90% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -95,7 +188,6 @@
     --primary-fixed: 221 80% 15%;
     --primary-fixed-dim: 221 80% 20%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 221 90% 65%;
 
     --secondary: 195 100% 40%;
     --secondary-container: 195 100% 15%;
@@ -231,15 +323,6 @@
     background: hsl(var(--surface-container-lowest));
   }
 
-  .tech-glow {
-    box-shadow: var(--shadow-primary);
-    transition: var(--transition-glow);
-  }
-  
-  .tech-glow:hover {
-    box-shadow: var(--shadow-primary), var(--shadow-accent);
-  }
-  
   .gradient-tech {
     background: var(--gradient-tech);
   }
@@ -346,9 +429,6 @@
     border-color: hsl(var(--ticket-accent) / 0.35);
   }
   
-  .animate-pulse-glow {
-    animation: pulse-glow 2s infinite;
-  }
 }
 
 @layer utilities {
@@ -361,15 +441,6 @@
       opacity: 1;
     }
   }
-
-  @keyframes pulse-glow {
-    0%, 100% { 
-      box-shadow: var(--shadow-primary); 
-    }
-    50% {
-      box-shadow: var(--shadow-primary), var(--shadow-accent);
-    }
-  }
 }
 
 /* ==========================================================================
@@ -378,16 +449,23 @@
    ========================================================================== */
 
 :root {
-  --avd-brand-50:  oklch(0.975 0.013 235);
-  --avd-brand-100: oklch(0.945 0.028 235);
-  --avd-brand-200: oklch(0.895 0.055 235);
-  --avd-brand-300: oklch(0.82 0.085 235);
-  --avd-brand-400: oklch(0.70 0.115 238);
-  --avd-brand-500: oklch(0.58 0.135 240);
-  --avd-brand-600: oklch(0.50 0.145 243);
-  --avd-brand-700: oklch(0.42 0.135 246);
-  --avd-brand-800: oklch(0.34 0.11 248);
-  --avd-brand-900: oklch(0.26 0.085 250);
+  /*
+     Tono 260: el mismo azul que MCM Bank, para que «azul institucional»
+     signifique un único color en las dos apps. La rampa estaba en 235–250, que
+     en OKLCH sale visiblemente más cian que el azul que esta app enseña de
+     verdad —su legado está en 263— y que el del logo del MCM.
+     Las luminosidades y los cromas NO se tocan: son los que hacen que la rampa
+     pase AA, y están comprobados par a par. */
+  --avd-brand-50:  oklch(0.975 0.013 260);
+  --avd-brand-100: oklch(0.945 0.028 260);
+  --avd-brand-200: oklch(0.895 0.055 260);
+  --avd-brand-300: oklch(0.82 0.085 260);
+  --avd-brand-400: oklch(0.70 0.115 260);
+  --avd-brand-500: oklch(0.58 0.135 260);
+  --avd-brand-600: oklch(0.50 0.145 260);
+  --avd-brand-700: oklch(0.42 0.135 260);
+  --avd-brand-800: oklch(0.34 0.11 260);
+  --avd-brand-900: oklch(0.26 0.085 260);
 
   --avd-n-0:    oklch(1 0 0);
   --avd-n-50:   oklch(0.985 0.005 240);
@@ -1859,7 +1937,6 @@
 @keyframes proj-vote-flash { 0%,100%{opacity:0} 20%,80%{opacity:1} }
 @keyframes proj-code-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.6 0.22 250/.7)} 50%{box-shadow:0 0 0 16px oklch(0.6 0.22 250/0)} }
 @keyframes proj-sparkle   { 0%{transform:scale(0) rotate(0);opacity:1} 50%{opacity:1} 100%{transform:scale(1) rotate(180deg);opacity:0} }
-@keyframes proj-win-glow  { 0%,100%{box-shadow:0 0 30px oklch(0.6 0.2 148/.3)} 50%{box-shadow:0 0 60px oklch(0.6 0.2 148/.6),0 0 100px oklch(0.6 0.2 148/.2)} }
 
 /* ── Shared UI building blocks ── */
 
@@ -1959,8 +2036,6 @@
 @keyframes breathe        { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.8} }
 @keyframes card-enter     { from{opacity:0;transform:translateY(14px) scale(0.97)} to{opacity:1;transform:none} }
 @keyframes ok-card-enter  { from{opacity:0;transform:scale(0.9) translateY(20px)} to{opacity:1;transform:none} }
-@keyframes ok-glow        { 0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.16 150/.5)} 50%{box-shadow:0 0 0 18px oklch(0.62 0.16 150/0)} }
-@keyframes brand-glow     { 0%,100%{box-shadow:0 0 0 0 oklch(0.58 0.135 240/.4)} 50%{box-shadow:0 0 0 14px oklch(0.58 0.135 240/0)} }
 @keyframes dot-bounce     { 0%,80%,100%{transform:translateY(0);opacity:0.3} 40%{transform:translateY(-5px);opacity:1} }
 @keyframes proj-orb-slow-a { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(80px,-100px) scale(1.1)} 66%{transform:translate(-60px,60px) scale(0.9)} }
 @keyframes proj-orb-slow-b { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(-90px,70px) scale(0.9)} 70%{transform:translate(50px,-80px) scale(1.1)} }

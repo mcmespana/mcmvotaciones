@@ -10,6 +10,19 @@ Run `/graphify query "..."` before refactoring or debugging — the graph at `gr
 
 No need to count files — if you edited something meaningful, update the graph.
 
+## Diseño: lee `design.md` primero
+
+**Antes de tocar cualquier cosa visual, lee `design.md` (raíz del repo).** Es el sistema de
+diseño compartido por las cuatro apps MCM (`mcmbank`, `mcmrecursos`, `mcmshop`,
+`mcmvotaciones`): color, tipografía, espacio, movimiento, estados de acción, patrón de
+deshacer, accesibilidad, microcopia y la lista de anti-defaults. Su §7 describe esta app —las
+tres superficies (votante, proyección, administración) y sus reglas propias— y su §8 apunta a
+`design-plans/`, con la deuda de diseño en planes ejecutables.
+
+Aviso importante que está detallado allí: **`src/index.css` tiene dos sistemas de color vivos
+a la vez** (el legado *Soft Oceanic* en HSL y el actual `--avd-*` en OKLCH). Escribe siempre
+con `--avd-*` y no metas nada nuevo en el legado.
+
 ## CSS rules (always, no exceptions)
 
 ### 1. Use `--avd-*` tokens only
