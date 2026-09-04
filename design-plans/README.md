@@ -9,7 +9,7 @@ improvises.
 Estos planes son la **unificación con el sistema de diseño MCM** (`../design.md`), común a
 `mcmbank`, `mcmrecursos`, `mcmshop` y `mcmvotaciones`.
 
-**Orden recomendado:** `003` → `001` → `002` → `006` → `004` → `005`.
+**Orden recomendado:** `007` primero —es mirar, no tocar, y condiciona lo demás—, después `002` → `001` (lo que queda) → `006` → `004` → `005`. El `003` ya está hecho.
 
 > **Lo primero de todo ya está hecho, y no era lo que creíamos.** Al abrir el `001` resultó
 > que `tailwind.config.ts` **no se estaba cargando**: `src/index.css` usa Tailwind 4
@@ -38,5 +38,6 @@ el grafo al terminar (`/graphify . --update`).
 | [004](004-tipografias-autoalojadas.md) | Cuatro familias por CDN → dos autoalojadas + JetBrains Mono | global | TODO |
 | [005](005-vision-plus-sin-important.md) | Reescribir Visión+ escalando la raíz, sin 408 líneas de `!important` | votante | TODO |
 | [006](006-recharts-v3.md) | Subir Recharts a `^3` para igualar con MCM Bank | admin | TODO |
+| [007](007-verificar-en-uso-el-theme.md) | **Mirar en uso** el efecto del `@theme`: encendió 334 aplicaciones de color que nadie ha visto todavía | votante, proyección, admin | TODO |
 
 Estados: TODO | IN PROGRESS | DONE (fecha) | BLOCKED (motivo en una línea)
