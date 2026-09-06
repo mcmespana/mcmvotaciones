@@ -17,12 +17,12 @@ const sizeMap = {
   xl: "w-32 h-32 text-3xl",
 };
 
-// Official palette aligned with voting tutorial: red, emerald, yellow, blue
+// Paleta oficial de opciones de voto (--vote-color-*), la misma que el tutorial
 const PALETTE = [
-  { bg: "#ef4444", text: "#fff" }, // red-500
-  { bg: "#10b981", text: "#fff" }, // emerald-500
-  { bg: "#eab308", text: "#fff" }, // yellow-500
-  { bg: "#3b82f6", text: "#fff" }, // blue-500
+  { bg: "hsl(var(--vote-color-red))", text: "var(--avd-n-0)" },
+  { bg: "hsl(var(--vote-color-green))", text: "var(--avd-n-0)" },
+  { bg: "hsl(var(--vote-color-yellow))", text: "var(--avd-n-0)" },
+  { bg: "hsl(var(--vote-color-blue))", text: "var(--avd-n-0)" },
 ];
 
 function stableColorIndex(id: string): number {

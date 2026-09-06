@@ -335,7 +335,7 @@ export function VotingPage() {
       </div>
 
       {!showSubmitAnimation && (
-        <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-[var(--avd-border)] bg-[var(--avd-surface)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.18)] px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">{/* env() safe-area used in pb */}
+        <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-[var(--avd-border)] bg-[var(--avd-surface)] shadow-[0_-8px_24px_-12px_color-mix(in_oklch,var(--avd-n-1000)_18%,transparent)] px-4 pt-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">{/* env() safe-area used in pb */}
           <div className="mx-auto max-w-4xl space-y-2">
             <div className="min-w-0">
               {selectedCandidates.length > 0 ? (
@@ -369,8 +369,8 @@ export function VotingPage() {
           <div className="avd-dialog max-w-[420px] p-0" onClick={(e) => e.stopPropagation()}>
             <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500" />
             <div className="px-8 pt-8 pb-5 text-center">
-              <div className="mx-auto mb-5 w-16 h-16 flex items-center justify-center rounded-2xl bg-[#d1fae5] border border-[#6ee7b7]">
-                <Vote className="w-8 h-8 text-[#059669]" strokeWidth={1.7} />
+              <div className="mx-auto mb-5 w-16 h-16 flex items-center justify-center rounded-2xl bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_35%,transparent)]">
+                <Vote className="w-8 h-8 text-[var(--avd-ok-fg)]" strokeWidth={1.7} />
               </div>
               <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2">Confirmar voto</h2>
               <p className="text-[13px] leading-relaxed text-[var(--avd-fg-muted)]">Revisa tu selección. Esta acción no se puede deshacer.</p>

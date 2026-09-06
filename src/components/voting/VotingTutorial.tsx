@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { VOTE_COLOR_CSS } from "@/lib/voteColors";
 import { CheckCircle2, MousePointerClick, Shield, Send, Star, HelpCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STEPS = [
@@ -11,8 +12,8 @@ const STEPS = [
     iconBg: "bg-red-500/10",
     iconRing: "ring-red-500/25",
     dotActive: "bg-red-500",
-    topBar: "linear-gradient(90deg, rgba(239,68,68,0.85), rgba(248,113,113,0.55), rgba(239,68,68,0.2))",
-    color: "#ef4444",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-red)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.red,
     nextBg: "bg-red-500/10 hover:bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-400",
   },
   {
@@ -23,7 +24,8 @@ const STEPS = [
     iconBg: "bg-amber-500/10",
     iconRing: "ring-amber-500/25",
     dotActive: "bg-amber-500",
-    topBar: "linear-gradient(90deg, rgba(245,158,11,0.85), rgba(251,191,36,0.55), rgba(245,158,11,0.2))",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, #f59e0b 85%, transparent), color-mix(in oklch, #f59e0b 45%, transparent), color-mix(in oklch, #f59e0b 20%, transparent))",
+    // Ámbar de «favorito»: sin token en el sistema todavía (design-plans/002)
     color: "#f59e0b",
     nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
   },
@@ -36,8 +38,8 @@ const STEPS = [
     iconBg: "bg-emerald-500/10",
     iconRing: "ring-emerald-500/25",
     dotActive: "bg-emerald-500",
-    topBar: "linear-gradient(90deg, rgba(16,185,129,0.85), rgba(52,211,153,0.55), rgba(16,185,129,0.2))",
-    color: "#10b981",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-green)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.green,
     nextBg: "bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
   },
   {
@@ -49,8 +51,8 @@ const STEPS = [
     iconBg: "bg-yellow-500/10",
     iconRing: "ring-yellow-500/25",
     dotActive: "bg-yellow-500",
-    topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
-    color: "#eab308",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-yellow)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.yellow,
     nextBg: "bg-yellow-500/10 hover:bg-yellow-500/15 border-yellow-500/30 text-yellow-700 dark:text-yellow-400",
   },
   {
@@ -62,8 +64,8 @@ const STEPS = [
     iconBg: "bg-blue-500/10",
     iconRing: "ring-blue-500/25",
     dotActive: "bg-blue-500",
-    topBar: "linear-gradient(90deg, rgba(59,130,246,0.85), rgba(96,165,250,0.55), rgba(59,130,246,0.2))",
-    color: "#3b82f6",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-blue)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-blue)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-blue)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.blue,
     nextBg: "bg-blue-500/10 hover:bg-blue-500/15 border-blue-500/30 text-blue-700 dark:text-blue-400",
   },
 ];

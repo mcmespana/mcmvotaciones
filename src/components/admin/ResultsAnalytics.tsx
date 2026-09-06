@@ -46,6 +46,10 @@ interface RoundResult extends RoundResultRow {
 const normalizeCandidate = (candidate: RoundResult["candidate"]) =>
   Array.isArray(candidate) ? candidate[0] : candidate;
 
+// PENDIENTE DE DECISIÓN (design-plans/002): paleta categórica de serie. El
+// sistema `--avd-*` no tiene una y design.md §3.9 la exige validada; inventarla
+// aquí sería una decisión de diseño, no un reemplazo de token. Se queda en hex
+// hasta que exista `--avd-cat-*`.
 const CHART_COLORS = [
   "#2563EB", "#DC2626", "#D97706", "#16A34A",
   "#0EA5E9", "#F97316", "#EC4899", "#06B6D4",
@@ -298,7 +302,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                     {barData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.selected ? "#10B981" : CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={entry.selected ? "var(--avd-ok)" : CHART_COLORS[index % CHART_COLORS.length]}
                       />
                     ))}
                   </Bar>

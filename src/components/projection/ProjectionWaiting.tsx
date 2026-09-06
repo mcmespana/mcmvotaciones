@@ -142,7 +142,7 @@ export function ProjectionWaiting({
               <AccentBar />
               <div className="proj-qr-grid">
                 <div className="proj-qr-frame">
-                  <QRCodeSVG value={votingUrl} size={140} bgColor="#ffffff" fgColor="#0f172a" level="M" includeMargin title="QR de ingreso" />
+                  <QRCodeSVG value={votingUrl} size={140} bgColor="var(--avd-n-0)" fgColor="var(--avd-n-950)" level="M" includeMargin title="QR de ingreso" />
                 </div>
                 <div>
                   <div className="proj-qr-scan-title">Escanea para ingresar</div>

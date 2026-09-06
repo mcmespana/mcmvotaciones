@@ -147,14 +147,14 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
           dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
           onDragEnd={handleDragEnd}
           whileDrag={{ cursor: "grabbing" }}
-          className="avd-dialog max-w-full w-full p-0 overflow-hidden relative shadow-[0_20px_40px_-8px_rgba(0,0,0,0.22),0_8px_16px_-4px_rgba(0,0,0,0.1)]"
+          className="avd-dialog max-w-full w-full p-0 overflow-hidden relative shadow-[var(--avd-shadow-lg)]"
           style={{ cursor: imgExpanded ? "default" : "grab", touchAction: "pan-y" }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 z-10 bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-[var(--avd-fg-muted)] shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
+            className="absolute top-3 right-3 z-10 bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-[var(--avd-fg-muted)] shadow-[var(--avd-shadow-sm)]"
           >
             <X size={18} />
           </button>
@@ -295,13 +295,13 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.88 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="bg-white border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[#1a1a1a] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.28),0_4px_6px_-2px_rgba(0,0,0,0.14)] shrink-0"
+                className="bg-[var(--avd-n-0)] border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[var(--avd-n-900)] shadow-[0_10px_15px_-3px_color-mix(in_oklch,var(--avd-n-1000)_28%,transparent),0_4px_6px_-2px_color-mix(in_oklch,var(--avd-n-1000)_14%,transparent)] shrink-0"
               >
                 <ChevronLeft size={32} />
               </motion.button>
             ) : <div className="w-14" />}
 
-            <p className="text-white text-[13px] font-semibold [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+            <p className="text-[var(--avd-n-0)] text-[13px] font-semibold [text-shadow:0_2px_8px_color-mix(in_oklch,var(--avd-n-1000)_60%,transparent)]">
               Desliza la foto para navegar
             </p>
 
@@ -311,7 +311,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.88 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="bg-white border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[#1a1a1a] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.28),0_4px_6px_-2px_rgba(0,0,0,0.14)] shrink-0"
+                className="bg-[var(--avd-n-0)] border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[var(--avd-n-900)] shadow-[0_10px_15px_-3px_color-mix(in_oklch,var(--avd-n-1000)_28%,transparent),0_4px_6px_-2px_color-mix(in_oklch,var(--avd-n-1000)_14%,transparent)] shrink-0"
               >
                 <ChevronRight size={32} />
               </motion.button>

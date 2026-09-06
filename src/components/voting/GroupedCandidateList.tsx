@@ -290,7 +290,10 @@ export function GroupedCandidateList({
         {favoriteCandidates.length > 0 && (
           <div className="pub-group mb-2">
             <div className="pub-group-head" style={{ cursor: 'default' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--tkt-yellow, #F59E0B)" stroke="none" className="shrink-0">
+              {/* Ámbar de «favorito». Sin token: no hay uno para esta idea en el
+                  sistema y añadirlo es una decisión, no un reemplazo (design-plans/002).
+                  `--tkt-yellow` no existe en ninguna parte, así que se quita. */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="none" className="shrink-0">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
               <span className="font-bold text-[14px] text-[var(--avd-fg)] flex-1 text-left tracking-[-0.005em]">Mis favoritos</span>

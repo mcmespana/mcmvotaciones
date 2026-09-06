@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
+import { resolveVoteColors } from "@/lib/voteColors";
 import { AnimatePresence, motion } from "framer-motion";
 import type { BallotSummary } from "@/hooks/useProjectionData";
 import { PChip } from "./_shared";
@@ -220,8 +221,9 @@ export function ProjectionBallotAnimation({
     const startCelebrate = setTimeout(() => setCelebrate(true), 850);
 
     const fire = (opts: confetti.Options) => confetti({ disableForReducedMotion: true, ...opts });
-    // Tutorial palette: red, emerald, yellow, blue
-    const PALETTE = ["#ef4444", "#10b981", "#eab308", "#3b82f6"];
+    // Paleta oficial de opciones de voto (--vote-color-*), resuelta porque el
+    // canvas de confetti no entiende var()
+    const PALETTE = resolveVoteColors();
     const t1 = setTimeout(() => {
       fire({ particleCount: 70, angle: 60, spread: 60, origin: { x: 0, y: 0.65 }, shapes: ["star"], colors: PALETTE, scalar: 1.2, startVelocity: 52, ticks: 260 });
       fire({ particleCount: 70, angle: 120, spread: 60, origin: { x: 1, y: 0.65 }, shapes: ["star"], colors: PALETTE, scalar: 1.2, startVelocity: 52, ticks: 260 });

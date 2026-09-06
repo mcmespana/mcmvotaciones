@@ -52,6 +52,10 @@ function buildGroups(candidates: Candidate[]): GroupEntry[] {
 
 /* ── Avatar ── */
 
+// PENDIENTE DE DECISIÓN (design-plans/002): paleta categórica de identidad para
+// avatares, más su versión clara de fondo. No hay token para esto y `PALETTE_LT`
+// no tiene variante oscura. Mismo bloqueo que `CHART_COLORS` en ResultsAnalytics:
+// hace falta añadir `--avd-cat-*` al sistema, y eso es una decisión.
 const PALETTE     = ["#E53E3E","#3B82F6","#10B981","#F97316","#8B5CF6","#EC4899","#06B6D4","#EAB308"];
 const PALETTE_LT  = ["#FED7D7","#DBEAFE","#D1FAE5","#FFEDD5","#EDE9FE","#FCE7F3","#CFFAFE","#FEF9C3"];
 
