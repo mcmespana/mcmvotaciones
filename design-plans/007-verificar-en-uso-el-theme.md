@@ -56,3 +56,45 @@ parte del cromo.
 Que quede escrito aquí qué se ha mirado y con qué resultado, con la fecha. Si no se puede
 entrar con credenciales, dilo en vez de marcarlo como hecho: un plan de verificación que se
 cierra sin verificar es peor que uno abierto.
+
+---
+
+## Resultado (2026-09-04) — PARCIAL
+
+**No se puede cerrar como hecho: siguen sin haber credenciales de Supabase en el entorno.**
+Este plan dice explícitamente que un plan de verificación cerrado sin verificar es peor que
+uno abierto, así que queda abierto.
+
+### Lo que sí se ha podido mirar
+
+`/test` (Test Kitchen) monta componentes de votante con datos falsos y **sin Supabase**. Eso
+da acceso a `VoteTicket`, `SeatValidated`, `VotingTutorial`, `VoteSubmitAnimation` y
+`ProjectionBallotAnimation`. Recorridos en Chromium, en claro y en oscuro, a 900 y 390 px:
+
+- **La jerarquía se lee** en los dos temas: lo secundario (`text-avd-fg-muted`,
+  `text-muted-foreground`) queda claramente por debajo de lo principal, que es justo lo que el
+  `@theme` encendió. No se ha visto ningún texto que haya perdido contraste.
+- **Ningún borde nuevo indeseado.** Las tarjetas y los separadores se ven como deben.
+- **Los colores de voto se distinguen entre sí** en la animación de envío y en el tutorial.
+- Cero errores de consola.
+
+También se han mirado las dos gráficas de `ResultsAnalytics` montadas aparte (`006`), que es
+donde más `text-avd-fg-muted` y `border-outline-variant` hay: correctas.
+
+### Lo que sigue sin mirarse
+
+- **Proyección** (`/proyeccion`) — la más importante y la más arriesgada, y la que necesita
+  datos de una votación real.
+- **Votante completo** (`/`, `/candidatos/:id`) — entrar con código, lista de candidatos,
+  detalle, votar. Y con Visión+ activado, que además ahora hace algo por primera vez (`005`).
+- **Administración** (`/admin/*`) — la más densa.
+
+### Para quien lo retome
+
+Con un `.env.local` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` y una votación de
+prueba, esto es media hora. La forma de mirarlo está montada: `npm run dev`, y las capturas
+en claro/oscuro salen con Playwright y el Chromium de `/opt/pw-browsers/chromium`.
+
+Ojo a un cambio nuevo que también hay que mirar en uso, del `001`: el `body` ya no lleva
+degradado, el radio base pasa de 1 rem a 10 px y catorce tokens que no existían —entre ellos
+`--overlay`, que es el velo de los modales— ahora sí pintan.

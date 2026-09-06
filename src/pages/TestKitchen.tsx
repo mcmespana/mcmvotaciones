@@ -17,7 +17,7 @@ const MOCK_RECEIPT = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--avd-fg-muted)] m-0 pb-2 border-b border-[var(--avd-border)]">
+      <h2 className="text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--avd-fg-muted)] m-0 pb-2 border-b border-[var(--avd-border)]">
         {title}
       </h2>
       {children}
@@ -76,12 +76,12 @@ export function TestKitchen() {
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b-2 border-[var(--avd-border)]">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--avd-warn-bg)] text-[var(--avd-warn)] text-[13px] font-black">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--avd-warn-bg)] text-[var(--avd-warn)] text-sm font-black">
               T
             </span>
             <div className="flex-1">
-              <h1 className="m-0 text-[20px] font-black text-[var(--avd-fg)]">Test Kitchen</h1>
-              <p className="m-0 text-[12px] text-[var(--avd-fg-muted)]">
+              <h1 className="m-0 text-lg font-black text-[var(--avd-fg)]">Test Kitchen</h1>
+              <p className="m-0 text-xs text-[var(--avd-fg-muted)]">
                 Solo visible en <code className="text-[var(--avd-brand)]">DEV</code> — previews de componentes voter
               </p>
             </div>
@@ -98,7 +98,7 @@ export function TestKitchen() {
           <Section title="VoteTicket — pantalla de confirmación">
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="flex-1 flex flex-col gap-2">
-                <p className="text-[12px] text-[var(--avd-fg-muted)] m-0 font-semibold">Con recibo</p>
+                <p className="text-xs text-[var(--avd-fg-muted)] m-0 font-semibold">Con recibo</p>
                 <div className="flex justify-center">
                   <VoteTicket
                     roundTitle="Votación MCM Europa 2026"
@@ -110,7 +110,7 @@ export function TestKitchen() {
                 </div>
               </div>
               <div className="flex-1 flex flex-col gap-2">
-                <p className="text-[12px] text-[var(--avd-fg-muted)] m-0 font-semibold">Sin recibo</p>
+                <p className="text-xs text-[var(--avd-fg-muted)] m-0 font-semibold">Sin recibo</p>
                 <div className="flex justify-center">
                   <VoteTicket
                     roundTitle="Votación MCM Europa 2026"
@@ -140,7 +140,7 @@ export function TestKitchen() {
                 Ver: Ronda en Pausa
               </button>
             </div>
-            <p className="text-[12px] text-[var(--avd-fg-faint)] m-0">
+            <p className="text-xs text-[var(--avd-fg-faint)] m-0">
               Se abre a pantalla completa. Pulsa fuera o "Cerrar" para volver.
             </p>
           </Section>
@@ -152,7 +152,7 @@ export function TestKitchen() {
                 Abrir tutorial
               </button>
               <VotingTutorial key={tutorialKey} forceOpen={tutorialKey > 0} roundId="test-kitchen" />
-              <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">
+              <p className="text-xs text-[var(--avd-fg-muted)] m-0">
                 Modal de pasos con animaciones y navegación.
               </p>
             </div>
@@ -167,7 +167,7 @@ export function TestKitchen() {
               >
                 Ver animación
               </button>
-              <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">
+              <p className="text-xs text-[var(--avd-fg-muted)] m-0">
                 Pantalla completa. La urna se abre y tiembla con cada papeleta.
               </p>
             </div>
@@ -183,7 +183,7 @@ export function TestKitchen() {
               >
                 {animVisible ? "Ejecutando…" : "Lanzar animación"}
               </button>
-              <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">
+              <p className="text-xs text-[var(--avd-fg-muted)] m-0">
                 Superpone la animación completa de confirmación de voto.
               </p>
             </div>

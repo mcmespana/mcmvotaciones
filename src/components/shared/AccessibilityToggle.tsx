@@ -23,7 +23,7 @@ export function AccessibilityToggle({ mode = "floating", className, buttonClassN
       className={cn(
         "group avd-btn",
         mode === "inline"
-          ? "avd-btn-icon w-[42px] h-[42px] shrink-0"
+          ? "avd-btn-icon w-[2.625rem] h-[2.625rem] shrink-0"
           : "h-11 w-11 rounded-xl shadow-[var(--avd-shadow-md)]",
         visionPlus && "bg-[var(--avd-brand-bg)] border-[var(--avd-brand-border)] text-[var(--avd-brand)]",
         buttonClassName,

@@ -86,11 +86,11 @@ export function VotingPage() {
 
     if (previewMode === 'tutorial') {
       return (
-        <div className="pub-page flex items-center justify-center p-5 flex-col gap-[14px]">
+        <div className="pub-page flex items-center justify-center p-5 flex-col gap-[0.875rem]">
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[560px] p-5 flex justify-between items-center gap-3">
             <div>
-              <h1 className="m-0 text-[18px] font-extrabold text-[var(--avd-fg)]">Preview local: VotingTutorial</h1>
-              <p className="mt-1 mb-0 text-[13px] text-[var(--avd-fg-muted)]">
+              <h1 className="m-0 text-lg font-extrabold text-[var(--avd-fg)]">Preview local: VotingTutorial</h1>
+              <p className="mt-1 mb-0 text-sm text-[var(--avd-fg-muted)]">
                 Usa <code>?preview=tutorial</code>, <code>?preview=anim</code> o <code>?preview=ticket</code>.
               </p>
             </div>
@@ -106,11 +106,11 @@ export function VotingPage() {
 
     if (previewMode === 'anim') {
       return (
-        <div className="pub-page flex items-center justify-center p-5 flex-col gap-[14px]">
+        <div className="pub-page flex items-center justify-center p-5 flex-col gap-[0.875rem]">
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[560px] p-5 flex justify-between items-center gap-3">
             <div>
-              <h1 className="m-0 text-[18px] font-extrabold text-[var(--avd-fg)]">Preview local: VoteSubmitAnimation</h1>
-              <p className="mt-1 mb-0 text-[13px] text-[var(--avd-fg-muted)]">
+              <h1 className="m-0 text-lg font-extrabold text-[var(--avd-fg)]">Preview local: VoteSubmitAnimation</h1>
+              <p className="mt-1 mb-0 text-sm text-[var(--avd-fg-muted)]">
                 Animacion independiente del flujo real de voto.
               </p>
             </div>
@@ -162,7 +162,7 @@ export function VotingPage() {
       <div className="pub-page flex items-center justify-center p-5">
         <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
-          <h1 className="text-[18px] font-bold mb-3 text-[var(--avd-fg)]">Navegador no compatible</h1>
+          <h1 className="text-lg font-bold mb-3 text-[var(--avd-fg)]">Navegador no compatible</h1>
           <p className="text-[var(--avd-fg-muted)] text-sm">
             Tu navegador no soporta las funciones necesarias para votar.
             Por favor, usa un navegador más reciente.
@@ -184,7 +184,7 @@ export function VotingPage() {
               <Vote className="w-9 h-9" />
             </div>
           </div>
-          <h1 className="text-[20px] font-extrabold mb-2.5 text-[var(--avd-fg)] tracking-[-0.01em]">Esperando siguiente votación…</h1>
+          <h1 className="text-lg font-extrabold mb-2.5 text-[var(--avd-fg)] tracking-[-0.01em]">Esperando siguiente votación…</h1>
           <p className="text-[var(--avd-fg-muted)] text-sm mb-6 leading-relaxed">No hay votaciones disponibles en este momento. La página se actualizará automáticamente.</p>
           <div className="flex justify-center gap-2">
             {[0, 1, 2].map(i => (
@@ -219,7 +219,7 @@ export function VotingPage() {
       <div className="pub-page flex items-center justify-center p-5">
         <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
-          <h1 className="text-[18px] font-bold mb-2 text-[var(--avd-fg)]">No se pudo acceder a la sala</h1>
+          <h1 className="text-lg font-bold mb-2 text-[var(--avd-fg)]">No se pudo acceder a la sala</h1>
           <p className="text-[var(--avd-fg-muted)] text-sm mb-6">{seatError}</p>
           <button className="avd-btn avd-btn-primary mx-auto" onClick={() => { void loadActiveRound(); }}>
             Reintentar
@@ -234,14 +234,14 @@ export function VotingPage() {
       <div className="pub-page flex items-center justify-center p-5">
         <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-lg)] w-full max-w-[420px] p-10 text-center">
-          <div className="mx-auto mb-5 w-[72px] h-[72px] flex items-center justify-center rounded-full bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] text-[var(--avd-ok)]">
+          <div className="mx-auto mb-5 w-[4.5rem] h-[4.5rem] flex items-center justify-center rounded-full bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)] text-[var(--avd-ok)]">
             <Vote className="w-8 h-8" />
           </div>
-          <span className="avd-chip avd-chip-ok mb-5 h-8 text-[13px]">Votación completada</span>
-          <p className="text-[var(--avd-fg-muted)] text-[13px] mb-1.5">
+          <span className="avd-chip avd-chip-ok mb-5 h-8 text-sm">Votación completada</span>
+          <p className="text-[var(--avd-fg-muted)] text-sm mb-1.5">
             Ya se han seleccionado los {activeRound.max_selected_candidates} candidatos requeridos.
           </p>
-          <p className="text-[13px] text-[var(--avd-fg-faint)]">No se admitirán más votos en esta votación.</p>
+          <p className="text-sm text-[var(--avd-fg-faint)]">No se admitirán más votos en esta votación.</p>
         </div>
       </div>
     );
@@ -262,13 +262,13 @@ export function VotingPage() {
       <div className="pub-page flex items-center justify-center p-5">
         <HeaderControls mode="floating" />
         <div className="bg-[var(--avd-surface)] border border-[color-mix(in_oklch,var(--avd-warn)_35%,transparent)] rounded-[var(--avd-radius-lg)] shadow-[var(--avd-shadow-md)] w-full max-w-[420px] overflow-hidden text-center">
-          <div className="h-[3px] bg-gradient-to-r from-[var(--avd-warn)] to-[var(--avd-warn-600)]" />
+          <div className="h-[0.1875rem] bg-gradient-to-r from-[var(--avd-warn)] to-[var(--avd-warn-600)]" />
           <div className="p-10">
-            <div className="mx-auto mb-5 w-[72px] h-[72px] flex items-center justify-center rounded-full bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-[var(--avd-warn)]">
+            <div className="mx-auto mb-5 w-[4.5rem] h-[4.5rem] flex items-center justify-center rounded-full bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-[var(--avd-warn)]">
               <Vote className="w-8 h-8" />
             </div>
-            <span className="avd-chip avd-chip-warn mb-5 h-8 text-[13px]">{label}</span>
-            <p className="text-[var(--avd-fg-muted)] text-[13px] font-medium mb-6 leading-relaxed">
+            <span className="avd-chip avd-chip-warn mb-5 h-8 text-sm">{label}</span>
+            <p className="text-[var(--avd-fg-muted)] text-sm font-medium mb-6 leading-relaxed">
               {activeRound.is_closed
                 ? `La votación "${activeRound.title}" ha llegado a su fin y las urnas se han cerrado definitivamente.`
                 : activeRound.round_finalized
@@ -277,7 +277,7 @@ export function VotingPage() {
               }
             </p>
             {(activeRound.is_closed || activeRound.round_finalized) && (
-              <div className="bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] rounded-[var(--avd-radius-sm)] px-4 py-2.5 text-[13px] text-[var(--avd-warn-fg)] font-semibold flex items-center justify-center gap-2">
+              <div className="bg-[var(--avd-warn-bg)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] rounded-[var(--avd-radius-sm)] px-4 py-2.5 text-sm text-[var(--avd-warn-fg)] font-semibold flex items-center justify-center gap-2">
                 <span>⏳</span> Las urnas ya no aceptan respuestas.
               </div>
             )}
@@ -308,20 +308,20 @@ export function VotingPage() {
 
       {tabHidden && (
         <div aria-hidden="true" className="fixed inset-0 z-[150] pointer-events-none bg-background flex items-center justify-center flex-col gap-3">
-          <span className="text-[40px]">🔒</span>
+          <span className="text-[2.75rem]">🔒</span>
           <span className="text-base font-bold text-foreground">Votación privada</span>
-          <span className="text-[13px] text-muted-foreground">Vuelve a esta pestaña para continuar</span>
+          <span className="text-sm text-muted-foreground">Vuelve a esta pestaña para continuar</span>
         </div>
       )}
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-5 pt-4 text-center sm:mb-7">
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--avd-fg-muted)] mb-1">{activeRound.voting_type_name || activeRound.team}</div>
+          <div className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--avd-fg-muted)] mb-1">{activeRound.voting_type_name || activeRound.team}</div>
           <h1 className="text-[clamp(20px,5vw,28px)] font-black tracking-[-0.025em] text-[var(--avd-fg)] m-0">{activeRound.title}</h1>
           {activeRound.description && (
-            <p className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)] max-w-xl mx-auto">{activeRound.description}</p>
+            <p className="mt-1.5 text-xs text-[var(--avd-fg-muted)] max-w-xl mx-auto">{activeRound.description}</p>
           )}
-          <div className="mt-1.5 text-[12.5px] text-[var(--avd-fg-muted)]">{candidates.length} candidatos · {activeRound.max_selected_candidates} a elegir</div>
+          <div className="mt-1.5 text-xs text-[var(--avd-fg-muted)]">{candidates.length} candidatos · {activeRound.max_selected_candidates} a elegir</div>
         </div>
         <div className="mb-6 sm:mb-8">
           <GroupedCandidateList
@@ -347,16 +347,16 @@ export function VotingPage() {
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-[var(--avd-fg-muted)]">Ronda {activeRound.current_round_number} - Máx. {maxVotesThisRound} voto{maxVotesThisRound > 1 ? 's' : ''}</p>
               <div className="flex-1" />
-              <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger w-[42px] h-[42px] p-0">
-                <Trash2 className="w-[18px] h-[18px]" />
+              <button type="button" onClick={clearSelection} disabled={selectedCandidates.length === 0 || voting} aria-label="Borrar selección" className="avd-btn avd-btn-danger w-[2.625rem] h-[2.625rem] p-0">
+                <Trash2 className="w-[1.125rem] h-[1.125rem]" />
               </button>
-              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || voting} className="avd-btn h-[42px] bg-[var(--avd-ok)] text-white border-[var(--avd-ok)] font-bold px-[18px] shrink-0">
+              <button type="button" onClick={openVoteConfirmation} disabled={maxVotesThisRound === 0 || voting} className="avd-btn h-[2.625rem] bg-[var(--avd-ok)] text-white border-[var(--avd-ok)] font-bold px-[1.125rem] shrink-0">
                 {voting ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 [animation-duration:0.7s]" />Votando...</>
                 ) : selectedCandidates.length === 0 ? (
-                  <><Vote className="w-[18px] h-[18px] mr-2" />Votar en blanco</>
+                  <><Vote className="w-[1.125rem] h-[1.125rem] mr-2" />Votar en blanco</>
                 ) : (
-                  <><Vote className="w-[18px] h-[18px] mr-2" />Votar ({selectedCandidates.length})</>
+                  <><Vote className="w-[1.125rem] h-[1.125rem] mr-2" />Votar ({selectedCandidates.length})</>
                 )}
               </button>
             </div>
@@ -372,25 +372,25 @@ export function VotingPage() {
               <div className="mx-auto mb-5 w-16 h-16 flex items-center justify-center rounded-2xl bg-[var(--avd-ok-bg)] border border-[color-mix(in_oklch,var(--avd-ok)_35%,transparent)]">
                 <Vote className="w-8 h-8 text-[var(--avd-ok-fg)]" strokeWidth={1.7} />
               </div>
-              <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2">Confirmar voto</h2>
-              <p className="text-[13px] leading-relaxed text-[var(--avd-fg-muted)]">Revisa tu selección. Esta acción no se puede deshacer.</p>
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2">Confirmar voto</h2>
+              <p className="text-sm leading-relaxed text-[var(--avd-fg-muted)]">Revisa tu selección. Esta acción no se puede deshacer.</p>
             </div>
             <div className="px-6 pb-5">
               <div className="overflow-hidden rounded-[var(--avd-radius-md)] border border-[var(--avd-border)] bg-[var(--avd-bg-sunken)]">
                 <div className="flex items-center gap-2 border-b border-[var(--avd-border-soft)] px-4 py-2.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--avd-fg-muted)]">Tu selección</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--avd-fg-muted)]">Tu selección</p>
                 </div>
                 <div className="px-4 py-3 flex flex-col gap-2">
                   {selectedCandidateNames.length === 0 ? (
                     <div className="flex items-center gap-3">
-                      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-fg-faint)] text-[10px] font-bold text-white">—</span>
-                      <span className="text-[13px] font-semibold text-[var(--avd-fg-muted)] italic">Voto en blanco</span>
+                      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-fg-faint)] text-xs font-bold text-white">—</span>
+                      <span className="text-sm font-semibold text-[var(--avd-fg-muted)] italic">Voto en blanco</span>
                     </div>
                   ) : selectedCandidateNames.map((name, index) => (
                     <div key={`${name}-${index}`} className="flex items-center gap-3">
-                      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-brand-bg)] text-[10px] font-bold text-[var(--avd-brand)]">{index + 1}</span>
-                      <span className="text-[13px] font-semibold text-[var(--avd-fg)]">{name}</span>
+                      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--avd-brand-bg)] text-xs font-bold text-[var(--avd-brand)]">{index + 1}</span>
+                      <span className="text-sm font-semibold text-[var(--avd-fg)]">{name}</span>
                     </div>
                   ))}
                 </div>

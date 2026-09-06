@@ -14,7 +14,7 @@ export function RoomConflictDialog({ salaConflict, setSalaConflict, resolveRoomC
           <p>Ya existe otra sala activa: <strong>{salaConflict.title}</strong>.</p>
         </div>
         <div className="avd-dialog-body">
-          <p className="text-[13px] text-[var(--avd-fg-muted)] m-0">
+          <p className="text-sm text-[var(--avd-fg-muted)] m-0">
             No pueden haber dos salas activas simultáneamente. ¿Quieres pausar «{salaConflict.title}» y activar esta sala?
           </p>
         </div>

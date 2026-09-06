@@ -64,10 +64,10 @@ export function AdminDashboard({ section = 'votaciones' }: AdminDashboardProps) 
         )}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="text-[20px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] leading-[1.1]">
+            <div className="text-lg font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] leading-[1.1]">
               {activeSection === 'votaciones' ? 'Votaciones' : 'Gestión de Usuarios'}
             </div>
-            <div className="text-[13px] text-[var(--avd-fg-muted)] mt-0.5">
+            <div className="text-sm text-[var(--avd-fg-muted)] mt-0.5">
               Bienvenida, {adminUser?.name} · <span className="font-semibold text-[var(--avd-brand)]">{roleLabel}</span>
             </div>
           </div>

@@ -43,7 +43,7 @@ function VoteReceiptReveal({ voteHashCode, voteReceipt, onCopy }: VoteReceiptRev
           {voteHashCode && (
             <div className="overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest dark:border-outline-variant/70 dark:bg-surface-container-low">
               <div className="px-5 pt-4 pb-2 text-center">
-                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Código de verificación
                 </p>
                 <div className="flex items-center justify-center gap-3">
@@ -60,7 +60,7 @@ function VoteReceiptReveal({ voteHashCode, voteReceipt, onCopy }: VoteReceiptRev
                 </div>
               </div>
               <div className="px-5 pb-4 text-center">
-                <p className="text-[10px] font-medium text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   Conserva este código para auditar tu voto
                 </p>
               </div>
@@ -71,14 +71,14 @@ function VoteReceiptReveal({ voteHashCode, voteReceipt, onCopy }: VoteReceiptRev
             <div className="overflow-hidden rounded-2xl border-2 border-outline-variant bg-surface-container-lowest dark:border-outline-variant dark:bg-surface-container-low">
               <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
+                <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">
                   Tu papeleta emitida
                 </p>
               </div>
               <div className="px-4 py-3 space-y-2">
                 {voteReceipt.votes.map((vote, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-[10px] font-bold text-primary">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-xs font-bold text-primary">
                       {idx + 1}
                     </span>
                     <span className="text-sm font-semibold text-foreground">{vote || "—"}</span>
@@ -103,7 +103,7 @@ interface VoteTicketProps {
 
 export function VoteTicket({ roundTitle, roundNumber, voteHashCode, voteReceipt, onCopy }: VoteTicketProps) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-[14px]">
+    <div className="w-full max-w-[400px] flex flex-col gap-[0.875rem]">
       {/* ═══ Main ticket card ═══ */}
       <div className="tkt-card-wrapper">
         {/* Spinning conic-gradient border */}

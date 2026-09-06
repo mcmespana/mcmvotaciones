@@ -150,21 +150,21 @@ function CandidateListCardBase({
         <div className="font-bold text-sm text-[var(--avd-fg)] tracking-[-0.01em] leading-[1.3]">
           {formatCandidateName(candidate)}
         </div>
-        <div className="flex flex-wrap gap-1 mt-[5px]">
+        <div className="flex flex-wrap gap-1 mt-[0.3125rem]">
           {candidate.location && (
-            <span className="avd-chip text-[11px] gap-[3px] max-w-full">
+            <span className="avd-chip text-xs gap-[0.1875rem] max-w-full">
               <MapPin className="w-2.5 h-2.5 shrink-0" />
               <span className="truncate">{candidate.location}</span>
             </span>
           )}
           {candidate.group_name && (
-            <span className="avd-chip text-[11px] max-w-full">
+            <span className="avd-chip text-xs max-w-full">
               <span className="truncate">{candidate.group_name}</span>
             </span>
           )}
           {candidate.age != null && (
             <span
-              className="avd-chip text-[11px] gap-[3px] shrink-0"
+              className="avd-chip text-xs gap-[0.1875rem] shrink-0"
               aria-label={`${candidate.age} años`}
               title={`${candidate.age} años`}
             >
@@ -174,7 +174,7 @@ function CandidateListCardBase({
           )}
           {isMonitor(candidate.crm_relationship_types) && (
             <span
-              className="avd-chip avd-chip-brand text-[11px] font-bold shrink-0 px-[7px]"
+              className="avd-chip avd-chip-brand text-xs font-bold shrink-0 px-[0.4375rem]"
               aria-label="Monitor"
               title="Monitor"
             >

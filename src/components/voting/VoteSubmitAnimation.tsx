@@ -237,7 +237,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
 
           <div className="p-8 text-center">
             {/* Step dots (tutorial style) */}
-            <div className="flex items-center justify-center gap-2 mb-[22px]">
+            <div className="flex items-center justify-center gap-2 mb-[1.375rem]">
               {STEPS.map((s, i) => {
                 const active = i === currentStep && !isFinal;
                 const done = i < currentStep || isFinal;
@@ -259,7 +259,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
             {/* Icon bubble — tutorial-style rounded-2xl + extras */}
             <div
               key={iconKey}
-              className="relative mx-auto mb-6 w-[112px] h-[112px] [animation:vsa-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+              className="relative mx-auto mb-6 w-[7rem] h-[7rem] [animation:vsa-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
             >
               {/* Pulsing rings */}
               <span
@@ -287,7 +287,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
 
             {/* Text — re-mount per step to fade-up */}
             <div key={`txt-${iconKey}`} className="[animation:vsa-fade-up_360ms_ease-out]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 mb-2">
                 Paso {Math.min(currentStep + 1, STEPS.length)} de {STEPS.length}
               </p>
               <h3 className={`text-xl font-extrabold mb-2 tracking-[-0.02em] leading-[1.2] ${step.accentText}`}>

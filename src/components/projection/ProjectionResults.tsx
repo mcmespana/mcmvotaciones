@@ -144,7 +144,7 @@ export function ProjectionResults({
               {restResults.length > 0 && (
                 <>
                   <div className="proj-results-rest-label">Resto de candidatos</div>
-                  <div className="grid grid-cols-2 gap-[10px]">
+                  <div className="grid grid-cols-2 gap-[0.625rem]">
                     {restResults.map((result) => {
                       const cand = candidates.find((c) => c.id === result.candidate_id);
                       if (!cand) return null;
@@ -176,7 +176,7 @@ export function ProjectionResults({
               <div className="proj-sidebar-empty">
                 <div className="text-center p-6">
                   <div className="text-base font-bold text-avd-fg-muted">Sin seleccionados</div>
-                  <div className="text-[13px] text-[var(--avd-fg-faint)] mt-[6px]">Ningún candidato superó el 50%.</div>
+                  <div className="text-sm text-[var(--avd-fg-faint)] mt-[0.375rem]">Ningún candidato superó el 50%.</div>
                 </div>
               </div>
             )}

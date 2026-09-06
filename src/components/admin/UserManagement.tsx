@@ -40,8 +40,8 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
     <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="avd-dialog max-w-[440px]" onClick={e => e.stopPropagation()}>
         <div className="avd-dialog-head">
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[34px] h-[34px] rounded-full bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] grid place-items-center shrink-0">
+          <div className="flex items-center gap-[0.625rem]">
+            <div className="w-[2.125rem] h-[2.125rem] rounded-full bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] grid place-items-center shrink-0">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="18" y1="5" x2="20" y2="7"/><line x1="15" y1="8" x2="17" y2="10"/></svg>
             </div>
             <div>
@@ -55,10 +55,10 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
             <div className="avd-form-field">
               <label className="avd-label">Nueva contraseña</label>
               <input className="avd-input" type="password" placeholder="Mínimo 6 caracteres" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} disabled={loading} />
-              <div className="text-[11.5px] text-[var(--avd-fg-muted)] mt-1">La contraseña debe tener al menos 6 caracteres.</div>
+              <div className="text-xs text-[var(--avd-fg-muted)] mt-1">La contraseña debe tener al menos 6 caracteres.</div>
             </div>
             {error && (
-              <div className="flex items-center gap-2 px-3 py-[9px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-[12.5px]">
+              <div className="flex items-center gap-2 px-3 py-[0.5625rem] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-xs">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 {error}
               </div>
@@ -68,7 +68,7 @@ function PasswordDialog({ user, onClose, onSave }: { user: AdminUser | null; onC
             <button type="button" className="avd-btn" onClick={onClose} disabled={loading}>Cancelar</button>
             <button type="submit" className="avd-btn avd-btn-primary" disabled={pw.length < 6 || loading}>
               {loading ? (
-                <span className="flex items-center gap-[6px]">
+                <span className="flex items-center gap-[0.375rem]">
                   <svg className="[animation:spin_0.8s_linear_infinite]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
                   Guardando...
                 </span>
@@ -154,13 +154,13 @@ export function UserManagement() {
   if (!isSuperAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-6 flex items-center gap-[14px]">
+        <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-6 flex items-center gap-[0.875rem]">
           <div className="w-10 h-10 rounded-full bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] grid place-items-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--avd-bad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
           </div>
           <div>
-            <div className="font-bold mb-[3px] text-[var(--avd-fg)]">Acceso restringido</div>
-            <div className="text-[13px] text-[var(--avd-fg-muted)]">Solo los super administradores pueden gestionar usuarios.</div>
+            <div className="font-bold mb-[0.1875rem] text-[var(--avd-fg)]">Acceso restringido</div>
+            <div className="text-sm text-[var(--avd-fg-muted)]">Solo los super administradores pueden gestionar usuarios.</div>
           </div>
         </div>
       </div>
@@ -170,18 +170,18 @@ export function UserManagement() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Toolbar */}
-      <div className="px-5 py-[14px] border-b border-[var(--avd-border)] bg-[var(--avd-bg-elev)] flex flex-wrap sm:flex-nowrap items-center gap-[10px]">
+      <div className="px-5 py-[0.875rem] border-b border-[var(--avd-border)] bg-[var(--avd-bg-elev)] flex flex-wrap sm:flex-nowrap items-center gap-[0.625rem]">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-muted)]">Usuarios</span>
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-muted)]">Usuarios</span>
           <span className="avd-chip">{users.length} total</span>
           <span className="avd-chip bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_12%,transparent)] text-[oklch(0.45_0.18_280)] border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]">
             {users.filter(u => u.role === 'super_admin').length} super admin
           </span>
         </div>
         <div className="flex-1" />
-        <div className="avd-search-wrap w-full sm:w-[200px] relative">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[9px] top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input className="avd-input pl-[30px]" placeholder="Buscar usuario..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        <div className="avd-search-wrap w-full sm:w-[12.5rem] relative">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[0.5625rem] top-1/2 -translate-y-1/2 text-[var(--avd-fg-faint)] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input className="avd-input pl-[1.875rem]" placeholder="Buscar usuario..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
         <div className="avd-segmented">
           <button className={roleFilter === 'all' ? 'active' : ''} onClick={() => setRoleFilter('all')}>Todos</button>
@@ -198,12 +198,12 @@ export function UserManagement() {
         {/* Create form */}
         {showCreateForm && (
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
-            <div className="px-4 py-3 border-b border-[var(--avd-border-soft)] flex items-center gap-[10px]">
-              <div className="w-[3px] h-5 rounded-[2px] bg-gradient-to-b from-[var(--avd-brand-400)] to-[var(--avd-brand-600)]" />
-              <span className="font-bold text-[13px] text-[var(--avd-fg)]">Crear nuevo usuario</span>
-              <span className="text-[12px] text-[var(--avd-fg-muted)]">Completa todos los campos.</span>
+            <div className="px-4 py-3 border-b border-[var(--avd-border-soft)] flex items-center gap-[0.625rem]">
+              <div className="w-[0.1875rem] h-5 rounded-[2px] bg-gradient-to-b from-[var(--avd-brand-400)] to-[var(--avd-brand-600)]" />
+              <span className="font-bold text-sm text-[var(--avd-fg)]">Crear nuevo usuario</span>
+              <span className="text-xs text-[var(--avd-fg-muted)]">Completa todos los campos.</span>
             </div>
-            <div className="px-4 py-[14px]">
+            <div className="px-4 py-[0.875rem]">
               <form onSubmit={handleCreateUser}>
                 <div className="avd-form-grid">
                   <div className="avd-form-grid-2 grid grid-cols-1 md:grid-cols-2">
@@ -234,7 +234,7 @@ export function UserManagement() {
                     </select>
                   </div>
                   {createError && (
-                    <div className="flex items-center gap-2 px-3 py-[9px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-[12.5px]">
+                    <div className="flex items-center gap-2 px-3 py-[0.5625rem] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-xs">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       {createError}
                     </div>
@@ -243,7 +243,7 @@ export function UserManagement() {
                     <button type="button" className="avd-btn" onClick={() => { setShowCreateForm(false); setCreateError(''); }} disabled={creating}>Cancelar</button>
                     <button type="submit" className="avd-btn avd-btn-primary" disabled={creating}>
                       {creating ? (
-                        <span className="flex items-center gap-[6px]">
+                        <span className="flex items-center gap-[0.375rem]">
                           <svg className="[animation:spin_0.8s_linear_infinite]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
                           Creando...
                         </span>
@@ -260,7 +260,7 @@ export function UserManagement() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <div className="w-8 h-8 border-[2.5px] border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full [animation:spin_0.7s_linear_infinite]" />
-            <span className="text-[13px] text-[var(--avd-fg-muted)]">Cargando usuarios...</span>
+            <span className="text-sm text-[var(--avd-fg-muted)]">Cargando usuarios...</span>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : filteredUsers.length === 0 ? (
@@ -270,34 +270,34 @@ export function UserManagement() {
             <p className="avd-empty-sub">Crea el primer usuario desde el formulario.</p>
           </div>
         ) : (
-          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))] gap-[10px]">
+          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))] gap-[0.625rem]">
             {filteredUsers.map(u => {
               const isRoot = u.role === 'super_admin';
               return (
                 <div key={u.id} className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
-                  <div className="px-[14px] py-3 flex flex-col sm:flex-row sm:items-center gap-3 border-b border-[var(--avd-border-soft)]">
-                    <div className={`w-[38px] h-[38px] rounded-full shrink-0 grid place-items-center ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_14%,transparent)] border border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : 'bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)]'}`}>
+                  <div className="px-[0.875rem] py-3 flex flex-col sm:flex-row sm:items-center gap-3 border-b border-[var(--avd-border-soft)]">
+                    <div className={`w-[2.375rem] h-[2.375rem] rounded-full shrink-0 grid place-items-center ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_14%,transparent)] border border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : 'bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)]'}`}>
                       {isRoot
                         ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.5 0.18 280)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--avd-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                       }
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-[14px] tracking-[-0.005em] text-[var(--avd-fg)] overflow-hidden text-ellipsis whitespace-nowrap">{u.name}</div>
-                      <div className="text-[12px] text-[var(--avd-fg-muted)] font-[var(--avd-font-mono)] mt-px">@{u.username}</div>
+                      <div className="font-bold text-sm tracking-[-0.005em] text-[var(--avd-fg)] overflow-hidden text-ellipsis whitespace-nowrap">{u.name}</div>
+                      <div className="text-xs text-[var(--avd-fg-muted)] font-[var(--avd-font-mono)] mt-px">@{u.username}</div>
                     </div>
                     <span className={`avd-chip ${isRoot ? 'bg-[color-mix(in_oklch,oklch(0.55_0.18_280)_12%,transparent)] text-[oklch(0.45_0.18_280)] border-[color-mix(in_oklch,oklch(0.55_0.18_280)_30%,transparent)]' : ''}`}>
                       {isRoot ? 'Super Admin' : 'Admin'}
                     </span>
                   </div>
-                  <div className="px-[14px] py-[10px] flex items-center gap-[10px] justify-between">
-                    <div className="flex items-center gap-[6px] text-[12.5px] text-[var(--avd-fg-muted)] min-w-0">
+                  <div className="px-[0.875rem] py-[0.625rem] flex items-center gap-[0.625rem] justify-between">
+                    <div className="flex items-center gap-[0.375rem] text-xs text-[var(--avd-fg-muted)] min-w-0">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                       <span className="overflow-hidden text-ellipsis whitespace-nowrap">{u.email}</span>
                     </div>
-                    <div className="flex items-center gap-[6px] shrink-0">
-                      <span className="text-[11px] text-[var(--avd-fg-faint)]">{new Date(u.created_at).toLocaleDateString('es-ES')}</span>
-                      <button className="avd-btn avd-btn-sm gap-[5px]" onClick={() => setPasswordTargetUser(u)}>
+                    <div className="flex items-center gap-[0.375rem] shrink-0">
+                      <span className="text-xs text-[var(--avd-fg-faint)]">{new Date(u.created_at).toLocaleDateString('es-ES')}</span>
+                      <button className="avd-btn avd-btn-sm gap-[0.3125rem]" onClick={() => setPasswordTargetUser(u)}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="18" y1="5" x2="20" y2="7"/><line x1="15" y1="8" x2="17" y2="10"/></svg>
                         Contraseña
                       </button>

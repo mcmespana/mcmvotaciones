@@ -122,9 +122,9 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         onClick={() => { setStep(0); setOpen(true); }}
         aria-label="Abrir guía de votación"
         title="¿Cómo votar?"
-        className={compactTrigger ? 'avd-btn avd-btn-icon w-[42px] h-[42px]' : 'avd-btn px-[10px] gap-[6px]'}
+        className={compactTrigger ? 'avd-btn avd-btn-icon w-[2.625rem] h-[2.625rem]' : 'avd-btn px-[0.625rem] gap-[0.375rem]'}
       >
-        <HelpCircle className="w-[18px] h-[18px]" />
+        <HelpCircle className="w-[1.125rem] h-[1.125rem]" />
         {!compactTrigger && <span>¿Cómo votar?</span>}
       </button>
 
@@ -188,7 +188,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 {/* Icon bubble */}
                 <div
                   key={iconKey}
-                  className="relative w-[84px] h-[84px] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+                  className="relative w-[5.25rem] h-[5.25rem] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
                 >
                   <span
                     aria-hidden
@@ -200,7 +200,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                     className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
                     style={{ border: `2px solid ${current.color}` }}
                   />
-                  <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[2px]`}>
+                  <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[0.125rem]`}>
                     <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
                   </div>
                 </div>
@@ -208,10 +208,10 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
 
               {/* Content */}
               <div className="px-8 pb-6">
-                <h3 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+                <h3 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
                   {current.title}
                 </h3>
-                <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
+                <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
                   {current.description}
                 </p>
               </div>
@@ -224,7 +224,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 disabled={step === 0}
                 className="avd-btn"
               >
-                <ChevronLeft className="w-[13px] h-[13px]" />
+                <ChevronLeft className="w-[0.8125rem] h-[0.8125rem]" />
                 Anterior
               </button>
 
@@ -238,10 +238,10 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
 
               <button
                 onClick={handleNext}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-[13px] font-bold transition-all ${current.nextBg}`}
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-sm font-bold transition-all ${current.nextBg}`}
               >
                 {isLast ? "¡Entendido!" : "Siguiente"}
-                {!isLast && <ChevronRight className="w-[13px] h-[13px]" />}
+                {!isLast && <ChevronRight className="w-[0.8125rem] h-[0.8125rem]" />}
               </button>
             </div>
           </div>

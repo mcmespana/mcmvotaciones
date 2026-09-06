@@ -110,13 +110,13 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
           <p>Los tipos <strong>ECE</strong> y <strong>ECL</strong> son del sistema. Los personalizados pueden crearse y eliminarse libremente.</p>
         </div>
 
-        <div className="avd-dialog-body flex flex-col gap-[10px]">
+        <div className="avd-dialog-body flex flex-col gap-[0.625rem]">
           {loading ? (
             <div className="text-center p-6 text-[var(--avd-fg-muted)]">Cargando...</div>
           ) : types.map(t => (
             <div key={t.id} className="border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden">
               {editingId === t.id ? (
-                <div className="p-[14px] flex flex-col gap-[10px]">
+                <div className="p-[0.875rem] flex flex-col gap-[0.625rem]">
                   {!t.is_system && (
                     <div className="avd-form-field">
                       <label className="avd-label">Nombre</label>
@@ -146,13 +146,13 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
                   </div>
                 </div>
               ) : (
-                <div className="px-[14px] py-3 flex items-center gap-[10px]">
+                <div className="px-[0.875rem] py-3 flex items-center gap-[0.625rem]">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-[14px] text-[var(--avd-fg)]">{t.name}</span>
-                      {t.is_system && <span className="avd-chip avd-chip-brand h-[18px] text-[10px] px-[7px]">Sistema</span>}
+                      <span className="font-bold text-sm text-[var(--avd-fg)]">{t.name}</span>
+                      {t.is_system && <span className="avd-chip avd-chip-brand h-[1.125rem] text-xs px-[0.4375rem]">Sistema</span>}
                     </div>
-                    <span className="text-[12px] text-[var(--avd-fg-muted)]">
+                    <span className="text-xs text-[var(--avd-fg-muted)]">
                       Seleccionar {t.max_selected_candidates} · Votos/ronda {t.max_votes_per_round || "auto"} · Censo {t.census_mode === "maximum" ? "máximo" : "exacto"}
                     </span>
                   </div>
@@ -182,11 +182,11 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
           ))}
 
           {/* Create new custom type */}
-          <div className="border border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-[14px]">
-            <div className="text-[12px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[10px]">
+          <div className="border border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-md)] p-[0.875rem]">
+            <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[0.625rem]">
               Nuevo tipo personalizado
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-[10px]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-[0.625rem]">
               <div className="avd-form-field">
                 <label className="avd-label">Nombre</label>
                 <input className="avd-input" placeholder="Mi tipo" value={newForm.name} onChange={e => setNewForm(p => ({ ...p, name: e.target.value }))} />
@@ -225,7 +225,7 @@ export function VotingTypesManager({ open, onClose, isSuperAdmin, onTypesChanged
               <p>Las votaciones existentes que usen este tipo mantendrán su configuración guardada.</p>
             </div>
             <div className="avd-dialog-body">
-              <div className="px-3 py-[10px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] font-semibold text-[13px] text-[var(--avd-bad-fg)]">
+              <div className="px-3 py-[0.625rem] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] font-semibold text-sm text-[var(--avd-bad-fg)]">
                 {deleteTarget.name}
               </div>
             </div>

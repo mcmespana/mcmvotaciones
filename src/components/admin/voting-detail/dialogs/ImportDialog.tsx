@@ -25,15 +25,15 @@ export function ImportDialog({ isImportOpen, setIsImportOpen, importingFile, han
         <div className="avd-dialog-body">
           <div className="avd-form-grid">
             {importingFile && (
-              <div className="flex items-center gap-2 text-[13px] text-[var(--avd-fg-muted)]">
+              <div className="flex items-center gap-2 text-sm text-[var(--avd-fg-muted)]">
                 <div className="w-3.5 h-3.5 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin shrink-0 [animation-duration:0.7s]" />
                 Importando candidatos...
               </div>
             )}
-            <div className="border-[1.5px] border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-sm)] px-[14px] py-3 bg-[var(--avd-bg-sunken)]">
+            <div className="border-[1.5px] border-dashed border-[var(--avd-border)] rounded-[var(--avd-radius-sm)] px-[0.875rem] py-3 bg-[var(--avd-bg-sunken)]">
               <input className="avd-input h-auto py-1 px-0 bg-transparent border-none shadow-none" type="file" accept=".csv,.xml,.json" onChange={handleFileImport} disabled={importingFile} />
             </div>
-            <p className="text-[12px] text-[var(--avd-fg-muted)] m-0">Formatos: CSV, XML, JSON. Campos: nombre, apellido, ubicación, grupo, edad.</p>
+            <p className="text-xs text-[var(--avd-fg-muted)] m-0">Formatos: CSV, XML, JSON. Campos: nombre, apellido, ubicación, grupo, edad.</p>
           </div>
         </div>
         <div className="avd-dialog-foot">

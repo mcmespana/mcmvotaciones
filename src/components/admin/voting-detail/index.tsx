@@ -235,7 +235,7 @@ export function AdminVotingDetail() {
       <div className="avd-app items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-[var(--avd-border)] border-t-[var(--avd-brand)] rounded-full animate-spin [animation-duration:0.8s]" />
-          <span className="text-[13px] text-[var(--avd-fg-muted)] font-[var(--avd-font-sans)]">Cargando votación...</span>
+          <span className="text-sm text-[var(--avd-fg-muted)] font-[var(--avd-font-sans)]">Cargando votación...</span>
         </div>
       </div>
     );
@@ -246,7 +246,7 @@ export function AdminVotingDetail() {
       <div className="avd-app items-center justify-center">
         <div className="avd-live-card max-w-[400px] text-center gap-2">
           <p className="text-[var(--avd-fg)] font-semibold m-0">Votación no encontrada</p>
-          <p className="text-[var(--avd-fg-muted)] text-[13px] m-0">No se encontró la votación solicitada.</p>
+          <p className="text-[var(--avd-fg-muted)] text-sm m-0">No se encontró la votación solicitada.</p>
           <button className="avd-btn avd-btn-sm mt-1" onClick={() => navigate("/admin/votaciones")}>
             <ArrowLeft size={13} /> Volver
           </button>
@@ -364,7 +364,7 @@ export function AdminVotingDetail() {
       {isBallotsOpen && (
         <div className="avd-dialog-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsBallotsOpen(false); }}>
           <div className="avd-dialog avd-dialog-wide max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-            <div className="avd-dialog-head flex justify-between items-start gap-[10px]">
+            <div className="avd-dialog-head flex justify-between items-start gap-[0.625rem]">
               <div>
                 <h2>Revisión de papeletas</h2>
                 <p>Ronda {round.current_round_number} · papeletas emitidas anónimamente.</p>

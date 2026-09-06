@@ -94,7 +94,7 @@ export function DuplicateVotingModal({ source, onClose }: Props) {
         <div className="avd-dialog-body flex flex-col gap-4">
 
           {/* Source info */}
-          <div className="px-[14px] py-[10px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-[12.5px] text-[var(--avd-fg-muted)]">
+          <div className="px-[0.875rem] py-[0.625rem] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-xs text-[var(--avd-fg-muted)]">
             <span className="font-semibold text-[var(--avd-fg)]">Origen: </span>
             {source.title}
           </div>
@@ -115,7 +115,7 @@ export function DuplicateVotingModal({ source, onClose }: Props) {
 
           {/* Toggle preserve candidate state */}
           <label className="flex items-start gap-3 cursor-pointer select-none group">
-            <div className="relative mt-[2px] shrink-0">
+            <div className="relative mt-[0.125rem] shrink-0">
               <input
                 type="checkbox"
                 className="sr-only"
@@ -124,27 +124,27 @@ export function DuplicateVotingModal({ source, onClose }: Props) {
                 disabled={loading}
               />
               <div
-                className="w-[34px] h-[18px] rounded-full transition-colors duration-150"
+                className="w-[2.125rem] h-[1.125rem] rounded-full transition-colors duration-150"
                 style={{
                   background: preserveState ? "var(--avd-brand)" : "var(--avd-border)",
                 }}
               >
                 <div
-                  className="absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow transition-transform duration-150"
+                  className="absolute top-[0.125rem] w-[0.875rem] h-[0.875rem] rounded-full bg-white shadow transition-transform duration-150"
                   style={{ transform: preserveState ? "translateX(18px)" : "translateX(2px)" }}
                 />
               </div>
             </div>
             <div>
-              <div className="text-[13px] font-semibold text-[var(--avd-fg)] leading-[1.3]">Conservar estado de candidatas</div>
-              <div className="text-[11.5px] text-[var(--avd-fg-muted)] mt-0.5 leading-[1.4]">
+              <div className="text-sm font-semibold text-[var(--avd-fg)] leading-[1.3]">Conservar estado de candidatas</div>
+              <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5 leading-[1.4]">
                 Preserva eliminadas y seleccionadas. Desactivado: todos empiezan como activas.
               </div>
             </div>
           </label>
 
           {/* Info notice */}
-          <div className="flex gap-2 px-[12px] py-[9px] rounded-[var(--avd-radius-sm)] bg-[color-mix(in_oklch,var(--avd-brand)_8%,transparent)] border border-[color-mix(in_oklch,var(--avd-brand)_20%,transparent)] text-[11.5px] text-[var(--avd-fg-muted)]">
+          <div className="flex gap-2 px-[0.75rem] py-[0.5625rem] rounded-[var(--avd-radius-sm)] bg-[color-mix(in_oklch,var(--avd-brand)_8%,transparent)] border border-[color-mix(in_oklch,var(--avd-brand)_20%,transparent)] text-xs text-[var(--avd-fg-muted)]">
             <svg className="shrink-0 mt-[1px] text-[var(--avd-brand)]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
             <span>No se copian votos, asientos ni resultados. El código de sala siempre se regenera.</span>
           </div>

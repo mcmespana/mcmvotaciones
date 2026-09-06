@@ -115,7 +115,7 @@ export function ProjectionFinalResults({
       <div className={`flex-1 flex items-center justify-center overflow-auto ${isCompact ? 'px-8 py-6' : 'px-12 py-10'}`}>
         {selectedCandidates.length === 0 ? (
           <div className="text-center">
-            <div className="text-[22px] text-[var(--avd-fg-muted)] font-semibold">Nadie ha superado el 50% o no hay seleccionados.</div>
+            <div className="text-2xl text-[var(--avd-fg-muted)] font-semibold">Nadie ha superado el 50% o no hay seleccionados.</div>
           </div>
         ) : (
           <div className={`grid w-full items-stretch ${isCompact ? 'gap-4' : 'gap-6'}`} style={{ gridTemplateColumns: gridCols }}>
@@ -124,7 +124,7 @@ export function ProjectionFinalResults({
 
               if (!isRevealed) {
                 return (
-                  <div key={candidate.id} className={`proj-finalist-placeholder ${isCompact ? 'min-h-[200px]' : 'min-h-[300px]'}`}>
+                  <div key={candidate.id} className={`proj-finalist-placeholder ${isCompact ? 'min-h-[12.5rem]' : 'min-h-[18.75rem]'}`}>
                     <svg width={isCompact ? "48" : "64"} height={isCompact ? "48" : "64"} viewBox="0 0 24 24" fill="var(--avd-border-strong, var(--avd-border))" stroke="none" aria-hidden>
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>

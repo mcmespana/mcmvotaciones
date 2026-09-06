@@ -48,7 +48,7 @@ export function SeatsLiveCard({
   const available = seatStatus?.available_seats ?? 0;
 
   return (
-    <div className="px-4 pt-[14px] pb-4">
+    <div className="px-4 pt-[0.875rem] pb-4">
       <h3 className="avd-section-title m-0 mb-3">
         Conexiones
         <span className="avd-hint">
@@ -145,7 +145,7 @@ export function SeatsLiveCard({
         {sessionsOpen && (
           <div className="avd-seats-list">
             {seats.length === 0 ? (
-              <p className="p-3 text-center text-[12px] text-[var(--avd-fg-muted)] m-0">Sin conexiones.</p>
+              <p className="p-3 text-center text-xs text-[var(--avd-fg-muted)] m-0">Sin conexiones.</p>
             ) : (
               seats.slice(0, 12).map((s) => {
                 const isOccupied = s.estado === "ocupado";

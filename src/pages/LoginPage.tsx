@@ -39,21 +39,21 @@ export function LoginPage() {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <div className="text-[19px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)]">VotacionesMCM</div>
-          <div className="text-[13px] text-[var(--avd-fg-muted)] mt-1 font-medium">Panel de administración · Backstage</div>
+          <div className="text-lg font-extrabold tracking-[-0.02em] text-[var(--avd-fg)]">VotacionesMCM</div>
+          <div className="text-sm text-[var(--avd-fg-muted)] mt-1 font-medium">Panel de administración · Backstage</div>
         </div>
 
         {/* Card */}
         <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] overflow-hidden shadow-[var(--avd-shadow-md)]">
-          <div className="h-[3px] bg-gradient-to-r from-[var(--avd-brand-400)] via-[var(--avd-brand-600)] to-[var(--avd-ok-500)]" />
+          <div className="h-[0.1875rem] bg-gradient-to-r from-[var(--avd-brand-400)] via-[var(--avd-brand-600)] to-[var(--avd-ok-500)]" />
 
           <div className="p-[24px_28px_28px]">
-            <div className="mb-[22px]">
-              <div className="text-[16px] font-bold tracking-[-0.01em] text-[var(--avd-fg)] mb-[3px]">Iniciar sesión</div>
-              <div className="text-[13px] text-[var(--avd-fg-muted)]">Accede al sistema de gestión de votaciones</div>
+            <div className="mb-[1.375rem]">
+              <div className="text-base font-bold tracking-[-0.01em] text-[var(--avd-fg)] mb-[0.1875rem]">Iniciar sesión</div>
+              <div className="text-sm text-[var(--avd-fg-muted)]">Accede al sistema de gestión de votaciones</div>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[14px]">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-[0.875rem]">
               <div className="avd-form-field">
                 <label className="avd-label">Usuario</label>
                 <div className="relative">
@@ -77,13 +77,13 @@ export function LoginPage() {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 px-3 py-[9px] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-[12.5px]">
+                <div className="flex items-center gap-2 px-3 py-[0.5625rem] rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_30%,transparent)] text-[var(--avd-bad-fg)] text-xs">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   {error}
                 </div>
               )}
 
-              <button type="submit" className="avd-btn avd-btn-primary avd-btn-block h-[42px] text-sm font-bold mt-1 justify-center" disabled={loading}>
+              <button type="submit" className="avd-btn avd-btn-primary avd-btn-block h-[2.625rem] text-sm font-bold mt-1 justify-center" disabled={loading}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
@@ -93,7 +93,7 @@ export function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-[18px] text-center text-[12px] text-[var(--avd-fg-faint)]">
+            <div className="mt-[1.125rem] text-center text-xs text-[var(--avd-fg-faint)]">
               Sistema de votaciones MCM · <span className="font-[var(--avd-font-mono)] tracking-[0.05em]">v2.0</span>
             </div>
           </div>

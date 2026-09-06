@@ -219,7 +219,7 @@ export function CandidateFormDialog(props: Props) {
               <p>Vas a forzar la selección de este candidato ahora mismo y será marcado como seleccionado en esta ronda.</p>
             </div>
             <div className="avd-dialog-body">
-              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border)] text-[13px] font-semibold text-[var(--avd-fg)]">
+              <div className="px-[0.875rem] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border)] text-sm font-semibold text-[var(--avd-fg)]">
                 {formatCandidateName(props.candidateToSelect)}
               </div>
             </div>
@@ -240,7 +240,7 @@ export function CandidateFormDialog(props: Props) {
               <p>Quitarás a este candidato de la lista de seleccionados y volverá a estar disponible.</p>
             </div>
             <div className="avd-dialog-body">
-              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[color-mix(in_oklch,var(--avd-warn)_15%,transparent)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-[13px] font-semibold text-[var(--avd-warn)]">
+              <div className="px-[0.875rem] py-3 rounded-[var(--avd-radius-sm)] bg-[color-mix(in_oklch,var(--avd-warn)_15%,transparent)] border border-[color-mix(in_oklch,var(--avd-warn)_30%,transparent)] text-sm font-semibold text-[var(--avd-warn)]">
                 {formatCandidateName(props.candidateToUnselect)}
               </div>
             </div>
@@ -261,7 +261,7 @@ export function CandidateFormDialog(props: Props) {
               <p>Esta acción no se puede deshacer y el candidato se borrará de la lista.</p>
             </div>
             <div className="avd-dialog-body">
-              <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-[13px] font-semibold text-[var(--avd-bad-fg)]">
+              <div className="px-[0.875rem] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-sm font-semibold text-[var(--avd-bad-fg)]">
                 {formatCandidateName(props.candidateToDelete)}
               </div>
             </div>

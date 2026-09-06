@@ -196,7 +196,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             {hasImage && imgExpanded && (
               <button
                 onClick={(e) => { e.stopPropagation(); setImgExpanded(false); }}
-                className="absolute top-2 left-2 text-[11px] text-white bg-black/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-opacity"
+                className="absolute top-2 left-2 text-xs text-white bg-black/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-opacity"
               >
                 <X size={11} /> Cerrar
               </button>
@@ -212,29 +212,29 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               onPointerDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
-              <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
                 {formatCandidateName(candidate)}
               </h2>
 
-              <div className="flex flex-wrap gap-[7px] mb-4">
+              <div className="flex flex-wrap gap-[0.4375rem] mb-4">
                 {candidate.location && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <MapPin size={13} /> {candidate.location}
                   </span>
                 )}
                 {candidate.group_name && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <Users size={13} /> {candidate.group_name}
                   </span>
                 )}
                 {candidate.age != null && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <Cake size={13} /> {candidate.age} años
                   </span>
                 )}
                 {isMonitor(candidate.crm_relationship_types) && (
                   <span
-                    className="avd-chip avd-chip-brand text-[14px] font-bold py-[5px] px-3"
+                    className="avd-chip avd-chip-brand text-sm font-bold py-[0.3125rem] px-3"
                     aria-label="Monitor"
                     title="Monitor"
                   >
@@ -244,7 +244,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               </div>
 
               {candidate.description && (
-                <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">
+                <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">
                   {candidate.description}
                 </p>
               )}
@@ -253,14 +253,14 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 <div className="mt-4 pt-4 border-t border-[var(--avd-border-soft)] flex flex-col gap-3">
                   {candidate.asamblea_movimiento_es && (
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Para mí el MCM es…</div>
-                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
+                      <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[0.3125rem]">Para mí el MCM es…</div>
+                      <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
                     </div>
                   )}
                   {candidate.asamblea_responsabilidad && (
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Responsabilidades en el MCM</div>
-                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
+                      <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[0.3125rem]">Responsabilidades en el MCM</div>
+                      <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
                     </div>
                   )}
                   {questionsOverflows && <div className="h-4 shrink-0" />}
@@ -268,7 +268,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               )}
 
               {!candidate.description && !candidate.location && !candidate.group_name && !candidate.age && !hasQuestions && (
-                <p className="text-[13px] text-[var(--avd-fg-faint)] m-0">
+                <p className="text-sm text-[var(--avd-fg-faint)] m-0">
                   Sin información adicional disponible.
                 </p>
               )}
@@ -301,7 +301,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               </motion.button>
             ) : <div className="w-14" />}
 
-            <p className="text-[var(--avd-n-0)] text-[13px] font-semibold [text-shadow:0_2px_8px_color-mix(in_oklch,var(--avd-n-1000)_60%,transparent)]">
+            <p className="text-[var(--avd-n-0)] text-sm font-semibold [text-shadow:0_2px_8px_color-mix(in_oklch,var(--avd-n-1000)_60%,transparent)]">
               Desliza la foto para navegar
             </p>
 
