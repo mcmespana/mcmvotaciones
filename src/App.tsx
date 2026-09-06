@@ -49,8 +49,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <div className="app-shell-enter relative min-h-screen overflow-x-clip bg-canvas text-foreground antialiased">
-            <div className="pointer-events-none absolute inset-0 -z-10 bg-grid-fade" />
+          <div className="app-shell-enter relative min-h-screen overflow-x-clip bg-background text-foreground antialiased">
             <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-primary/15 via-accent/10 to-transparent" />
             <div className="pointer-events-none absolute -left-24 top-0 -z-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
             <div className="pointer-events-none absolute -right-20 bottom-0 -z-10 h-80 w-80 rounded-full bg-accent/20 blur-3xl" />

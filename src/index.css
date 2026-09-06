@@ -19,7 +19,7 @@
  * o, mejor, solo aquí.
  */
 @theme inline {
-  --color-border: hsl(var(--border));
+  --color-border: var(--border);
   --color-avd-bg: var(--avd-bg);
   --color-avd-bg-elev: var(--avd-bg-elev);
   --color-avd-bg-sunken: var(--avd-bg-sunken);
@@ -48,42 +48,42 @@
   --color-voting-red: hsl(var(--vote-color-red));
   --color-voting-yellow: hsl(var(--vote-color-yellow));
   --color-voting-green: hsl(var(--vote-color-green));
-  --color-outline-variant: hsl(var(--outline-variant));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-surface: hsl(var(--surface));
-  --color-surface-foreground: hsl(var(--surface-foreground));
-  --color-surface-container-lowest: hsl(var(--surface-container-lowest));
-  --color-surface-container-low: hsl(var(--surface-container-low));
-  --color-surface-container: hsl(var(--surface-container));
-  --color-surface-container-high: hsl(var(--surface-container-high));
-  --color-surface-container-highest: hsl(var(--surface-container-highest));
-  --color-overlay: hsl(var(--overlay));
-  --color-overlay-foreground: hsl(var(--overlay-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-container: hsl(var(--primary-container));
-  --color-primary-fixed: hsl(var(--primary-fixed));
-  --color-primary-fixed-dim: hsl(var(--primary-fixed-dim));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-secondary-container: hsl(var(--secondary-container));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-warning: hsl(var(--warning));
-  --color-warning-foreground: hsl(var(--warning-foreground));
-  --color-success: hsl(var(--success));
-  --color-success-foreground: hsl(var(--success-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --color-outline-variant: var(--outline-variant);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-overlay: var(--overlay);
+  --color-overlay-foreground: var(--overlay-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-container: var(--primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-container: var(--secondary-container);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
   --shadow-tech: var(--avd-shadow-md);
   --shadow-avd-xs: var(--avd-shadow-xs);
@@ -103,61 +103,81 @@
   }
   
   :root {
-    /* Soft Oceanic Light Mode */
-    --background: 210 33% 98%;
-    --foreground: 220 30% 12%;
+  /* ──────────────────────────────────────────────────────────────────────
+     Nombres semánticos (shadcn): ALIAS de la rampa `--avd-*`, no fuentes.
+     Si un color hay que cambiarlo, se cambia arriba en la rampa.
 
-    --surface: 0 0% 100%;
-    --surface-foreground: 220 30% 12%;
+     Ojo al consumirlos: **ya no son tripletes HSL**. Antes valían
+     `221 83% 53%` y se escribían `hsl(var(--primary))`; ahora son colores
+     completos en OKLCH y se escriben `var(--primary)` a secas. Para
+     opacidad, `color-mix(in oklch, var(--primary) 28%, transparent)`,
+     nunca `hsl(var(--primary) / .28)`.
 
-    --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 210 20% 96%;
-    --surface-container: 210 20% 93%;
+     Catorce de estos nombres —`--warning`, `--success`, `--overlay`,
+     `--scrollbar`, `--sidebar-*`, `--surface-container-high/highest`…—
+     **no estaban definidos en ninguna parte** y sus clases no pintaban
+     nada. Ahora existen.
+     ────────────────────────────────────────────────────────────────────── */
+    --background: var(--avd-bg);
+    --foreground: var(--avd-fg);
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 12%;
+    --surface: var(--avd-surface);
+    --surface-foreground: var(--avd-fg);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 12%;
+    --surface-container-lowest: var(--avd-bg-elev);
+    --surface-container-low: var(--avd-bg-sunken);
+    --surface-container: var(--avd-bg-hover);
+    --surface-container-high: var(--avd-n-150);
+    --surface-container-highest: var(--avd-n-200);
 
-    /* Brand Identity: Trust Blue & Cyan Accent */
-    --primary: 221 83% 53%; /* Strong Royal Blue */
-    --primary-foreground: 0 0% 100%;
-    --primary-container: 221 83% 90%;
-    --primary-fixed: 221 83% 95%;
-    --primary-fixed-dim: 221 83% 90%;
+    --overlay: var(--avd-n-900);
+    --overlay-foreground: var(--avd-n-0);
 
-    --secondary: 195 90% 35%; /* Deep Cyan */
-    --secondary-container: 195 90% 92%;
-    --secondary-foreground: 0 0% 100%;
+    --card: var(--avd-surface);
+    --card-foreground: var(--avd-fg);
 
-    --muted: 210 20% 94%;
-    --muted-foreground: 220 15% 36%;
+    --popover: var(--avd-bg-elev);
+    --popover-foreground: var(--avd-fg);
 
-    --accent: 190 90% 50%; /* Vibrant Cyan/Teal */
-    --accent-foreground: 0 0% 10%;
-    --accent-soft: 190 90% 94%;
+    --primary: var(--avd-brand);
+    --primary-foreground: var(--avd-brand-fg);
+    --primary-container: var(--avd-brand-bg-2);
+    --primary-fixed: var(--avd-brand-bg);
+    --primary-fixed-dim: var(--avd-brand-bg-2);
 
-    --destructive: 348 90% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --secondary: var(--avd-brand-700);
+    --secondary-foreground: var(--avd-n-0);
+    --secondary-container: var(--avd-brand-100);
 
-    --border: 210 20% 88%;
-    --outline-variant: 210 20% 84%;
-    --input: 210 20% 88%;
-    --ring: 221 83% 53%;
+    --muted: var(--avd-bg-sunken);
+    --muted-foreground: var(--avd-fg-muted);
 
-    --radius: 1rem;
+    --accent: var(--avd-brand-500);
+    --accent-foreground: var(--avd-n-0);
+    --accent-soft: var(--avd-brand-50);
 
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 58%), hsl(221 83% 45%));
-    --gradient-secondary: linear-gradient(140deg, hsl(195 100% 45%), hsl(195 100% 35%));
-    --gradient-tech: radial-gradient(circle at top right, hsl(190 90% 50% / 0.15), transparent 40%), radial-gradient(circle at bottom left, hsl(221 83% 53% / 0.1), transparent 45%);
-    --gradient-canvas: linear-gradient(180deg, hsl(210 33% 98%), hsl(210 20% 95%));
+    --destructive: var(--avd-bad);
+    --destructive-foreground: var(--avd-n-0);
 
-    --ticket-accent: 188 88% 40%;
-    --ticket-accent-soft: 188 90% 94%;
-    --ticket-accent-foreground: 196 70% 18%;
+    --warning: var(--avd-warn);
+    --warning-foreground: var(--avd-warn-fg);
+    --success: var(--avd-ok);
+    --success-foreground: var(--avd-ok-fg);
 
-    /* Paleta oficial de votacion (usar en toda la app) */
+    --border: var(--avd-border);
+    --outline-variant: var(--avd-border-strong);
+    --input: var(--avd-border);
+    --ring: var(--avd-brand);
+    --scrollbar: var(--avd-n-300);
+
+    --sidebar-border: var(--avd-border);
+    --sidebar-accent: var(--avd-bg-hover);
+    --sidebar-accent-foreground: var(--avd-fg);
+
+    --radius: var(--avd-radius-md);
+
+    /* Paleta oficial de votación. NO es cromo: son las opciones de voto,
+       tienen significado propio y no salen de la rampa de marca. */
     --vote-color-blue: 217 91% 60%;
     --vote-color-red: 0 84% 60%;
     --vote-color-yellow: 45 93% 58%;
@@ -165,59 +185,25 @@
   }
 
   .dark {
-    /* Deep Midnight Dark Mode */
-    --background: 225 35% 5%;
-    --foreground: 210 20% 98%;
+    /* Casi todo el modo oscuro sale gratis: los alias apuntan a `--avd-*`,
+       que ya cambia en `.dark`. Aquí solo lo que apunta a la rampa cruda
+       y por tanto no cambiaría solo. */
+    --surface-container-high: var(--avd-n-850);
+    --surface-container-highest: var(--avd-n-800);
 
-    --surface: 225 30% 8%;
-    --surface-foreground: 210 20% 98%;
+    --overlay: var(--avd-n-1000);
+    --overlay-foreground: var(--avd-n-0);
 
-    --surface-container-lowest: 225 40% 4%;
-    --surface-container-low: 225 30% 8%;
-    --surface-container: 225 30% 11%;
+    --secondary: var(--avd-brand-300);
+    --secondary-foreground: var(--avd-n-950);
+    --secondary-container: var(--avd-brand-900);
 
-    --card: 225 30% 8%;
-    --card-foreground: 210 20% 98%;
+    --accent: var(--avd-brand-400);
+    --accent-foreground: var(--avd-n-950);
+    --accent-soft: var(--avd-brand-900);
 
-    --popover: 225 30% 8%;
-    --popover-foreground: 210 20% 98%;
+    --scrollbar: var(--avd-n-700);
 
-    /* Brand Identity: Neon Blue & Cyan Accent */
-    --primary: 221 90% 65%; /* Bright Neon Blue */
-    --primary-container: 221 90% 20%;
-    --primary-fixed: 221 80% 15%;
-    --primary-fixed-dim: 221 80% 20%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 195 100% 40%;
-    --secondary-container: 195 100% 15%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 225 30% 15%;
-    --muted-foreground: 210 15% 65%;
-
-    --accent: 190 100% 55%; /* Vibrant Cyan/Teal */
-    --accent-foreground: 225 40% 5%;
-    --accent-soft: 190 100% 15%;
-
-    --destructive: 348 90% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 225 30% 18%;
-    --outline-variant: 225 30% 22%;
-    --input: 225 30% 18%;
-    --ring: 221 90% 65%;
-
-    --gradient-primary: linear-gradient(135deg, hsl(221 90% 65%), hsl(190 100% 50%));
-    --gradient-secondary: linear-gradient(140deg, hsl(225 30% 12%), hsl(225 30% 15%));
-    --gradient-tech: radial-gradient(ellipse at top left, hsl(221 90% 65% / 0.15), transparent 45%), radial-gradient(ellipse at bottom right, hsl(190 100% 55% / 0.15), transparent 50%);
-    --gradient-canvas: linear-gradient(180deg, hsl(225 35% 5%), hsl(225 30% 8%));
-
-    --ticket-accent: 190 100% 58%;
-    --ticket-accent-soft: 190 100% 15%;
-    --ticket-accent-foreground: 190 85% 90%;
-
-    /* Paleta oficial de votacion (usar en toda la app) */
     --vote-color-blue: 217 91% 65%;
     --vote-color-red: 0 84% 66%;
     --vote-color-yellow: 45 93% 64%;
@@ -230,21 +216,20 @@
   }
 
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--border);
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: 'Inter', 'Segoe UI', sans-serif;
-    background-image: var(--gradient-canvas);
     min-height: 100vh;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   ::selection {
-    background: hsl(var(--primary) / 0.28);
-    color: hsl(var(--foreground));
+    background: color-mix(in oklch, var(--primary) 28%, transparent);
+    color: var(--foreground);
   }
 
   *::-webkit-scrollbar {
@@ -253,7 +238,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: hsl(var(--scrollbar));
+    background: var(--scrollbar);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: content-box;
@@ -303,132 +288,37 @@
     transform: translateY(0) scale(0.98);
   }
 
-  .button--primary {
-    box-shadow: 0 12px 26px -14px hsl(201 86% 45% / 0.65);
-  }
+  /* `.button--primary` y `.button--danger` tenían sombra de color, prohibida
+     por design.md §3.1 y retirada del resto por el plan 003. No se usaban en
+     ningún .tsx, así que se van enteras.
 
-  .button--danger {
-    box-shadow: 0 12px 26px -14px hsl(0 84% 53% / 0.6);
-  }
-
-  .surface {
-    border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--surface-container-lowest));
-    border-radius: 2rem;
-    box-shadow: var(--shadow-card);
-  }
-
-  .dark .surface {
-    border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--surface-container-lowest));
-  }
-
-  .gradient-tech {
-    background: var(--gradient-tech);
-  }
+     También se van: `.surface`, `.gradient-tech`, `.gradient-primary`,
+     `.admin-soft`, `.admin-chip`, `.ticket-*` y `.font-code` (sin un solo uso
+     en la app), y `.bg-grid-fade`, que apuntaba a `--grid-fade`, una variable
+     que no existe en ninguna parte. */
 
   .bg-canvas {
-    background-image: var(--gradient-canvas);
-  }
-
-  .bg-grid-fade {
-    background-image: var(--grid-fade);
-    background-size: 32px 32px;
-    opacity: 0.35;
-  }
-  
-  .gradient-primary {
-    background: var(--gradient-primary);
+    /* Era `var(--gradient-canvas)`. Un degradado de fondo de página va contra
+       design.md §5.2 y ensucia cualquier superficie plana que se pose encima. */
+    background: var(--avd-bg);
   }
 
   .admin-canvas {
-    background-image: linear-gradient(160deg, hsl(var(--background)), hsl(var(--primary-fixed) / 0.65));
-  }
-
-  .dark .admin-canvas {
-    background-image: linear-gradient(170deg, hsl(var(--background)), hsl(var(--primary-fixed) / 0.28));
+    background: var(--avd-bg);
   }
 
   .admin-shell {
-    border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--surface-container-lowest));
-    border-radius: 2rem;
-    box-shadow: var(--shadow-card);
+    border: 1px solid var(--avd-border);
+    background: var(--avd-surface);
+    border-radius: var(--avd-radius-lg);
+    box-shadow: var(--avd-shadow-md);
   }
 
   .dark .admin-shell {
-    border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--surface-container-lowest));
-    box-shadow: var(--shadow-card);
+    /* En oscuro la elevación es borde y superficie, no sombra (design.md §3.1). */
+    box-shadow: none;
   }
 
-  .admin-soft {
-    border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--primary-fixed) / 0.9);
-    border-radius: 1.5rem;
-  }
-
-  .dark .admin-soft {
-    border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--primary-fixed) / 0.75);
-  }
-
-  .admin-chip {
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    line-height: 1rem;
-    font-weight: 600;
-    border: 1px solid hsl(var(--outline-variant) / 0.45);
-    background: hsl(var(--primary-fixed) / 0.88);
-    color: hsl(var(--primary));
-  }
-
-  .dark .admin-chip {
-    border-color: hsl(var(--outline-variant) / 0.48);
-    background: hsl(var(--primary-fixed) / 0.5);
-    color: hsl(var(--primary));
-  }
-
-  .ticket-card {
-    border: 1px solid hsl(var(--ticket-accent) / 0.36);
-    background: linear-gradient(
-      165deg,
-      hsl(var(--ticket-accent-soft) / 0.72),
-      hsl(var(--surface-container-lowest) / 0.92)
-    );
-    box-shadow: inset 0 1px 0 hsl(var(--ticket-accent) / 0.2), 0 14px 30px -24px hsl(var(--ticket-accent) / 0.55);
-  }
-
-  .dark .ticket-card {
-    border-color: hsl(var(--ticket-accent) / 0.42);
-    background: linear-gradient(
-      165deg,
-      hsl(var(--ticket-accent-soft) / 0.6),
-      hsl(var(--surface-container-lowest) / 0.9)
-    );
-  }
-
-  .ticket-kicker {
-    color: hsl(var(--ticket-accent-foreground));
-  }
-
-  .dark .ticket-kicker {
-    color: hsl(var(--ticket-accent));
-  }
-
-  .ticket-code {
-    color: hsl(var(--ticket-accent-foreground));
-  }
-
-  .dark .ticket-code {
-    color: hsl(var(--ticket-accent));
-  }
-
-  .ticket-divider {
-    border-color: hsl(var(--ticket-accent) / 0.35);
-  }
-  
 }
 
 @layer utilities {

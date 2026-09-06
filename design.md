@@ -458,16 +458,12 @@ voto perdido.
 
 **Lo que hay que saber para no tropezar:**
 
-- **`src/index.css` tiene dos sistemas de color vivos a la vez** y esto es la incoherencia
-  más grande de los cuatro repos:
-  1. el legado *Soft Oceanic* — tokens HSL de shadcn más `--gradient-primary`,
-     `--gradient-canvas`, `--primary-glow`, `--shadow-primary`… que además pinta un degradado
-     de fondo en el `body`;
-  2. el actual *`--avd-*`* — OKLCH, sobrio, el que manda según `CLAUDE.md`.
-
-  Hoy conviven: **43 de los 91 `.tsx`** usan `--avd-*` y quedan **54 hex a pelo** repartidos
-  por votación, proyección y analíticas. **Escribe siempre con `--avd-*`**, no toques el
-  legado salvo para retirarlo, y no metas nada nuevo en él (§5.14).
+- **Ya hay un solo sistema de color** (`001`, 2026-09-04). `--avd-*` en OKLCH es la fuente;
+  los nombres semánticos de shadcn (`--background`, `--primary`, `--muted-foreground`…)
+  **son alias suyos, no fuentes**, y ya no son tripletes HSL: se escriben `var(--primary)`,
+  no `hsl(var(--primary))`, y la opacidad se hace con `color-mix`. El legado *Soft Oceanic*
+  y sus cuatro `--gradient-*` están retirados, incluido el degradado del `body`.
+  **Escribe siempre con `--avd-*`** y no metas nada nuevo en la capa de alias (§5.14).
 - Cuatro familias tipográficas cargadas desde el CDN de Google (`Catamaran`, `Inter`,
   `JetBrains Mono`, `Plus Jakarta Sans`), contra la §3.2 y la §5.10–5.11.
 - Recharts está en `^2.15.4` aquí y en `^3.7.0` en MCM Bank: las gráficas de las dos apps no
@@ -493,9 +489,18 @@ de estado en `design-plans/README.md`. Un agente que venga a "arreglar diseño" 
   luminosidades y cromas —son los que la hacen pasar AA—. Estaba en 235–250, que en OKLCH sale
   más cian que el azul que la app enseña de verdad (su legado está en 263) y que el del logo.
 
-**Lo que queda**, por orden: retirar el legado *Soft Oceanic* que sigue conviviendo con
-`--avd-*` (resto del `001`), los hex a pelo (`002`), Recharts a v3 (`006`), las tipografías
-autoalojadas (`004`) y reescribir Visión+ sin `!important` (`005`). Cada uno con su plan.
+**Hecho el 2026-09-04:** el resto del `001` —los semánticos pasan a ser alias de `--avd-*`,
+fuera el legado y los cuatro degradados— y el `002` en lo que se podía cerrar sin tomar
+decisiones de diseño nuevas (54 hex → 33).
+
+Al retirar el legado aparecieron **catorce tokens que nunca estuvieron definidos**
+(`--warning`, `--success`, `--overlay`, `--scrollbar`, `--sidebar-*`,
+`--surface-container-high/highest`, `--grid-fade`, `--shadow-card`…): sus clases no pintaban
+nada, igual que el `003` y que el `@theme`. Ahora existen.
+
+**Lo que queda**, por orden: la paleta categórica que le falta al sistema (`008`, sale del
+`002`), Recharts a v3 (`006`), las tipografías autoalojadas (`004`) y reescribir Visión+ sin
+`!important` (`005`). Cada uno con su plan.
 
 Y una regla que sale de todo esto: **en esta app, un cambio de color no está comprobado hasta
 que se mira el CSS compilado.** El código fuente puede estar lleno de clases que no existen.

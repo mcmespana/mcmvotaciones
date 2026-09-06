@@ -69,7 +69,7 @@ export function AccessCodeInput({
         <div className="px-10 pt-10 pb-8">
           {/* Icon */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-[var(--avd-brand-50,hsl(var(--primary)/0.1))] flex items-center justify-center mx-auto mb-5">
+            <div className="w-16 h-16 rounded-full bg-[var(--avd-brand-50)] flex items-center justify-center mx-auto mb-5">
               <KeyRound className="w-7 h-7 text-[var(--avd-brand-600)]" />
             </div>
             <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2 font-[var(--avd-font-sans)]">

@@ -292,7 +292,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                    contentStyle={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
                     formatter={(value: number, name: string) => [
                       name === "votos" ? `${value} votos` : `${value.toFixed(1)}%`,
                       name === "votos" ? "Votos" : "Porcentaje",

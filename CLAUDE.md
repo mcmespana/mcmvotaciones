@@ -19,14 +19,23 @@ deshacer, accesibilidad, microcopia y la lista de anti-defaults. Su §7 describe
 tres superficies (votante, proyección, administración) y sus reglas propias— y su §8 apunta a
 `design-plans/`, con la deuda de diseño en planes ejecutables.
 
-Aviso importante que está detallado allí: **`src/index.css` tiene dos sistemas de color vivos
-a la vez** (el legado *Soft Oceanic* en HSL y el actual `--avd-*` en OKLCH). Escribe siempre
-con `--avd-*` y no metas nada nuevo en el legado.
+Desde el plan `001` (2026-09-04) hay **un solo sistema de color**: `--avd-*` en OKLCH. Los
+nombres semánticos de shadcn son alias suyos; ver la regla 1 de abajo.
 
 ## CSS rules (always, no exceptions)
 
 ### 1. Use `--avd-*` tokens only
 All colors, backgrounds, borders, and shadows must use the design tokens from `src/index.css`. No hardcoded hex or rgba. Use `color-mix(in oklch, var(--avd-x) N%, transparent)` for opacity variants.
+
+Los nombres semánticos de shadcn (`--background`, `--primary`, `--muted-foreground`,
+`--outline-variant`…) **son alias de `--avd-*`, no fuentes**: si un color hay que cambiarlo,
+se cambia en la rampa, nunca en el alias. Y **ya no son tripletes HSL**: se escriben
+`var(--primary)`, no `hsl(var(--primary))`.
+
+Si añades un color nuevo, va en el bloque `@theme` de `src/index.css`. **No** en
+`tailwind.config.ts`: Tailwind 4 no lo carga (no hay `@config`), así que lo que pongas ahí no
+existirá en el CSS compilado. Corolario: **un cambio de color no está comprobado hasta que se
+mira el CSS compilado**, no el código fuente.
 
 Key semantic tokens: `--avd-bg`, `--avd-surface`, `--avd-border`, `--avd-fg`, `--avd-fg-muted`, `--avd-fg-faint`, `--avd-brand`, `--avd-ok`, `--avd-warn`, `--avd-bad`, `--avd-ok-bg/fg`, `--avd-warn-bg/fg`, `--avd-n-{50…1000}`.
 
