@@ -60,7 +60,7 @@ export function CandidatesPane({
                     <Grid size={13} /> Tarjetas
                   </button>
                 </div>
-                <div className="avd-search-wrap w-full sm:w-[180px]">
+                <div className="avd-search-wrap w-full sm:w-[11.25rem]">
                   <Search size={14} />
                   <input
                     className="avd-input"
@@ -134,8 +134,8 @@ export function CandidatesPane({
                       </div>
                     </div>
                     <div className="avd-cand-badges">
-                      {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
-                      {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
+                      {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-xs">Seleccionada</span>}
+                      {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-xs">Eliminada</span>}
                     </div>
                     <div className="avd-cand-actions">
                       <button
@@ -198,12 +198,12 @@ export function CandidatesPane({
                         </div>
                       </div>
                       {c.group_name && (
-                        <div className="text-[11.5px] text-[var(--avd-fg-muted)]">{c.group_name}</div>
+                        <div className="text-xs text-[var(--avd-fg-muted)]">{c.group_name}</div>
                       )}
                       <div className="avd-cand-card-foot">
                         <div className="flex gap-1">
-                          {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-[11px]">Seleccionada</span>}
-                          {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-[11px]">Eliminada</span>}
+                          {c.is_selected && <span className="avd-chip avd-chip-ok h-5 text-xs">Seleccionada</span>}
+                          {c.is_eliminated && <span className="avd-chip avd-chip-bad h-5 text-xs">Eliminada</span>}
                         </div>
                         <div className="flex gap-0.5">
                           <button className="avd-btn avd-btn-ghost avd-btn-icon-sm" onClick={() => openEditCandidateDialog(c)} title="Editar">

@@ -16,7 +16,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Legend,
   PieChart,
   Pie,
 } from "recharts";
@@ -46,11 +45,61 @@ interface RoundResult extends RoundResultRow {
 const normalizeCandidate = (candidate: RoundResult["candidate"]) =>
   Array.isArray(candidate) ? candidate[0] : candidate;
 
+// PENDIENTE DE DECISIÓN (design-plans/002): paleta categórica de serie. El
+// sistema `--avd-*` no tiene una y design.md §3.9 la exige validada; inventarla
+// aquí sería una decisión de diseño, no un reemplazo de token. Se queda en hex
+// hasta que exista `--avd-cat-*`.
 const CHART_COLORS = [
   "#2563EB", "#DC2626", "#D97706", "#16A34A",
   "#0EA5E9", "#F97316", "#EC4899", "#06B6D4",
   "#84CC16", "#F43F5E", "#14B8A6", "#64748B",
 ];
+
+/* design.md §3.9: `tabular-nums` en ticks y valores, para que un número que
+   cambia no mueva la fila entera. */
+const AXIS_TICK = { fontSize: 12, fill: "var(--avd-fg-muted)", fontVariantNumeric: "tabular-nums" } as const;
+
+const TOOLTIP_STYLE = {
+  backgroundColor: "var(--avd-bg-elev)",
+  border: "1px solid var(--avd-border)",
+  borderRadius: "var(--avd-radius-sm)",
+  color: "var(--avd-fg)",
+  fontVariantNumeric: "tabular-nums",
+} as const;
+
+/** Tabla «Ver datos» de una gráfica. design.md §3.9 y §5.8: ningún dato
+ *  accesible solo por un tooltip. */
+function ChartData({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) {
+  return (
+    <details className="mt-3">
+      <summary className="cursor-pointer text-xs text-muted-foreground select-none">Ver datos</summary>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-xs tabular-nums">
+          <thead>
+            <tr className="border-b border-outline-variant/50">
+              {headers.map((h, i) => (
+                <th key={h} className={i === 0 ? "text-left py-1.5 pr-3 font-medium" : "text-right py-1.5 pl-3 font-medium"}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => (
+              <tr key={ri} className="border-b border-outline-variant/30 last:border-0">
+                {row.map((cell, ci) => (
+                  <td key={ci} className={ci === 0 ? "text-left py-1.5 pr-3" : "text-right py-1.5 pl-3"}>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  );
+}
 
 export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
   const { toast } = useToast();
@@ -282,15 +331,19 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
           </CardHeader>
           <CardContent>
             {barData.length > 0 ? (
+              <>
               <ResponsiveContainer width="100%" height={chartHeight}>
                 <BarChart data={barData} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
+                  {/* Rejilla horizontal fina y sólida: una discontinua se lee
+                      como umbral, no como referencia (design.md §3.9). */}
+                  <CartesianGrid horizontal={false} stroke="var(--avd-border-soft)" />
+                  <XAxis type="number" tick={AXIS_TICK} stroke="var(--avd-border)" />
+                  <YAxis type="category" dataKey="name" width={120} tick={AXIS_TICK} stroke="var(--avd-border)" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-                    formatter={(value: number, name: string) => [
-                      name === "votos" ? `${value} votos` : `${value.toFixed(1)}%`,
+                    cursor={{ fill: "color-mix(in oklch, var(--avd-fg) 8%, transparent)" }}
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, name) => [
+                      name === "votos" ? `${value} votos` : `${Number(value).toFixed(1)}%`,
                       name === "votos" ? "Votos" : "Porcentaje",
                     ]}
                   />
@@ -298,12 +351,17 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                     {barData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.selected ? "#10B981" : CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={entry.selected ? "var(--avd-ok)" : CHART_COLORS[index % CHART_COLORS.length]}
                       />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              <ChartData
+                headers={["Candidato", "Votos", "%"]}
+                rows={barData.map((d) => [d.name, d.votos, `${d.porcentaje.toFixed(1)}%`])}
+              />
+              </>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 No hay resultados para esta ronda
@@ -319,6 +377,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
           </CardHeader>
           <CardContent>
             {pieData.length > 0 ? (
+              <>
               <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
                   <Pie
@@ -328,7 +387,7 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                     outerRadius={130}
                     dataKey="value"
                     label={({ name, percent }) =>
-                      `${name.split(" ")[0]} ${(percent * 100).toFixed(0)}%`
+                      `${String(name).split(" ")[0]} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
                     labelLine
                   >
@@ -336,10 +395,16 @@ export function ResultsAnalytics({ lockedRoundId }: ResultsAnalyticsProps) {
                       <Cell key={`pie-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  {/* Sin <Legend>: cada porción ya lleva su etiqueta encima y una
+                      leyenda es un ejercicio de memoria (design.md §3.9). */}
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
                 </PieChart>
               </ResponsiveContainer>
+              <ChartData
+                headers={["Candidato", "Votos"]}
+                rows={pieData.map((d) => [d.name, d.value])}
+              />
+              </>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 No hay datos para mostrar

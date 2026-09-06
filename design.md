@@ -452,26 +452,25 @@ voto perdido.
 - **En táctil, los `input` van a ≥16 px** — ya lo cubre la regla
   `@media (hover: none) and (pointer: coarse)` de `index.css`. No añadas controles por debajo
   de eso.
-- **Modo Visión+** (`[data-vision-plus="on"]`, texto al 200 %, sin afectar a `/admin` ni a
-  `/proyeccion`) es **la mejor idea de accesibilidad que tenemos en las cuatro apps** y
-  merece propagarse. Su implementación actual, en cambio, es deuda (§8).
+- **Modo Visión+** (texto al 200 %, sin afectar a `/admin` ni a `/proyeccion`) es **la mejor
+  idea de accesibilidad que tenemos en las cuatro apps** y merece propagarse. Desde el `005`
+  (2026-09-04) escala la raíz (`html.vision-plus`) en vez de sobrescribir clase por clase, así
+  que **cualquier tamaño nuevo entra solo, siempre que esté en `rem`**. Corolario para quien
+  escriba aquí: nada de `text-[13px]` ni de `h-[42px]`; la escala fija de §3.2 y `rem`.
 
 **Lo que hay que saber para no tropezar:**
 
-- **`src/index.css` tiene dos sistemas de color vivos a la vez** y esto es la incoherencia
-  más grande de los cuatro repos:
-  1. el legado *Soft Oceanic* — tokens HSL de shadcn más `--gradient-primary`,
-     `--gradient-canvas`, `--primary-glow`, `--shadow-primary`… que además pinta un degradado
-     de fondo en el `body`;
-  2. el actual *`--avd-*`* — OKLCH, sobrio, el que manda según `CLAUDE.md`.
-
-  Hoy conviven: **43 de los 91 `.tsx`** usan `--avd-*` y quedan **54 hex a pelo** repartidos
-  por votación, proyección y analíticas. **Escribe siempre con `--avd-*`**, no toques el
-  legado salvo para retirarlo, y no metas nada nuevo en él (§5.14).
+- **Ya hay un solo sistema de color** (`001`, 2026-09-04). `--avd-*` en OKLCH es la fuente;
+  los nombres semánticos de shadcn (`--background`, `--primary`, `--muted-foreground`…)
+  **son alias suyos, no fuentes**, y ya no son tripletes HSL: se escriben `var(--primary)`,
+  no `hsl(var(--primary))`, y la opacidad se hace con `color-mix`. El legado *Soft Oceanic*
+  y sus cuatro `--gradient-*` están retirados, incluido el degradado del `body`.
+  **Escribe siempre con `--avd-*`** y no metas nada nuevo en la capa de alias (§5.14).
 - Cuatro familias tipográficas cargadas desde el CDN de Google (`Catamaran`, `Inter`,
   `JetBrains Mono`, `Plus Jakarta Sans`), contra la §3.2 y la §5.10–5.11.
-- Recharts está en `^2.15.4` aquí y en `^3.7.0` en MCM Bank: las gráficas de las dos apps no
-  se pueden copiar tal cual entre repos.
+- Recharts ya está en `^3` en las dos apps (`006`, 2026-09-04), así que una gráfica se puede
+  copiar de una a otra. Ojo: Recharts 3 importa `react-is` y no lo declara; hay que tenerlo
+  como dependencia directa.
 
 ## 8. Deuda de diseño conocida
 
@@ -493,9 +492,23 @@ de estado en `design-plans/README.md`. Un agente que venga a "arreglar diseño" 
   luminosidades y cromas —son los que la hacen pasar AA—. Estaba en 235–250, que en OKLCH sale
   más cian que el azul que la app enseña de verdad (su legado está en 263) y que el del logo.
 
-**Lo que queda**, por orden: retirar el legado *Soft Oceanic* que sigue conviviendo con
-`--avd-*` (resto del `001`), los hex a pelo (`002`), Recharts a v3 (`006`), las tipografías
-autoalojadas (`004`) y reescribir Visión+ sin `!important` (`005`). Cada uno con su plan.
+**Hecho el 2026-09-04:** el resto del `001` —los semánticos pasan a ser alias de `--avd-*`,
+fuera el legado y los cuatro degradados— y el `002` en lo que se podía cerrar sin tomar
+decisiones de diseño nuevas (54 hex → 33).
+
+Al retirar el legado aparecieron **catorce tokens que nunca estuvieron definidos**
+(`--warning`, `--success`, `--overlay`, `--scrollbar`, `--sidebar-*`,
+`--surface-container-high/highest`, `--grid-fade`, `--shadow-card`…): sus clases no pintaban
+nada, igual que el `003` y que el `@theme`. Ahora existen.
+
+También el `005` y el `006`. Y con el `005` salió el cuarto caso del mismo patrón:
+**`vision-plus.css` no llegaba al CSS compilado**, porque su `@import` estaba después del
+`@theme` y CSS exige que los `@import` precedan a todo. El modo de accesibilidad no hacía nada
+en producción. Arreglado moviendo los `@import` al principio.
+
+**Lo que queda:** las tipografías autoalojadas (`004`, y su plan **exige visto bueno humano**),
+la paleta categórica que le falta al sistema (`008`, sale del `002` — y con ella el modo oscuro
+roto de los avatares de la lista pública), y cerrar el `007`, que necesita credenciales.
 
 Y una regla que sale de todo esto: **en esta app, un cambio de color no está comprobado hasta
 que se mira el CSS compilado.** El código fuente puede estar lleno de clases que no existen.

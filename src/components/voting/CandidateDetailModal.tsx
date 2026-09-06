@@ -147,14 +147,14 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
           dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
           onDragEnd={handleDragEnd}
           whileDrag={{ cursor: "grabbing" }}
-          className="avd-dialog max-w-full w-full p-0 overflow-hidden relative shadow-[0_20px_40px_-8px_rgba(0,0,0,0.22),0_8px_16px_-4px_rgba(0,0,0,0.1)]"
+          className="avd-dialog max-w-full w-full p-0 overflow-hidden relative shadow-[var(--avd-shadow-lg)]"
           style={{ cursor: imgExpanded ? "default" : "grab", touchAction: "pan-y" }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 z-10 bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-[var(--avd-fg-muted)] shadow-[0_2px_8px_rgba(0,0,0,0.1)]"
+            className="absolute top-3 right-3 z-10 bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-[var(--avd-fg-muted)] shadow-[var(--avd-shadow-sm)]"
           >
             <X size={18} />
           </button>
@@ -196,7 +196,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
             {hasImage && imgExpanded && (
               <button
                 onClick={(e) => { e.stopPropagation(); setImgExpanded(false); }}
-                className="absolute top-2 left-2 text-[11px] text-white bg-black/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-opacity"
+                className="absolute top-2 left-2 text-xs text-white bg-black/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-opacity"
               >
                 <X size={11} /> Cerrar
               </button>
@@ -212,29 +212,29 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               onPointerDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
             >
-              <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
                 {formatCandidateName(candidate)}
               </h2>
 
-              <div className="flex flex-wrap gap-[7px] mb-4">
+              <div className="flex flex-wrap gap-[0.4375rem] mb-4">
                 {candidate.location && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <MapPin size={13} /> {candidate.location}
                   </span>
                 )}
                 {candidate.group_name && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <Users size={13} /> {candidate.group_name}
                   </span>
                 )}
                 {candidate.age != null && (
-                  <span className="avd-chip text-[14px] gap-1.5 py-[5px] px-3">
+                  <span className="avd-chip text-sm gap-1.5 py-[0.3125rem] px-3">
                     <Cake size={13} /> {candidate.age} años
                   </span>
                 )}
                 {isMonitor(candidate.crm_relationship_types) && (
                   <span
-                    className="avd-chip avd-chip-brand text-[14px] font-bold py-[5px] px-3"
+                    className="avd-chip avd-chip-brand text-sm font-bold py-[0.3125rem] px-3"
                     aria-label="Monitor"
                     title="Monitor"
                   >
@@ -244,7 +244,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               </div>
 
               {candidate.description && (
-                <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">
+                <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">
                   {candidate.description}
                 </p>
               )}
@@ -253,14 +253,14 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 <div className="mt-4 pt-4 border-t border-[var(--avd-border-soft)] flex flex-col gap-3">
                   {candidate.asamblea_movimiento_es && (
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Para mí el MCM es…</div>
-                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
+                      <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[0.3125rem]">Para mí el MCM es…</div>
+                      <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_movimiento_es}</p>
                     </div>
                   )}
                   {candidate.asamblea_responsabilidad && (
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[5px]">Responsabilidades en el MCM</div>
-                      <p className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
+                      <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-[0.3125rem]">Responsabilidades en el MCM</div>
+                      <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] m-0">{candidate.asamblea_responsabilidad}</p>
                     </div>
                   )}
                   {questionsOverflows && <div className="h-4 shrink-0" />}
@@ -268,7 +268,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
               )}
 
               {!candidate.description && !candidate.location && !candidate.group_name && !candidate.age && !hasQuestions && (
-                <p className="text-[13px] text-[var(--avd-fg-faint)] m-0">
+                <p className="text-sm text-[var(--avd-fg-faint)] m-0">
                   Sin información adicional disponible.
                 </p>
               )}
@@ -295,13 +295,13 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.88 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="bg-white border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[#1a1a1a] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.28),0_4px_6px_-2px_rgba(0,0,0,0.14)] shrink-0"
+                className="bg-[var(--avd-n-0)] border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[var(--avd-n-900)] shadow-[0_10px_15px_-3px_color-mix(in_oklch,var(--avd-n-1000)_28%,transparent),0_4px_6px_-2px_color-mix(in_oklch,var(--avd-n-1000)_14%,transparent)] shrink-0"
               >
                 <ChevronLeft size={32} />
               </motion.button>
             ) : <div className="w-14" />}
 
-            <p className="text-white text-[13px] font-semibold [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+            <p className="text-[var(--avd-n-0)] text-sm font-semibold [text-shadow:0_2px_8px_color-mix(in_oklch,var(--avd-n-1000)_60%,transparent)]">
               Desliza la foto para navegar
             </p>
 
@@ -311,7 +311,7 @@ export function CandidateDetailModal({ candidate, onClose, initialZoom = false, 
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.88 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="bg-white border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[#1a1a1a] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.28),0_4px_6px_-2px_rgba(0,0,0,0.14)] shrink-0"
+                className="bg-[var(--avd-n-0)] border-none rounded-full w-14 h-14 flex items-center justify-center cursor-pointer text-[var(--avd-n-900)] shadow-[0_10px_15px_-3px_color-mix(in_oklch,var(--avd-n-1000)_28%,transparent),0_4px_6px_-2px_color-mix(in_oklch,var(--avd-n-1000)_14%,transparent)] shrink-0"
               >
                 <ChevronRight size={32} />
               </motion.button>

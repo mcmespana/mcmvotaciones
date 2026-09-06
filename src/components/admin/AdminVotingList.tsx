@@ -76,25 +76,25 @@ function RoundCard({ round, onOpen, onDelete, onArchive, onDuplicate, isSuperAdm
 
   return (
     <div className="adm-round-card">
-      <div className={`h-[2.5px] ${round.is_closed || round.is_active ? 'opacity-100' : 'opacity-35'}`} style={{background:accentColor}} />
+      <div className={`h-[0.1562rem] ${round.is_closed || round.is_active ? 'opacity-100' : 'opacity-35'}`} style={{background:accentColor}} />
 
-      <div className="px-4 pt-[14px] pb-3 flex-1">
+      <div className="px-4 pt-[0.875rem] pb-3 flex-1">
         {/* Header */}
-        <div className="flex items-start justify-between gap-[10px] mb-[10px]">
+        <div className="flex items-start justify-between gap-[0.625rem] mb-[0.625rem]">
           <div className="flex-1 min-w-0">
-            <div className="text-[15px] font-bold tracking-[-0.01em] leading-[1.3] text-[var(--avd-fg)] mb-1.5 line-clamp-2">{round.title}</div>
-            <div className="flex flex-wrap gap-[5px] items-center">
+            <div className="text-sm font-bold tracking-[-0.01em] leading-[1.3] text-[var(--avd-fg)] mb-1.5 line-clamp-2">{round.title}</div>
+            <div className="flex flex-wrap gap-[0.3125rem] items-center">
               <TeamChip label={round.voting_type_name || round.team} />
               <span className="avd-chip avd-chip-muted">{round.year}</span>
-              <span className={`avd-chip ${chip.cls} flex items-center gap-[5px]`}>
+              <span className={`avd-chip ${chip.cls} flex items-center gap-[0.3125rem]`}>
                 {chip.pulse && <span className="avd-pulse-dot" />}
                 {chip.txt}
               </span>
               {round.public_candidates_enabled && (
-                <span className="avd-chip avd-chip-ok text-[10px] h-[18px] inline-flex items-center gap-[3px]"><Users size={9} /> Lista pública</span>
+                <span className="avd-chip avd-chip-ok text-xs h-[1.125rem] inline-flex items-center gap-[0.1875rem]"><Users size={9} /> Lista pública</span>
               )}
               {round.show_final_gallery_projection && (
-                <span className="avd-chip avd-chip-brand text-[10px] h-[18px] inline-flex items-center gap-[3px]"><Image size={9} /> Galería activa</span>
+                <span className="avd-chip avd-chip-brand text-xs h-[1.125rem] inline-flex items-center gap-[0.1875rem]"><Image size={9} /> Galería activa</span>
               )}
             </div>
           </div>
@@ -135,7 +135,7 @@ function RoundCard({ round, onOpen, onDelete, onArchive, onDuplicate, isSuperAdm
         </div>
 
         {round.description && (
-          <p className="text-[12.5px] text-[var(--avd-fg-muted)] mb-3 leading-[1.5] line-clamp-2 border-l-2 border-[var(--avd-border)] pl-[10px]">{round.description}</p>
+          <p className="text-xs text-[var(--avd-fg-muted)] mb-3 leading-[1.5] line-clamp-2 border-l-2 border-[var(--avd-border)] pl-[0.625rem]">{round.description}</p>
         )}
 
         {/* Metrics grid */}
@@ -144,21 +144,21 @@ function RoundCard({ round, onOpen, onDelete, onArchive, onDuplicate, isSuperAdm
             { l: "Ronda", v: round.current_round_number, type: "n" },
             { l: "Cupo",  v: `${round.votes_current_round}/${round.max_votantes}`, type: "s" },
           ].map(m => (
-            <div key={m.l} className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
-              <div className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">{m.l}</div>
-              <div className={`font-bold tabular-nums text-[var(--avd-fg)] leading-none ${m.type === "n" ? "text-[18px]" : "text-[14px]"}`}>{m.v}</div>
+            <div key={m.l} className="px-[0.625rem] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
+              <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">{m.l}</div>
+              <div className={`font-bold tabular-nums text-[var(--avd-fg)] leading-none ${m.type === "n" ? "text-lg" : "text-sm"}`}>{m.v}</div>
             </div>
           ))}
-          <div className="px-[10px] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
-            <div className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">Entrada</div>
-            <span className={`avd-chip ${entryStatus.cls} text-[11px] h-5`}>{entryStatus.txt}</span>
+          <div className="px-[0.625rem] py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] mb-1">Entrada</div>
+            <span className={`avd-chip ${entryStatus.cls} text-xs h-5`}>{entryStatus.txt}</span>
           </div>
         </div>
 
         {/* Vote progress */}
         {round.is_active && (
-          <div className="mt-[10px]">
-            <div className="flex justify-between text-[11px] text-[var(--avd-fg-muted)] mb-1 font-medium">
+          <div className="mt-[0.625rem]">
+            <div className="flex justify-between text-xs text-[var(--avd-fg-muted)] mb-1 font-medium">
               <span>Votos ronda {round.current_round_number}</span>
               <span className="font-bold tabular-nums text-[var(--avd-fg)]">{votePct}%</span>
             </div>
@@ -169,8 +169,8 @@ function RoundCard({ round, onOpen, onDelete, onArchive, onDuplicate, isSuperAdm
         )}
       </div>
 
-      <div className="px-4 py-[10px] border-t border-[var(--avd-border-soft)] bg-[var(--avd-bg-sunken)]">
-        <button className="avd-btn avd-btn-primary avd-btn-block h-9 text-[13px] justify-center" onClick={() => onOpen(round)}>
+      <div className="px-4 py-[0.625rem] border-t border-[var(--avd-border-soft)] bg-[var(--avd-bg-sunken)]">
+        <button className="avd-btn avd-btn-primary avd-btn-block h-9 text-sm justify-center" onClick={() => onOpen(round)}>
           Gestionar votación
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
         </button>
@@ -198,7 +198,7 @@ function DeleteConfirm({ round, onClose, onConfirm }: DeleteConfirmProps) {
           <p>Esta acción es <strong>permanente e irreversible</strong>. Se eliminarán todos los datos, votos y candidatos asociados.</p>
         </div>
         <div className="avd-dialog-body flex flex-col gap-3">
-          <div className="px-[14px] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-[13px] font-semibold text-[var(--avd-bad-fg)]">{round.title}</div>
+          <div className="px-[0.875rem] py-3 rounded-[var(--avd-radius-sm)] bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] text-sm font-semibold text-[var(--avd-bad-fg)]">{round.title}</div>
           <div className="avd-form-field">
             <label className="avd-label" htmlFor={inputId}>Escribe el nombre exacto para confirmar</label>
             <input
@@ -406,15 +406,15 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
       {/* Toolbar */}
       <div className="adm-toolbar">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-subtle)]">Votaciones</span>
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[var(--avd-fg-subtle)]">Votaciones</span>
           <span className="avd-chip avd-chip-brand">{totalActive} activas</span>
           <span className="avd-chip avd-chip-muted">{rounds.length} total</span>
         </div>
         <div className="flex-1" />
         {/* Search */}
-        <div className="avd-search-wrap w-full sm:w-[200px]">
+        <div className="avd-search-wrap w-full sm:w-[12.5rem]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input className="avd-input pl-[30px]" placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <input className="avd-input pl-[1.875rem]" placeholder="Buscar votación..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         {/* Status filter */}
         <select
@@ -468,15 +468,15 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
             <p className="avd-empty-sub">Crea una nueva votación para comenzar.</p>
           </div>
         ) : view === "grid" ? (
-          <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
+          <div className="grid gap-[0.875rem] [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {filteredRounds.map(r => (
               <RoundCard key={r.id} round={r} onOpen={r => navigate(`/admin/votaciones/${r.id}`)} onDelete={setDeleteTarget} onArchive={handleArchiveRound} onDuplicate={setDuplicateTarget} isSuperAdmin={isSuperAdmin} />
             ))}
           </div>
         ) : (
           <div className="overflow-x-auto">
-          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden min-w-[720px]">
-            <div className={`px-[14px] py-2 bg-[var(--avd-bg-sunken)] text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}>
+          <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-md)] overflow-hidden min-w-[45rem]">
+            <div className={`px-[0.875rem] py-2 bg-[var(--avd-bg-sunken)] text-xs font-bold uppercase tracking-[0.07em] text-[var(--avd-fg-subtle)] grid gap-3 items-center ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}>
               <div>Votación</div><div>Ronda</div><div>Cupo</div><div>Estado</div><div>Vistas</div><div>Tipo</div><div></div>
             </div>
             {filteredRounds.map(r => {
@@ -484,23 +484,23 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
               return (
                 <div
                   key={r.id}
-                  className={`px-[14px] py-[11px] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-[13px] cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}
+                  className={`px-[0.875rem] py-[0.6875rem] border-t border-[var(--avd-border-soft)] items-center grid gap-3 text-sm cursor-pointer transition-[background] duration-[0.12s] ${isSuperAdmin ? '[grid-template-columns:1fr_90px_90px_110px_110px_100px_64px]' : '[grid-template-columns:1fr_90px_90px_110px_110px_100px_32px]'}`}
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--avd-bg-hover)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   onClick={() => navigate(`/admin/votaciones/${r.id}`)}
                 >
                   <div className="min-w-0 overflow-hidden">
                     <div className="font-semibold tracking-[-0.005em] text-[var(--avd-fg)] truncate">{r.title}</div>
-                    {r.description && <div className="text-[11.5px] text-[var(--avd-fg-muted)] mt-0.5 truncate">{r.description}</div>}
+                    {r.description && <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5 truncate">{r.description}</div>}
                   </div>
                   <div className="font-bold tabular-nums text-[var(--avd-fg)]">{r.current_round_number}</div>
                   <div className="font-semibold tabular-nums text-[var(--avd-fg)]">{r.votes_current_round}/{r.max_votantes}</div>
-                  <div className="flex flex-col gap-[3px]">
-                    <span className={`avd-chip ${chip.cls} flex items-center gap-[5px] w-fit`}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
+                  <div className="flex flex-col gap-[0.1875rem]">
+                    <span className={`avd-chip ${chip.cls} flex items-center gap-[0.3125rem] w-fit`}>{chip.pulse && <span className="avd-pulse-dot" />}{chip.txt}</span>
                   </div>
-                  <div className="flex flex-col gap-[3px]">
-                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok text-[10px] h-[18px] w-fit inline-flex items-center gap-[3px]"><Users size={9} /> Lista pública</span>}
-                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand text-[10px] h-[18px] w-fit inline-flex items-center gap-[3px]"><Image size={9} /> Galería activa</span>}
+                  <div className="flex flex-col gap-[0.1875rem]">
+                    {r.public_candidates_enabled && <span className="avd-chip avd-chip-ok text-xs h-[1.125rem] w-fit inline-flex items-center gap-[0.1875rem]"><Users size={9} /> Lista pública</span>}
+                    {r.show_final_gallery_projection && <span className="avd-chip avd-chip-brand text-xs h-[1.125rem] w-fit inline-flex items-center gap-[0.1875rem]"><Image size={9} /> Galería activa</span>}
                   </div>
                   <div>
                     <TeamChip label={r.voting_type_name || r.team} />
@@ -606,7 +606,7 @@ export function AdminVotingList({ refreshTypesKey }: AdminVotingListProps = {}) 
                       value={form.max_votes_per_round}
                       onChange={e => setForm(p => ({ ...p, max_votes_per_round: Math.max(0, parseInt(e.target.value) || 0), voting_type_id: null, voting_type_name: "" }))}
                     />
-                    <p className="text-[11px] text-[var(--avd-fg-faint)] mt-0.5">0 = auto (máx. 3)</p>
+                    <p className="text-xs text-[var(--avd-fg-faint)] mt-0.5">0 = auto (máx. 3)</p>
                   </div>
                   <div className="avd-form-field">
                     <label className="avd-label">Modo censo</label>

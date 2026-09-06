@@ -32,10 +32,10 @@ export function InlineResultsPanel({
     <section className={compact ? "mb-3" : "px-[var(--avd-page-px,24px)] mb-4"}>
       <div className={`rounded-[var(--avd-radius-lg,14px)] overflow-hidden ${nobodyHasMajority ? 'border border-[color-mix(in_oklch,var(--avd-warn)_40%,transparent)] bg-[color-mix(in_oklch,var(--avd-warn)_6%,var(--avd-bg))]' : 'border border-[color-mix(in_oklch,var(--avd-ok)_40%,transparent)] bg-[color-mix(in_oklch,var(--avd-ok)_6%,var(--avd-bg))]'}`}>
         {/* Header */}
-        <div className="px-[18px] py-[14px] border-b border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)] flex items-center gap-[10px]">
+        <div className="px-[1.125rem] py-[0.875rem] border-b border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)] flex items-center gap-[0.625rem]">
           {nobodyHasMajority ? <AlertTriangle size={18} className="text-[var(--avd-warn)] shrink-0" /> : <CheckCircle size={18} className="text-[var(--avd-ok)] shrink-0" />}
           <div>
-            <div className="font-bold text-[14px] text-[var(--avd-fg)]">
+            <div className="font-bold text-sm text-[var(--avd-fg)]">
               {allBlank
                 ? `${currentRoundVotes} voto${currentRoundVotes !== 1 ? 's' : ''} en blanco — nadie votó por ningún candidato`
                 : hasTie
@@ -44,7 +44,7 @@ export function InlineResultsPanel({
                 ? "Ninguna candidata alcanzó la mayoría absoluta (>50%)"
                 : "Resultados de la ronda"}
             </div>
-            <div className="text-[12px] text-[var(--avd-fg-muted)] mt-0.5">
+            <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5">
               {allBlank
                 ? "Puedes pasar a la siguiente ronda."
                 : nobodyHasMajority
@@ -56,15 +56,15 @@ export function InlineResultsPanel({
 
         {/* Candidate rows (only when non-blank votes exist) */}
         {inlineResults.length > 0 && (
-          <div className="px-[14px] py-[10px] flex flex-col gap-1.5">
+          <div className="px-[0.875rem] py-[0.625rem] flex flex-col gap-1.5">
             {inlineResults.map((r) => (
-              <div key={r.candidate_id} className={`flex items-center gap-3 px-[14px] py-[10px] rounded-[var(--avd-radius-md,10px)] ${r.is_selected ? 'bg-[color-mix(in_oklch,var(--avd-ok)_10%,transparent)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-bg)_80%,transparent)] border border-[var(--avd-border-soft)]'}`}>
+              <div key={r.candidate_id} className={`flex items-center gap-3 px-[0.875rem] py-[0.625rem] rounded-[var(--avd-radius-md,10px)] ${r.is_selected ? 'bg-[color-mix(in_oklch,var(--avd-ok)_10%,transparent)] border border-[color-mix(in_oklch,var(--avd-ok)_30%,transparent)]' : 'bg-[color-mix(in_oklch,var(--avd-bg)_80%,transparent)] border border-[var(--avd-border-soft)]'}`}>
                 <div className="flex-grow">
-                  <div className="font-semibold text-[14px] text-[var(--avd-fg)] flex items-center gap-2">
+                  <div className="font-semibold text-sm text-[var(--avd-fg)] flex items-center gap-2">
                     {formatCandidateName({ name: r.candidate_name, surname: r.candidate_surname })}
-                    {r.is_selected && <span className="avd-chip avd-chip-ok h-[18px] text-[10px]">Seleccionada</span>}
+                    {r.is_selected && <span className="avd-chip avd-chip-ok h-[1.125rem] text-xs">Seleccionada</span>}
                   </div>
-                  <div className="text-[12px] text-[var(--avd-fg-muted)] mt-0.5">
+                  <div className="text-xs text-[var(--avd-fg-muted)] mt-0.5">
                     {r.vote_count}/{currentRoundVotes || totalBallots} votos · {r.percentage.toFixed(2)}%
                   </div>
                 </div>
@@ -95,7 +95,7 @@ export function InlineResultsPanel({
 
         {/* Footer action */}
         {!selectionQuotaReached && canStartNextRound && (
-          <div className="px-[14px] pb-[14px] pt-[10px] border-t border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)]">
+          <div className="px-[0.875rem] pb-[0.875rem] pt-[0.625rem] border-t border-[color-mix(in_oklch,var(--avd-border)_50%,transparent)]">
             <button
               className="avd-btn avd-btn-block avd-btn-primary font-semibold"
               onClick={startNextRound}

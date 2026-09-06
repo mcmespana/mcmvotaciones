@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Lock, Send, CheckCircle2 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { VOTE_COLOR_CSS, resolveVoteColors } from "@/lib/voteColors";
 
 interface VoteSubmitAnimationProps {
   isVisible: boolean;
@@ -8,20 +9,8 @@ interface VoteSubmitAnimationProps {
   voteHash?: string;
 }
 
-// Same 4 colors as VotingTutorial (red, emerald, yellow, blue)
-const TUTORIAL_COLORS = {
-  red: "#ef4444",
-  emerald: "#10b981",
-  yellow: "#eab308",
-  blue: "#3b82f6",
-} as const;
-
-const CONFETTI_COLORS = [
-  TUTORIAL_COLORS.red,
-  TUTORIAL_COLORS.emerald,
-  TUTORIAL_COLORS.yellow,
-  TUTORIAL_COLORS.blue,
-];
+// Paleta oficial de opciones de voto (--vote-color-*), la misma que el tutorial
+const TUTORIAL_COLORS = VOTE_COLOR_CSS;
 
 const STEPS = [
   {
@@ -34,8 +23,8 @@ const STEPS = [
     ringColor: "ring-red-500/25",
     bgColor: "bg-red-500/10",
     barColor: "bg-red-500",
-    glow: "0 0 50px -12px rgba(239,68,68,0.55)",
-    topBar: "linear-gradient(90deg, rgba(239,68,68,0.85), rgba(248,113,113,0.55), rgba(239,68,68,0.2))",
+    glow: "0 0 50px -12px color-mix(in oklch, hsl(var(--vote-color-red)) 55%, transparent)",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-red)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 20%, transparent))",
     dotActive: "bg-red-500",
     accentText: "text-red-600 dark:text-red-400",
   },
@@ -49,8 +38,8 @@ const STEPS = [
     ringColor: "ring-yellow-500/25",
     bgColor: "bg-yellow-500/10",
     barColor: "bg-yellow-500",
-    glow: "0 0 50px -12px rgba(234,179,8,0.55)",
-    topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
+    glow: "0 0 50px -12px color-mix(in oklch, hsl(var(--vote-color-yellow)) 55%, transparent)",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-yellow)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 20%, transparent))",
     dotActive: "bg-yellow-500",
     accentText: "text-yellow-600 dark:text-yellow-400",
   },
@@ -59,13 +48,13 @@ const STEPS = [
     text: "¡Voto registrado!",
     subtext: "Tu participación quedó guardada correctamente",
     duration: 1900,
-    color: TUTORIAL_COLORS.emerald,
+    color: TUTORIAL_COLORS.green,
     iconColor: "text-emerald-600 dark:text-emerald-400",
     ringColor: "ring-emerald-500/25",
     bgColor: "bg-emerald-500/10",
     barColor: "bg-emerald-500",
-    glow: "0 0 60px -10px rgba(16,185,129,0.6)",
-    topBar: "linear-gradient(90deg, rgba(16,185,129,0.85), rgba(52,211,153,0.55), rgba(16,185,129,0.2))",
+    glow: "0 0 60px -10px color-mix(in oklch, hsl(var(--vote-color-green)) 60%, transparent)",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-green)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 20%, transparent))",
     dotActive: "bg-emerald-500",
     accentText: "text-emerald-600 dark:text-emerald-400",
   },
@@ -74,6 +63,8 @@ const STEPS = [
 // Equal confetti per color: one burst per color, same particle count.
 function fireBalancedConfetti() {
   const PER_COLOR = 28;
+  // El canvas de confetti no entiende var(): hay que resolver los tokens.
+  const CONFETTI_COLORS = resolveVoteColors();
 
   const fireFromOrigin = (origin: { x: number; y: number }, angle: number, scalar = 1) => {
     CONFETTI_COLORS.forEach((c, i) => {
@@ -233,7 +224,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
       `}</style>
 
       {/* Overlay */}
-      <div className="pointer-events-none fixed inset-0 z-[49] backdrop-blur-[3px] transition-opacity duration-300 bg-[rgba(2,6,23,0.66)]" />
+      <div className="pointer-events-none fixed inset-0 z-[49] backdrop-blur-[3px] transition-opacity duration-300 bg-[color-mix(in_oklch,var(--avd-n-1000)_66%,transparent)]" />
 
       {/* Dialog wrapper */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
@@ -246,7 +237,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
 
           <div className="p-8 text-center">
             {/* Step dots (tutorial style) */}
-            <div className="flex items-center justify-center gap-2 mb-[22px]">
+            <div className="flex items-center justify-center gap-2 mb-[1.375rem]">
               {STEPS.map((s, i) => {
                 const active = i === currentStep && !isFinal;
                 const done = i < currentStep || isFinal;
@@ -268,7 +259,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
             {/* Icon bubble — tutorial-style rounded-2xl + extras */}
             <div
               key={iconKey}
-              className="relative mx-auto mb-6 w-[112px] h-[112px] [animation:vsa-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+              className="relative mx-auto mb-6 w-[7rem] h-[7rem] [animation:vsa-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
             >
               {/* Pulsing rings */}
               <span
@@ -296,7 +287,7 @@ export function VoteSubmitAnimation({ isVisible, onComplete }: VoteSubmitAnimati
 
             {/* Text — re-mount per step to fade-up */}
             <div key={`txt-${iconKey}`} className="[animation:vsa-fade-up_360ms_ease-out]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 mb-2">
                 Paso {Math.min(currentStep + 1, STEPS.length)} de {STEPS.length}
               </p>
               <h3 className={`text-xl font-extrabold mb-2 tracking-[-0.02em] leading-[1.2] ${step.accentText}`}>

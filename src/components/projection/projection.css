@@ -647,7 +647,7 @@
   padding: 11px 13px 13px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px -4px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px -4px color-mix(in oklch, var(--avd-n-1000) 8%, transparent);
 }
 .proj-ballot::before {
   content: "";
@@ -1289,7 +1289,7 @@
 .proj-finalist-card {
   border: 1.5px solid color-mix(in oklch, var(--proj-emerald) 30%, transparent);
   box-shadow:
-    0 1px 3px rgba(0,0,0,0.05),
+    0 1px 3px color-mix(in oklch, var(--avd-n-1000) 5%, transparent),
     0 8px 28px -10px color-mix(in oklch, var(--proj-emerald) 35%, transparent);
   animation: proj-final-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -1727,7 +1727,7 @@
   width: 100%;
   height: auto;
   overflow: visible; /* let the opened lid extend above the viewBox without clipping */
-  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.45));
+  filter: drop-shadow(0 8px 32px color-mix(in oklch, var(--avd-n-1000) 45%, transparent));
 }
 
 /* Slot glow when a ballot enters */

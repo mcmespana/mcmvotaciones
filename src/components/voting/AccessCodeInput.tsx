@@ -69,13 +69,13 @@ export function AccessCodeInput({
         <div className="px-10 pt-10 pb-8">
           {/* Icon */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-[var(--avd-brand-50,hsl(var(--primary)/0.1))] flex items-center justify-center mx-auto mb-5">
+            <div className="w-16 h-16 rounded-full bg-[var(--avd-brand-50)] flex items-center justify-center mx-auto mb-5">
               <KeyRound className="w-7 h-7 text-[var(--avd-brand-600)]" />
             </div>
-            <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2 font-[var(--avd-font-sans)]">
+            <h1 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-2 font-[var(--avd-font-sans)]">
               Código de Acceso
             </h1>
-            <p className="text-[13px] text-[var(--avd-fg-muted)] leading-[1.5]">
+            <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.5]">
               {roundTitle
                 ? `Introduce el código para acceder a "${roundTitle}"`
                 : "Introduce el código proporcionado para acceder a la votación"}
@@ -83,27 +83,27 @@ export function AccessCodeInput({
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-col gap-[0.375rem]">
               <input
                 ref={inputRef}
                 type="text"
                 value={code}
                 onChange={handleChange}
                 placeholder="ABCD"
-                className="avd-input text-center text-[30px] font-mono tracking-[0.5em] uppercase h-16 pl-[0.5em]"
+                className="avd-input text-center text-[2rem] font-mono tracking-[0.5em] uppercase h-16 pl-[0.5em]"
                 disabled={loading}
                 maxLength={4}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
               />
-              <p className="text-[11px] text-[var(--avd-fg-faint)] text-center">
+              <p className="text-xs text-[var(--avd-fg-faint)] text-center">
                 Código alfanumérico de 4 caracteres
               </p>
             </div>
 
             {error && (
-              <div className="bg-[var(--avd-bad-bg,hsl(0_84%_50%/0.08))] border border-[var(--avd-bad,hsl(0_84%_50%/0.3))] rounded-[var(--avd-radius-sm)] px-[14px] py-[10px] text-center text-[13px] text-[var(--avd-bad,hsl(0_72%_50%))] font-semibold">
+              <div className="bg-[var(--avd-bad-bg,hsl(0_84%_50%/0.08))] border border-[var(--avd-bad,hsl(0_84%_50%/0.3))] rounded-[var(--avd-radius-sm)] px-[0.875rem] py-[0.625rem] text-center text-sm text-[var(--avd-bad,hsl(0_72%_50%))] font-semibold">
                 {error}
               </div>
             )}
@@ -121,13 +121,13 @@ export function AccessCodeInput({
               ) : (
                 <>
                   Acceder
-                  <ArrowRight className="w-[15px] h-[15px]" />
+                  <ArrowRight className="w-[0.9375rem] h-[0.9375rem]" />
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-[11px] text-[var(--avd-fg-faint)] text-center mt-5">
+          <p className="text-xs text-[var(--avd-fg-faint)] text-center mt-5">
             El código se muestra en la pantalla de proyección
           </p>
         </div>

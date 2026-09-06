@@ -44,7 +44,7 @@ export function SettingsDialog({
           </button>
         </div>
         <div className="avd-dialog-body">
-          <div className="flex flex-col gap-[14px]">
+          <div className="flex flex-col gap-[0.875rem]">
             <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
 
             <div className="avd-form-field">
@@ -71,10 +71,10 @@ export function SettingsDialog({
             </div>
 
             {round.voting_type_name && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] text-[13px]">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--avd-radius-sm)] bg-[var(--avd-brand-bg)] border border-[var(--avd-brand-border)] text-sm">
                 <span className="text-[var(--avd-fg-muted)]">Tipo base:</span>
-                <span className="avd-chip avd-chip-brand h-5 text-[11px]">{round.voting_type_name}</span>
-                <span className="text-[12px] text-[var(--avd-fg-faint)]">Los valores se pueden ajustar sin cambiar el tipo.</span>
+                <span className="avd-chip avd-chip-brand h-5 text-xs">{round.voting_type_name}</span>
+                <span className="text-xs text-[var(--avd-fg-faint)]">Los valores se pueden ajustar sin cambiar el tipo.</span>
               </div>
             )}
 
@@ -90,7 +90,7 @@ export function SettingsDialog({
                   onChange={(e) => setConfigMaxVotantes(Math.max(1, parseInt(e.target.value) || 1))}
                   disabled={isMaxVotantesLocked}
                 />
-                {isMaxVotantesLocked && <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">Se puede configurar solo antes de abrir la sala.</p>}
+                {isMaxVotantesLocked && <p className="text-xs text-[var(--avd-fg-faint)] mt-[0.1875rem]">Se puede configurar solo antes de abrir la sala.</p>}
               </div>
 
               <div className="avd-form-field">
@@ -104,7 +104,7 @@ export function SettingsDialog({
                   onChange={(e) => setConfigMaxSelected(Math.max(1, parseInt(e.target.value) || 1))}
                   disabled={isVotingStarted}
                 />
-                {isVotingStarted && <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">No editable con votación en curso.</p>}
+                {isVotingStarted && <p className="text-xs text-[var(--avd-fg-faint)] mt-[0.1875rem]">No editable con votación en curso.</p>}
               </div>
 
               <div className="avd-form-field">
@@ -117,7 +117,7 @@ export function SettingsDialog({
                   value={configMaxVotesPerRound}
                   onChange={(e) => setConfigMaxVotesPerRound(Math.max(0, parseInt(e.target.value) || 0))}
                 />
-                <p className="text-[11px] text-[var(--avd-fg-faint)] mt-[3px]">
+                <p className="text-xs text-[var(--avd-fg-faint)] mt-[0.1875rem]">
                   0 = sin límite fijo (máx. 3 por lógica automática).
                 </p>
               </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { VOTE_COLOR_CSS } from "@/lib/voteColors";
 import { CheckCircle2, MousePointerClick, Shield, Send, Star, HelpCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STEPS = [
@@ -11,8 +12,8 @@ const STEPS = [
     iconBg: "bg-red-500/10",
     iconRing: "ring-red-500/25",
     dotActive: "bg-red-500",
-    topBar: "linear-gradient(90deg, rgba(239,68,68,0.85), rgba(248,113,113,0.55), rgba(239,68,68,0.2))",
-    color: "#ef4444",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-red)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-red)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.red,
     nextBg: "bg-red-500/10 hover:bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-400",
   },
   {
@@ -23,7 +24,8 @@ const STEPS = [
     iconBg: "bg-amber-500/10",
     iconRing: "ring-amber-500/25",
     dotActive: "bg-amber-500",
-    topBar: "linear-gradient(90deg, rgba(245,158,11,0.85), rgba(251,191,36,0.55), rgba(245,158,11,0.2))",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, #f59e0b 85%, transparent), color-mix(in oklch, #f59e0b 45%, transparent), color-mix(in oklch, #f59e0b 20%, transparent))",
+    // Ámbar de «favorito»: sin token en el sistema todavía (design-plans/002)
     color: "#f59e0b",
     nextBg: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400",
   },
@@ -36,8 +38,8 @@ const STEPS = [
     iconBg: "bg-emerald-500/10",
     iconRing: "ring-emerald-500/25",
     dotActive: "bg-emerald-500",
-    topBar: "linear-gradient(90deg, rgba(16,185,129,0.85), rgba(52,211,153,0.55), rgba(16,185,129,0.2))",
-    color: "#10b981",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-green)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-green)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.green,
     nextBg: "bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
   },
   {
@@ -49,8 +51,8 @@ const STEPS = [
     iconBg: "bg-yellow-500/10",
     iconRing: "ring-yellow-500/25",
     dotActive: "bg-yellow-500",
-    topBar: "linear-gradient(90deg, rgba(234,179,8,0.85), rgba(250,204,21,0.55), rgba(234,179,8,0.2))",
-    color: "#eab308",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-yellow)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-yellow)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.yellow,
     nextBg: "bg-yellow-500/10 hover:bg-yellow-500/15 border-yellow-500/30 text-yellow-700 dark:text-yellow-400",
   },
   {
@@ -62,8 +64,8 @@ const STEPS = [
     iconBg: "bg-blue-500/10",
     iconRing: "ring-blue-500/25",
     dotActive: "bg-blue-500",
-    topBar: "linear-gradient(90deg, rgba(59,130,246,0.85), rgba(96,165,250,0.55), rgba(59,130,246,0.2))",
-    color: "#3b82f6",
+    topBar: "linear-gradient(90deg, color-mix(in oklch, hsl(var(--vote-color-blue)) 85%, transparent), color-mix(in oklch, hsl(var(--vote-color-blue)) 45%, transparent), color-mix(in oklch, hsl(var(--vote-color-blue)) 20%, transparent))",
+    color: VOTE_COLOR_CSS.blue,
     nextBg: "bg-blue-500/10 hover:bg-blue-500/15 border-blue-500/30 text-blue-700 dark:text-blue-400",
   },
 ];
@@ -120,9 +122,9 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
         onClick={() => { setStep(0); setOpen(true); }}
         aria-label="Abrir guía de votación"
         title="¿Cómo votar?"
-        className={compactTrigger ? 'avd-btn avd-btn-icon w-[42px] h-[42px]' : 'avd-btn px-[10px] gap-[6px]'}
+        className={compactTrigger ? 'avd-btn avd-btn-icon w-[2.625rem] h-[2.625rem]' : 'avd-btn px-[0.625rem] gap-[0.375rem]'}
       >
-        <HelpCircle className="w-[18px] h-[18px]" />
+        <HelpCircle className="w-[1.125rem] h-[1.125rem]" />
         {!compactTrigger && <span>¿Cómo votar?</span>}
       </button>
 
@@ -186,7 +188,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 {/* Icon bubble */}
                 <div
                   key={iconKey}
-                  className="relative w-[84px] h-[84px] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+                  className="relative w-[5.25rem] h-[5.25rem] [animation:vtu-pop_520ms_cubic-bezier(0.22,1,0.36,1)]"
                 >
                   <span
                     aria-hidden
@@ -198,7 +200,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                     className="absolute inset-0 rounded-2xl [animation:vtu-ring_1.6s_ease-out_infinite] [animation-delay:0.55s]"
                     style={{ border: `2px solid ${current.color}` }}
                   />
-                  <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[2px]`}>
+                  <div className={`w-20 h-20 rounded-2xl ${current.iconBg} ring-1 ${current.iconRing} flex items-center justify-center transition-all duration-300 m-[0.125rem]`}>
                     <Icon className={`w-10 h-10 ${current.accent}`} strokeWidth={1.7} />
                   </div>
                 </div>
@@ -206,10 +208,10 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
 
               {/* Content */}
               <div className="px-8 pb-6">
-                <h3 className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
+                <h3 className="text-2xl font-extrabold tracking-[-0.02em] text-[var(--avd-fg)] mb-3 leading-[1.2]">
                   {current.title}
                 </h3>
-                <p className="text-[14px] text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
+                <p className="text-sm text-[var(--avd-fg-muted)] leading-[1.6] font-medium">
                   {current.description}
                 </p>
               </div>
@@ -222,7 +224,7 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
                 disabled={step === 0}
                 className="avd-btn"
               >
-                <ChevronLeft className="w-[13px] h-[13px]" />
+                <ChevronLeft className="w-[0.8125rem] h-[0.8125rem]" />
                 Anterior
               </button>
 
@@ -236,10 +238,10 @@ export function VotingTutorial({ forceOpen, roundId: _roundId, compactTrigger = 
 
               <button
                 onClick={handleNext}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-[13px] font-bold transition-all ${current.nextBg}`}
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--avd-radius-sm)] border text-sm font-bold transition-all ${current.nextBg}`}
               >
                 {isLast ? "¡Entendido!" : "Siguiente"}
-                {!isLast && <ChevronRight className="w-[13px] h-[13px]" />}
+                {!isLast && <ChevronRight className="w-[0.8125rem] h-[0.8125rem]" />}
               </button>
             </div>
           </div>

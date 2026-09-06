@@ -83,3 +83,75 @@ pase AA.
 proyección (espera, votación, resultados) y el panel de administración completo. Comprobar
 que el `body` ya no tiene degradado y que ninguna superficie se ha quedado transparente.
 Comprobar contraste AA en los dos temas.
+
+---
+
+## Ejecución del resto (2026-09-04)
+
+Hecho lo que faltaba: pasos 1 a 5 completos. El legado *Soft Oceanic* ya no existe.
+
+**Paso 1 · Alias.** Los nombres semánticos de shadcn se redefinen en `:root` como
+`var(--avd-*)`. El `.dark` casi desaparece: como los alias apuntan a `--avd-*` y esa rampa
+ya cambia en `.dark`, solo quedan ahí los que apuntan a la rampa **cruda** (`--avd-n-*`,
+`--avd-brand-300/400/700`), que no cambiarían solos.
+
+El envoltorio `hsl(var(--x))` se ha quitado en el mismo commit, como avisaba el plan: en el
+bloque `@theme`, en las 8 reglas de `@layer base` y en los cuatro `.tsx` que lo usaban
+(`ResultsAnalytics`, `sidebar`, `AccessCodeInput`, más `progress`). La opacidad pasa de
+`hsl(var(--x) / .45)` a `color-mix`. Las utilidades de Tailwind con modificador
+(`bg-overlay/82`, `border-outline-variant/40`) ya generaban `color-mix` solas: comprobado
+sobre el CSS compilado, funcionan igual con OKLCH.
+
+**Paso 2 · Borrado.** Antes de borrar apareció que **casi todo lo que quedaba estaba muerto**:
+
+- Catorce tokens **nunca definidos en ninguna parte**, con clases que no pintaban nada:
+  `--warning`, `--warning-foreground`, `--success`, `--success-foreground`, `--overlay`,
+  `--overlay-foreground`, `--scrollbar`, `--sidebar-border`, `--sidebar-accent`,
+  `--sidebar-accent-foreground`, `--surface-container-high`, `--surface-container-highest`,
+  `--grid-fade` y `--shadow-card`. `bg-overlay/82` es un velo de modal y no pintaba nada.
+  **Ahora existen**, con valor de la rampa: es el mismo hallazgo que el `003` y que el
+  `@theme`, la tercera vez que sale.
+- Clases sin un solo uso en la app: `.surface`, `.gradient-tech`, `.gradient-primary`,
+  `.admin-soft`, `.admin-chip`, `.ticket-card/-kicker/-code/-divider`, `.font-code`,
+  `.button--primary` y `.button--danger` (estas dos con sombra de color, que el `003` había
+  retirado del resto). Borradas, y con ellas `--ticket-accent*`.
+- `.bg-grid-fade` (en `App.tsx`) apuntaba a `--grid-fade`, que no existe: la capa se quita.
+- `bg-gradient-primary` en `ui/progress.tsx` salía del config **que no se carga**: la barra
+  de progreso llevaba quién sabe cuánto sin color. Pasa a `bg-primary`.
+- Los cuatro `--gradient-*`, fuera.
+
+**`tailwind.config.ts`** se queda sin `colors` ni `backgroundImage`: no los cargaba nadie y
+solo servían para que los colores pareciesen definidos. Se mantiene por `content`,
+`darkMode`, animaciones y plugins, con un comentario que lo dice.
+
+**Paso 3 · `body`.** Sin `background-image`. `background-color: var(--background)`.
+
+**Paso 4 · `--vote-color-*`** intactos, con un comentario que explica por qué no salen de la
+rampa de marca.
+
+**Paso 5 · `CLAUDE.md`** y `design.md` §7/§8 actualizados: los semánticos son alias, los
+colores nuevos van al `@theme`, y un cambio de color no está comprobado hasta mirar el CSS
+compilado.
+
+### Decisión de tono
+
+Ya estaba tomada en el commit del 2026-09-02: la rampa `--avd-brand-*` está en el tono 260,
+el de MCM Bank. No se ha vuelto a mover.
+
+### Validación
+
+`npm run build` en verde. Sobre el CSS compilado (`dist/assets/index-*.css`):
+
+- 0 `hsl(var(` — no queda ni un consumo del formato antiguo.
+- 0 `gradient-canvas`, `gradient-tech`, `--ticket-accent`.
+- `--primary: var(--avd-brand)`, `--background: var(--avd-bg)`, `--radius: var(--avd-radius-md)`.
+- `--overlay` definido dos veces (claro `--avd-n-900`, oscuro `--avd-n-1000`), que antes no
+  estaba ninguna.
+- `body{background-color:var(--background);…}` sin `background-image`.
+- Las utilidades siguen resolviendo: `.text-muted-foreground{color:var(--muted-foreground)}`,
+  `.border-outline-variant/40{border-color:color-mix(in oklab, var(--outline-variant) 40%, transparent)}`.
+
+**Pendiente de mirar en pantalla**, como el `007`: no hay credenciales de Supabase en este
+entorno. Lo que cambia de aspecto a propósito y hay que confirmar en uso es el degradado del
+`body` (fuera), el radio base (1rem → 10 px, §3.3), las sombras de color de los botones
+(fuera) y los catorce tokens que ahora sí pintan.

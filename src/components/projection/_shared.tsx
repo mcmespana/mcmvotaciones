@@ -97,7 +97,7 @@ export function card(extra?: React.CSSProperties): React.CSSProperties {
 
 export function AccentBar({ color }: { color?: string }): React.ReactNode {
   return color
-    ? <div className="absolute top-0 left-0 right-0 h-[3px] opacity-90" style={{ background: color }} />
+    ? <div className="absolute top-0 left-0 right-0 h-[0.1875rem] opacity-90" style={{ background: color }} />
     : <div className="avd-accent-bar" />;
 }
 
@@ -177,9 +177,9 @@ function BallotCard({ ballot }: { ballot: BallotSummary }) {
 export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   if (summaries.length === 0) {
     return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[12px]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[0.75rem]">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-[140px] rounded-[14px] bg-[var(--avd-bg-sunken)] animate-pulse" />
+          <div key={i} className="h-[8.75rem] rounded-[14px] bg-[var(--avd-bg-sunken)] animate-pulse" />
         ))}
       </div>
     );
@@ -188,7 +188,7 @@ export function BallotsGrid({ summaries }: { summaries: BallotSummary[] }) {
   const enableMarquee = summaries.length >= 8;
   if (!enableMarquee) {
     return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[12px]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-[0.75rem]">
         {summaries.map((b) => (
           <BallotCard key={`${b.roundNumber}-${b.voteCode}-${b.timestamp}`} ballot={b} />
         ))}

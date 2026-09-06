@@ -43,16 +43,16 @@ export function AdminRouter() {
       <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--avd-bg)] font-[var(--avd-font-sans)]">
         <div className="w-full max-w-[420px] text-center">
           <div className="bg-[var(--avd-surface)] border border-[var(--avd-border)] rounded-[var(--avd-radius-lg)] overflow-hidden shadow-[var(--avd-shadow-md)]">
-            <div className="h-[3px] bg-gradient-to-r from-[var(--avd-bad-500)] to-[oklch(0.66_0.22_28)]" />
-            <div className="px-7 pt-8 pb-7 flex flex-col items-center gap-[18px]">
+            <div className="h-[0.1875rem] bg-gradient-to-r from-[var(--avd-bad-500)] to-[oklch(0.66_0.22_28)]" />
+            <div className="px-7 pt-8 pb-7 flex flex-col items-center gap-[1.125rem]">
               <div className="w-16 h-16 rounded-full bg-[var(--avd-bad-bg)] border border-[color-mix(in_oklch,var(--avd-bad)_25%,transparent)] grid place-items-center">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--avd-bad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
               </div>
               <div>
-                <div className="text-[20px] font-bold tracking-[-0.015em] text-[var(--avd-fg)] mb-1.5">Acceso Denegado</div>
-                <div className="text-[13.5px] text-[var(--avd-fg-muted)] leading-[1.55] max-w-[30ch] mx-auto">No tienes permisos para acceder al panel de administración. Solo los administradores pueden entrar.</div>
+                <div className="text-lg font-bold tracking-[-0.015em] text-[var(--avd-fg)] mb-1.5">Acceso Denegado</div>
+                <div className="text-sm text-[var(--avd-fg-muted)] leading-[1.55] max-w-[30ch] mx-auto">No tienes permisos para acceder al panel de administración. Solo los administradores pueden entrar.</div>
               </div>
-              <span className="avd-chip avd-chip-bad h-[26px] text-xs font-bold">Sin permisos de administración</span>
+              <span className="avd-chip avd-chip-bad h-[1.625rem] text-xs font-bold">Sin permisos de administración</span>
               <button
                 className="avd-btn mt-1 gap-1.5"
                 onClick={() => { localStorage.removeItem('adminMode'); window.location.href = '/'; }}

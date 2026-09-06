@@ -88,13 +88,13 @@ export function PageHeader({
         </div>
 
         {/* Row 2: Title */}
-        <h1 className="font-[var(--avd-font-sans)] text-[26px] font-extrabold tracking-[-0.02em] m-0 mb-[10px] leading-[1.1] text-[var(--avd-fg)]">
+        <h1 className="font-[var(--avd-font-sans)] text-2xl font-extrabold tracking-[-0.02em] m-0 mb-[0.625rem] leading-[1.1] text-[var(--avd-fg)]">
           {round.title}
         </h1>
 
         {/* Row 3: Meta chips */}
-        <div className="avd-page-meta mb-[14px]">
-          <span className={`avd-chip ${statusChip.cls} h-6 text-[12px]`}>
+        <div className="avd-page-meta mb-[0.875rem]">
+          <span className={`avd-chip ${statusChip.cls} h-6 text-xs`}>
             {round.is_voting_open && <span className="avd-pulse-dot mr-0.5" />}
             {statusChip.txt}
           </span>
@@ -116,7 +116,7 @@ export function PageHeader({
             {round.max_votantes} {round.census_mode === "exact" ? "exacto" : "máx"}
           </span>
           {round.description && (
-            <span className="text-[12px] text-[var(--avd-fg-muted)] ml-0.5">· {round.description}</span>
+            <span className="text-xs text-[var(--avd-fg-muted)] ml-0.5">· {round.description}</span>
           )}
         </div>
 

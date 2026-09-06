@@ -205,12 +205,12 @@ export function GroupedCandidateList({
       {/* Sticky header */}
       <div className="pub-sticky" ref={mobileIndexRef}>
         <div className="pub-sticky-card max-w-full">
-          <div className="flex items-center gap-[7px]">
+          <div className="flex items-center gap-[0.4375rem]">
             {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--avd-fg-faint)] pointer-events-none" />
               <input
-                className={`avd-input h-[42px] !pl-[44px] text-[15px] ${searchQuery ? 'pr-[38px]' : 'pr-3'}`}
+                className={`avd-input h-[2.625rem] !pl-[2.75rem] text-sm ${searchQuery ? 'pr-[2.375rem]' : 'pr-3'}`}
                 placeholder="Buscar candidato..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -221,7 +221,7 @@ export function GroupedCandidateList({
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer p-0 text-[var(--avd-fg-faint)] flex"
                 >
-                  <X className="w-[14px] h-[14px]" />
+                  <X className="w-[0.875rem] h-[0.875rem]" />
                 </button>
               )}
             </div>
@@ -229,7 +229,7 @@ export function GroupedCandidateList({
             {/* Index toggle */}
             <button
               type="button"
-              className="avd-btn avd-btn-icon w-[42px] h-[42px]"
+              className="avd-btn avd-btn-icon w-[2.625rem] h-[2.625rem]"
               onClick={() => setIsMobileIndexOpen((p) => !p)}
               title={isMobileIndexOpen ? "Ocultar índice" : "Mostrar índice de lugares"}
             >
@@ -241,13 +241,13 @@ export function GroupedCandidateList({
                 type="button"
                 title={showOnlyFavorites ? "Ver todos" : favCount > 0 ? `${favCount} favorito${favCount > 1 ? 's' : ''}` : "Favoritos"}
                 onClick={() => setShowOnlyFavorites((p) => !p)}
-                className={`avd-btn avd-btn-icon w-[42px] h-[42px] relative shrink-0 ${showOnlyFavorites ? 'text-amber-400' : ''}`}
+                className={`avd-btn avd-btn-icon w-[2.625rem] h-[2.625rem] relative shrink-0 ${showOnlyFavorites ? 'text-amber-400' : ''}`}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill={showOnlyFavorites ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 {favCount > 0 && !showOnlyFavorites && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-amber-400 text-[10px] font-bold text-black flex items-center justify-center px-[3px] leading-none">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[1rem] h-4 rounded-full bg-amber-400 text-xs font-bold text-black flex items-center justify-center px-[0.1875rem] leading-none">
                     {favCount}
                   </span>
                 )}
@@ -266,9 +266,9 @@ export function GroupedCandidateList({
                   className="pub-index-pill"
                   onClick={() => openAndScrollToLocation(locGroup.location)}
                 >
-                  <MapPin className="w-[10px] h-[10px]" />
+                  <MapPin className="w-[0.625rem] h-[0.625rem]" />
                   {locGroup.location}
-                  <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-1.5 py-px text-[10px] font-bold text-[var(--avd-fg-muted)]">
+                  <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-1.5 py-px text-xs font-bold text-[var(--avd-fg-muted)]">
                     {locGroup.totalCount}
                   </span>
                 </button>
@@ -290,13 +290,16 @@ export function GroupedCandidateList({
         {favoriteCandidates.length > 0 && (
           <div className="pub-group mb-2">
             <div className="pub-group-head" style={{ cursor: 'default' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--tkt-yellow, #F59E0B)" stroke="none" className="shrink-0">
+              {/* Ámbar de «favorito». Sin token: no hay uno para esta idea en el
+                  sistema y añadirlo es una decisión, no un reemplazo (design-plans/002).
+                  `--tkt-yellow` no existe en ninguna parte, así que se quita. */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="none" className="shrink-0">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              <span className="font-bold text-[14px] text-[var(--avd-fg)] flex-1 text-left tracking-[-0.005em]">Mis favoritos</span>
-              <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-2 py-px text-[11px] font-bold text-[var(--avd-fg-muted)] shrink-0">{favoriteCandidates.length}</span>
+              <span className="font-bold text-sm text-[var(--avd-fg)] flex-1 text-left tracking-[-0.005em]">Mis favoritos</span>
+              <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-2 py-px text-xs font-bold text-[var(--avd-fg-muted)] shrink-0">{favoriteCandidates.length}</span>
             </div>
-            <div className="pub-group-body pt-[6px]">
+            <div className="pub-group-body pt-[0.375rem]">
               <div className="pub-cand-grid">
                 {favoriteCandidates.map((c) => (
                   <CandidateListCard
@@ -351,17 +354,17 @@ export function GroupedCandidateList({
                   className="pub-group-head"
                   onClick={() => toggleLocation(locationKey)}
                 >
-                  <MapPin className="w-[14px] h-[14px] text-[var(--avd-brand)] shrink-0" />
-                  <span className="font-bold text-[14px] text-[var(--avd-fg)] flex-1 text-left tracking-[-0.005em]">
+                  <MapPin className="w-[0.875rem] h-[0.875rem] text-[var(--avd-brand)] shrink-0" />
+                  <span className="font-bold text-sm text-[var(--avd-fg)] flex-1 text-left tracking-[-0.005em]">
                     {locGroup.location}
                   </span>
-                  <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-2 py-px text-[11px] font-bold text-[var(--avd-fg-muted)] shrink-0">
+                  <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-2 py-px text-xs font-bold text-[var(--avd-fg-muted)] shrink-0">
                     {locGroup.totalCount}
                   </span>
-                  <span className="text-[12px] text-[var(--avd-fg-muted)] font-medium shrink-0">
+                  <span className="text-xs text-[var(--avd-fg-muted)] font-medium shrink-0">
                     {isExpanded ? "Ocultar" : "Mostrar"} ∧
                   </span>
-                  <ChevronDown className={`w-[13px] h-[13px] shrink-0 text-[var(--avd-fg-muted)] transition-transform duration-[0.18s]${isExpanded ? ' rotate-180' : ''}`} />
+                  <ChevronDown className={`w-[0.8125rem] h-[0.8125rem] shrink-0 text-[var(--avd-fg-muted)] transition-transform duration-[0.18s]${isExpanded ? ' rotate-180' : ''}`} />
                 </button>
 
                 {isExpanded && (
@@ -372,16 +375,16 @@ export function GroupedCandidateList({
                             key={`${locationKey}::${slugify(group.groupName)}`}
                             className="mb-4"
                           >
-                            <div className="flex items-center gap-[6px] border-b border-[var(--avd-border-soft)] pb-2 mt-[10px] mb-[10px]">
-                              <Users className="w-[13px] h-[13px] text-[var(--avd-fg-muted)]" />
-                              <span className="text-[13px] font-semibold text-[var(--avd-fg-muted)]">
+                            <div className="flex items-center gap-[0.375rem] border-b border-[var(--avd-border-soft)] pb-2 mt-[0.625rem] mb-[0.625rem]">
+                              <Users className="w-[0.8125rem] h-[0.8125rem] text-[var(--avd-fg-muted)]" />
+                              <span className="text-sm font-semibold text-[var(--avd-fg-muted)]">
                                 {group.groupName}
                               </span>
-                              <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-1.5 py-px text-[11px] font-bold text-[var(--avd-fg-muted)]">
+                              <span className="bg-[var(--avd-bg-sunken)] border border-[var(--avd-border-soft)] rounded-full px-1.5 py-px text-xs font-bold text-[var(--avd-fg-muted)]">
                                 {group.candidates.length}
                               </span>
                               {group.avgAge !== Infinity && (
-                                <span className="text-[12px] text-[var(--avd-fg-faint)] ml-1">
+                                <span className="text-xs text-[var(--avd-fg-faint)] ml-1">
                                   Edad media: {Math.round(group.avgAge)} a
                                 </span>
                               )}
@@ -404,11 +407,11 @@ export function GroupedCandidateList({
                           </div>
                         ))
                       : (
-                          <div className="pt-[6px]">
+                          <div className="pt-[0.375rem]">
                             {locGroup.groups[0]?.groupName && locGroup.groups[0].groupName !== "Sin grupo" && (
-                              <div className="flex items-center gap-[6px] border-b border-[var(--avd-border-soft)] pb-2 mb-[10px]">
-                                <Users className="w-[13px] h-[13px] text-[var(--avd-fg-muted)]" />
-                                <span className="text-[13px] font-semibold text-[var(--avd-fg-muted)]">
+                              <div className="flex items-center gap-[0.375rem] border-b border-[var(--avd-border-soft)] pb-2 mb-[0.625rem]">
+                                <Users className="w-[0.8125rem] h-[0.8125rem] text-[var(--avd-fg-muted)]" />
+                                <span className="text-sm font-semibold text-[var(--avd-fg-muted)]">
                                   {locGroup.groups[0].groupName}
                                 </span>
                               </div>

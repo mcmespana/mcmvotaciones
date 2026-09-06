@@ -4,7 +4,7 @@
   position: relative;
   border-radius: calc(var(--avd-radius-lg) + 4px);
   overflow: hidden;
-  padding: 3px;
+  padding: 0.1875rem;
   animation: tkt-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   flex-shrink: 0;
 }
@@ -49,7 +49,7 @@
 
 /* Shimmer bar — green */
 .tkt-shimmer-bar {
-  height: 4px;
+  height: 0.25rem;
   width: 100%;
   background: linear-gradient(
     90deg,
@@ -67,8 +67,8 @@
 .tkt-card-inner::before {
   content: '';
   position: absolute;
-  width: 220px;
-  height: 220px;
+  width: 13.75rem;
+  height: 13.75rem;
   border-radius: 50%;
   top: -70px;
   left: -70px;
@@ -82,8 +82,8 @@
 .tkt-card-inner::after {
   content: '';
   position: absolute;
-  width: 180px;
-  height: 180px;
+  width: 11.25rem;
+  height: 11.25rem;
   border-radius: 50%;
   bottom: -50px;
   right: -50px;
@@ -97,9 +97,9 @@
 /* Icon */
 .tkt-icon-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 24px;
+  width: 6.25rem;
+  height: 6.25rem;
+  margin: 0 auto 1.5rem;
   animation: tkt-pop 550ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -114,8 +114,8 @@
 .tkt-ring--delay2 { animation-delay: 1.4s; }
 
 .tkt-icon-bubble {
-  width: 100px;
-  height: 100px;
+  width: 6.25rem;
+  height: 6.25rem;
   border-radius: 50%;
   background: conic-gradient(
     from 90deg,
@@ -133,8 +133,8 @@
 }
 
 .tkt-check-icon {
-  width: 52px;
-  height: 52px;
+  width: 3.25rem;
+  height: 3.25rem;
   color: white;
   animation: tkt-check-burst 600ms cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
   filter: drop-shadow(0 0 10px oklch(0.82 0.22 148 / 0.7));
@@ -146,9 +146,9 @@
 }
 
 .tkt-title {
-  font-size: 30px;
+  font-size: 1.875rem;
   font-weight: 900;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   letter-spacing: -0.025em;
   color: oklch(0.15 0.09 148);
   line-height: 1.1;
@@ -161,9 +161,9 @@
 
 .tkt-round-title {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 1rem;
   color: oklch(0.28 0.10 148);
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
   letter-spacing: -0.01em;
 }
 .dark .tkt-round-title { color: oklch(0.92 0.08 148); }
@@ -171,8 +171,8 @@
 .tkt-round-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 12px;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.75rem;
   border-radius: 999px;
   background: oklch(0 0 0 / 0.07);
   border: 1px solid oklch(0 0 0 / 0.12);
@@ -183,8 +183,8 @@
 }
 
 .tkt-round-dot {
-  width: 6px;
-  height: 6px;
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 50%;
   background: oklch(0.40 0.18 148);
   box-shadow: 0 0 8px oklch(0.40 0.18 148);
@@ -197,7 +197,7 @@
 }
 
 .tkt-round-label {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: oklch(0.28 0.10 148);
   letter-spacing: 0.06em;
@@ -208,9 +208,9 @@
 /* Green accent stripe */
 .tkt-color-stripe {
   display: flex;
-  height: 3px;
+  height: 0.1875rem;
   width: 60%;
-  margin: 0 auto 20px;
+  margin: 0 auto 1.25rem;
   border-radius: 2px;
   overflow: hidden;
   background: linear-gradient(90deg,
@@ -225,7 +225,7 @@
 
 /* Footer */
 .tkt-footer {
-  padding: 12px 24px;
+  padding: 0.75rem 1.5rem;
   border-top: 1px solid oklch(0 0 0 / 0.08);
   background: oklch(0 0 0 / 0.04);
   text-align: center;
@@ -237,7 +237,7 @@
 
 .tkt-footer-text {
   color: oklch(0.32 0.10 148);
-  font-size: 11.5px;
+  font-size: 0.7188rem;
   font-weight: 500;
   margin: 0;
   line-height: 1.5;
